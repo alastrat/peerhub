@@ -68,7 +68,7 @@ async function ReviewsList() {
   if (reviews.length === 0) {
     return (
       <EmptyState
-        icon={CheckCircle2}
+        icon={<CheckCircle2 className="h-8 w-8 text-muted-foreground" />}
         title="All caught up!"
         description="You have no pending reviews at the moment. Check back later for new feedback requests."
       />

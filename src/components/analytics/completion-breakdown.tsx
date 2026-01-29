@@ -96,9 +96,10 @@ export function CompletionBreakdown({ breakdown }: CompletionBreakdownProps) {
                 tick={{ fontSize: 12 }}
               />
               <Tooltip
-                formatter={(value: number, name: string) => {
+                formatter={(value: number | undefined, name: string | undefined) => {
+                  if (value === undefined) return ["-", name ?? ""];
                   if (name === "rate") return [`${value}%`, "Completion Rate"];
-                  return [value, name];
+                  return [value, name ?? ""];
                 }}
                 contentStyle={{
                   borderRadius: "8px",

@@ -73,7 +73,7 @@ export function RatingChart({
                 allowDecimals={false}
               />
               <Tooltip
-                formatter={(value: number) => [value, "Responses"]}
+                formatter={(value: number | undefined) => [value ?? 0, "Responses"]}
                 labelFormatter={(label) => `Rating: ${label}`}
                 contentStyle={{
                   borderRadius: "8px",

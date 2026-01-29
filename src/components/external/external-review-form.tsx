@@ -85,9 +85,9 @@ export function ExternalReviewForm({
     setResponses((prev) => ({
       ...prev,
       [questionId]: {
-        questionId,
         ...prev[questionId],
         ...value,
+        questionId,
       },
     }));
   };
@@ -170,9 +170,8 @@ export function ExternalReviewForm({
           {filteredSections.map((_, i) => (
             <div
               key={i}
-              className={`w-8 h-1 rounded ${
-                i <= currentSection ? "bg-primary" : "bg-muted"
-              }`}
+              className={`w-8 h-1 rounded ${i <= currentSection ? "bg-primary" : "bg-muted"
+                }`}
             />
           ))}
         </div>
