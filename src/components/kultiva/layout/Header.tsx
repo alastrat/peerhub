@@ -25,12 +25,18 @@ const navItems: NavItem[] = [
       { href: "/servicios/seleccion-especializada", labelKey: "seleccion" },
       { href: "/servicios/cambio", labelKey: "cambio" },
       { href: "/servicios/comunicacion-interna", labelKey: "comunicacion" },
+      { href: "/diagnostico-clima", labelKey: "climate" },
     ],
   },
-  { href: "/diagnostico-clima", labelKey: "climate" },
-  { href: "/conferencias", labelKey: "conferences" },
-  { href: "/herramientas", labelKey: "tools" },
-  { href: "/blog", labelKey: "blog" },
+  {
+    href: "/recursos",
+    labelKey: "resources",
+    children: [
+      { href: "/conferencias", labelKey: "conferences" },
+      { href: "/herramientas", labelKey: "tools" },
+      { href: "/blog", labelKey: "blog" },
+    ],
+  },
   { href: "/contacto", labelKey: "contact" },
 ];
 
@@ -50,7 +56,7 @@ export function Header() {
   }, []);
 
   const getLabel = (item: NavItem | { href: string; labelKey: string }) => {
-    // Service sub-items use services translation namespace
+    // Service sub-items use services translation namespace (except climate which uses navigation)
     if (item.href.startsWith("/servicios/") && item.href !== "/servicios") {
       const serviceKey = item.labelKey as "cultura" | "seleccion" | "cambio" | "comunicacion";
       return tServices(`${serviceKey}.short`);
