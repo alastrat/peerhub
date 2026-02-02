@@ -1,0 +1,341 @@
+{
+  "metadata": {
+    "title": "Kultiva | Consultoria Organizacional",
+    "description": "Agencia de consultoria organizacional. Sembrando ideas para recoger grandes resultados."
+  },
+  "navigation": {
+    "home": "Inicio",
+    "about": "Nosotros",
+    "services": "Servicios",
+    "services_all": "Todos los Servicios",
+    "climate": "Diagnostico de Clima",
+    "conferences": "Conferencias",
+    "tools": "Herramientas",
+    "blog": "Blog",
+    "contact": "Contacto",
+    "faq": "Preguntas Frecuentes",
+    "cta": "Agenda una Consulta"
+  },
+  "home": {
+    "hero": {
+      "subtitle": "Agencia de Consultoria Organizacional",
+      "title": "Sembrando ideas para recoger grandes resultados",
+      "description": "Transformamos organizaciones a traves de estrategias innovadoras en cultura, cambio, seleccion y comunicacion interna.",
+      "cta_primary": "Conoce Nuestros Servicios",
+      "cta_secondary": "Agenda una Consulta"
+    },
+    "services": {
+      "subtitle": "Nuestros Servicios",
+      "title": "Soluciones integrales para el crecimiento de tu organizacion",
+      "description": "Ofrecemos servicios especializados en consultoria organizacional para potenciar el talento y la cultura de tu empresa."
+    },
+    "about": {
+      "subtitle": "Sobre Kultiva",
+      "title": "Cultivamos el potencial de tu organizacion",
+      "description": "Con anos de experiencia en consultoria organizacional, ayudamos a las empresas a desarrollar culturas solidas, gestionar el cambio efectivamente y atraer el mejor talento.",
+      "cta": "Conoce Mas"
+    },
+    "process": {
+      "subtitle": "Nuestra Metodologia",
+      "title": "Como trabajamos contigo",
+      "step1": {
+        "title": "Diagnostico",
+        "description": "Analizamos tu organizacion para identificar oportunidades de mejora."
+      },
+      "step2": {
+        "title": "Estrategia",
+        "description": "Disenamos un plan de accion personalizado para tus objetivos."
+      },
+      "step3": {
+        "title": "Implementacion",
+        "description": "Ejecutamos las iniciativas con acompanamiento continuo."
+      },
+      "step4": {
+        "title": "Medicion",
+        "description": "Evaluamos resultados y ajustamos para maximizar el impacto."
+      }
+    },
+    "stats": {
+      "years": "Anos de Experiencia",
+      "clients": "Clientes Satisfechos",
+      "projects": "Proyectos Completados",
+      "team": "Profesionales"
+    },
+    "testimonials": {
+      "subtitle": "Testimonios",
+      "title": "Lo que dicen nuestros clientes"
+    },
+    "cta": {
+      "title": "Descubre nuestra Plataforma de Diagnostico de Clima",
+      "description": "Una herramienta digital que mide la percepcion de tus colaboradores y transforma el feedback en inteligencia de negocio.",
+      "button": "Conocer Mas"
+    },
+    "blog": {
+      "subtitle": "Nuestro Blog",
+      "title": "Articulos y recursos para tu organizacion",
+      "cta": "Ver Todos los Articulos"
+    },
+    "clients": {
+      "subtitle": "Nuestros Clientes",
+      "title": "Empresas que confian en nosotros"
+    }
+  },
+  "about": {
+    "hero": {
+      "title": "Nuestra Filosofia",
+      "breadcrumb": "Nosotros"
+    },
+    "mission": {
+      "title": "Nuestra Mision",
+      "description": "Acompanar a las organizaciones en su proceso de transformacion, cultivando culturas que inspiren y generen resultados sostenibles."
+    },
+    "vision": {
+      "title": "Nuestra Vision",
+      "description": "Ser la consultoria organizacional de referencia en Colombia, reconocida por el impacto positivo en las personas y los negocios."
+    },
+    "values": {
+      "subtitle": "Nuestros Valores",
+      "title": "Los principios que nos guian",
+      "integrity": {
+        "title": "Integridad",
+        "description": "Actuamos con honestidad y transparencia en cada interaccion."
+      },
+      "innovation": {
+        "title": "Innovacion",
+        "description": "Buscamos constantemente nuevas formas de generar valor."
+      },
+      "collaboration": {
+        "title": "Colaboracion",
+        "description": "Trabajamos junto a nuestros clientes como verdaderos socios."
+      },
+      "excellence": {
+        "title": "Excelencia",
+        "description": "Nos comprometemos con los mas altos estandares de calidad."
+      }
+    },
+    "founder": {
+      "subtitle": "Fundadora",
+      "title": "Iskya Boom",
+      "role": "CEO & Fundadora",
+      "description": "En la era de la inteligencia artificial, la mayor responsabilidad del liderazgo no es solo adoptar tecnologia, sino disenar culturas que pongan a las personas en el centro.",
+      "bio": "Con mas de 15 anos de experiencia en desarrollo organizacional, Iskya ha liderado transformaciones culturales en empresas de diversos sectores, ayudandolas a construir ambientes de trabajo donde el talento florece."
+    },
+    "team": {
+      "subtitle": "Nuestro Equipo",
+      "title": "Conoce a los expertos detras de Kultiva"
+    }
+  },
+  "services": {
+    "hero": {
+      "title": "Nuestros Servicios",
+      "breadcrumb": "Servicios"
+    },
+    "subtitle": "Lo Que Hacemos",
+    "title": "Servicios de consultoria que transforman organizaciones",
+    "description": "Cada servicio esta disenado para abordar los desafios especificos de tu organizacion, con metodologias probadas y un enfoque centrado en las personas.",
+    "cta": "Conocer Mas",
+    "cultura": {
+      "title": "Cultura Organizacional",
+      "short": "Transformacion cultural",
+      "description": "Disenamos e implementamos estrategias para construir culturas organizacionales solidas que impulsen el compromiso, la innovacion y los resultados del negocio.",
+      "benefits": {
+        "1": "Diagnostico de cultura actual",
+        "2": "Definicion de cultura deseada",
+        "3": "Plan de transformacion cultural",
+        "4": "Formacion de lideres como agentes de cambio",
+        "5": "Medicion de avances y ajustes"
+      }
+    },
+    "seleccion": {
+      "title": "Seleccion Especializada",
+      "short": "Reclutamiento estrategico",
+      "description": "Encontramos el talento ideal para tu organizacion a traves de procesos de seleccion rigurosos que evaluan competencias tecnicas, culturales y de liderazgo.",
+      "benefits": {
+        "1": "Levantamiento de perfil integral",
+        "2": "Busqueda activa de candidatos",
+        "3": "Evaluacion por competencias",
+        "4": "Assessment center",
+        "5": "Acompanamiento en onboarding"
+      }
+    },
+    "cambio": {
+      "title": "Gestion del Cambio",
+      "short": "Cambio organizacional",
+      "description": "Facilitamos procesos de cambio organizacional minimizando la resistencia y maximizando la adopcion, asegurando transiciones exitosas.",
+      "benefits": {
+        "1": "Evaluacion de impacto del cambio",
+        "2": "Estrategia de comunicacion",
+        "3": "Formacion y capacitacion",
+        "4": "Gestion de stakeholders",
+        "5": "Medicion de adopcion"
+      }
+    },
+    "comunicacion": {
+      "title": "Comunicacion Interna",
+      "short": "Comunicacion efectiva",
+      "description": "Desarrollamos estrategias de comunicacion interna que fortalecen la conexion entre colaboradores, alinean equipos y refuerzan la cultura organizacional.",
+      "benefits": {
+        "1": "Diagnostico de comunicacion",
+        "2": "Estrategia de canales",
+        "3": "Plan de contenidos",
+        "4": "Campanas internas",
+        "5": "Medicion de efectividad"
+      }
+    }
+  },
+  "climate": {
+    "hero": {
+      "title": "Diagnostico de Clima",
+      "breadcrumb": "Diagnostico de Clima"
+    },
+    "subtitle": "Plataforma Digital",
+    "title": "Mide, analiza y transforma el clima de tu organizacion",
+    "description": "Una herramienta digital que mide la percepcion de tus colaboradores sobre el ambiente laboral, el liderazgo y la cultura organizacional, transformando el feedback en inteligencia de negocio accionable.",
+    "features": {
+      "1": {
+        "title": "Encuestas Personalizadas",
+        "description": "Crea encuestas adaptadas a las necesidades especificas de tu organizacion."
+      },
+      "2": {
+        "title": "Analisis en Tiempo Real",
+        "description": "Visualiza resultados y tendencias al instante con dashboards interactivos."
+      },
+      "3": {
+        "title": "Reportes Detallados",
+        "description": "Genera informes completos por area, equipo o dimension evaluada."
+      },
+      "4": {
+        "title": "Planes de Accion",
+        "description": "Recibe recomendaciones basadas en datos para mejorar el clima."
+      }
+    },
+    "cta": "Solicitar Demo"
+  },
+  "conferences": {
+    "hero": {
+      "title": "Conferencias",
+      "breadcrumb": "Conferencias"
+    },
+    "subtitle": "Formacion y Desarrollo",
+    "title": "Conferencias y talleres que inspiran el cambio",
+    "description": "Iskya Boom ofrece conferencias inspiradoras y practicas sobre liderazgo, cultura organizacional y transformacion digital para eventos corporativos y congresos."
+  },
+  "tools": {
+    "hero": {
+      "title": "Herramientas Gratuitas",
+      "breadcrumb": "Herramientas"
+    },
+    "subtitle": "Recursos",
+    "title": "Herramientas para potenciar tu organizacion",
+    "description": "Descarga plantillas, guias y recursos gratuitos para comenzar a transformar tu organizacion."
+  },
+  "blog": {
+    "hero": {
+      "title": "Blog",
+      "breadcrumb": "Blog"
+    },
+    "subtitle": "Articulos y Recursos",
+    "title": "Insights para lideres y organizaciones",
+    "read_more": "Leer Mas",
+    "categories": "Categorias",
+    "recent": "Articulos Recientes",
+    "search": "Buscar articulos...",
+    "no_results": "No se encontraron articulos"
+  },
+  "contact": {
+    "hero": {
+      "title": "Contacto",
+      "breadcrumb": "Contacto"
+    },
+    "subtitle": "Hablemos",
+    "title": "Estamos listos para ayudarte",
+    "description": "Cuentanos sobre tu organizacion y los desafios que enfrentas. Agendaremos una consulta para explorar como podemos ayudarte.",
+    "info": {
+      "address": {
+        "title": "Direccion",
+        "value": "Barranquilla, Atlantico, Colombia"
+      },
+      "phone": {
+        "title": "Telefono",
+        "value": "+57 300 645 5082"
+      },
+      "email": {
+        "title": "Correo",
+        "value": "info@kultiva.com.co"
+      },
+      "hours": {
+        "title": "Horario",
+        "value": "Lunes a Viernes, 8:00 AM - 6:00 PM"
+      }
+    },
+    "form": {
+      "name": "Nombre completo",
+      "email": "Correo electronico",
+      "phone": "Telefono",
+      "company": "Empresa",
+      "service": "Servicio de interes",
+      "service_placeholder": "Selecciona un servicio",
+      "message": "Mensaje",
+      "message_placeholder": "Cuentanos sobre tu organizacion y como podemos ayudarte...",
+      "submit": "Enviar Mensaje",
+      "success": "Mensaje enviado con exito. Te contactaremos pronto.",
+      "error": "Hubo un error al enviar el mensaje. Por favor intenta de nuevo."
+    }
+  },
+  "faq": {
+    "hero": {
+      "title": "Preguntas Frecuentes",
+      "breadcrumb": "FAQ"
+    },
+    "subtitle": "FAQ",
+    "title": "Respuestas a tus preguntas",
+    "questions": {
+      "1": {
+        "question": "Que tipo de empresas pueden beneficiarse de sus servicios?",
+        "answer": "Trabajamos principalmente con pequenas y medianas empresas (PYMES) en Colombia y Latinoamerica, aunque tambien hemos apoyado a organizaciones mas grandes. Nuestros servicios se adaptan a las necesidades especificas de cada cliente."
+      },
+      "2": {
+        "question": "Cuanto tiempo dura un proyecto tipico de consultoria?",
+        "answer": "La duracion varia segun el alcance y la complejidad. Un diagnostico de clima puede tomar 4-6 semanas, mientras que una transformacion cultural puede extenderse de 6 a 12 meses. Definimos los tiempos en conjunto durante la fase de planeacion."
+      },
+      "3": {
+        "question": "Trabajan de forma presencial o remota?",
+        "answer": "Ofrecemos ambas modalidades. Muchos de nuestros servicios pueden realizarse de forma remota, aunque para ciertos talleres y sesiones de trabajo preferimos la interaccion presencial cuando es posible."
+      },
+      "4": {
+        "question": "Como se mide el exito de un proyecto?",
+        "answer": "Definimos indicadores de exito (KPIs) al inicio de cada proyecto en colaboracion con el cliente. Estos pueden incluir mejoras en encuestas de clima, indices de rotacion, niveles de engagement, entre otros."
+      },
+      "5": {
+        "question": "Ofrecen garantias sobre los resultados?",
+        "answer": "Nos comprometemos con un proceso riguroso y metodologias probadas. Si bien no podemos garantizar resultados especificos (ya que dependen de multiples factores), si garantizamos nuestro compromiso, experiencia y acompanamiento continuo."
+      }
+    },
+    "cta": {
+      "title": "Tienes mas preguntas?",
+      "description": "Estamos aqui para ayudarte. Contactanos y resolveremos todas tus dudas.",
+      "button": "Contactanos"
+    }
+  },
+  "footer": {
+    "description": "Agencia de consultoria organizacional. Sembrando ideas para recoger grandes resultados.",
+    "services": "Servicios",
+    "company": "Empresa",
+    "contact": "Contacto",
+    "social": "Siguenos",
+    "copyright": "Todos los derechos reservados",
+    "privacy": "Politica de Privacidad",
+    "terms": "Terminos y Condiciones"
+  },
+  "common": {
+    "learn_more": "Conoce Mas",
+    "read_more": "Leer Mas",
+    "contact_us": "Contactanos",
+    "get_started": "Comenzar",
+    "view_all": "Ver Todo",
+    "back": "Volver",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Exito"
+  }
+}

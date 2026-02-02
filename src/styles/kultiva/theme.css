@@ -1,0 +1,313 @@
+/**
+ * Kultiva Brand Theme
+ * Color palette inspired by "Sembrando ideas para recoger grandes resultados"
+ * (Planting ideas to harvest great results)
+ */
+
+:root {
+  /* ==========================================
+   * PRIMARY COLORS - Deep Forest Green
+   * Represents: Growth, stability, trust
+   * ========================================== */
+  --kultiva-primary: 152 55% 30%;
+  --kultiva-primary-light: 152 45% 45%;
+  --kultiva-primary-dark: 152 60% 20%;
+  --kultiva-primary-foreground: 0 0% 100%;
+
+  /* ==========================================
+   * SECONDARY COLORS - Warm Terracotta
+   * Represents: Harvest, warmth, results
+   * ========================================== */
+  --kultiva-secondary: 20 55% 48%;
+  --kultiva-secondary-light: 20 50% 62%;
+  --kultiva-secondary-dark: 20 60% 35%;
+  --kultiva-secondary-foreground: 0 0% 100%;
+
+  /* ==========================================
+   * ACCENT COLOR - Golden Wheat
+   * Represents: Ideas, growth, optimism
+   * ========================================== */
+  --kultiva-accent: 42 80% 52%;
+  --kultiva-accent-foreground: 30 20% 12%;
+
+  /* ==========================================
+   * NEUTRAL COLORS - Warm Earth Tones
+   * ========================================== */
+  --kultiva-cream: 40 30% 97%;
+  --kultiva-sand: 35 20% 92%;
+  --kultiva-stone: 30 10% 70%;
+  --kultiva-charcoal: 30 15% 20%;
+  --kultiva-ink: 30 20% 12%;
+
+  /* ==========================================
+   * SEMANTIC MAPPINGS
+   * Maps Kultiva colors to component tokens
+   * ========================================== */
+
+  /* Website background and text */
+  --kultiva-background: var(--kultiva-cream);
+  --kultiva-foreground: var(--kultiva-ink);
+
+  /* Card surfaces */
+  --kultiva-card: 0 0% 100%;
+  --kultiva-card-foreground: var(--kultiva-ink);
+
+  /* Muted elements */
+  --kultiva-muted: var(--kultiva-sand);
+  --kultiva-muted-foreground: var(--kultiva-stone);
+
+  /* Borders */
+  --kultiva-border: 35 15% 85%;
+  --kultiva-border-strong: 35 10% 75%;
+
+  /* Success, warning, error states */
+  --kultiva-success: 142 71% 45%;
+  --kultiva-warning: 45 93% 47%;
+  --kultiva-error: 0 84% 60%;
+
+  /* ==========================================
+   * TYPOGRAPHY
+   * ========================================== */
+  --kultiva-font-heading: "Kanit", system-ui, sans-serif;
+  --kultiva-font-body: "Plus Jakarta Sans", system-ui, sans-serif;
+
+  /* ==========================================
+   * SPACING SCALE
+   * ========================================== */
+  --kultiva-section-py: 5rem; /* 80px */
+  --kultiva-section-py-lg: 7rem; /* 112px */
+
+  /* ==========================================
+   * BORDER RADIUS
+   * ========================================== */
+  --kultiva-radius-sm: 0.375rem;
+  --kultiva-radius-md: 0.5rem;
+  --kultiva-radius-lg: 0.75rem;
+  --kultiva-radius-xl: 1rem;
+  --kultiva-radius-2xl: 1.5rem;
+
+  /* ==========================================
+   * SHADOWS
+   * ========================================== */
+  --kultiva-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --kultiva-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --kultiva-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --kultiva-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --kultiva-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+    0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* ==========================================
+ * KULTIVA MARKETING SITE BASE STYLES
+ * Applied to (website) route group only
+ * ========================================== */
+
+.kultiva-site {
+  font-family: var(--kultiva-font-body);
+  background-color: hsl(var(--kultiva-background));
+  color: hsl(var(--kultiva-foreground));
+}
+
+.kultiva-site h1,
+.kultiva-site h2,
+.kultiva-site h3,
+.kultiva-site h4,
+.kultiva-site h5,
+.kultiva-site h6 {
+  font-family: var(--kultiva-font-heading);
+  color: hsl(var(--kultiva-ink));
+}
+
+/* ==========================================
+ * BUTTON STYLES
+ * ========================================== */
+
+.kultiva-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  font-family: var(--kultiva-font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  text-decoration: none;
+  border-radius: var(--kultiva-radius-lg);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.kultiva-btn-primary {
+  background-color: hsl(var(--kultiva-primary));
+  color: hsl(var(--kultiva-primary-foreground));
+  border-color: hsl(var(--kultiva-primary));
+}
+
+.kultiva-btn-primary:hover {
+  background-color: hsl(var(--kultiva-primary-dark));
+  border-color: hsl(var(--kultiva-primary-dark));
+}
+
+.kultiva-btn-secondary {
+  background-color: hsl(var(--kultiva-secondary));
+  color: hsl(var(--kultiva-secondary-foreground));
+  border-color: hsl(var(--kultiva-secondary));
+}
+
+.kultiva-btn-secondary:hover {
+  background-color: hsl(var(--kultiva-secondary-dark));
+  border-color: hsl(var(--kultiva-secondary-dark));
+}
+
+.kultiva-btn-outline {
+  background-color: transparent;
+  color: hsl(var(--kultiva-primary));
+  border-color: hsl(var(--kultiva-primary));
+}
+
+.kultiva-btn-outline:hover {
+  background-color: hsl(var(--kultiva-primary));
+  color: hsl(var(--kultiva-primary-foreground));
+}
+
+/* ==========================================
+ * SECTION STYLES
+ * ========================================== */
+
+.kultiva-section {
+  padding-top: var(--kultiva-section-py);
+  padding-bottom: var(--kultiva-section-py);
+}
+
+.kultiva-section-lg {
+  padding-top: var(--kultiva-section-py-lg);
+  padding-bottom: var(--kultiva-section-py-lg);
+}
+
+.kultiva-section-gray {
+  background-color: hsl(var(--kultiva-sand));
+}
+
+.kultiva-section-dark {
+  background-color: hsl(var(--kultiva-ink));
+  color: hsl(var(--kultiva-cream));
+}
+
+.kultiva-section-dark h1,
+.kultiva-section-dark h2,
+.kultiva-section-dark h3,
+.kultiva-section-dark h4,
+.kultiva-section-dark h5,
+.kultiva-section-dark h6 {
+  color: hsl(var(--kultiva-cream));
+}
+
+/* ==========================================
+ * TYPOGRAPHY UTILITIES
+ * ========================================== */
+
+.kultiva-subtitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--kultiva-font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: hsl(var(--kultiva-primary));
+  margin-bottom: 1rem;
+}
+
+.kultiva-subtitle::before {
+  content: "";
+  width: 2.5rem;
+  height: 2px;
+  background-color: hsl(var(--kultiva-primary));
+}
+
+.kultiva-title {
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 1.5rem;
+}
+
+.kultiva-lead {
+  font-size: 1.125rem;
+  line-height: 1.75;
+  color: hsl(var(--kultiva-charcoal));
+}
+
+/* ==========================================
+ * CARD STYLES
+ * ========================================== */
+
+.kultiva-card {
+  background-color: hsl(var(--kultiva-card));
+  border-radius: var(--kultiva-radius-xl);
+  padding: 2rem;
+  box-shadow: var(--kultiva-shadow);
+  transition: all 0.3s ease;
+}
+
+.kultiva-card:hover {
+  box-shadow: var(--kultiva-shadow-lg);
+  transform: translateY(-4px);
+}
+
+.kultiva-card-bordered {
+  border: 1px solid hsl(var(--kultiva-border));
+}
+
+/* ==========================================
+ * ICON BOX STYLES
+ * ========================================== */
+
+.kultiva-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--kultiva-radius-lg);
+  background-color: hsl(var(--kultiva-primary) / 0.1);
+  color: hsl(var(--kultiva-primary));
+  margin-bottom: 1.5rem;
+}
+
+.kultiva-icon-box svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+/* ==========================================
+ * CONTAINER
+ * ========================================== */
+
+.kultiva-container {
+  width: 100%;
+  max-width: 1320px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .kultiva-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .kultiva-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}

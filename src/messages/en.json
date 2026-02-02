@@ -1,0 +1,341 @@
+{
+  "metadata": {
+    "title": "Kultiva | Organizational Consulting",
+    "description": "Organizational consulting agency. Planting ideas to harvest great results."
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "services_all": "All Services",
+    "climate": "Climate Diagnostic",
+    "conferences": "Conferences",
+    "tools": "Tools",
+    "blog": "Blog",
+    "contact": "Contact",
+    "faq": "FAQ",
+    "cta": "Schedule a Consultation"
+  },
+  "home": {
+    "hero": {
+      "subtitle": "Organizational Consulting Agency",
+      "title": "Planting ideas to harvest great results",
+      "description": "We transform organizations through innovative strategies in culture, change management, recruitment, and internal communication.",
+      "cta_primary": "Explore Our Services",
+      "cta_secondary": "Schedule a Consultation"
+    },
+    "services": {
+      "subtitle": "Our Services",
+      "title": "Comprehensive solutions for your organization's growth",
+      "description": "We offer specialized organizational consulting services to enhance your company's talent and culture."
+    },
+    "about": {
+      "subtitle": "About Kultiva",
+      "title": "We cultivate your organization's potential",
+      "description": "With years of experience in organizational consulting, we help companies develop solid cultures, manage change effectively, and attract the best talent.",
+      "cta": "Learn More"
+    },
+    "process": {
+      "subtitle": "Our Methodology",
+      "title": "How we work with you",
+      "step1": {
+        "title": "Diagnosis",
+        "description": "We analyze your organization to identify improvement opportunities."
+      },
+      "step2": {
+        "title": "Strategy",
+        "description": "We design a customized action plan for your objectives."
+      },
+      "step3": {
+        "title": "Implementation",
+        "description": "We execute initiatives with continuous support."
+      },
+      "step4": {
+        "title": "Measurement",
+        "description": "We evaluate results and adjust to maximize impact."
+      }
+    },
+    "stats": {
+      "years": "Years of Experience",
+      "clients": "Satisfied Clients",
+      "projects": "Completed Projects",
+      "team": "Professionals"
+    },
+    "testimonials": {
+      "subtitle": "Testimonials",
+      "title": "What our clients say"
+    },
+    "cta": {
+      "title": "Discover our Climate Diagnostic Platform",
+      "description": "A digital tool that measures your employees' perception and transforms feedback into actionable business intelligence.",
+      "button": "Learn More"
+    },
+    "blog": {
+      "subtitle": "Our Blog",
+      "title": "Articles and resources for your organization",
+      "cta": "View All Articles"
+    },
+    "clients": {
+      "subtitle": "Our Clients",
+      "title": "Companies that trust us"
+    }
+  },
+  "about": {
+    "hero": {
+      "title": "Our Philosophy",
+      "breadcrumb": "About"
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description": "To accompany organizations in their transformation process, cultivating cultures that inspire and generate sustainable results."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "description": "To be the reference organizational consulting firm in Colombia, recognized for our positive impact on people and businesses."
+    },
+    "values": {
+      "subtitle": "Our Values",
+      "title": "The principles that guide us",
+      "integrity": {
+        "title": "Integrity",
+        "description": "We act with honesty and transparency in every interaction."
+      },
+      "innovation": {
+        "title": "Innovation",
+        "description": "We constantly seek new ways to generate value."
+      },
+      "collaboration": {
+        "title": "Collaboration",
+        "description": "We work alongside our clients as true partners."
+      },
+      "excellence": {
+        "title": "Excellence",
+        "description": "We commit to the highest quality standards."
+      }
+    },
+    "founder": {
+      "subtitle": "Founder",
+      "title": "Iskya Boom",
+      "role": "CEO & Founder",
+      "description": "In the era of artificial intelligence, leadership's greatest responsibility is not just adopting technology, but designing cultures that put people at the center.",
+      "bio": "With over 15 years of experience in organizational development, Iskya has led cultural transformations in companies across various sectors, helping them build work environments where talent thrives."
+    },
+    "team": {
+      "subtitle": "Our Team",
+      "title": "Meet the experts behind Kultiva"
+    }
+  },
+  "services": {
+    "hero": {
+      "title": "Our Services",
+      "breadcrumb": "Services"
+    },
+    "subtitle": "What We Do",
+    "title": "Consulting services that transform organizations",
+    "description": "Each service is designed to address your organization's specific challenges, with proven methodologies and a people-centered approach.",
+    "cta": "Learn More",
+    "cultura": {
+      "title": "Organizational Culture",
+      "short": "Cultural transformation",
+      "description": "We design and implement strategies to build solid organizational cultures that drive engagement, innovation, and business results.",
+      "benefits": {
+        "1": "Current culture diagnosis",
+        "2": "Desired culture definition",
+        "3": "Cultural transformation plan",
+        "4": "Training leaders as change agents",
+        "5": "Progress measurement and adjustments"
+      }
+    },
+    "seleccion": {
+      "title": "Specialized Recruitment",
+      "short": "Strategic recruitment",
+      "description": "We find the ideal talent for your organization through rigorous selection processes that evaluate technical, cultural, and leadership competencies.",
+      "benefits": {
+        "1": "Comprehensive profile assessment",
+        "2": "Active candidate search",
+        "3": "Competency-based evaluation",
+        "4": "Assessment center",
+        "5": "Onboarding support"
+      }
+    },
+    "cambio": {
+      "title": "Change Management",
+      "short": "Organizational change",
+      "description": "We facilitate organizational change processes by minimizing resistance and maximizing adoption, ensuring successful transitions.",
+      "benefits": {
+        "1": "Change impact assessment",
+        "2": "Communication strategy",
+        "3": "Training and development",
+        "4": "Stakeholder management",
+        "5": "Adoption measurement"
+      }
+    },
+    "comunicacion": {
+      "title": "Internal Communication",
+      "short": "Effective communication",
+      "description": "We develop internal communication strategies that strengthen connection between employees, align teams, and reinforce organizational culture.",
+      "benefits": {
+        "1": "Communication diagnosis",
+        "2": "Channel strategy",
+        "3": "Content plan",
+        "4": "Internal campaigns",
+        "5": "Effectiveness measurement"
+      }
+    }
+  },
+  "climate": {
+    "hero": {
+      "title": "Climate Diagnostic",
+      "breadcrumb": "Climate Diagnostic"
+    },
+    "subtitle": "Digital Platform",
+    "title": "Measure, analyze, and transform your organization's climate",
+    "description": "A digital tool that measures your employees' perception of the work environment, leadership, and organizational culture, transforming feedback into actionable business intelligence.",
+    "features": {
+      "1": {
+        "title": "Customized Surveys",
+        "description": "Create surveys tailored to your organization's specific needs."
+      },
+      "2": {
+        "title": "Real-Time Analysis",
+        "description": "View results and trends instantly with interactive dashboards."
+      },
+      "3": {
+        "title": "Detailed Reports",
+        "description": "Generate comprehensive reports by area, team, or evaluated dimension."
+      },
+      "4": {
+        "title": "Action Plans",
+        "description": "Receive data-based recommendations to improve the climate."
+      }
+    },
+    "cta": "Request Demo"
+  },
+  "conferences": {
+    "hero": {
+      "title": "Conferences",
+      "breadcrumb": "Conferences"
+    },
+    "subtitle": "Training and Development",
+    "title": "Conferences and workshops that inspire change",
+    "description": "Iskya Boom offers inspiring and practical conferences on leadership, organizational culture, and digital transformation for corporate events and congresses."
+  },
+  "tools": {
+    "hero": {
+      "title": "Free Tools",
+      "breadcrumb": "Tools"
+    },
+    "subtitle": "Resources",
+    "title": "Tools to empower your organization",
+    "description": "Download templates, guides, and free resources to start transforming your organization."
+  },
+  "blog": {
+    "hero": {
+      "title": "Blog",
+      "breadcrumb": "Blog"
+    },
+    "subtitle": "Articles and Resources",
+    "title": "Insights for leaders and organizations",
+    "read_more": "Read More",
+    "categories": "Categories",
+    "recent": "Recent Articles",
+    "search": "Search articles...",
+    "no_results": "No articles found"
+  },
+  "contact": {
+    "hero": {
+      "title": "Contact",
+      "breadcrumb": "Contact"
+    },
+    "subtitle": "Let's Talk",
+    "title": "We're ready to help you",
+    "description": "Tell us about your organization and the challenges you face. We'll schedule a consultation to explore how we can help.",
+    "info": {
+      "address": {
+        "title": "Address",
+        "value": "Barranquilla, Atlantico, Colombia"
+      },
+      "phone": {
+        "title": "Phone",
+        "value": "+57 300 645 5082"
+      },
+      "email": {
+        "title": "Email",
+        "value": "info@kultiva.com.co"
+      },
+      "hours": {
+        "title": "Hours",
+        "value": "Monday to Friday, 8:00 AM - 6:00 PM"
+      }
+    },
+    "form": {
+      "name": "Full name",
+      "email": "Email address",
+      "phone": "Phone",
+      "company": "Company",
+      "service": "Service of interest",
+      "service_placeholder": "Select a service",
+      "message": "Message",
+      "message_placeholder": "Tell us about your organization and how we can help...",
+      "submit": "Send Message",
+      "success": "Message sent successfully. We'll contact you soon.",
+      "error": "There was an error sending the message. Please try again."
+    }
+  },
+  "faq": {
+    "hero": {
+      "title": "Frequently Asked Questions",
+      "breadcrumb": "FAQ"
+    },
+    "subtitle": "FAQ",
+    "title": "Answers to your questions",
+    "questions": {
+      "1": {
+        "question": "What type of companies can benefit from your services?",
+        "answer": "We primarily work with small and medium-sized businesses (SMBs) in Colombia and Latin America, although we have also supported larger organizations. Our services adapt to each client's specific needs."
+      },
+      "2": {
+        "question": "How long does a typical consulting project last?",
+        "answer": "Duration varies depending on scope and complexity. A climate diagnostic can take 4-6 weeks, while a cultural transformation can extend from 6 to 12 months. We define timelines together during the planning phase."
+      },
+      "3": {
+        "question": "Do you work in-person or remotely?",
+        "answer": "We offer both modalities. Many of our services can be delivered remotely, although for certain workshops and work sessions we prefer in-person interaction when possible."
+      },
+      "4": {
+        "question": "How do you measure project success?",
+        "answer": "We define success indicators (KPIs) at the beginning of each project in collaboration with the client. These may include improvements in climate surveys, turnover rates, engagement levels, among others."
+      },
+      "5": {
+        "question": "Do you offer guarantees on results?",
+        "answer": "We commit to a rigorous process and proven methodologies. While we cannot guarantee specific results (as they depend on multiple factors), we do guarantee our commitment, experience, and continuous support."
+      }
+    },
+    "cta": {
+      "title": "Have more questions?",
+      "description": "We're here to help. Contact us and we'll answer all your questions.",
+      "button": "Contact Us"
+    }
+  },
+  "footer": {
+    "description": "Organizational consulting agency. Planting ideas to harvest great results.",
+    "services": "Services",
+    "company": "Company",
+    "contact": "Contact",
+    "social": "Follow Us",
+    "copyright": "All rights reserved",
+    "privacy": "Privacy Policy",
+    "terms": "Terms and Conditions"
+  },
+  "common": {
+    "learn_more": "Learn More",
+    "read_more": "Read More",
+    "contact_us": "Contact Us",
+    "get_started": "Get Started",
+    "view_all": "View All",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  }
+}

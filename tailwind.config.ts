@@ -43,6 +43,30 @@ const config: Config = {
                     DEFAULT: "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
+                // Kultiva brand colors
+                kultiva: {
+                    primary: {
+                        DEFAULT: "hsl(var(--kultiva-primary))",
+                        light: "hsl(var(--kultiva-primary-light))",
+                        dark: "hsl(var(--kultiva-primary-dark))",
+                        foreground: "hsl(var(--kultiva-primary-foreground))",
+                    },
+                    secondary: {
+                        DEFAULT: "hsl(var(--kultiva-secondary))",
+                        light: "hsl(var(--kultiva-secondary-light))",
+                        dark: "hsl(var(--kultiva-secondary-dark))",
+                        foreground: "hsl(var(--kultiva-secondary-foreground))",
+                    },
+                    accent: {
+                        DEFAULT: "hsl(var(--kultiva-accent))",
+                        foreground: "hsl(var(--kultiva-accent-foreground))",
+                    },
+                    cream: "hsl(var(--kultiva-cream))",
+                    sand: "hsl(var(--kultiva-sand))",
+                    stone: "hsl(var(--kultiva-stone))",
+                    charcoal: "hsl(var(--kultiva-charcoal))",
+                    ink: "hsl(var(--kultiva-ink))",
+                },
                 sidebar: {
                     DEFAULT: "hsl(var(--sidebar-background))",
                     foreground: "hsl(var(--sidebar-foreground))",
@@ -65,6 +89,10 @@ const config: Config = {
                 lg: "var(--radius)",
                 md: "calc(var(--radius) - 2px)",
                 sm: "calc(var(--radius) - 4px)",
+            },
+            fontFamily: {
+                kanit: ["var(--kultiva-font-heading)", "system-ui", "sans-serif"],
+                jakarta: ["var(--kultiva-font-body)", "system-ui", "sans-serif"],
             },
             keyframes: {
                 "accordion-down": {
