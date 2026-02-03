@@ -71,7 +71,7 @@ export default async function ConferencesPage({
                   data-aos-duration="800"
                 >
                   <img
-                    src="/bizzen/images/innerpage/gallery/who-we.jpg"
+                    src="/images/team/iskya-speaking.jpg"
                     alt="Conferencias"
                   />
                 </div>

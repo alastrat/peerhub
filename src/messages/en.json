@@ -369,10 +369,14 @@
     },
     "subtitle": "Articles and Resources",
     "title": "Insights for leaders and organizations",
+    "by": "By",
+    "comments": "Comments",
     "read_more": "Read More",
     "categories": "Categories",
-    "recent": "Recent Articles",
-    "search": "Search articles...",
+    "recent_posts": "Recent Posts",
+    "popular_tags": "Popular Tags",
+    "search_placeholder": "Search articles...",
+    "back_to_blog": "Back to Blog",
     "no_results": "No articles found"
   },
   "contact": {

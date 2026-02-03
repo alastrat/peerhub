@@ -416,8 +416,10 @@
     "comments": "Comentarios",
     "read_more": "Leer Mas",
     "categories": "Categorias",
-    "recent": "Articulos Recientes",
-    "search": "Buscar articulos...",
+    "recent_posts": "Articulos Recientes",
+    "popular_tags": "Tags Populares",
+    "search_placeholder": "Buscar articulos...",
+    "back_to_blog": "Volver al Blog",
     "no_results": "No se encontraron articulos"
   },
   "contact": {

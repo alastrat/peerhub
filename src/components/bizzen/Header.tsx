@@ -75,7 +75,7 @@ export function Header() {
                     </li>
                     <li className="menu-item has-children">
                       <Link href="/servicios" style={{ color: "#fff" }}>{t("services")}</Link>
-                      <ul className="sub-menu" style={{ backgroundColor: "#3d7a50" }}>
+                      <ul className="sub-menu" style={{ backgroundColor: "#053331" }}>
                         <li>
                           <Link href="/servicios" style={{ color: "#fff" }}>{t("services_all")}</Link>
                         </li>
@@ -106,7 +106,7 @@ export function Header() {
                     </li>
                     <li className="menu-item has-children">
                       <a href="#">{t("resources")}</a>
-                      <ul className="sub-menu">
+                      <ul className="sub-menu" style={{ backgroundColor: "#053331" }}>
                         <li>
                           <Link href="/conferencias" style={{ color: "#fff" }}>{t("conferences")}</Link>
                         </li>

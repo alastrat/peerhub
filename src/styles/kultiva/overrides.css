@@ -43,6 +43,18 @@
 
 .header-one .header-navigation .main-menu ul > li > a:hover {
   color: var(--primary-color);
+  text-decoration: underline;
+  text-decoration-color: #f5a623;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
+}
+
+/* Submenu hover underline */
+.header-one .header-navigation .main-menu ul > li .sub-menu li a:hover {
+  text-decoration: underline;
+  text-decoration-color: #f5a623;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
 }
 
 /* Language switcher text visibility */
