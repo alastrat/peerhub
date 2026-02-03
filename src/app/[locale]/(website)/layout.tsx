@@ -1,4 +1,4 @@
-import { Header, Footer } from "@/components/kultiva/layout";
+import { Header, Footer, AOSProvider } from "@/components/bizzen";
 
 interface WebsiteLayoutProps {
   children: React.ReactNode;
@@ -6,10 +6,15 @@ interface WebsiteLayoutProps {
 
 export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
   return (
-    <div className="kultiva-site min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1">{children}</main>
-      <Footer />
-    </div>
+    <AOSProvider>
+      {/* Smooth Wrapper - matches template structure */}
+      <div id="smooth-wrapper">
+        <div id="smooth-content">
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </div>
+      </div>
+    </AOSProvider>
   );
 }

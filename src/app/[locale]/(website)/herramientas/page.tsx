@@ -1,39 +1,6 @@
 import { getTranslations } from "next-intl/server";
-import { PageHero } from "@/components/kultiva/layout";
-import { SectionTitle, Button } from "@/components/kultiva/ui";
-import { AnimatedElement } from "@/components/kultiva/ui/AnimatedElement";
-import { Download, FileText, CheckSquare, BarChart3 } from "lucide-react";
-
-const tools = [
-  {
-    title: "Guia de Diagnostico Cultural",
-    description:
-      "Una guia paso a paso para evaluar la cultura actual de tu organizacion.",
-    icon: FileText,
-    type: "PDF",
-  },
-  {
-    title: "Checklist de Onboarding",
-    description:
-      "Lista de verificacion para asegurar una incorporacion exitosa de nuevos colaboradores.",
-    icon: CheckSquare,
-    type: "PDF",
-  },
-  {
-    title: "Plantilla de Plan de Comunicacion",
-    description:
-      "Template editable para planificar tu estrategia de comunicacion interna.",
-    icon: FileText,
-    type: "DOCX",
-  },
-  {
-    title: "Indicadores de Clima Laboral",
-    description:
-      "Listado de KPIs recomendados para medir el clima organizacional.",
-    icon: BarChart3,
-    type: "PDF",
-  },
-];
+import { PageHero } from "@/components/bizzen";
+import { Link } from "@/i18n/navigation";
 
 export async function generateMetadata({
   params,
@@ -48,81 +15,142 @@ export async function generateMetadata({
   };
 }
 
-export default async function ToolsPage() {
-  const t = await getTranslations("tools");
+const tools = [
+  {
+    title: "Guia de Diagnostico Cultural",
+    description:
+      "Una guia paso a paso para evaluar la cultura actual de tu organizacion.",
+    icon: "/bizzen/images/innerpage/icon/icon1.svg",
+    type: "PDF",
+    duration: 800,
+  },
+  {
+    title: "Checklist de Onboarding",
+    description:
+      "Lista de verificacion para asegurar una incorporacion exitosa de nuevos colaboradores.",
+    icon: "/bizzen/images/innerpage/icon/icon2.svg",
+    type: "PDF",
+    duration: 1000,
+  },
+  {
+    title: "Plantilla de Plan de Comunicacion",
+    description:
+      "Template editable para planificar tu estrategia de comunicacion interna.",
+    icon: "/bizzen/images/innerpage/icon/icon3.svg",
+    type: "DOCX",
+    duration: 1200,
+  },
+  {
+    title: "Indicadores de Clima Laboral",
+    description:
+      "Listado de KPIs recomendados para medir el clima organizacional.",
+    icon: "/bizzen/images/innerpage/icon/icon4.svg",
+    type: "PDF",
+    duration: 1400,
+  },
+];
+
+export default async function ToolsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "tools" });
 
   return (
     <>
       <PageHero title={t("hero.title")} breadcrumb={t("hero.breadcrumb")} />
 
-      {/* Tools Grid */}
-      <section className="kultiva-section">
-        <div className="kultiva-container">
-          <AnimatedElement animation="fade-up">
-            <SectionTitle
-              subtitle={t("subtitle")}
-              title={t("title")}
-              description={t("description")}
-              centered
-            />
-          </AnimatedElement>
+      {/* Tools Section */}
+      <section className="bizzen-about-service pt-115 pb-70">
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-xl-8 col-lg-10">
+              {/* Section Title */}
+              <div className="section-title text-center mb-50">
+                <span
+                  className="sub-title"
+                  data-aos="fade-down"
+                  data-aos-duration="800"
+                >
+                  {t("subtitle")}
+                </span>
+                <h2 className="text-anm">{t("title")}</h2>
+                <p
+                  className="mt-3"
+                  data-aos="fade-up"
+                  data-aos-duration="1000"
+                >
+                  {t("description")}
+                </p>
+              </div>
+            </div>
+          </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="row">
             {tools.map((tool, index) => (
-              <AnimatedElement
-                key={tool.title}
-                animation="fade-up"
-                delay={100 + index * 100}
-              >
-                <div className="kultiva-card kultiva-card-bordered p-8">
-                  <div className="flex items-start gap-6">
-                    <div className="kultiva-icon-box flex-shrink-0">
-                      <tool.icon className="w-7 h-7" />
+              <div key={index} className="col-lg-6">
+                <div
+                  className="bizzen-iconic-item style-one mb-30"
+                  data-aos="fade-up"
+                  data-aos-duration={tool.duration}
+                >
+                  <div className="icon">
+                    <img src={tool.icon} alt="icon" />
+                  </div>
+                  <div className="content">
+                    <div className="d-flex align-items-center gap-2 mb-2">
+                      <h4>{tool.title}</h4>
+                      <span
+                        className="badge"
+                        style={{
+                          background: "var(--gray-color)",
+                          color: "var(--heading-color)",
+                          fontSize: "12px",
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        {tool.type}
+                      </span>
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="text-xl font-semibold">{tool.title}</h4>
-                        <span className="px-2 py-0.5 text-xs font-medium bg-kultiva-sand text-kultiva-charcoal rounded">
-                          {tool.type}
-                        </span>
-                      </div>
-                      <p className="text-kultiva-charcoal/70 text-sm leading-relaxed mb-4">
-                        {tool.description}
-                      </p>
-                      <Button variant="outline" size="sm" className="group">
-                        <Download className="w-4 h-4" />
-                        Descargar
-                      </Button>
-                    </div>
+                    <p>{tool.description}</p>
+                    <a href="#" className="read-more style-one mt-3">
+                      DESCARGAR <i className="far fa-arrow-right" />
+                    </a>
                   </div>
                 </div>
-              </AnimatedElement>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
       {/* Newsletter CTA */}
-      <section className="kultiva-section kultiva-section-gray">
-        <div className="kultiva-container">
-          <div className="max-w-2xl mx-auto text-center">
-            <AnimatedElement animation="fade-up">
-              <h2 className="text-3xl font-bold mb-4">
-                Recibe mas recursos gratuitos
-              </h2>
-              <p className="kultiva-lead mb-8">
-                Suscribete a nuestro newsletter y recibe herramientas, articulos y
-                consejos directamente en tu correo.
-              </p>
-              <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+      <section className="bizzen-contact_one gray-color pt-115 pb-120">
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-xl-6 col-lg-8">
+              <div className="section-title text-center mb-40">
+                <h2 className="text-anm">Recibe mas recursos gratuitos</h2>
+                <p className="mt-3">
+                  Suscribete a nuestro newsletter y recibe herramientas,
+                  articulos y consejos directamente en tu correo.
+                </p>
+              </div>
+              <form className="d-flex flex-column flex-sm-row gap-3 justify-content-center">
                 <input
                   type="email"
+                  className="form_control"
                   placeholder="Tu correo electronico"
-                  className="flex-1 px-4 py-3 rounded-xl border border-kultiva-border focus:border-kultiva-primary focus:ring-2 focus:ring-kultiva-primary/20 outline-none transition-colors"
+                  style={{ maxWidth: "300px" }}
                 />
-                <Button type="submit">Suscribirse</Button>
+                <button className="theme-btn style-one">
+                  SUSCRIBIRSE <i className="far fa-arrow-right" />
+                </button>
               </form>
-            </AnimatedElement>
+            </div>
           </div>
         </div>
       </section>

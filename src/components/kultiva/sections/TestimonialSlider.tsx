@@ -7,39 +7,42 @@ import { TestimonialCard } from "../ui/Card";
 import { AnimatedElement } from "../ui/AnimatedElement";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const testimonials = [
-  {
-    id: 1,
-    quote:
-      "El equipo de Kultiva demostro ser confiable y altamente profesional en cada etapa del proyecto.",
-    author: "Maria Claudia Buendia",
-    role: "Gerente de RRHH",
-    company: "Business Integrity Services",
-    image: "/kultiva/images/testimonials/person1.jpg",
-  },
-  {
-    id: 2,
-    quote:
-      "Gracias a Kultiva pudimos reconectarnos con un liderazgo basado en la confianza a traves de una interaccion cercana y coherente.",
-    author: "Narly Herrera",
-    role: "Jefe de Gestion Humana",
-    company: "Constructora Habitat",
-    image: "/kultiva/images/testimonials/person2.jpg",
-  },
-  {
-    id: 3,
-    quote:
-      "Recomiendo ampliamente a Kultiva por su excepcional profesionalismo y pasion en cada proyecto.",
-    author: "Denesi Becerra",
-    role: "Directora de Talento Humano",
-    company: "Fintra SAS",
-    image: "/kultiva/images/testimonials/person3.jpg",
-  },
+const testimonialImages = [
+  "/images/team/testimonial-1.jpg",
+  "/images/team/testimonial-2.jpg",
+  "/images/clients/fintra-logo.jpg",
 ];
 
 export function TestimonialSlider() {
   const t = useTranslations("home.testimonials");
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  const testimonials = [
+    {
+      id: 1,
+      quote: t("items.1.quote"),
+      author: t("items.1.name"),
+      role: t("items.1.role"),
+      company: t("items.1.company"),
+      image: testimonialImages[0],
+    },
+    {
+      id: 2,
+      quote: t("items.2.quote"),
+      author: t("items.2.name"),
+      role: t("items.2.role"),
+      company: t("items.2.company"),
+      image: testimonialImages[1],
+    },
+    {
+      id: 3,
+      quote: t("items.3.quote"),
+      author: t("items.3.name"),
+      role: t("items.3.role"),
+      company: t("items.3.company"),
+      image: testimonialImages[2],
+    },
+  ];
 
   const next = () => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);

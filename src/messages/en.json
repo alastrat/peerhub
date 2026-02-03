@@ -64,7 +64,27 @@
     },
     "testimonials": {
       "subtitle": "Testimonials",
-      "title": "What our clients say"
+      "title": "What our clients say",
+      "items": {
+        "1": {
+          "name": "Maria Claudia Buendia",
+          "role": "HR Manager",
+          "company": "Business Integrity Services (BIS)",
+          "quote": "I fully recommend Iskya and her company. The results have generated significant benefits for our organization."
+        },
+        "2": {
+          "name": "Narly Herrera",
+          "role": "Human Management Chief",
+          "company": "Constructora Habitat De Los Andes",
+          "quote": "Iskya's energy is truly inspiring. She helped us reconnect with trust-based leadership."
+        },
+        "3": {
+          "name": "Denesi Becerra",
+          "role": "Human Talent Director",
+          "company": "Fintra SAS",
+          "quote": "Iskya's exceptional approach in training and hunting has been fundamental to our growth."
+        }
+      }
     },
     "cta": {
       "title": "Discover our Climate Diagnostic Platform",
@@ -78,7 +98,14 @@
     },
     "clients": {
       "subtitle": "Our Clients",
-      "title": "Companies that trust us"
+      "title": "Companies that trust us",
+      "list": {
+        "1": "Business Integrity Services",
+        "2": "Constructora Habitat De Los Andes",
+        "3": "Fintra SAS",
+        "4": "Marymount",
+        "5": "AMCHAM Colombia"
+      }
     }
   },
   "about": {
@@ -118,8 +145,11 @@
       "subtitle": "Founder",
       "title": "Iskya Boom",
       "role": "CEO & Founder",
-      "description": "In the era of artificial intelligence, leadership's greatest responsibility is not just adopting technology, but designing cultures that put people at the center.",
-      "bio": "With over 15 years of experience in organizational development, Iskya has led cultural transformations in companies across various sectors, helping them build work environments where talent thrives."
+      "highlight": "Top 15 HR Influencer in Colombia",
+      "quote": "Ideas inspire, but conversations transform.",
+      "description": "In the era of artificial intelligence, leadership's greatest responsibility is not just adopting technology, but designing and managing cultures that put people at the center.",
+      "bio": "With over 15 years of experience in organizational development, Iskya specializes in leadership, organizational culture, change management, and talent development. She has led cultural transformations in companies across various sectors in Colombia and Latin America.",
+      "linkedin": "https://www.linkedin.com/in/iskyaboom/"
     },
     "team": {
       "subtitle": "Our Team",
@@ -135,52 +165,154 @@
     "title": "Consulting services that transform organizations",
     "description": "Each service is designed to address your organization's specific challenges, with proven methodologies and a people-centered approach.",
     "cta": "Learn More",
+    "process": {
+      "step1": {
+        "title": "Diagnosis",
+        "description": "We analyze your organization to identify opportunities"
+      },
+      "step2": {
+        "title": "Strategy",
+        "description": "We design a customized plan for your objectives"
+      },
+      "step3": {
+        "title": "Implementation",
+        "description": "We execute with continuous support"
+      },
+      "step4": {
+        "title": "Measurement",
+        "description": "We evaluate results and adjust to maximize impact"
+      }
+    },
+    "faq": {
+      "title": "Get all your answers here",
+      "see_all": "See All FAQ"
+    },
+    "cta": {
+      "title": "Ready to transform your organization?",
+      "description": "Contact us for a free consultation and discover how we can help you achieve your goals."
+    },
     "cultura": {
       "title": "Organizational Culture",
-      "short": "Cultural transformation",
+      "short": "Culture",
+      "headline": "Build a culture that inspires and generates sustainable results",
       "description": "We design and implement strategies to build solid organizational cultures that drive engagement, innovation, and business results.",
+      "description2": "A strong culture is the foundation of organizational success. We work with you to define, communicate, and live the values that make your company unique, creating an environment where people give their best.",
+      "benefits_title": "What this service includes",
       "benefits": {
         "1": "Current culture diagnosis",
         "2": "Desired culture definition",
         "3": "Cultural transformation plan",
         "4": "Training leaders as change agents",
         "5": "Progress measurement and adjustments"
+      },
+      "features_title": "Key Features",
+      "features_description": "Our organizational culture approach combines deep diagnostics with practical interventions. We work with all levels of the organization to ensure values are lived day-to-day, not just written in documents.",
+      "faq": {
+        "1": {
+          "question": "How long does a cultural transformation take?",
+          "answer": "A typical cultural transformation takes between 6 and 12 months, depending on the organization's size and the depth of desired change. We work in phases to ensure sustainable results."
+        },
+        "2": {
+          "question": "How are leaders involved in the process?",
+          "answer": "Leaders are fundamental in any cultural transformation. We start with executive alignment sessions and then train them as change ambassadors to model the desired behaviors."
+        },
+        "3": {
+          "question": "How do you measure transformation impact?",
+          "answer": "We use climate surveys, engagement indicators, staff turnover, and business metrics to measure impact. We establish a baseline at the start and measure progress periodically."
+        }
       }
     },
     "seleccion": {
       "title": "Specialized Recruitment",
-      "short": "Strategic recruitment",
+      "short": "Recruitment",
+      "headline": "Find the ideal talent that drives your organization",
       "description": "We find the ideal talent for your organization through rigorous selection processes that evaluate technical, cultural, and leadership competencies.",
+      "description2": "The right talent makes the difference. Our selection process goes beyond the resume, evaluating cultural fit and growth potential to ensure successful long-term hires.",
+      "benefits_title": "What this service includes",
       "benefits": {
         "1": "Comprehensive profile assessment",
         "2": "Active candidate search",
         "3": "Competency-based evaluation",
         "4": "Assessment center",
         "5": "Onboarding support"
+      },
+      "features_title": "Key Features",
+      "features_description": "We combine traditional methodologies with modern assessment tools. Our approach focuses not only on technical skills but also on development potential and alignment with organizational culture.",
+      "faq": {
+        "1": {
+          "question": "What is the average time to fill a vacancy?",
+          "answer": "Time varies depending on profile complexity. For operational positions, the process takes 2-4 weeks. For managerial or executive positions, it can extend from 4 to 8 weeks."
+        },
+        "2": {
+          "question": "What guarantee do you offer on your selection processes?",
+          "answer": "We offer a 90-day replacement guarantee. If the selected candidate doesn't meet expectations during this period, we conduct a new process at no additional cost."
+        },
+        "3": {
+          "question": "How do you evaluate candidates' cultural fit?",
+          "answer": "We use structured behavioral interviews, values assessments, and group dynamics specifically designed to evaluate alignment with your organization's culture."
+        }
       }
     },
     "cambio": {
       "title": "Change Management",
-      "short": "Organizational change",
+      "short": "Change",
+      "headline": "Navigate change with confidence and minimize resistance",
       "description": "We facilitate organizational change processes by minimizing resistance and maximizing adoption, ensuring successful transitions.",
+      "description2": "Change is inevitable, but failure is not. We accompany you at every stage of the change process, ensuring people understand, accept, and adopt new ways of working.",
+      "benefits_title": "What this service includes",
       "benefits": {
         "1": "Change impact assessment",
         "2": "Communication strategy",
         "3": "Training and development",
         "4": "Stakeholder management",
         "5": "Adoption measurement"
+      },
+      "features_title": "Key Features",
+      "features_description": "We apply proven change management methodologies adapted to each organization's reality. We focus on the human side of change, addressing resistance and building genuine commitment.",
+      "faq": {
+        "1": {
+          "question": "What types of changes can you help us with?",
+          "answer": "We support all types of organizational changes: digital transformations, restructurings, mergers and acquisitions, leadership changes, new system implementations, and cultural changes."
+        },
+        "2": {
+          "question": "How do you handle resistance to change?",
+          "answer": "Resistance is natural and we address it proactively. We identify stakeholder groups, understand their concerns, and design specific communication and participation strategies for each group."
+        },
+        "3": {
+          "question": "When should we start the change management process?",
+          "answer": "Ideally, we should start before the change is officially announced. This allows us to plan communication, prepare leaders, and establish necessary support mechanisms from the beginning."
+        }
       }
     },
     "comunicacion": {
       "title": "Internal Communication",
-      "short": "Effective communication",
+      "short": "Communication",
+      "headline": "Connect your team with messages that inspire action",
       "description": "We develop internal communication strategies that strengthen connection between employees, align teams, and reinforce organizational culture.",
+      "description2": "Effective communication is your organization's nervous system. We design strategies and channels that ensure the right messages reach the right people at the right time.",
+      "benefits_title": "What this service includes",
       "benefits": {
         "1": "Communication diagnosis",
         "2": "Channel strategy",
         "3": "Content plan",
         "4": "Internal campaigns",
         "5": "Effectiveness measurement"
+      },
+      "features_title": "Key Features",
+      "features_description": "We combine analysis of current communication with market best practices to design a comprehensive strategy. We work on both messages and channels to maximize impact.",
+      "faq": {
+        "1": {
+          "question": "What communication channels do you recommend?",
+          "answer": "Channel selection depends on your organization. We evaluate culture, available tools, and employee preferences to recommend an optimal mix of digital and in-person channels."
+        },
+        "2": {
+          "question": "How do we measure internal communication effectiveness?",
+          "answer": "We use quantitative metrics (open rates, engagement) and qualitative measures (comprehension surveys, focus groups) to evaluate if messages are reaching and generating the desired impact."
+        },
+        "3": {
+          "question": "Can you help us with crisis communication?",
+          "answer": "Yes, we develop crisis communication plans and accompany organizations during difficult situations, ensuring clear, timely, and empathetic messages."
+        }
       }
     }
   },
@@ -252,6 +384,7 @@
     "title": "We're ready to help you",
     "description": "Tell us about your organization and the challenges you face. We'll schedule a consultation to explore how we can help.",
     "info": {
+      "title": "Our Contact Information",
       "address": {
         "title": "Address",
         "value": "Barranquilla, Atlantico, Colombia"
@@ -270,9 +403,13 @@
       }
     },
     "form": {
+      "title": "Get in Touch",
       "name": "Full name",
+      "name_placeholder": "Your Name",
       "email": "Email address",
+      "email_placeholder": "name@email.com",
       "phone": "Phone",
+      "phone_placeholder": "+1 555 123 4567",
       "company": "Company",
       "service": "Service of interest",
       "service_placeholder": "Select a service",

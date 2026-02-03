@@ -25,7 +25,7 @@ export function AboutPreview() {
               {/* Main image */}
               <div className="relative rounded-3xl overflow-hidden">
                 <img
-                  src="/kultiva/images/about-image.jpg"
+                  src="/images/team/iskya-speaking.jpg"
                   alt="Sobre Kultiva"
                   className="w-full aspect-[4/3] object-cover"
                 />

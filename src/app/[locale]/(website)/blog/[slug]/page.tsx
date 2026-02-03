@@ -11,7 +11,7 @@ const post = {
   date: "15 Enero 2026",
   author: "Iskya Boom",
   authorRole: "CEO & Fundadora",
-  image: "/kultiva/images/blog/post1.jpg",
+  image: "/images/team/team-workshop.jpg",
   content: `
     <p>La cultura organizacional es el conjunto de valores, creencias y comportamientos que definen como opera una empresa. Una cultura solida no solo atrae y retiene talento, sino que tambien impulsa el rendimiento y la innovacion.</p>
 
@@ -100,7 +100,7 @@ export default function BlogPostPage() {
               <div className="kultiva-card kultiva-card-bordered p-8 mt-12">
                 <div className="flex items-center gap-6">
                   <img
-                    src="/kultiva/images/founder.jpg"
+                    src="/images/team/iskya-speaking.jpg"
                     alt={post.author}
                     className="w-20 h-20 rounded-full object-cover"
                   />

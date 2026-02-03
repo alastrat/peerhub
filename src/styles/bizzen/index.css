@@ -1,0 +1,27 @@
+/**
+ * Bizzen Template Styles
+ * Import order matters - follows original template structure
+ */
+
+/* Plugins */
+@import "./plugins/bootstrap.min.css";
+@import "./plugins/slick.css";
+@import "./plugins/magnific-popup.css";
+@import "./plugins/aos.css";
+
+/* Template Core */
+@import "./spacings.css";
+@import "./style.css";
+
+/* Kultiva Theme Overrides - Color palette customization */
+:root {
+  /* Override Bizzen colors with Kultiva brand colors */
+  --primary-color: #4a9960;      /* Kultiva Green (was #C2DF93) */
+  --secondary-color: #be6840;    /* Kultiva Terracotta (was #E3572B) */
+  --heading-color: #252119;      /* Kultiva Ink */
+  --primary-black-color: #2d6b3f; /* Kultiva Primary Dark */
+  --gray-color: #faf8f5;         /* Kultiva Cream */
+  --white-color: #ffffff;
+  --text-color: #3d372f;         /* Kultiva Charcoal */
+  --border-color: #edeae5;       /* Kultiva Sand */
+}
