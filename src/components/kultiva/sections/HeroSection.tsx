@@ -12,7 +12,7 @@ export function HeroSection() {
     <section
       className="relative min-h-screen flex items-center pt-20 bg-cover bg-center bg-no-repeat"
       style={{
-        backgroundImage: `linear-gradient(to right, rgba(29, 107, 63, 0.95), rgba(29, 107, 63, 0.75)), url('/kultiva/images/hero-bg.jpg')`,
+        backgroundImage: `linear-gradient(to right, rgba(29, 107, 63, 0.95), rgba(29, 107, 63, 0.75)), url('/images/hero/hero-conference.jpg')`,
       }}
     >
       <div className="kultiva-container relative z-10 py-20">
@@ -73,7 +73,7 @@ export function HeroSection() {
               {/* Main image */}
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                 <img
-                  src="/kultiva/images/hero-image.jpg"
+                  src="/images/hero/hero-main.png"
                   alt="Consultoria organizacional"
                   className="w-full aspect-[4/3] object-cover"
                 />

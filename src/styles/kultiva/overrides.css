@@ -1,0 +1,154 @@
+/**
+ * Kultiva Brand Color Overrides
+ * Overrides Bizzen template colors with Kultiva brand palette
+ */
+
+:root {
+  /* Primary - Kultiva Green (growth, trust) - replaces Bizzen light green */
+  --primary-color: #4a9960;
+
+  /* Secondary - Kultiva Terracotta (harvest, warmth) - replaces Bizzen orange */
+  --secondary-color: #be6840;
+
+  /* Headings - Kultiva Ink */
+  --heading-color: #252119;
+
+  /* Primary Black - Kultiva Forest Green */
+  --primary-black-color: #2d6b3f;
+
+  /* Header Dark - Deep Teal */
+  --header-dark-color: #053331;
+
+  /* Gray backgrounds - Kultiva Cream */
+  --gray-color: #faf8f5;
+
+  /* White stays white */
+  --white-color: #ffffff;
+
+  /* Body text - Kultiva Charcoal */
+  --text-color: #5a554d;
+
+  /* Border - Kultiva Sand */
+  --border-color: #edeae5;
+}
+
+/* Header fixes - ensure text is visible */
+.header-one .header-navigation {
+  background-color: var(--header-dark-color);
+}
+
+.header-one .header-navigation .main-menu ul > li > a {
+  color: var(--white-color);
+}
+
+.header-one .header-navigation .main-menu ul > li > a:hover {
+  color: var(--primary-color);
+}
+
+/* Language switcher text visibility */
+.header-one .nav-right-item {
+  color: var(--white-color);
+}
+
+/* Logo sizing */
+.header-one .site-branding .brand-logo img {
+  max-height: 50px;
+  width: auto;
+}
+
+/* Sticky header */
+.header-area.header-one {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 999;
+  transition: all 0.3s ease-in-out;
+}
+
+.header-area.header-one.sticky {
+  background-color: var(--header-dark-color);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Add padding to body to account for fixed header */
+body {
+  padding-top: 90px;
+}
+
+/* Clients section - text box with decorative line */
+.bizzen-company-sec .text-box {
+  position: relative;
+  z-index: 1;
+}
+
+.bizzen-company-sec .text-box::after {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  content: "";
+  width: 100%;
+  height: 1px;
+  background-color: var(--border-color);
+  z-index: -1;
+}
+
+.bizzen-company-sec .text-box h6 {
+  display: inline-block;
+  padding: 0 30px;
+  background-color: var(--white-color);
+}
+
+/* Clients slider container */
+.bizzen-company-sec .container-fluid {
+  padding-left: 120px;
+  padding-right: 120px;
+}
+
+@media (max-width: 1650px) {
+  .bizzen-company-sec .container-fluid {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+}
+
+@media screen and (max-width: 1199.98px) {
+  .bizzen-company-sec .container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+/* Clients slider items */
+.bizzen-client-item .client-img {
+  padding: 0 50px;
+  text-align: center;
+}
+
+.bizzen-client-item .client-img img {
+  margin: 0 auto;
+  filter: grayscale(100%);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.bizzen-client-item .client-img img:hover {
+  filter: grayscale(0%);
+  opacity: 1;
+}
+
+@media (max-width: 767.98px) {
+  .bizzen-client-item .client-img {
+    padding: 0 20px;
+  }
+}
+
+/* Additional Kultiva-specific utilities */
+.kultiva-accent {
+  color: #e3b526; /* Golden Wheat accent */
+}
+
+.bg-kultiva-accent {
+  background-color: #e3b526;
+}

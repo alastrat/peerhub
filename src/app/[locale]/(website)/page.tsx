@@ -1,15 +1,15 @@
 import { getTranslations } from "next-intl/server";
 import {
   HeroSection,
-  ServiceCards,
-  AboutPreview,
+  ServiceSection,
+  AboutSection,
   CounterSection,
   ProcessSection,
-  TestimonialSlider,
-  CTASection,
-  BlogPreview,
-  ClientLogos,
-} from "@/components/kultiva/sections";
+  TestimonialSection,
+  ContactSection,
+  BlogSection,
+  ClientsSection,
+} from "@/components/bizzen";
 
 export async function generateMetadata({
   params,
@@ -29,14 +29,14 @@ export default function HomePage() {
   return (
     <>
       <HeroSection />
-      <ServiceCards />
-      <AboutPreview />
+      <ServiceSection />
+      <AboutSection />
       <CounterSection />
       <ProcessSection />
-      <TestimonialSlider />
-      <CTASection />
-      <BlogPreview />
-      <ClientLogos />
+      <TestimonialSection />
+      <ContactSection />
+      <BlogSection />
+      <ClientsSection />
     </>
   );
 }

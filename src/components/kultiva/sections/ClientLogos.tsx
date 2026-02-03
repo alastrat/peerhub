@@ -4,14 +4,12 @@ import { useTranslations } from "next-intl";
 import { SectionTitle } from "../ui/SectionTitle";
 import { AnimatedElement } from "../ui/AnimatedElement";
 
-// Placeholder logos - will be replaced with actual client logos
 const clients = [
-  { name: "Business Integrity", logo: "/kultiva/images/clients/client1.png" },
-  { name: "Constructora Habitat", logo: "/kultiva/images/clients/client2.png" },
-  { name: "Fintra SAS", logo: "/kultiva/images/clients/client3.png" },
-  { name: "Company 4", logo: "/kultiva/images/clients/client4.png" },
-  { name: "Company 5", logo: "/kultiva/images/clients/client5.png" },
-  { name: "Company 6", logo: "/kultiva/images/clients/client6.png" },
+  { name: "Business Integrity Services", logo: "/images/clients/client-1.png" },
+  { name: "Constructora Habitat De Los Andes", logo: "/images/clients/client-2.png" },
+  { name: "Fintra SAS", logo: "/images/clients/client-3.png" },
+  { name: "Marymount", logo: "/images/clients/client-4.png" },
+  { name: "AMCHAM Colombia", logo: "/images/clients/client-5.png" },
 ];
 
 export function ClientLogos() {
@@ -29,7 +27,7 @@ export function ClientLogos() {
         </AnimatedElement>
 
         <AnimatedElement animation="fade-up" delay={200}>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 items-center">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 items-center">
             {clients.map((client, index) => (
               <div
                 key={index}

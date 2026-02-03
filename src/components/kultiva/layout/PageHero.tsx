@@ -12,7 +12,7 @@ interface PageHeroProps {
 export function PageHero({
   title,
   breadcrumb,
-  backgroundImage = "/kultiva/images/hero-bg.jpg",
+  backgroundImage = "/images/hero/hero-conference.jpg",
 }: PageHeroProps) {
   return (
     <section

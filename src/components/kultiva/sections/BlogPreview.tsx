@@ -11,7 +11,7 @@ import { ArrowRight } from "lucide-react";
 const posts = [
   {
     id: 1,
-    image: "/kultiva/images/blog/post1.jpg",
+    image: "/images/team/team-workshop.jpg",
     category: "Cultura",
     title: "5 claves para construir una cultura organizacional solida",
     excerpt:
@@ -21,7 +21,7 @@ const posts = [
   },
   {
     id: 2,
-    image: "/kultiva/images/blog/post2.jpg",
+    image: "/images/team/conference-1.jpg",
     category: "Liderazgo",
     title: "El rol del lider en la transformacion digital",
     excerpt:
@@ -31,7 +31,7 @@ const posts = [
   },
   {
     id: 3,
-    image: "/kultiva/images/blog/post3.jpg",
+    image: "/images/team/amcham-event.jpg",
     category: "Comunicacion",
     title: "Comunicacion interna efectiva en equipos remotos",
     excerpt:

@@ -45,7 +45,7 @@ export function CTASection() {
           <AnimatedElement animation="fade-left" delay={200}>
             <div className="relative">
               <img
-                src="/kultiva/images/cta-image.jpg"
+                src="/images/platform/platform-mockup.png"
                 alt="Plataforma de Diagnostico de Clima"
                 className="rounded-2xl shadow-2xl w-full"
               />
