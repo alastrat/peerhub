@@ -2,38 +2,34 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import type { ResolvedService } from "@/lib/sanity";
 
-const services = [
-  {
-    key: "cultura",
-    href: "/servicios/cultura",
-    icon: "/bizzen/images/home-one/icon/icon1.svg",
-    duration: 1000,
-  },
-  {
-    key: "seleccion",
-    href: "/servicios/seleccion-especializada",
-    icon: "/bizzen/images/home-one/icon/icon2.svg",
-    duration: 1200,
-  },
-  {
-    key: "cambio",
-    href: "/servicios/cambio",
-    icon: "/bizzen/images/home-one/icon/icon3.svg",
-    duration: 1400,
-  },
-  {
-    key: "comunicacion",
-    href: "/servicios/comunicacion-interna",
-    icon: "/bizzen/images/home-one/icon/icon4.svg",
-    duration: 1600,
-  },
+// Fallback icons
+const fallbackIcons = [
+  "/bizzen/images/home-one/icon/icon1.svg",
+  "/bizzen/images/home-one/icon/icon2.svg",
+  "/bizzen/images/home-one/icon/icon3.svg",
+  "/bizzen/images/home-one/icon/icon4.svg",
 ];
 
-export function ServiceSection() {
+interface ServiceSectionProps {
+  services?: ResolvedService[];
+}
+
+export function ServiceSection({ services: sanityServices = [] }: ServiceSectionProps) {
   const t = useTranslations("home.services");
-  const tServices = useTranslations("services");
   const tCommon = useTranslations("common");
+
+  // Map Sanity services to component format
+  const services = sanityServices.length > 0
+    ? sanityServices.map((s, index) => ({
+        title: s.title,
+        description: s.shortDescription,
+        href: `/servicios/${s.slug}`,
+        icon: fallbackIcons[index % fallbackIcons.length],
+        duration: 1000 + index * 200,
+      }))
+    : [];
 
   return (
     <section
@@ -60,8 +56,8 @@ export function ServiceSection() {
         </div>
 
         <div className="row">
-          {services.map((service) => (
-            <div key={service.key} className="col-xl-3 col-md-6">
+          {services.map((service, index) => (
+            <div key={service.href || index} className="col-xl-3 col-md-6">
               {/* Bizzen Service Item */}
               <div
                 className="bizzen-service-item style-one mb-30"
@@ -75,10 +71,10 @@ export function ServiceSection() {
                   <div className="content">
                     <h4 className="title">
                       <Link href={service.href}>
-                        {tServices(`${service.key}.title`)}
+                        {service.title}
                       </Link>
                     </h4>
-                    <p>{tServices(`${service.key}.description`)}</p>
+                    <p>{service.description}</p>
                     <Link href={service.href} className="read-more style-one">
                       {tCommon("learn_more").toUpperCase()}{" "}
                       <i className="far fa-arrow-right" />

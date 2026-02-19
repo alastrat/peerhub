@@ -2,43 +2,46 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import type { ResolvedPost } from "@/lib/sanity";
+import { getImageUrl } from "@/lib/sanity";
 
-const posts = [
-  {
-    image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=400&fit=crop",
-    category: "Cultura",
-    date: "15 Ene, 2026",
-    title: "5 claves para construir una cultura organizacional sólida",
-    excerpt:
-      "Descubre las estrategias fundamentales para desarrollar una cultura que impulse el compromiso y los resultados.",
-    slug: "5-claves-cultura-organizacional",
-    duration: 1000,
-  },
-  {
-    image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=400&fit=crop",
-    category: "Liderazgo",
-    date: "10 Ene, 2026",
-    title: "El rol del líder en la transformación digital",
-    excerpt:
-      "Cómo los líderes pueden guiar a sus equipos a través del cambio tecnológico manteniendo el enfoque humano.",
-    slug: "lider-transformacion-digital",
-    duration: 1200,
-  },
-  {
-    image: "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400&h=400&fit=crop",
-    category: "Comunicación",
-    date: "5 Ene, 2026",
-    title: "Comunicación interna efectiva en equipos remotos",
-    excerpt:
-      "Estrategias prácticas para mantener conectados y alineados a los equipos que trabajan de forma remota.",
-    slug: "comunicacion-equipos-remotos",
-    duration: 1400,
-  },
+// Fallback images
+const fallbackImages = [
+  "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400&h=400&fit=crop",
 ];
 
-export function BlogSection() {
+interface BlogSectionProps {
+  posts?: ResolvedPost[];
+}
+
+export function BlogSection({ posts: sanityPosts = [] }: BlogSectionProps) {
   const t = useTranslations("home.blog");
   const tCommon = useTranslations("common");
+
+  // Format date helper
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-ES", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  // Map Sanity posts to component format
+  const posts = sanityPosts.map((p, index) => ({
+    image: p.mainImage
+      ? getImageUrl(p.mainImage, { width: 400, height: 400 })
+      : fallbackImages[index % fallbackImages.length],
+    category: p.categories?.[0]?.name || "Blog",
+    date: p.publishedAt ? formatDate(p.publishedAt) : "",
+    title: p.title || "",
+    excerpt: p.excerpt || "",
+    slug: p.slug || "",
+    duration: 1000 + index * 200,
+  }));
 
   return (
     <section className="bizzen-blog-sec pt-110 pb-90">
@@ -73,15 +76,15 @@ export function BlogSection() {
           <div className="col-xl-7 col-lg-10">
             {/* Bizzen Blog List */}
             <div className="bizzen-blog-list">
-              {posts.map((post) => (
+              {posts.map((post, index) => (
                 <div
-                  key={post.slug}
+                  key={post.slug || index}
                   className="bizzen-blog-post-item style-one mb-30"
                   data-aos="fade-up"
                   data-aos-duration={post.duration}
                 >
                   <div className="post-thumbnail">
-                    <img src={post.image} alt="Post Thumbnail" />
+                    <img src={post.image || ""} alt="Post Thumbnail" />
                   </div>
                   <div className="post-content">
                     <div className="post-meta">

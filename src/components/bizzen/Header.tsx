@@ -28,56 +28,46 @@ export function Header() {
         onClick={() => setMobileMenuOpen(false)}
       />
 
-      {/* Header Area - exact template structure */}
       <header className={`header-area header-one ${isSticky ? "sticky" : ""}`}>
-        {/* Header Navigation */}
         <div className="header-navigation">
           <div className="container-fluid">
-            {/* Primary Menu */}
             <div className="primary-menu">
-              {/* Site Branding */}
               <div className="site-branding">
                 <Link href="/" className="brand-logo">
-                  <img
-                    src="/images/logo-new.png"
-                    alt="Kultiva"
-                  />
+                  <img src="/images/logo-white.png" alt="Kultiva" />
                 </Link>
               </div>
 
-              {/* Theme Nav Menu */}
-              <div 
+              <div
                 className={`theme-nav-menu ${mobileMenuOpen ? "menu-on" : ""}`}
-                style={{
-                  backgroundColor: "#053331",
-                }}
+                style={{ backgroundColor: "var(--mobile-menu-bg)" }}
               >
-                {/* Menu Top (Mobile) */}
                 <div className="theme-menu-top d-block d-xl-none">
                   <div className="site-branding">
                     <Link href="/" className="brand-logo">
-                      <img
-                        src="/images/logo-new.png"
-                        alt="Kultiva"
-                      />
+                      <img src="/images/logo-white.png" alt="Kultiva" />
                     </Link>
                   </div>
                 </div>
 
-                {/* Main Menu */}
                 <nav className="main-menu">
-                  <ul style={{ color: "#fff" }}>
+                  <ul>
                     <li className="menu-item">
-                      <Link href="/" style={{ color: "#fff" }}>{t("home")}</Link>
+                      <Link href="/">{t("home")}</Link>
                     </li>
                     <li className="menu-item">
-                      <Link href="/nosotros" style={{ color: "#fff" }}>{t("about")}</Link>
+                      <Link href="/nosotros">{t("about")}</Link>
                     </li>
                     <li className="menu-item has-children">
-                      <Link href="/servicios" style={{ color: "#fff" }}>{t("services")}</Link>
-                      <ul className="sub-menu" style={{ backgroundColor: "#053331" }}>
+                      <Link href="/servicios">{t("services")}</Link>
+                      <ul
+                        className="sub-menu"
+                        style={{ backgroundColor: "var(--submenu-bg)" }}
+                      >
                         <li>
-                          <Link href="/servicios" style={{ color: "#fff" }}>{t("services_all")}</Link>
+                          <Link href="/servicios" style={{ color: "#fff" }}>
+                            {t("services_all")}
+                          </Link>
                         </li>
                         <li>
                           <Link href="/servicios/cultura" style={{ color: "#fff" }}>
@@ -100,31 +90,41 @@ export function Header() {
                           </Link>
                         </li>
                         <li>
-                          <Link href="/diagnostico-clima" style={{ color: "#fff" }}>{t("climate")}</Link>
+                          <Link href="/diagnostico-clima" style={{ color: "#fff" }}>
+                            {t("climate")}
+                          </Link>
                         </li>
                       </ul>
                     </li>
                     <li className="menu-item has-children">
                       <a href="#">{t("resources")}</a>
-                      <ul className="sub-menu" style={{ backgroundColor: "#053331" }}>
+                      <ul
+                        className="sub-menu"
+                        style={{ backgroundColor: "var(--submenu-bg)" }}
+                      >
                         <li>
-                          <Link href="/conferencias" style={{ color: "#fff" }}>{t("conferences")}</Link>
+                          <Link href="/conferencias" style={{ color: "#fff" }}>
+                            {t("conferences")}
+                          </Link>
                         </li>
                         <li>
-                          <Link href="/herramientas" style={{ color: "#fff" }}>{t("tools")}</Link>
+                          <Link href="/herramientas" style={{ color: "#fff" }}>
+                            {t("tools")}
+                          </Link>
                         </li>
                         <li>
-                          <Link href="/blog" style={{ color: "#fff" }}>{t("blog")}</Link>
+                          <Link href="/blog" style={{ color: "#fff" }}>
+                            {t("blog")}
+                          </Link>
                         </li>
                       </ul>
                     </li>
                     <li className="menu-item">
-                      <Link href="/contacto" style={{ color: "#fff" }}>{t("contact")}</Link>
+                      <Link href="/contacto">{t("contact")}</Link>
                     </li>
                   </ul>
                 </nav>
 
-                {/* Nav Button (Mobile) */}
                 <div className="theme-nav-button mt-20 d-block d-md-none">
                   <Link href="/contacto" className="theme-btn style-one">
                     {t("cta")}
@@ -132,7 +132,6 @@ export function Header() {
                   </Link>
                 </div>
 
-                {/* Menu Bottom (Mobile) */}
                 <div className="theme-menu-bottom mt-50 d-block d-xl-none">
                   <h5 style={{ color: "#fff" }}>Síguenos</h5>
                   <ul className="social-link">
@@ -170,7 +169,6 @@ export function Header() {
                 </div>
               </div>
 
-              {/* Header Nav Right */}
               <div className="nav-right-item">
                 <LanguageSwitcher />
                 <div className="nav-button d-none d-md-block">

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Kanit, Plus_Jakarta_Sans } from "next/font/google";
+import { Inter, Kanit, Plus_Jakarta_Sans, Quicksand } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers";
 
@@ -11,7 +11,10 @@ import "@/styles/bizzen/plugins/aos.css";
 import "@/styles/bizzen/spacings.css";
 import "@/styles/bizzen/style.css";
 
-// Kultiva theme color overrides
+// Kultiva theme system
+import "@/styles/kultiva/themes/theme-classic.css";
+import "@/styles/kultiva/themes/theme-brand.css";
+import "@/styles/kultiva/themes/theme-modern.css";
 import "@/styles/kultiva/overrides.css";
 
 const inter = Inter({
@@ -31,6 +34,13 @@ const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["200", "300", "400", "500", "600", "700", "800"],
   variable: "--font-jakarta",
+  display: "swap",
+});
+
+const quicksand = Quicksand({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-quicksand",
   display: "swap",
 });
 
@@ -215,7 +225,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${kanit.variable} ${plusJakarta.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${kanit.variable} ${plusJakarta.variable} ${quicksand.variable}`} data-theme="brand" suppressHydrationWarning>
       <head>
         {/* FontAwesome - from template */}
         <link

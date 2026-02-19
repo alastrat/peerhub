@@ -7,6 +7,7 @@ import {
   TeamSection,
   TestimonialSection,
 } from "@/components/bizzen";
+import { getTeamMembers, getTestimonials, type Locale } from "@/lib/sanity";
 
 export async function generateMetadata({
   params,
@@ -27,7 +28,14 @@ export default async function AboutPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const sanityLocale = locale as Locale;
   const t = await getTranslations({ locale, namespace: "about" });
+
+  // Fetch data from Sanity
+  const [teamMembers, testimonials] = await Promise.all([
+    getTeamMembers(sanityLocale),
+    getTestimonials(sanityLocale),
+  ]);
 
   return (
     <>
@@ -35,8 +43,8 @@ export default async function AboutPage({
       <AboutPageSection />
       <CounterSection />
       <FeaturesSection />
-      <TeamSection />
-      <TestimonialSection />
+      <TeamSection teamMembers={teamMembers} />
+      <TestimonialSection testimonials={testimonials} />
     </>
   );
 }

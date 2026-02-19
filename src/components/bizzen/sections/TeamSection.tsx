@@ -1,20 +1,29 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import type { ResolvedTeamMember } from "@/lib/sanity";
+import { getImageUrl } from "@/lib/sanity";
 
-const team = [
-  {
-    name: "Iskya Boom",
-    position: "CEO & Fundadora",
-    image: "/images/team/iskya-speaking.jpg",
-    linkedin: "https://www.linkedin.com/in/iskyaboom/",
-    instagram: "https://www.instagram.com/kultiva.co",
-    duration: 800,
-  },
-];
+// Fallback image
+const fallbackImage = "/images/team/iskya-speaking.jpg";
 
-export function TeamSection() {
+interface TeamSectionProps {
+  teamMembers?: ResolvedTeamMember[];
+}
+
+export function TeamSection({ teamMembers = [] }: TeamSectionProps) {
   const t = useTranslations("about.team");
+
+  // Map Sanity team members to component format
+  const team = teamMembers.map((m, index) => ({
+    name: m.name || "",
+    position: m.role || "",
+    image: m.image ? getImageUrl(m.image, { width: 400, height: 400 }) : fallbackImage,
+    linkedin: m.socialLinks?.linkedin,
+    twitter: m.socialLinks?.twitter,
+    email: m.socialLinks?.email,
+    duration: 800 + index * 200,
+  }));
 
   return (
     <section className="bizzen-team-sec gray-color p-r z-1 pt-115 pb-70">
@@ -44,7 +53,7 @@ export function TeamSection() {
                 data-aos-duration={member.duration}
               >
                 <div className="member-image">
-                  <img src={member.image} alt={member.name} />
+                  <img src={member.image || ""} alt={member.name} />
                   <div className="hover-content">
                     <div className="social-box">
                       {member.linkedin && (
@@ -52,9 +61,14 @@ export function TeamSection() {
                           <i className="fab fa-linkedin-in" />
                         </a>
                       )}
-                      {member.instagram && (
-                        <a href={member.instagram} target="_blank" rel="noopener noreferrer">
-                          <i className="fab fa-instagram" />
+                      {member.twitter && (
+                        <a href={member.twitter} target="_blank" rel="noopener noreferrer">
+                          <i className="fab fa-twitter" />
+                        </a>
+                      )}
+                      {member.email && (
+                        <a href={`mailto:${member.email}`}>
+                          <i className="fas fa-envelope" />
                         </a>
                       )}
                     </div>

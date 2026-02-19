@@ -47,7 +47,8 @@ export function HeroSection() {
       <div
         className="bizzen-hero_one bg_cover"
         style={{
-          backgroundImage: "url(/bizzen/images/home-one/hero/hero-bg.jpg)",
+          backgroundColor: "var(--header-dark-color)",
+          backgroundImage: "none",
         }}
       >
         <div className="hero-bg-shape" />

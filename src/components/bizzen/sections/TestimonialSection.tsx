@@ -1,40 +1,30 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import Slider from "react-slick";
+import type { ResolvedTestimonial } from "@/lib/sanity";
+import { getImageUrl } from "@/lib/sanity";
 
-const testimonialImages = [
+// Fallback images when Sanity doesn't have images
+const fallbackImages = [
   "/images/team/testimonial-1.jpg",
   "/images/team/testimonial-2.jpg",
   "/images/clients/fintra-logo.jpg",
 ];
 
-export function TestimonialSection() {
-  const t = useTranslations("home.testimonials");
+interface TestimonialSectionProps {
+  testimonials?: ResolvedTestimonial[];
+}
 
-  const testimonials = [
-    {
-      quote: t("items.1.quote"),
-      author: t("items.1.name"),
-      role: t("items.1.role"),
-      company: t("items.1.company"),
-      image: testimonialImages[0],
-    },
-    {
-      quote: t("items.2.quote"),
-      author: t("items.2.name"),
-      role: t("items.2.role"),
-      company: t("items.2.company"),
-      image: testimonialImages[1],
-    },
-    {
-      quote: t("items.3.quote"),
-      author: t("items.3.name"),
-      role: t("items.3.role"),
-      company: t("items.3.company"),
-      image: testimonialImages[2],
-    },
-  ];
+export function TestimonialSection({ testimonials = [] }: TestimonialSectionProps) {
+  // Map Sanity testimonials to component format
+  const items = testimonials.map((t, index) => ({
+    quote: t.quote || "",
+    author: t.name || "",
+    role: t.role || "",
+    company: t.company || "",
+    image: t.image ? getImageUrl(t.image, { width: 100, height: 100 }) : fallbackImages[index % fallbackImages.length],
+    rating: t.rating || 5,
+  }));
 
   const sliderSettings = {
     dots: true,
@@ -73,33 +63,33 @@ export function TestimonialSection() {
         <div className="row justify-content-center">
           <div className="col-lg-10">
             {/* Testimonial Slider */}
-            <Slider {...sliderSettings} className="testimonial-slider">
-              {testimonials.map((testimonial, index) => (
-                <div key={index} className="bizzen-testimonial-item style-one">
-                  <div className="testimonial-content">
-                    <p>"{testimonial.quote}"</p>
-                    <div className="ratings">
-                      <i className="fas fa-star" />
-                      <i className="fas fa-star" />
-                      <i className="fas fa-star" />
-                      <i className="fas fa-star" />
-                      <i className="fas fa-star" />
-                    </div>
-                    <div className="author-thumb-item">
-                      <div className="author-thumb">
-                        <img src={testimonial.image} alt={testimonial.author} />
+            {items.length > 0 && (
+              <Slider {...sliderSettings} className="testimonial-slider">
+                {items.map((item, index) => (
+                  <div key={index} className="bizzen-testimonial-item style-one">
+                    <div className="testimonial-content">
+                      <p>"{item.quote}"</p>
+                      <div className="ratings">
+                        {[...Array(item.rating)].map((_, i) => (
+                          <i key={i} className="fas fa-star" />
+                        ))}
                       </div>
-                      <div className="author-info">
-                        <h5>{testimonial.author}</h5>
-                        <span className="position">
-                          {testimonial.role}, {testimonial.company}
-                        </span>
+                      <div className="author-thumb-item">
+                        <div className="author-thumb">
+                          <img src={item.image || ""} alt={item.author} />
+                        </div>
+                        <div className="author-info">
+                          <h5>{item.author}</h5>
+                          <span className="position">
+                            {item.role}, {item.company}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </Slider>
+                ))}
+              </Slider>
+            )}
           </div>
         </div>
       </div>

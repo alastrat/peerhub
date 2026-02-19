@@ -28,7 +28,7 @@ export function Footer() {
                   <div className="footer-logo mb-20">
                     <Link href="/">
                       <img
-                        src="/images/logo-new.png"
+                        src="/images/logo-white.png"
                         alt="Kultiva"
                       />
                     </Link>

@@ -1,4 +1,5 @@
 import { Header, Footer, AOSProvider } from "@/components/bizzen";
+import { ThemeSwitcher } from "@/components/bizzen/ThemeSwitcher";
 
 interface WebsiteLayoutProps {
   children: React.ReactNode;
@@ -7,7 +8,6 @@ interface WebsiteLayoutProps {
 export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
   return (
     <AOSProvider>
-      {/* Smooth Wrapper - matches template structure */}
       <div id="smooth-wrapper">
         <div id="smooth-content">
           <Header />
@@ -15,6 +15,7 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
           <Footer />
         </div>
       </div>
+      <ThemeSwitcher />
     </AOSProvider>
   );
 }

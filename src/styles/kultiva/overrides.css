@@ -1,68 +1,71 @@
 /**
- * Kultiva Brand Color Overrides
- * Overrides Bizzen template colors with Kultiva brand palette
+ * Kultiva Base Structural Styles
+ * Theme-independent layout and behavior overrides.
+ * Color values reference CSS variables set by theme files.
  */
 
-:root {
-  /* Primary - Kultiva Green (growth, trust) - replaces Bizzen light green */
-  --primary-color: #4a9960;
+/* ==========================================================================
+   HEADER & NAVIGATION
+   ========================================================================== */
 
-  /* Secondary - Kultiva Terracotta (harvest, warmth) - replaces Bizzen orange */
-  --secondary-color: #be6840;
-
-  /* Headings - Kultiva Ink */
-  --heading-color: #252119;
-
-  /* Primary Black - Kultiva Forest Green */
-  --primary-black-color: #2d6b3f;
-
-  /* Header Dark - Deep Teal */
-  --header-dark-color: #053331;
-
-  /* Gray backgrounds - Kultiva Cream */
-  --gray-color: #faf8f5;
-
-  /* White stays white */
-  --white-color: #ffffff;
-
-  /* Body text - Kultiva Charcoal */
-  --text-color: #5a554d;
-
-  /* Border - Kultiva Sand */
-  --border-color: #edeae5;
-}
-
-/* Header fixes - ensure text is visible */
 .header-one .header-navigation {
   background-color: var(--header-dark-color);
 }
 
 .header-one .header-navigation .main-menu ul > li > a {
   color: var(--white-color);
+  position: relative;
+  display: inline-block;
+  text-decoration: none !important;
+}
+
+.header-one .header-navigation .main-menu ul > li > a::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--accent-color);
+  transition: width 0.3s ease-in-out;
 }
 
 .header-one .header-navigation .main-menu ul > li > a:hover {
-  color: var(--primary-color);
-  text-decoration: underline;
-  text-decoration-color: #f5a623;
-  text-underline-offset: 4px;
-  text-decoration-thickness: 2px;
+  color: var(--accent-color);
 }
 
-/* Submenu hover underline */
-.header-one .header-navigation .main-menu ul > li .sub-menu li a:hover {
-  text-decoration: underline;
-  text-decoration-color: #f5a623;
-  text-underline-offset: 4px;
-  text-decoration-thickness: 2px;
+.header-one .header-navigation .main-menu ul > li > a:hover::after {
+  width: 100%;
 }
 
-/* Language switcher text visibility */
+/* Submenu */
+.header-one .header-navigation .main-menu ul > li .sub-menu li a {
+  position: relative;
+  display: inline-block;
+  text-decoration: none !important;
+}
+
+.header-one .header-navigation .main-menu ul > li .sub-menu li a::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: var(--accent-color);
+  transition: width 0.3s ease-in-out;
+}
+
+.header-one .header-navigation .main-menu ul > li .sub-menu li a:hover::after {
+  width: 100%;
+}
+
+/* Language switcher */
 .header-one .nav-right-item {
   color: var(--white-color);
 }
 
-/* Logo sizing */
+/* Logo */
 .header-one .site-branding .brand-logo img {
   max-height: 50px;
   width: auto;
@@ -81,15 +84,268 @@
 
 .header-area.header-one.sticky {
   background-color: var(--header-dark-color);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px var(--shadow-color);
 }
 
-/* Add padding to body to account for fixed header */
 body {
   padding-top: 90px;
 }
 
-/* Clients section - text box with decorative line */
+/* ==========================================================================
+   BUTTONS & CTA
+   ========================================================================== */
+
+.theme-btn.style-one {
+  background-color: var(--btn-primary-bg);
+  border-color: var(--btn-primary-bg);
+}
+
+.theme-btn.style-one:hover {
+  background-color: var(--btn-primary-hover);
+  border-color: var(--btn-primary-hover);
+  color: var(--white-color);
+}
+
+.theme-btn.style-two {
+  background-color: var(--btn-secondary-bg);
+  border-color: var(--btn-secondary-bg);
+}
+
+.theme-btn.style-two:hover {
+  background-color: var(--btn-primary-bg);
+  border-color: var(--btn-primary-bg);
+}
+
+/* ==========================================================================
+   SECTION TITLES & SUBTITLES
+   ========================================================================== */
+
+.section-title .sub-title {
+  color: var(--subtitle-color);
+}
+
+.section-title .sub-title::before,
+.section-title .sub-title::after {
+  background-color: var(--subtitle-color);
+}
+
+.section-title h2 {
+  color: var(--heading-color);
+}
+
+.section-title.text-white h2 {
+  color: var(--white-color);
+}
+
+.section-title.text-white .sub-title {
+  color: var(--accent-color);
+}
+
+/* ==========================================================================
+   HERO SECTION
+   ========================================================================== */
+
+.bizzen-hero_one {
+  background-color: var(--header-dark-color);
+}
+
+.hero-content .sub-title {
+  color: var(--accent-color);
+}
+
+.hero-rating-box {
+  background-color: var(--btn-primary-bg);
+}
+
+/* ==========================================================================
+   COUNTER / STATS SECTION
+   ========================================================================== */
+
+.bizzen-counter_one {
+  position: relative;
+}
+
+.bizzen-counter_one::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--overlay-color);
+  z-index: 0;
+}
+
+.bizzen-counter_one > .container {
+  position: relative;
+  z-index: 1;
+}
+
+.bizzen-counter-item.style-one .number h2 {
+  color: var(--accent-color);
+}
+
+/* ==========================================================================
+   SERVICES & ICONIC BOXES
+   ========================================================================== */
+
+.bizzen-iconic-box.style-one .icon {
+  color: var(--primary-color);
+}
+
+.bizzen-iconic-box.style-one:hover {
+  border-color: var(--primary-color);
+}
+
+.bizzen-service-item .icon {
+  color: var(--primary-color);
+}
+
+.bizzen-service-item:hover .icon {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+}
+
+/* ==========================================================================
+   ABOUT SECTION
+   ========================================================================== */
+
+.bizzen-about_one .bizzen-image .shape {
+  background-color: var(--secondary-color);
+}
+
+/* ==========================================================================
+   PROCESS / STEPS
+   ========================================================================== */
+
+.bizzen-work-process .step-number {
+  color: var(--primary-color);
+}
+
+.bizzen-work-process:hover .step-number {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+}
+
+/* ==========================================================================
+   TESTIMONIALS
+   ========================================================================== */
+
+.bizzen-testimonial-item .ratings i {
+  color: var(--accent-color);
+}
+
+/* ==========================================================================
+   BLOG
+   ========================================================================== */
+
+.bizzen-blog-post-item .post-content .read-more {
+  color: var(--primary-color);
+}
+
+.bizzen-blog-post-item .post-content .read-more:hover {
+  color: var(--secondary-color);
+}
+
+.bizzen-blog-post-item .post-thumbnail .date {
+  background-color: var(--btn-primary-bg);
+}
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+
+.main-footer {
+  background-color: var(--dark-bg);
+}
+
+.main-footer .footer-top .big-text {
+  color: var(--white-color);
+}
+
+.main-footer .footer-widget-wrapper .footer-widget a:hover {
+  color: var(--accent-color);
+}
+
+.main-footer .submit-btn {
+  background-color: var(--btn-primary-bg);
+}
+
+.main-footer .submit-btn:hover {
+  background-color: var(--btn-primary-hover);
+}
+
+.main-footer .social-box a:hover {
+  background-color: var(--btn-primary-bg);
+  border-color: var(--btn-primary-bg);
+}
+
+/* ==========================================================================
+   PAGE HERO / BREADCRUMB
+   ========================================================================== */
+
+.page-hero {
+  position: relative;
+}
+
+.page-hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--page-hero-overlay);
+  z-index: 0;
+}
+
+.page-hero > .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   CONTACT SECTION
+   ========================================================================== */
+
+.bizzen-contact_one .contact-form-wrapper {
+  background-color: var(--dark-bg);
+}
+
+/* ==========================================================================
+   CTA SECTION
+   ========================================================================== */
+
+.bizzen-cta-sec {
+  background-color: var(--btn-primary-bg);
+}
+
+/* ==========================================================================
+   SCROLL & SELECTION
+   ========================================================================== */
+
+::selection {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+}
+
+::-moz-selection {
+  background-color: var(--primary-color);
+  color: var(--white-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--primary-color);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--secondary-color);
+}
+
+/* ==========================================================================
+   CLIENTS SECTION
+   ========================================================================== */
+
 .bizzen-company-sec .text-box {
   position: relative;
   z-index: 1;
@@ -112,7 +368,6 @@ body {
   background-color: var(--white-color);
 }
 
-/* Clients slider container */
 .bizzen-company-sec .container-fluid {
   padding-left: 120px;
   padding-right: 120px;
@@ -132,7 +387,6 @@ body {
   }
 }
 
-/* Clients slider items */
 .bizzen-client-item .client-img {
   padding: 0 50px;
   text-align: center;
@@ -154,13 +408,4 @@ body {
   .bizzen-client-item .client-img {
     padding: 0 20px;
   }
-}
-
-/* Additional Kultiva-specific utilities */
-.kultiva-accent {
-  color: #e3b526; /* Golden Wheat accent */
-}
-
-.bg-kultiva-accent {
-  background-color: #e3b526;
 }

@@ -1,0 +1,37 @@
+/**
+ * Theme: Brand
+ * Official Kultiva brand manual colors — Purple + Green tetrad.
+ * Purple for authority/creativity, green for growth accents.
+ */
+
+[data-theme="brand"] {
+  --heading-font: var(--font-quicksand), "Quicksand", sans-serif;
+  --body-font: var(--font-quicksand), "Quicksand", sans-serif;
+
+  --primary-color: #7C3E8F;
+  --secondary-color: #73973A;
+  --heading-color: #2a2a2e;
+  --primary-black-color: #613171;
+  --header-dark-color: #613171;
+  --gray-color: #f7f6f8;
+  --white-color: #ffffff;
+  --text-color: #727276;
+  --border-color: #eae8ec;
+
+  /* Semantic tokens */
+  --accent-color: #9CC445;
+  --subtitle-color: #73973A;
+  --dark-bg: #1a1a2e;
+  --overlay-color: rgba(26, 26, 46, 0.85);
+  --shadow-color: rgba(97, 49, 113, 0.2);
+  --page-hero-overlay: linear-gradient(135deg, rgba(26, 26, 46, 0.9), rgba(97, 49, 113, 0.8));
+
+  /* Buttons */
+  --btn-primary-bg: #7C3E8F;
+  --btn-primary-hover: #613171;
+  --btn-secondary-bg: #73973A;
+
+  /* Mobile menu */
+  --mobile-menu-bg: #613171;
+  --submenu-bg: #7C3E8F;
+}

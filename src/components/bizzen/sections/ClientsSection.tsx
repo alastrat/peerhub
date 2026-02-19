@@ -2,8 +2,11 @@
 
 import { useTranslations } from "next-intl";
 import Slider from "react-slick";
+import type { ResolvedClient } from "@/lib/sanity";
+import { getImageUrl } from "@/lib/sanity";
 
-const clientLogos = [
+// Fallback logos when Sanity doesn't have images
+const fallbackLogos = [
   "/images/clients/client-1.png",
   "/images/clients/client-2.png",
   "/images/clients/client-3.png",
@@ -11,11 +14,28 @@ const clientLogos = [
   "/images/clients/fintra-logo.jpg",
 ];
 
-// Duplicate for seamless infinite scroll
-const clients = [...clientLogos, ...clientLogos];
+interface ClientsSectionProps {
+  clients?: ResolvedClient[];
+}
 
-export function ClientsSection() {
+export function ClientsSection({ clients: sanityClients = [] }: ClientsSectionProps) {
   const t = useTranslations("home.clients");
+
+  // Use Sanity clients if available, otherwise use fallback
+  const clientLogos = sanityClients.length > 0
+    ? sanityClients.map((c, index) => ({
+        name: c.name,
+        logo: c.logo ? getImageUrl(c.logo, { width: 150, height: 80 }) : fallbackLogos[index % fallbackLogos.length],
+        url: c.url,
+      }))
+    : fallbackLogos.map((logo, index) => ({
+        name: `Client ${index + 1}`,
+        logo,
+        url: undefined,
+      }));
+
+  // Duplicate for seamless infinite scroll
+  const clients = [...clientLogos, ...clientLogos];
 
   const sliderSettings = {
     dots: false,
@@ -76,9 +96,9 @@ export function ClientsSection() {
         {/* Clients Slider */}
         <div data-aos="fade-up" data-aos-duration="1200">
           <Slider {...sliderSettings} className="clients-slider">
-            {clients.map((logo, index) => (
+            {clients.map((client, index) => (
               <div key={index} className="bizzen-client-item">
-                <div 
+                <div
                   className="client-img"
                   style={{
                     display: "flex",
@@ -88,16 +108,16 @@ export function ClientsSection() {
                     padding: "0 15px",
                   }}
                 >
-                  <img 
-                    src={logo} 
-                    alt="Client Logo" 
-                    style={{ 
+                  <img
+                    src={client.logo || ""}
+                    alt={client.name || "Client Logo"}
+                    style={{
                       maxHeight: "50px",
                       maxWidth: "120px",
                       width: "auto",
                       height: "auto",
                       objectFit: "contain",
-                      filter: "grayscale(100%)", 
+                      filter: "grayscale(100%)",
                       opacity: 0.7,
                       transition: "all 0.3s ease",
                     }}

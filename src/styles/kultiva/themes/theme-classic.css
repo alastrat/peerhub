@@ -1,0 +1,37 @@
+/**
+ * Theme: Classic
+ * The original green + terracotta warm palette.
+ * Feels earthy, organic, approachable.
+ */
+
+[data-theme="classic"] {
+  --heading-font: var(--font-kanit), "Kanit", sans-serif;
+  --body-font: var(--font-jakarta), "Plus Jakarta Sans", sans-serif;
+
+  --primary-color: #4a9960;
+  --secondary-color: #be6840;
+  --heading-color: #252119;
+  --primary-black-color: #2d6b3f;
+  --header-dark-color: #053331;
+  --gray-color: #faf8f5;
+  --white-color: #ffffff;
+  --text-color: #5a554d;
+  --border-color: #edeae5;
+
+  /* Semantic tokens */
+  --accent-color: #e3b526;
+  --subtitle-color: #4a9960;
+  --dark-bg: #053331;
+  --overlay-color: rgba(5, 51, 49, 0.85);
+  --shadow-color: rgba(5, 51, 49, 0.2);
+  --page-hero-overlay: linear-gradient(135deg, rgba(5, 51, 49, 0.9), rgba(45, 107, 63, 0.8));
+
+  /* Buttons */
+  --btn-primary-bg: #4a9960;
+  --btn-primary-hover: #2d6b3f;
+  --btn-secondary-bg: #be6840;
+
+  /* Mobile menu */
+  --mobile-menu-bg: #053331;
+  --submenu-bg: #0a4a47;
+}

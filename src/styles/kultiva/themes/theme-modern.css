@@ -1,0 +1,37 @@
+/**
+ * Theme: Modern
+ * A refined, contemporary take — dark navy base with purple accents
+ * and bright green highlights. Polished and professional.
+ */
+
+[data-theme="modern"] {
+  --heading-font: var(--font-quicksand), "Quicksand", sans-serif;
+  --body-font: var(--font-jakarta), "Plus Jakarta Sans", sans-serif;
+
+  --primary-color: #613171;
+  --secondary-color: #9CC445;
+  --heading-color: #1a1a2e;
+  --primary-black-color: #1a1a2e;
+  --header-dark-color: #1a1a2e;
+  --gray-color: #f4f4f8;
+  --white-color: #ffffff;
+  --text-color: #555560;
+  --border-color: #e5e5ea;
+
+  /* Semantic tokens */
+  --accent-color: #9CC445;
+  --subtitle-color: #7C3E8F;
+  --dark-bg: #12121f;
+  --overlay-color: rgba(18, 18, 31, 0.88);
+  --shadow-color: rgba(18, 18, 31, 0.25);
+  --page-hero-overlay: linear-gradient(135deg, rgba(18, 18, 31, 0.92), rgba(97, 49, 113, 0.75));
+
+  /* Buttons */
+  --btn-primary-bg: #613171;
+  --btn-primary-hover: #4a2558;
+  --btn-secondary-bg: #73973A;
+
+  /* Mobile menu */
+  --mobile-menu-bg: #1a1a2e;
+  --submenu-bg: #252540;
+}
