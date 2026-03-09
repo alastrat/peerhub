@@ -12,6 +12,7 @@ import "@/styles/bizzen/spacings.css";
 import "@/styles/bizzen/style.css";
 
 // Kultiva theme system
+import "@/styles/kultiva/theme.css";
 import "@/styles/kultiva/themes/theme-classic.css";
 import "@/styles/kultiva/themes/theme-brand.css";
 import "@/styles/kultiva/themes/theme-modern.css";

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { PageHero } from "@/components/bizzen/PageHero";
 import { Link } from "@/i18n/navigation";
 import { ServiceFAQ } from "@/components/bizzen/sections/ServiceFAQ";
+import { ServiceHelpCards } from "@/components/bizzen/sections/ServiceHelpCards";
 
 const serviceData: Record<
   string,
@@ -117,6 +118,9 @@ export default async function ServiceDetailPage({
                 </div>
               </div>
             </div>
+
+            {/* How Can We Help You — card grid */}
+            <ServiceHelpCards serviceKey={service.key} />
 
             {/* Process Wrapper */}
             <div className="process-wrapper">

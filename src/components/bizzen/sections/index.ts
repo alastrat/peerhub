@@ -19,3 +19,4 @@ export { ContactFormSection } from "./ContactFormSection";
 export { BlogGridSection } from "./BlogGridSection";
 export { FAQSection } from "./FAQSection";
 export { ServiceFAQ } from "./ServiceFAQ";
+export { ServiceHelpCards } from "./ServiceHelpCards";

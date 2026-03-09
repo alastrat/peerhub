@@ -1,7 +1,7 @@
 {
   "metadata": {
     "title": "Kultiva | Consultoria Organizacional",
-    "description": "Agencia de consultoria organizacional. Sembrando ideas para recoger grandes resultados."
+    "description": "Agencia de consultoria organizacional. Transformamos cultura, clima, comunicacion y liderazgo en tu organizacion."
   },
   "navigation": {
     "home": "Inicio",
@@ -20,7 +20,7 @@
   "home": {
     "hero": {
       "subtitle": "Agencia de Consultoria Organizacional",
-      "title": "Sembrando ideas para recoger grandes resultados",
+      "title": "Transformamos cultura, clima, comunicacion y liderazgo",
       "description": "Transformamos organizaciones a traves de estrategias innovadoras en cultura, cambio, seleccion y comunicacion interna.",
       "cta_primary": "Conoce Nuestros Servicios",
       "cta_secondary": "Agenda una Consulta"
@@ -250,6 +250,34 @@
       },
       "features_title": "Caracteristicas Clave",
       "features_description": "Nuestro enfoque de cultura organizacional combina diagnosticos profundos con intervenciones practicas. Trabajamos con todos los niveles de la organizacion para asegurar que los valores se vivan en el dia a dia, no solo se escriban en documentos.",
+      "help_section_title": "¿Cómo te podemos ayudar?",
+      "help_cards": {
+        "1": {
+          "title": "Diagnóstico y Diseño Cultural",
+          "description": "Comprendemos cómo funciona realmente tu organización para alinear la cultura con la estrategia y convertirla en una ventaja para el desempeño y el cambio."
+        },
+        "2": {
+          "title": "Transformación cultural",
+          "description": "Convertimos la cultura organizacional en una palanca real de cambio, desempeño y coherencia estratégica."
+        },
+        "3": {
+          "title": "Alineación de liderazgo",
+          "description": "Fortalecemos la coherencia del liderazgo para que las decisiones, los mensajes y las acciones acompañen la estrategia y el cambio que la organización necesita."
+        },
+        "4": {
+          "title": "Reconocimiento",
+          "description": "Diseñamos sistemas de reconocimiento alineados con la cultura y la estrategia, para reforzar los comportamientos clave, fortalecer el compromiso y sostener el desempeño en el día a día."
+        },
+        "5": {
+          "title": "Desempeño",
+          "description": "Diseñamos sistemas de desempeño que eliminan fricciones, clarifican prioridades y permiten que la organización rinda de acuerdo con su estrategia."
+        },
+        "6": {
+          "title": "Mapeo y Sucesión",
+          "description": "Acompañamos a las organizaciones a identificar talento crítico y preparar la sucesión de roles clave, asegurando continuidad, desarrollo y sostenibilidad del negocio."
+        }
+      },
+      "help_quote": "Acompañamos a líderes y equipos a enfrentar sus mayores retos y aprovechar sus mejores oportunidades. Juntos, transformamos la cultura y generamos resultados que perduran en el tiempo.",
       "faq": {
         "1": {
           "question": "Cuanto tiempo toma una transformacion cultural?",
@@ -281,6 +309,34 @@
       },
       "features_title": "Caracteristicas Clave",
       "features_description": "Combinamos metodologias tradicionales con herramientas modernas de evaluacion. Nuestro enfoque se centra no solo en las habilidades tecnicas, sino tambien en el potencial de desarrollo y la alineacion con la cultura organizacional.",
+      "help_section_title": "¿Cómo te podemos ayudar?",
+      "help_cards": {
+        "1": {
+          "title": "Alineación entre persona, rol y cultura",
+          "description": "Evaluamos más que competencias técnicas: analizamos el encaje cultural, el estilo de liderazgo y la coherencia con los valores y retos del rol, reduciendo el riesgo de rotación temprana."
+        },
+        "2": {
+          "title": "Decisiones de selección con enfoque estratégico",
+          "description": "Acompañamos a líderes y áreas de talento a tomar decisiones informadas, basadas en criterios claros, evaluaciones estructuradas y evidencia, no solo en intuición o urgencia."
+        },
+        "3": {
+          "title": "Incorporaciones que generan impacto desde el inicio",
+          "description": "Diseñamos procesos de selección que facilitan una integración más rápida y efectiva, aumentando la probabilidad de desempeño, compromiso y resultados sostenibles."
+        },
+        "4": {
+          "title": "Procesos de selección con garantía de reposición",
+          "description": "Acompañamos procesos de selección con garantía de reposición, respaldados por evaluaciones estructuradas y criterios de ajuste al rol y a la cultura. En caso de que la persona seleccionada no continúe durante el periodo acordado, realizamos la reposición sin costo adicional, brindando a la organización seguridad, continuidad y confianza en la decisión tomada."
+        },
+        "5": {
+          "title": "Acompañamiento en la decisión final",
+          "description": "No solo presentamos candidatos; acompañamos a los líderes en la decisión final, aportando criterio experto, lectura cultural y análisis de riesgos. Esto permite tomar decisiones más seguras, alineadas con la estrategia y con mayor probabilidad de éxito en el desempeño del rol."
+        },
+        "6": {
+          "title": "Assessment y pruebas especializadas",
+          "description": "Utilizamos assessments y pruebas especializadas para evaluar competencias, estilo de liderazgo, toma de decisiones y ajuste al rol. Estas herramientas nos permiten ir más allá del currículum y la entrevista, aportando evidencia objetiva para reducir sesgos, minimizar riesgos y aumentar la efectividad de la selección."
+        }
+      },
+      "help_quote": "Acompañamos a líderes y equipos a enfrentar sus mayores retos y aprovechar sus mejores oportunidades. Juntos, transformamos la cultura y generamos resultados que perduran en el tiempo.",
       "faq": {
         "1": {
           "question": "Cual es el tiempo promedio para llenar una vacante?",

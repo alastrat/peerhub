@@ -1,7 +1,7 @@
 {
   "metadata": {
     "title": "Kultiva | Organizational Consulting",
-    "description": "Organizational consulting agency. Planting ideas to harvest great results."
+    "description": "Organizational consulting agency. Transform culture, climate, communication and leadership in your organization."
   },
   "navigation": {
     "home": "Home",
@@ -20,7 +20,7 @@
   "home": {
     "hero": {
       "subtitle": "Organizational Consulting Agency",
-      "title": "Planting ideas to harvest great results",
+      "title": "Transform culture, climate, communication and leadership",
       "description": "We transform organizations through innovative strategies in culture, change management, recruitment, and internal communication.",
       "cta_primary": "Explore Our Services",
       "cta_secondary": "Schedule a Consultation"
@@ -207,6 +207,34 @@
       },
       "features_title": "Key Features",
       "features_description": "Our organizational culture approach combines deep diagnostics with practical interventions. We work with all levels of the organization to ensure values are lived day-to-day, not just written in documents.",
+      "help_section_title": "How can we help you?",
+      "help_cards": {
+        "1": {
+          "title": "Cultural Diagnosis & Design",
+          "description": "We understand how your organization truly works to align culture with strategy and turn it into an advantage for performance and change."
+        },
+        "2": {
+          "title": "Cultural Transformation",
+          "description": "We turn organizational culture into a real lever for change, performance, and strategic coherence."
+        },
+        "3": {
+          "title": "Leadership Alignment",
+          "description": "We strengthen leadership coherence so that decisions, messages, and actions support the strategy and the change the organization needs."
+        },
+        "4": {
+          "title": "Recognition",
+          "description": "We design recognition systems aligned with culture and strategy, to reinforce key behaviors, strengthen engagement, and sustain day-to-day performance."
+        },
+        "5": {
+          "title": "Performance",
+          "description": "We design performance systems that eliminate friction, clarify priorities, and enable the organization to deliver according to its strategy."
+        },
+        "6": {
+          "title": "Mapping & Succession",
+          "description": "We help organizations identify critical talent and prepare succession for key roles, ensuring continuity, development, and business sustainability."
+        }
+      },
+      "help_quote": "We accompany leaders and teams to face their greatest challenges and seize their best opportunities. Together, we transform culture and generate results that endure over time.",
       "faq": {
         "1": {
           "question": "How long does a cultural transformation take?",
@@ -238,6 +266,34 @@
       },
       "features_title": "Key Features",
       "features_description": "We combine traditional methodologies with modern assessment tools. Our approach focuses not only on technical skills but also on development potential and alignment with organizational culture.",
+      "help_section_title": "How can we help you?",
+      "help_cards": {
+        "1": {
+          "title": "Person-Role-Culture Alignment",
+          "description": "We evaluate more than technical competencies: we analyze cultural fit, leadership style, and coherence with the role's values and challenges, reducing the risk of early turnover."
+        },
+        "2": {
+          "title": "Strategic Selection Decisions",
+          "description": "We support leaders and talent teams in making informed decisions based on clear criteria, structured assessments, and evidence — not just intuition or urgency."
+        },
+        "3": {
+          "title": "Hires That Drive Impact From Day One",
+          "description": "We design selection processes that enable faster, more effective integration, increasing the likelihood of performance, engagement, and sustainable results."
+        },
+        "4": {
+          "title": "Selection With Replacement Guarantee",
+          "description": "We conduct selection processes with a replacement guarantee, backed by structured assessments and role-culture fit criteria. If the selected person doesn't continue during the agreed period, we provide a replacement at no additional cost, giving the organization security, continuity, and confidence in the decision made."
+        },
+        "5": {
+          "title": "Support in the Final Decision",
+          "description": "We don't just present candidates; we support leaders in the final decision, providing expert judgment, cultural insight, and risk analysis. This enables safer decisions, aligned with strategy and with a higher probability of success in role performance."
+        },
+        "6": {
+          "title": "Assessments & Specialized Tests",
+          "description": "We use specialized assessments and tests to evaluate competencies, leadership style, decision-making, and role fit. These tools allow us to go beyond the resume and interview, providing objective evidence to reduce bias, minimize risks, and increase selection effectiveness."
+        }
+      },
+      "help_quote": "We accompany leaders and teams to face their greatest challenges and seize their best opportunities. Together, we transform culture and generate results that endure over time.",
       "faq": {
         "1": {
           "question": "What is the average time to fill a vacancy?",

@@ -7,18 +7,16 @@ import { PageHeader } from "@/components/design-system/page-header";
 import { EmptyState } from "@/components/design-system/empty-state";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getInitials } from "@/lib/utils/formatting";
-import { ROLE_LABELS } from "@/lib/constants/roles";
 import { redirect } from "next/navigation";
+import { PeopleTable } from "@/components/people/people-table";
 
 async function getPeople(companyId: string) {
   return prisma.companyUser.findMany({
@@ -37,15 +35,42 @@ async function getPeople(companyId: string) {
 function PeopleLoading() {
   return (
     <div className="space-y-4">
-      {[...Array(5)].map((_, i) => (
-        <div key={i} className="flex items-center gap-4 rounded-lg border p-4">
-          <Skeleton className="h-10 w-10 rounded-full" />
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-3 w-48" />
-          </div>
-        </div>
-      ))}
+      {/* Filter skeletons */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Skeleton className="h-10 flex-1 min-w-[200px] max-w-sm rounded-lg" />
+        <Skeleton className="h-10 w-[140px] rounded-lg" />
+        <Skeleton className="h-10 w-[180px] rounded-lg" />
+      </div>
+      {/* Table skeleton */}
+      <div className="rounded-lg border overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableHead>Name</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead>Department</TableHead>
+              <TableHead>Manager</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[...Array(8)].map((_, i) => (
+              <TableRow key={i} className="bg-background">
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-4 w-28" />
+                  </div>
+                </TableCell>
+                <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
@@ -72,43 +97,16 @@ async function PeopleList() {
     );
   }
 
-  return (
-    <div className="space-y-2">
-      {people.map((person) => (
-        <Link key={person.id} href={`/people/${person.id}`}>
-          <Card className="transition-shadow hover:shadow-md">
-            <CardContent className="flex items-center gap-4 p-4">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={person.user.image || undefined} />
-                <AvatarFallback>
-                  {person.user.name ? getInitials(person.user.name) : "?"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium truncate">{person.user.name || "Unnamed"}</p>
-                  <Badge variant="secondary" className="text-xs">
-                    {ROLE_LABELS[person.role]}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground truncate">
-                  {person.title || "No title"}
-                  {person.department && ` • ${person.department.name}`}
-                </p>
-              </div>
-              <div className="hidden sm:block text-right text-sm text-muted-foreground">
-                {person.manager ? (
-                  <span>Reports to {person.manager.user.name}</span>
-                ) : (
-                  <span className="text-muted-foreground/60">No manager</span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-      ))}
-    </div>
-  );
+  const rows = people.map((p) => ({
+    id: p.id,
+    role: p.role,
+    title: p.title,
+    user: { name: p.user.name, image: p.user.image },
+    department: p.department ? { name: p.department.name } : null,
+    manager: p.manager ? { user: { name: p.manager.user.name } } : null,
+  }));
+
+  return <PeopleTable data={rows} />;
 }
 
 export default async function PeoplePage() {
