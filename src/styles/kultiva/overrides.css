@@ -96,14 +96,21 @@
    BUTTONS & CTA
    ========================================================================== */
 
-.theme-btn.style-one {
-  background-color: var(--btn-primary-bg);
-  border-color: var(--btn-primary-bg);
+.theme-btn.style-one,
+.nav-right-item .theme-btn.style-one,
+.bizzen-hero_one .hero-content .theme-btn.style-one,
+.bizzen-cta-sec .bizzen-button .theme-btn.style-one {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+  color: var(--white-color);
 }
 
-.theme-btn.style-one:hover {
-  background-color: var(--btn-primary-hover);
-  border-color: var(--btn-primary-hover);
+.theme-btn.style-one:hover,
+.nav-right-item .theme-btn.style-one:hover,
+.bizzen-hero_one .hero-content .theme-btn.style-one:hover,
+.bizzen-cta-sec .bizzen-button .theme-btn.style-one:hover {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
   color: var(--white-color);
 }
 
@@ -200,11 +207,20 @@
 
 .bizzen-service-item .icon {
   color: var(--primary-color);
+  transition: transform 0.3s ease;
 }
 
-.bizzen-service-item:hover .icon {
-  background-color: var(--primary-color);
-  color: var(--white-color);
+.bizzen-service-item.style-one {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.bizzen-service-item.style-one:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px var(--shadow-color, rgba(0, 0, 0, 0.08));
+}
+
+.bizzen-service-item.style-one:hover .icon {
+  transform: scale(1.05);
 }
 
 /* ==========================================================================
@@ -412,15 +428,30 @@
 }
 
 /* ==========================================================================
+   TEAM SECTION — consistent image sizing
+   ========================================================================== */
+
+.bizzen-team-item.style-two .member-image {
+  aspect-ratio: 3 / 4;
+}
+
+.bizzen-team-item.style-two .member-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* ==========================================================================
    SERVICE HELP CARDS
    ========================================================================== */
 
 .service-help-card {
-  background-color: #fff;
-  border-radius: 16px;
+  background-color: var(--white-color, #fff);
+  border-radius: 12px;
   padding: 28px 24px;
   height: 100%;
-  border: 1px solid hsl(35 15% 85%);
+  border: 1px solid var(--border-color, #eee);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
   display: flex;
@@ -430,22 +461,53 @@
 
 .service-help-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  border-color: hsl(152 55% 30% / 0.2);
+  box-shadow: 0 8px 24px var(--shadow-color, rgba(0, 0, 0, 0.08));
+  border-color: var(--primary-color, #7C3E8F);
 }
 
 .service-help-card-title {
-  font-family: var(--font-kanit), sans-serif;
-  font-weight: 600;
+  font-family: var(--heading-font), sans-serif;
+  font-weight: 700;
   font-size: 1.1rem;
-  color: var(--kultiva-ink, #1f1a14);
+  color: var(--heading-color, #2a2a2e);
   line-height: 1.3;
   margin: 0;
 }
 
 .service-help-card-text {
+  font-family: var(--body-font), sans-serif;
   font-size: 0.9rem;
   line-height: 1.65;
-  color: hsl(30 10% 40%);
+  color: var(--text-color, #727276);
   margin: 0;
+}
+
+.service-help-quote {
+  font-family: var(--body-font), sans-serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--primary-color, #7C3E8F);
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+  border: none;
+}
+
+/* ==========================================================================
+   BOOTSTRAP OVERRIDES
+   Neutralize Bootstrap utility classes that conflict with Tailwind.
+   ========================================================================== */
+
+.bg-primary {
+  background-color: hsl(var(--primary)) !important;
+}
+
+.text-primary {
+  color: hsl(var(--primary)) !important;
+}
+
+.btn-primary {
+  background-color: hsl(var(--primary)) !important;
+  border-color: hsl(var(--primary)) !important;
 }

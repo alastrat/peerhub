@@ -30,31 +30,8 @@ export function ServiceHelpCards({ serviceKey }: ServiceHelpCardsProps) {
   return (
     <div className="help-cards-section mt-80 mb-80">
       {/* Section Title */}
-      <div className="text-center mb-50" data-aos="fade-up" data-aos-duration="600">
-        <h3
-          style={{
-            fontFamily: "var(--font-kanit), sans-serif",
-            fontWeight: 600,
-            color: "var(--kultiva-ink, #1f1a14)",
-            position: "relative",
-            display: "inline-block",
-            paddingBottom: "12px",
-          }}
-        >
-          {t(`${serviceKey}.help_section_title`)}
-          <span
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "60px",
-              height: "3px",
-              backgroundColor: "var(--kultiva-secondary, #c96b3c)",
-              borderRadius: "2px",
-            }}
-          />
-        </h3>
+      <div className="section-title text-center mb-50" data-aos="fade-up" data-aos-duration="600">
+        <span className="sub-title">{t(`${serviceKey}.help_section_title`)}</span>
       </div>
 
       {/* Cards Grid */}
@@ -67,12 +44,8 @@ export function ServiceHelpCards({ serviceKey }: ServiceHelpCardsProps) {
             data-aos-duration={600 + index * 100}
           >
             <div className="service-help-card">
-              <h5 className="service-help-card-title">
-                {card.title}
-              </h5>
-              <p className="service-help-card-text">
-                {card.description}
-              </p>
+              <h5 className="service-help-card-title">{card.title}</h5>
+              <p className="service-help-card-text">{card.description}</p>
             </div>
           </div>
         ))}
@@ -80,17 +53,7 @@ export function ServiceHelpCards({ serviceKey }: ServiceHelpCardsProps) {
 
       {/* Quote */}
       <div className="text-center mt-50" data-aos="fade-up" data-aos-duration="800">
-        <blockquote
-          style={{
-            fontStyle: "italic",
-            fontSize: "1.05rem",
-            lineHeight: 1.7,
-            color: "var(--kultiva-secondary, #c96b3c)",
-            maxWidth: "800px",
-            margin: "0 auto",
-            padding: "0 20px",
-          }}
-        >
+        <blockquote className="service-help-quote">
           &ldquo;{quote}&rdquo;
         </blockquote>
       </div>

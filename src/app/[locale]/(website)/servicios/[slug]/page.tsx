@@ -20,7 +20,7 @@ const serviceData: Record<
   },
   "seleccion-especializada": {
     key: "seleccion",
-    image: "/images/team/planning-session.jpg",
+    image: "/images/team/conference-1.jpg",
     secondaryImage: "/images/team/gallery-1.jpg",
   },
   cambio: {

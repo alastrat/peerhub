@@ -26,6 +26,12 @@ import { getInitials } from "@/lib/utils/formatting";
 import { ROLE_LABELS } from "@/lib/constants/roles";
 import type { CompanyRole } from "@prisma/client";
 
+const ROLE_BADGE_STYLES: Record<CompanyRole, string> = {
+  ADMIN: "bg-purple-100 text-purple-700 border-purple-200",
+  MANAGER: "bg-blue-100 text-blue-700 border-blue-200",
+  EMPLOYEE: "bg-emerald-100 text-emerald-700 border-emerald-200",
+};
+
 export type PersonRow = {
   id: string;
   role: CompanyRole;
@@ -150,7 +156,7 @@ export function PeopleTable({ data }: { data: PersonRow[] }) {
               setSearch(e.target.value);
               setPage(0);
             }}
-            className="pl-9"
+            className="ps-10"
           />
         </div>
         <Select value={roleFilter} onValueChange={handleFilterChange(setRoleFilter)}>
@@ -180,7 +186,7 @@ export function PeopleTable({ data }: { data: PersonRow[] }) {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border overflow-hidden">
+      <div className="rounded-lg border overflow-hidden bg-card">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
@@ -200,7 +206,7 @@ export function PeopleTable({ data }: { data: PersonRow[] }) {
               </TableRow>
             ) : (
               paged.map((person) => (
-                <TableRow key={person.id} className="bg-background">
+                <TableRow key={person.id} className="!bg-white hover:!bg-gray-50">
                   <TableCell>
                     <Link href={`/people/${person.id}`} className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
@@ -213,7 +219,7 @@ export function PeopleTable({ data }: { data: PersonRow[] }) {
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="outline" className={`text-xs border ${ROLE_BADGE_STYLES[person.role]}`}>
                       {ROLE_LABELS[person.role]}
                     </Badge>
                   </TableCell>

@@ -12,18 +12,15 @@ import {
   BarChart3,
   Settings,
   UsersRound,
-  ChevronLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Logo } from "@/components/design-system/logo";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-
-interface SidebarProps {
-  isCollapsed: boolean;
-  onToggle: () => void;
-}
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const adminNavItems = [
   { href: "/overview", icon: LayoutDashboard, label: "Overview" },
@@ -43,7 +40,40 @@ const managerNavItems = [
   { href: "/team", icon: UsersRound, label: "My Team" },
 ];
 
-export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
+function NavItem({
+  href,
+  icon: Icon,
+  label,
+  isActive,
+}: {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  isActive: boolean;
+}) {
+  return (
+    <Tooltip delayDuration={0}>
+      <TooltipTrigger asChild>
+        <Link
+          href={href}
+          className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-xl transition-colors",
+            isActive
+              ? "bg-[#613171] text-white shadow-sm"
+              : "text-muted-foreground hover:bg-black/5 hover:text-foreground"
+          )}
+        >
+          <Icon className="h-5 w-5" />
+        </Link>
+      </TooltipTrigger>
+      <TooltipContent side="right" sideOffset={8}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+export function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const role = session?.companyUser?.role || "EMPLOYEE";
@@ -54,95 +84,49 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const navItems = isAdmin ? adminNavItems : employeeNavItems;
 
   return (
-    <aside
-      className={cn(
-        "fixed left-0 top-0 z-40 flex h-screen flex-col border-r bg-card transition-all duration-300",
-        isCollapsed ? "w-16" : "w-64"
-      )}
-    >
-      {/* Logo */}
-      <div className="flex h-16 items-center justify-between border-b px-4">
-        {!isCollapsed && <Logo />}
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn("h-8 w-8", isCollapsed && "mx-auto")}
-          onClick={onToggle}
-        >
-          <ChevronLeft
-            className={cn(
-              "h-4 w-4 transition-transform",
-              isCollapsed && "rotate-180"
-            )}
-          />
-        </Button>
-      </div>
+    <TooltipProvider>
+      <aside className="fixed left-0 top-0 z-40 flex h-screen w-16 flex-col items-center bg-muted py-4">
+        {/* Logo */}
+        <div className="mb-6">
+          <Logo showText={false} />
+        </div>
 
-      {/* Navigation */}
-      <ScrollArea className="flex-1 py-4">
-        <nav className="space-y-1 px-2">
+        {/* Navigation */}
+        <nav className="flex flex-1 flex-col items-center gap-1.5">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const isActive =
+              pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                  isCollapsed && "justify-center px-2"
-                )}
-              >
-                <item.icon className="h-5 w-5 shrink-0" />
-                {!isCollapsed && <span>{item.label}</span>}
-              </Link>
+              <NavItem key={item.href} {...item} isActive={isActive} />
             );
           })}
 
           {/* Manager-specific items */}
           {isManager && !isAdmin && (
             <>
-              <Separator className="my-4" />
+              <div className="my-2 h-px w-8 bg-border" />
               {managerNavItems.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const isActive =
+                  pathname === item.href ||
+                  pathname.startsWith(`${item.href}/`);
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                      isCollapsed && "justify-center px-2"
-                    )}
-                  >
-                    <item.icon className="h-5 w-5 shrink-0" />
-                    {!isCollapsed && <span>{item.label}</span>}
-                  </Link>
+                  <NavItem key={item.href} {...item} isActive={isActive} />
                 );
               })}
             </>
           )}
         </nav>
-      </ScrollArea>
 
-      {/* Settings */}
-      <div className="border-t p-2">
-        <Link
-          href="/settings"
-          className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
-            pathname.startsWith("/settings") && "bg-accent text-accent-foreground",
-            isCollapsed && "justify-center px-2"
-          )}
-        >
-          <Settings className="h-5 w-5 shrink-0" />
-          {!isCollapsed && <span>Settings</span>}
-        </Link>
-      </div>
-    </aside>
+        {/* Settings */}
+        <div className="mt-auto">
+          <NavItem
+            href="/settings"
+            icon={Settings}
+            label="Settings"
+            isActive={pathname.startsWith("/settings")}
+          />
+        </div>
+      </aside>
+    </TooltipProvider>
   );
 }

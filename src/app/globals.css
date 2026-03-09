@@ -4,6 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Dashboard primary color — unlayered to ensure highest cascade priority */
+:root {
+  --primary: 289 36% 32%;
+  --ring: 289 36% 32%;
+}
 
 @layer base {
   :root {
@@ -17,7 +22,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 30 20% 12%;
 
-    --primary: 152 55% 30%;
+    --primary: 289 36% 32%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 35 20% 92%;
@@ -34,7 +39,7 @@
 
     --border: 35 15% 85%;
     --input: 35 15% 85%;
-    --ring: 152 55% 30%;
+    --ring: 289 36% 32%;
 
     --radius: 0.75rem;
 

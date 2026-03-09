@@ -5,6 +5,8 @@ import { useTheme } from "@/providers/ThemeProvider";
 export function ThemeSwitcher() {
   const { theme, setTheme, themes } = useTheme();
 
+  if (process.env.NODE_ENV !== "development") return null;
+
   return (
     <div
       style={{
