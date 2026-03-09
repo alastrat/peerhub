@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getInitials } from "@/lib/utils/formatting";
+import { CompanySwitcher } from "@/components/layout/company-switcher";
 
 const PAGE_TITLES: Record<string, string> = {
   "/overview": "Overview",
@@ -22,6 +23,12 @@ const PAGE_TITLES: Record<string, string> = {
   "/templates": "Templates",
   "/cycles": "Review Cycles",
   "/reports": "Reports",
+  "/settings/profile": "Settings",
+  "/settings/company": "Settings",
+  "/settings/platform/companies": "Settings",
+  "/settings/platform/users": "Settings",
+  "/settings/platform/domains": "Settings",
+  "/settings/platform/health": "Settings",
   "/settings": "Settings",
   "/my-reviews": "My Reviews",
   "/my-feedback": "My Feedback",
@@ -45,9 +52,10 @@ export function Header() {
   const pageTitle = getPageTitle(pathname);
 
   return (
-    <header className="flex h-14 items-center gap-4 bg-muted px-6">
-      {/* Left: Page title */}
+    <header className="flex h-14 items-center gap-4 bg-muted px-6 sticky top-0 z-30">
+      {/* Left: Company Switcher + Page title */}
       <div className="flex items-center gap-3">
+        <CompanySwitcher />
         <span className="text-sm font-medium text-foreground">{pageTitle}</span>
       </div>
 

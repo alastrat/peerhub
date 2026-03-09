@@ -380,7 +380,7 @@ const siteSettings = {
   contactInfo: {
     address: "Barranquilla, Atlantico, Colombia",
     phone: "+57 300 645 5082",
-    email: "contacto@kultiva.com.co",
+    email: "comercial@kultiva.com.co",
     hours: {
       es: "Lunes - Viernes: 8:00 - 18:00",
       en: "Monday - Friday: 8:00 AM - 6:00 PM",

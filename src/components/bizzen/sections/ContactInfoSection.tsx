@@ -41,7 +41,7 @@ export function ContactInfoSection() {
                   <a href="tel:+573006455082">{t("phone.value")}</a>
                 </p>
                 <p>
-                  <a href="mailto:contacto@kultiva.com.co">{t("email.value")}</a>
+                  <a href="mailto:comercial@kultiva.com.co">{t("email.value")}</a>
                 </p>
               </div>
             </div>

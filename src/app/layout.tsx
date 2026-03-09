@@ -80,7 +80,7 @@ const jsonLd = {
         "@type": "ContactPoint",
         telephone: "+57-300-645-5082",
         contactType: "customer service",
-        email: "contacto@kultiva.com.co",
+        email: "comercial@kultiva.com.co",
         areaServed: ["CO", "LATAM"],
         availableLanguage: ["Spanish", "English"],
       },
@@ -92,7 +92,7 @@ const jsonLd = {
       image: `${siteUrl}/images/logo-new.png`,
       url: siteUrl,
       telephone: "+57-300-645-5082",
-      email: "contacto@kultiva.com.co",
+      email: "comercial@kultiva.com.co",
       address: {
         "@type": "PostalAddress",
         addressLocality: "Barranquilla",

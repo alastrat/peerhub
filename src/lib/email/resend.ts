@@ -40,7 +40,11 @@ export async function sendEmail({ to, subject, html, text }: SendEmailOptions) {
 
     if (error) {
       console.error("Failed to send email:", error);
-      return { success: false, error: error.message };
+      const msg =
+        error.message?.includes("domain is not verified")
+          ? "Email sender domain is not verified in Resend. Please verify your domain at https://resend.com/domains or use onboarding@resend.dev for testing."
+          : error.message;
+      return { success: false, error: msg };
     }
 
     return { success: true, messageId: data?.id };

@@ -21,7 +21,8 @@ export default function DashboardLayout({
     redirect("/login");
   }
 
-  if (!session.companyUser) {
+  // Super admins can access settings even without a company
+  if (!session.companyUser && session.user?.globalRole !== "SUPER_ADMIN") {
     redirect("/onboarding");
   }
 

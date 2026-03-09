@@ -72,12 +72,18 @@ model Company {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Feature flags
+  featureAts        Boolean @default(false)
+  featureOnboarding Boolean @default(false)
+  featureWorkEnv    Boolean @default(false)
+
   users       CompanyUser[]
   departments Department[]
   templates   Template[]
   cycles      Cycle[]
   invitations Invitation[]
   tokens      ReviewToken[]
+  roleConfigs CompanyRoleConfig[]
 
   @@index([slug])
 }
@@ -104,6 +110,7 @@ model CompanyUser {
   userId       String
   companyId    String
   role         CompanyRole @default(EMPLOYEE)
+  roleConfigId String?
   title        String?
   employeeId   String?
   managerId    String?
@@ -113,8 +120,9 @@ model CompanyUser {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  company       Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company       Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  roleConfig    CompanyRoleConfig? @relation(fields: [roleConfigId], references: [id])
   manager       CompanyUser? @relation("ManagerRelation", fields: [managerId], references: [id])
   directReports CompanyUser[] @relation("ManagerRelation")
   department    Department?  @relation(fields: [departmentId], references: [id])
@@ -386,6 +394,7 @@ model Invitation {
   email        String
   companyId    String
   role         CompanyRole @default(EMPLOYEE)
+  roleConfigId String?
   departmentId String?
   managerId    String?
   token        String      @unique @default(cuid())
@@ -393,10 +402,47 @@ model Invitation {
   acceptedAt   DateTime?
   createdAt    DateTime    @default(now())
 
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company    Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  roleConfig CompanyRoleConfig? @relation(fields: [roleConfigId], references: [id])
 
   @@unique([email, companyId])
   @@index([token])
+}
+
+// ============================================
+// COMPANY ROLE CONFIGURATION
+// ============================================
+
+model CompanyRoleConfig {
+  id          String       @id @default(cuid())
+  companyId   String
+  slug        String
+  name        String
+  description String?
+  baseRole    CompanyRole?
+  isSystem    Boolean      @default(false)
+  permissions Json         @default("{}")
+  color       String?      @default("#6b7280")
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  company     Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  members     CompanyUser[]
+  invitations Invitation[]
+
+  @@unique([companyId, slug])
+  @@index([companyId])
+}
+
+// ============================================
+// SUPER ADMIN DOMAINS
+// ============================================
+
+model SuperAdminDomain {
+  id        String   @id @default(cuid())
+  domain    String   @unique // e.g. "kultiva.com.co"
+  createdAt DateTime @default(now())
 }
 
 // ============================================

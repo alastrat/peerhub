@@ -166,6 +166,22 @@ export const authOptions: NextAuthOptions = {
   events: {
     async createUser({ user }) {
       console.log(`New user created: ${user.email}`);
+
+      // Auto-assign SUPER_ADMIN if user's email domain is in SuperAdminDomain table
+      const email = user.email?.toLowerCase() || "";
+      const domain = email.split("@")[1];
+      if (domain) {
+        const match = await prisma.superAdminDomain.findUnique({
+          where: { domain },
+        });
+        if (match) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { globalRole: "SUPER_ADMIN" },
+          });
+          console.log(`Auto-assigned SUPER_ADMIN to ${email} (domain: ${domain})`);
+        }
+      }
     },
   },
 };
