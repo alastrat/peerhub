@@ -30,9 +30,7 @@ export default async function ExternalReviewPage({ params }: PageProps) {
               },
             },
           },
-          reviewee: {
-            include: { user: true },
-          },
+          reviewee: true,
         },
       },
     },
@@ -88,8 +86,8 @@ export default async function ExternalReviewPage({ params }: PageProps) {
     <ExternalReviewForm
       token={token}
       revieweeName={
-        reviewToken.assignment.reviewee.user.name ||
-        reviewToken.assignment.reviewee.user.email
+        reviewToken.assignment.reviewee.name ||
+        reviewToken.assignment.reviewee.email
       }
       companyName={reviewToken.company.name}
       cycleName={reviewToken.assignment.cycle.name}

@@ -18,7 +18,7 @@ export default async function DepartmentsPage() {
   const departments = await prisma.department.findMany({
     where: { companyId },
     include: {
-      _count: { select: { members: true } },
+      _count: { select: { employees: true } },
       parent: { select: { name: true } },
     },
     orderBy: { name: "asc" },
@@ -37,7 +37,7 @@ export default async function DepartmentsPage() {
           description: d.description,
           parentId: d.parentId,
           parentName: d.parent?.name || null,
-          membersCount: d._count.members,
+          membersCount: d._count.employees,
         }))}
       />
     </div>

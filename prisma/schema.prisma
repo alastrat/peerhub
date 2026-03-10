@@ -19,7 +19,7 @@ enum GlobalRole {
 enum CompanyRole {
   ADMIN
   MANAGER
-  EMPLOYEE
+  MEMBER
 }
 
 enum CycleStatus {
@@ -58,6 +58,11 @@ enum QuestionType {
   MULTIPLE_CHOICE
 }
 
+enum AccessTokenPurpose {
+  EMPLOYEE_PORTAL
+  COMPLETE_REVIEW
+}
+
 // ============================================
 // CORE ENTITIES
 // ============================================
@@ -77,13 +82,15 @@ model Company {
   featureOnboarding Boolean @default(false)
   featureWorkEnv    Boolean @default(false)
 
-  users       CompanyUser[]
-  departments Department[]
-  templates   Template[]
-  cycles      Cycle[]
-  invitations Invitation[]
-  tokens      ReviewToken[]
-  roleConfigs CompanyRoleConfig[]
+  users        CompanyUser[]
+  employees    Employee[]
+  departments  Department[]
+  templates    Template[]
+  cycles       Cycle[]
+  invitations  Invitation[]
+  tokens       ReviewToken[]
+  roleConfigs  CompanyRoleConfig[]
+  accessTokens AccessToken[]
 
   @@index([slug])
 }
@@ -105,27 +112,26 @@ model User {
   @@index([email])
 }
 
-model CompanyUser {
-  id           String      @id @default(cuid())
-  userId       String
+model Employee {
+  id           String    @id @default(cuid())
   companyId    String
-  role         CompanyRole @default(EMPLOYEE)
-  roleConfigId String?
+  email        String
+  name         String
   title        String?
-  employeeId   String?
+  employeeCode String?
   managerId    String?
   departmentId String?
   startDate    DateTime?
-  isActive     Boolean     @default(true)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  company       Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  roleConfig    CompanyRoleConfig? @relation(fields: [roleConfigId], references: [id])
-  manager       CompanyUser? @relation("ManagerRelation", fields: [managerId], references: [id])
-  directReports CompanyUser[] @relation("ManagerRelation")
-  department    Department?  @relation(fields: [departmentId], references: [id])
+  company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  manager       Employee?   @relation("EmployeeManager", fields: [managerId], references: [id])
+  directReports Employee[]  @relation("EmployeeManager")
+  department    Department? @relation(fields: [departmentId], references: [id])
+
+  companyUser CompanyUser?
 
   cycleParticipations CycleParticipant[]
   reviewsGiven        ReviewAssignment[] @relation("ReviewerAssignments")
@@ -133,11 +139,32 @@ model CompanyUser {
   nominationsGiven    Nomination[]       @relation("NominatorRelation")
   nominationsReceived Nomination[]       @relation("NomineeRelation")
   nominationsFor      Nomination[]       @relation("RevieweeNominations")
+  accessTokens        AccessToken[]
 
-  @@unique([userId, companyId])
+  @@unique([companyId, email])
   @@index([companyId])
   @@index([managerId])
   @@index([departmentId])
+}
+
+model CompanyUser {
+  id           String      @id @default(cuid())
+  userId       String
+  companyId    String
+  role         CompanyRole @default(MEMBER)
+  roleConfigId String?
+  employeeId   String?     @unique
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company    Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  roleConfig CompanyRoleConfig? @relation(fields: [roleConfigId], references: [id])
+  employee   Employee?         @relation(fields: [employeeId], references: [id])
+
+  @@unique([userId, companyId])
+  @@index([companyId])
 }
 
 model Department {
@@ -149,10 +176,10 @@ model Department {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  company  Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  parent   Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id])
-  children Department[] @relation("DepartmentHierarchy")
-  members  CompanyUser[]
+  company   Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  parent    Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id])
+  children  Department[] @relation("DepartmentHierarchy")
+  employees Employee[]
 
   @@index([companyId])
   @@index([parentId])
@@ -274,20 +301,20 @@ model Cycle {
 }
 
 model CycleParticipant {
-  id            String    @id @default(cuid())
-  cycleId       String
-  companyUserId String
-  isReviewee    Boolean   @default(true)
-  isReviewer    Boolean   @default(true)
-  releasedAt    DateTime?
-  createdAt     DateTime  @default(now())
+  id         String    @id @default(cuid())
+  cycleId    String
+  employeeId String
+  isReviewee Boolean   @default(true)
+  isReviewer Boolean   @default(true)
+  releasedAt DateTime?
+  createdAt  DateTime  @default(now())
 
-  cycle       Cycle       @relation(fields: [cycleId], references: [id], onDelete: Cascade)
-  companyUser CompanyUser @relation(fields: [companyUserId], references: [id], onDelete: Cascade)
+  cycle    Cycle    @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
-  @@unique([cycleId, companyUserId])
+  @@unique([cycleId, employeeId])
   @@index([cycleId])
-  @@index([companyUserId])
+  @@index([employeeId])
 }
 
 model Nomination {
@@ -302,10 +329,10 @@ model Nomination {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
-  cycle     Cycle       @relation(fields: [cycleId], references: [id], onDelete: Cascade)
-  nominator CompanyUser @relation("NominatorRelation", fields: [nominatorId], references: [id])
-  nominee   CompanyUser @relation("NomineeRelation", fields: [nomineeId], references: [id])
-  reviewee  CompanyUser @relation("RevieweeNominations", fields: [revieweeId], references: [id])
+  cycle     Cycle    @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  nominator Employee @relation("NominatorRelation", fields: [nominatorId], references: [id])
+  nominee   Employee @relation("NomineeRelation", fields: [nomineeId], references: [id])
+  reviewee  Employee @relation("RevieweeNominations", fields: [revieweeId], references: [id])
 
   @@unique([cycleId, nomineeId, revieweeId])
   @@index([cycleId])
@@ -335,8 +362,8 @@ model ReviewAssignment {
   updatedAt         DateTime               @updatedAt
 
   cycle     Cycle             @relation(fields: [cycleId], references: [id], onDelete: Cascade)
-  reviewer  CompanyUser?      @relation("ReviewerAssignments", fields: [reviewerId], references: [id])
-  reviewee  CompanyUser       @relation("RevieweeAssignments", fields: [revieweeId], references: [id])
+  reviewer  Employee?         @relation("ReviewerAssignments", fields: [reviewerId], references: [id])
+  reviewee  Employee          @relation("RevieweeAssignments", fields: [revieweeId], references: [id])
   token     ReviewToken?      @relation(fields: [tokenId], references: [id])
   responses ReviewResponse[]
 
@@ -385,6 +412,24 @@ model ReviewToken {
   @@index([email])
 }
 
+model AccessToken {
+  id         String             @id @default(cuid())
+  token      String             @unique
+  email      String
+  companyId  String
+  employeeId String?
+  purpose    AccessTokenPurpose
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime           @default(now())
+
+  company  Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employee Employee? @relation(fields: [employeeId], references: [id])
+
+  @@index([token])
+  @@index([email])
+}
+
 // ============================================
 // INVITATIONS
 // ============================================
@@ -393,7 +438,7 @@ model Invitation {
   id           String      @id @default(cuid())
   email        String
   companyId    String
-  role         CompanyRole @default(EMPLOYEE)
+  role         CompanyRole @default(MEMBER)
   roleConfigId String?
   departmentId String?
   managerId    String?

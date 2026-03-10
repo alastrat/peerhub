@@ -39,6 +39,9 @@ async function getTemplate(companyId: string, templateId: string) {
       sections: {
         include: {
           questions: {
+            include: {
+              competency: { select: { name: true } },
+            },
             orderBy: { order: "asc" },
           },
         },
@@ -168,6 +171,11 @@ export default async function TemplateDetailPage({ params }: PageProps) {
                         <Badge variant="outline" className="text-xs">
                           {QUESTION_TYPE_LABELS[question.type]}
                         </Badge>
+                        {question.competency && (
+                          <Badge variant="secondary" className="text-xs">
+                            {question.competency.name}
+                          </Badge>
+                        )}
                         {question.isRequired && (
                           <Badge variant="secondary" className="text-xs">
                             Required

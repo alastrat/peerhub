@@ -28,7 +28,7 @@ import { createRole } from "@/lib/actions/roles";
 const ROLE_ICONS: Record<string, typeof Shield> = {
   ADMIN: Shield,
   MANAGER: Users,
-  EMPLOYEE: UserCheck,
+  MEMBER: UserCheck,
 };
 
 interface RoleData {

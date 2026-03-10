@@ -22,18 +22,16 @@ import { ASSIGNMENT_STATUS_LABELS, ASSIGNMENT_STATUS_COLORS } from "@/lib/consta
 import { getInitials } from "@/lib/utils/formatting";
 import { redirect } from "next/navigation";
 
-async function getMyReviews(companyUserId: string) {
+async function getMyReviews(employeeId: string) {
   return prisma.reviewAssignment.findMany({
     where: {
-      reviewerId: companyUserId,
+      reviewerId: employeeId,
       status: { in: ["PENDING", "IN_PROGRESS"] },
       cycle: { status: "IN_PROGRESS" },
     },
     include: {
       cycle: true,
-      reviewee: {
-        include: { user: true },
-      },
+      reviewee: true,
     },
     orderBy: { cycle: { reviewEndDate: "asc" } },
   });
@@ -59,11 +57,11 @@ function ReviewsLoading() {
 
 async function ReviewsList() {
   const session = await auth();
-  if (!session?.companyUser) {
+  if (!session?.companyUser?.employeeId) {
     redirect("/login");
   }
 
-  const reviews = await getMyReviews(session.companyUser.id);
+  const reviews = await getMyReviews(session.companyUser.employeeId);
 
   if (reviews.length === 0) {
     return (
@@ -86,10 +84,10 @@ async function ReviewsList() {
             <Card className="transition-shadow hover:shadow-md">
               <CardContent className="flex items-center gap-4 p-4">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={assignment.reviewee.user.image || undefined} />
+                  <AvatarImage src={undefined} />
                   <AvatarFallback>
-                    {assignment.reviewee.user.name
-                      ? getInitials(assignment.reviewee.user.name)
+                    {assignment.reviewee.name
+                      ? getInitials(assignment.reviewee.name)
                       : "?"}
                   </AvatarFallback>
                 </Avatar>
@@ -98,7 +96,7 @@ async function ReviewsList() {
                     <p className="font-medium">
                       {assignment.reviewerType === "SELF"
                         ? "Self Review"
-                        : `Review for ${assignment.reviewee.user.name}`}
+                        : `Review for ${assignment.reviewee.name}`}
                     </p>
                     <Badge variant="outline">
                       {REVIEWER_TYPE_LABELS[assignment.reviewerType]}

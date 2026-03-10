@@ -49,7 +49,7 @@ const ROLE_PERMISSIONS: Record<CompanyRole, Partial<Record<Resource, Action[]>>>
     report: ["read"],
     settings: [],
   },
-  EMPLOYEE: {
+  MEMBER: {
     company: ["read"],
     user: ["read"],
     department: ["read"],
@@ -116,7 +116,7 @@ function checkContextualPermission(
 
     case "nomination":
       // Employees can create nominations for themselves
-      if (role === "EMPLOYEE" && action === "create") {
+      if (role === "MEMBER" && action === "create") {
         return true;
       }
       // Managers can approve nominations for their direct reports

@@ -12,8 +12,10 @@ interface CreateUserInput {
   email: string;
   name: string;
   title?: string;
+  employeeCode?: string;
   departmentId?: string;
   managerId?: string;
+  startDate?: string | Date;
   role?: CompanyRole;
 }
 
@@ -67,7 +69,7 @@ export async function inviteUser(
       data: {
         email: input.email,
         companyId,
-        role: input.role || "EMPLOYEE",
+        role: input.role || "MEMBER",
         departmentId: input.departmentId,
         managerId: input.managerId,
         token,
@@ -135,15 +137,27 @@ export async function createUser(
       return { success: false, error: "User already exists in this company" };
     }
 
-    // Create company user
+    // Create Employee record first with org-chart fields
+    const employee = await prisma.employee.create({
+      data: {
+        companyId,
+        email: input.email,
+        name: input.name,
+        title: input.title,
+        employeeCode: input.employeeCode,
+        departmentId: input.departmentId,
+        managerId: input.managerId,
+        startDate: input.startDate ? new Date(input.startDate) : undefined,
+      },
+    });
+
+    // Create CompanyUser linked to Employee
     const companyUser = await prisma.companyUser.create({
       data: {
         userId: user.id,
         companyId,
-        role: input.role || "EMPLOYEE",
-        title: input.title,
-        departmentId: input.departmentId,
-        managerId: input.managerId,
+        role: input.role || "MEMBER",
+        employeeId: employee.id,
       },
     });
 
@@ -157,7 +171,13 @@ export async function createUser(
 
 export async function updateUser(
   userId: string,
-  data: Partial<Pick<CompanyUser, "title" | "departmentId" | "managerId" | "role" | "isActive">>
+  data: {
+    title?: string | null;
+    departmentId?: string | null;
+    managerId?: string | null;
+    role?: CompanyRole;
+    isActive?: boolean;
+  }
 ): Promise<ActionResult<CompanyUser>> {
   try {
     const session = await auth();
@@ -176,10 +196,30 @@ export async function updateUser(
       return { success: false, error: "User not found" };
     }
 
+    // Separate CompanyUser fields from Employee fields
+    const companyUserData: { role?: CompanyRole; isActive?: boolean } = {};
+    if (data.role !== undefined) companyUserData.role = data.role;
+    if (data.isActive !== undefined) companyUserData.isActive = data.isActive;
+
+    // Update CompanyUser fields if any
     const companyUser = await prisma.companyUser.update({
       where: { id: userId },
-      data,
+      data: companyUserData,
     });
+
+    // Update Employee fields (title, departmentId, managerId) if linked
+    const hasEmployeeFields = data.title !== undefined || data.departmentId !== undefined || data.managerId !== undefined;
+    if (hasEmployeeFields && existingUser.employeeId) {
+      const employeeData: { title?: string | null; departmentId?: string | null; managerId?: string | null } = {};
+      if (data.title !== undefined) employeeData.title = data.title;
+      if (data.departmentId !== undefined) employeeData.departmentId = data.departmentId;
+      if (data.managerId !== undefined) employeeData.managerId = data.managerId;
+
+      await prisma.employee.update({
+        where: { id: existingUser.employeeId },
+        data: employeeData,
+      });
+    }
 
     revalidatePath("/people");
     return { success: true, data: companyUser };

@@ -76,7 +76,7 @@ import {
 const ROLE_BADGE_STYLES: Record<string, string> = {
   ADMIN: "bg-purple-100 text-purple-700 border-purple-200",
   MANAGER: "bg-blue-100 text-blue-700 border-blue-200",
-  EMPLOYEE: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  MEMBER: "bg-emerald-100 text-emerald-700 border-emerald-200",
 };
 
 const CYCLE_STATUS_STYLES: Record<string, string> = {
@@ -156,7 +156,7 @@ export function MemberDetail({
     "deactivate" | "activate" | "remove" | null
   >(null);
   const [roleChange, setRoleChange] = useState<
-    "ADMIN" | "MANAGER" | "EMPLOYEE" | null
+    "ADMIN" | "MANAGER" | "MEMBER" | null
   >(null);
 
   // Edit mode
@@ -177,7 +177,7 @@ export function MemberDetail({
       const result = await updateMemberDetails({
         companyUserId: member.id,
         title: editTitle.trim() || null,
-        employeeId: editEmployeeId.trim() || null,
+        employeeCode: editEmployeeId.trim() || null,
         departmentId: editDepartmentId !== "none" ? editDepartmentId : null,
         managerId: editManagerId !== "none" ? editManagerId : null,
         startDate: editStartDate || null,
@@ -306,10 +306,10 @@ export function MemberDetail({
                         Make Manager
                       </DropdownMenuItem>
                     )}
-                    {member.role !== "EMPLOYEE" && (
-                      <DropdownMenuItem onClick={() => setRoleChange("EMPLOYEE")}>
+                    {member.role !== "MEMBER" && (
+                      <DropdownMenuItem onClick={() => setRoleChange("MEMBER")}>
                         <Shield className="mr-2 h-4 w-4" />
-                        Make Employee
+                        Make Member
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuSeparator />

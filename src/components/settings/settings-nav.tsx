@@ -13,6 +13,7 @@ import {
   Layers,
   Shield,
   Activity,
+  Target,
 } from "lucide-react";
 
 export interface NavItem {
@@ -35,6 +36,7 @@ const COMPANY_ITEMS: NavItem[] = [
   { href: "/settings/company/members", label: "Members", icon: Users },
   { href: "/settings/company/roles", label: "Roles", icon: Shield },
   { href: "/settings/company/departments", label: "Departments", icon: Layers },
+  { href: "/settings/company/competencies", label: "Competencies", icon: Target },
 ];
 
 const PLATFORM_ITEMS: NavItem[] = [

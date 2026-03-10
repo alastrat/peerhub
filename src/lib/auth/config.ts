@@ -75,6 +75,16 @@ export const authOptions: NextAuthOptions = {
           select: { globalRole: true },
         });
         token.globalRole = dbUser?.globalRole || "USER";
+      } else if (token.id) {
+        // Verify user still exists (handles stale JWTs after DB reset)
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { id: true },
+        });
+        if (!dbUser) {
+          // User no longer exists — invalidate token
+          return { ...token, id: "", globalRole: "USER" as const };
+        }
       }
 
       // Handle session updates
@@ -117,7 +127,7 @@ export const authOptions: NextAuthOptions = {
               companyName: companyUser.company.name,
               companySlug: companyUser.company.slug,
               role: companyUser.role,
-              title: companyUser.title,
+              employeeId: companyUser.employeeId,
             };
           }
         } else {
@@ -147,7 +157,7 @@ export const authOptions: NextAuthOptions = {
               companyName: cu.company.name,
               companySlug: cu.company.slug,
               role: cu.role,
-              title: cu.title,
+              employeeId: cu.employeeId,
             };
           }
         }
@@ -206,8 +216,8 @@ declare module "next-auth" {
       companyId: string;
       companyName: string;
       companySlug: string;
-      role: "ADMIN" | "MANAGER" | "EMPLOYEE";
-      title: string | null;
+      role: "ADMIN" | "MANAGER" | "MEMBER";
+      employeeId: string | null;
     };
   }
 

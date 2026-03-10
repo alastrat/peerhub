@@ -80,14 +80,22 @@ const REVIEWER_TYPES: ReviewerType[] = [
   "EXTERNAL",
 ];
 
+interface CompetencyOption {
+  id: string;
+  name: string;
+  category: string | null;
+}
+
 interface TemplateBuilderProps {
   initialData?: CreateTemplateInput & { id?: string };
   mode?: "create" | "edit";
+  competencies?: CompetencyOption[];
 }
 
 export function TemplateBuilder({
   initialData,
   mode = "create",
+  competencies = [],
 }: TemplateBuilderProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -263,6 +271,7 @@ export function TemplateBuilder({
               canMoveUp={sectionIndex > 0}
               canMoveDown={sectionIndex < sections.length - 1}
               sectionsCount={sections.length}
+              competencies={competencies}
             />
           ))}
 
@@ -312,6 +321,7 @@ interface SectionBuilderProps {
   canMoveUp: boolean;
   canMoveDown: boolean;
   sectionsCount: number;
+  competencies: CompetencyOption[];
 }
 
 function SectionBuilder({
@@ -325,6 +335,7 @@ function SectionBuilder({
   canMoveUp,
   canMoveDown,
   sectionsCount,
+  competencies,
 }: SectionBuilderProps) {
   const {
     fields: questions,
@@ -554,6 +565,7 @@ function SectionBuilder({
                   }}
                   canMoveUp={questionIndex > 0}
                   canMoveDown={questionIndex < questions.length - 1}
+                  competencies={competencies}
                 />
               ))}
 
@@ -590,6 +602,7 @@ interface QuestionBuilderProps {
   onMoveDown: () => void;
   canMoveUp: boolean;
   canMoveDown: boolean;
+  competencies: CompetencyOption[];
 }
 
 function QuestionBuilder({
@@ -601,6 +614,7 @@ function QuestionBuilder({
   onMoveDown,
   canMoveUp,
   canMoveDown,
+  competencies,
 }: QuestionBuilderProps) {
   const questionType = form.watch(
     `sections.${sectionIndex}.questions.${questionIndex}.type`
@@ -679,6 +693,41 @@ function QuestionBuilder({
             )}
           />
         </div>
+
+        {questionType === "COMPETENCY_RATING" && (
+          <FormField
+            control={form.control}
+            name={`sections.${sectionIndex}.questions.${questionIndex}.competencyId`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Competency</FormLabel>
+                <Select
+                  onValueChange={(val) => field.onChange(val === "none" ? undefined : val)}
+                  value={field.value || "none"}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select competency" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">No competency linked</SelectItem>
+                    {competencies.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                        {c.category ? ` (${c.category})` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Link this question to a competency for aggregated reporting
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}

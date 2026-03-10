@@ -76,7 +76,7 @@ function NavItem({
 export function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const role = session?.companyUser?.role || "EMPLOYEE";
+  const role = session?.companyUser?.role || "MEMBER";
 
   const isAdmin = role === "ADMIN";
   const isManager = role === "MANAGER" || role === "ADMIN";

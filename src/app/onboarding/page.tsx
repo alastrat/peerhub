@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -104,8 +104,13 @@ export default function OnboardingPage() {
   };
 
   // If user already has a company, redirect to overview
+  useEffect(() => {
+    if (session?.companyUser) {
+      router.push("/overview");
+    }
+  }, [session?.companyUser, router]);
+
   if (session?.companyUser) {
-    router.push("/overview");
     return null;
   }
 

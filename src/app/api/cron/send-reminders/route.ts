@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { sendReminderEmail } from "@/lib/email/templates";
 import { formatDate } from "@/lib/utils/dates";
+import { notifyEmployee } from "@/lib/utils/notify-employee";
 
 // Verify cron secret to prevent unauthorized access
 function verifyCronSecret(request: Request): boolean {
@@ -49,9 +50,7 @@ export async function GET(request: Request) {
         reviewerId: { not: null }, // Only internal reviewers
       },
       include: {
-        reviewer: {
-          include: { user: true },
-        },
+        reviewer: true,
         cycle: true,
       },
     });
@@ -93,7 +92,7 @@ export async function GET(request: Request) {
 
     // Send reminders to each reviewer with pending assignments
     for (const [reviewerId, data] of Object.entries(assignmentsByReviewer)) {
-      if (!data.reviewer?.user.email) continue;
+      if (!data.reviewer?.email) continue;
 
       const pendingCount = data.assignments.length;
 
@@ -120,17 +119,24 @@ export async function GET(request: Request) {
       if (!shouldSendReminder) continue;
 
       try {
-        await sendReminderEmail({
-          to: data.reviewer.user.email,
-          reviewerName: data.reviewer.user.name || "there",
-          pendingCount,
-          dueDate: formatDate(data.earliestDueDate),
-          dashboardUrl: `${APP_URL}/my-reviews`,
+        await notifyEmployee({
+          employeeId: reviewerId,
+          subject: `Reminder: ${pendingCount} pending review${pendingCount > 1 ? "s" : ""}`,
+          dashboardUrl: `/my-reviews`,
+          sendMemberEmail: async (email, name, url) => {
+            await sendReminderEmail({
+              to: email,
+              reviewerName: name || "there",
+              pendingCount,
+              dueDate: formatDate(data.earliestDueDate),
+              dashboardUrl: url,
+            });
+          },
         });
         remindersSent++;
       } catch (error) {
-        console.error(`Failed to send reminder to ${data.reviewer.user.email}:`, error);
-        errors.push(data.reviewer.user.email);
+        console.error(`Failed to send reminder to ${data.reviewer?.email}:`, error);
+        errors.push(data.reviewer?.email || reviewerId);
       }
     }
 
@@ -140,9 +146,7 @@ export async function GET(request: Request) {
       include: {
         participants: {
           include: {
-            companyUser: {
-              include: { user: true },
-            },
+            employee: true,
           },
         },
       },
@@ -167,7 +171,7 @@ export async function GET(request: Request) {
         const nominationCount = await prisma.nomination.count({
           where: {
             cycleId: cycle.id,
-            revieweeId: participant.companyUserId,
+            revieweeId: participant.employeeId,
             status: { in: ["PENDING", "APPROVED"] },
           },
         });
@@ -175,21 +179,29 @@ export async function GET(request: Request) {
         // Only remind if they haven't reached minimum
         if (nominationCount >= cycle.minPeers) continue;
 
+        const remainingNominations = cycle.minPeers - nominationCount;
         try {
-          await sendReminderEmail({
-            to: participant.companyUser.user.email,
-            reviewerName: participant.companyUser.user.name || "there",
-            pendingCount: cycle.minPeers - nominationCount,
-            dueDate: formatDate(cycle.nominationEndDate),
-            dashboardUrl: `${APP_URL}/nominations/${cycle.id}`,
+          await notifyEmployee({
+            employeeId: participant.employeeId,
+            subject: `Reminder: ${remainingNominations} nomination${remainingNominations > 1 ? "s" : ""} needed`,
+            dashboardUrl: `/nominations/${cycle.id}`,
+            sendMemberEmail: async (email, name, url) => {
+              await sendReminderEmail({
+                to: email,
+                reviewerName: name || "there",
+                pendingCount: remainingNominations,
+                dueDate: formatDate(cycle.nominationEndDate!),
+                dashboardUrl: url,
+              });
+            },
           });
           remindersSent++;
         } catch (error) {
           console.error(
-            `Failed to send nomination reminder to ${participant.companyUser.user.email}:`,
+            `Failed to send nomination reminder to ${participant.employee.email}:`,
             error
           );
-          errors.push(participant.companyUser.user.email);
+          errors.push(participant.employee.email);
         }
       }
     }

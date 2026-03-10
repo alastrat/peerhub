@@ -19,16 +19,14 @@ import { redirect } from "next/navigation";
 import { PeopleTable } from "@/components/people/people-table";
 
 async function getPeople(companyId: string) {
-  return prisma.companyUser.findMany({
-    where: { companyId, isActive: true, user: { globalRole: { not: "SUPER_ADMIN" } } },
+  return prisma.employee.findMany({
+    where: { companyId, isActive: true },
     include: {
-      user: true,
       department: true,
-      manager: {
-        include: { user: true },
-      },
+      manager: true,
+      companyUser: true,
     },
-    orderBy: { user: { name: "asc" } },
+    orderBy: { name: "asc" },
   });
 }
 
@@ -100,11 +98,11 @@ async function PeopleList() {
 
   const rows = people.map((p) => ({
     id: p.id,
-    role: p.role,
+    name: p.name,
     title: p.title,
-    user: { name: p.user.name, image: p.user.image },
+    role: p.companyUser?.role ?? null,
     department: p.department ? { name: p.department.name } : null,
-    manager: p.manager ? { user: { name: p.manager.user.name } } : null,
+    manager: p.manager ? { name: p.manager.name } : null,
   }));
 
   return <PeopleTable data={rows} />;

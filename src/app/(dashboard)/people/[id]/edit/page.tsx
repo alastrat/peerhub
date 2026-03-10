@@ -13,17 +13,15 @@ interface PageProps {
 }
 
 async function getEmployee(companyId: string, employeeId: string) {
-  return prisma.companyUser.findFirst({
+  return prisma.employee.findFirst({
     where: {
       id: employeeId,
       companyId,
     },
     include: {
-      user: true,
       department: true,
-      manager: {
-        include: { user: true },
-      },
+      manager: true,
+      companyUser: true,
     },
   });
 }
@@ -36,15 +34,13 @@ async function getDepartments(companyId: string) {
 }
 
 async function getManagers(companyId: string, excludeId: string) {
-  return prisma.companyUser.findMany({
+  return prisma.employee.findMany({
     where: {
       companyId,
       isActive: true,
-      role: { in: ["ADMIN", "MANAGER"] },
       id: { not: excludeId },
     },
-    include: { user: true },
-    orderBy: { user: { name: "asc" } },
+    orderBy: { name: "asc" },
   });
 }
 
@@ -75,7 +71,7 @@ export default async function EditEmployeePage({ params }: PageProps) {
           </Button>
         </Link>
         <PageHeader
-          title={`Edit ${employee.user.name || "Employee"}`}
+          title={`Edit ${employee.name || "Employee"}`}
           description="Update employee information"
         />
       </div>

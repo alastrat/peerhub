@@ -39,20 +39,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import type { Department, CompanyUser, User } from "@prisma/client";
+import type { Department, Employee, CompanyUser } from "@prisma/client";
 
-type CompanyUserWithRelations = CompanyUser & {
-  user: User;
+type EmployeeWithRelations = Employee & {
   department: Department | null;
-  manager: (CompanyUser & { user: User }) | null;
+  manager: Employee | null;
+  companyUser: CompanyUser | null;
 };
 
-type CompanyUserWithUser = CompanyUser & { user: User };
-
 interface EditEmployeeFormProps {
-  employee: CompanyUserWithRelations;
+  employee: EmployeeWithRelations;
   departments: Department[];
-  managers: CompanyUserWithUser[];
+  managers: Employee[];
 }
 
 export function EditEmployeeForm({
@@ -67,9 +65,9 @@ export function EditEmployeeForm({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(updateUserSchema) as any,
     defaultValues: {
-      name: employee.user.name || "",
+      name: employee.name || "",
       title: employee.title || "",
-      role: employee.role,
+      role: employee.companyUser?.role || "MEMBER",
       departmentId: employee.departmentId || undefined,
       managerId: employee.managerId || undefined,
       isActive: employee.isActive,
@@ -117,7 +115,7 @@ export function EditEmployeeForm({
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2">
             <label className="text-sm font-medium">Email address</label>
-            <Input value={employee.user.email || ""} disabled />
+            <Input value={employee.email || ""} disabled />
             <p className="text-sm text-muted-foreground">
               Email cannot be changed
             </p>
@@ -234,7 +232,7 @@ export function EditEmployeeForm({
                     <SelectItem value="none">No manager</SelectItem>
                     {managers.map((manager) => (
                       <SelectItem key={manager.id} value={manager.id}>
-                        {manager.user.name || manager.user.email}
+                        {manager.name || manager.email}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -277,7 +275,7 @@ export function EditEmployeeForm({
               <AlertDialogHeader>
                 <AlertDialogTitle>Deactivate Employee</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will deactivate {employee.user.name || "this employee"}'s account. They
+                  This will deactivate {employee.name || "this employee"}'s account. They
                   will no longer be able to access the system or participate in reviews.
                   This action can be reversed by reactivating them later.
                 </AlertDialogDescription>

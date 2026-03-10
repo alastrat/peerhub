@@ -8,6 +8,14 @@ import { Button } from "@/components/ui/button";
 import { TemplateBuilder } from "@/components/templates/template-builder";
 import type { QuestionType, ReviewerType } from "@prisma/client";
 
+async function getCompetencies(companyId: string) {
+  return prisma.competency.findMany({
+    where: { companyId },
+    select: { id: true, name: true, category: true },
+    orderBy: [{ category: "asc" }, { name: "asc" }],
+  });
+}
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
@@ -40,7 +48,11 @@ export default async function EditTemplatePage({ params }: PageProps) {
     redirect("/overview");
   }
 
-  const template = await getTemplate(session.companyUser.companyId, id);
+  const companyId = session.companyUser.companyId;
+  const [template, competencies] = await Promise.all([
+    getTemplate(companyId, id),
+    getCompetencies(companyId),
+  ]);
 
   if (!template) {
     notFound();
@@ -65,6 +77,7 @@ export default async function EditTemplatePage({ params }: PageProps) {
         isRequired: question.isRequired,
         order: question.order,
         config: question.config as Record<string, unknown> | undefined,
+        competencyId: question.competencyId || undefined,
       })),
     })),
   };
@@ -83,7 +96,7 @@ export default async function EditTemplatePage({ params }: PageProps) {
         />
       </div>
 
-      <TemplateBuilder initialData={initialData} mode="edit" />
+      <TemplateBuilder initialData={initialData} mode="edit" competencies={competencies} />
     </div>
   );
 }

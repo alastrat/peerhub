@@ -16,9 +16,7 @@ export default async function ExternalReviewSuccessPage({ params }: PageProps) {
       company: true,
       assignment: {
         include: {
-          reviewee: {
-            include: { user: true },
-          },
+          reviewee: true,
         },
       },
     },
@@ -31,8 +29,8 @@ export default async function ExternalReviewSuccessPage({ params }: PageProps) {
   return (
     <SubmissionSuccess
       revieweeName={
-        reviewToken.assignment?.reviewee.user.name ||
-        reviewToken.assignment?.reviewee.user.email
+        reviewToken.assignment?.reviewee.name ||
+        reviewToken.assignment?.reviewee.email
       }
       companyName={reviewToken.company.name}
     />

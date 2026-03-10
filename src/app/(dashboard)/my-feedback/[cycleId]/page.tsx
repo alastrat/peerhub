@@ -13,6 +13,7 @@ import { RatingSummary } from "@/components/reports/rating-summary";
 import { RatingChart } from "@/components/reports/rating-chart";
 import { SectionResults } from "@/components/reports/section-results";
 import { TextFeedback } from "@/components/reports/text-feedback";
+import { CompetencyScores } from "@/components/reports/competency-scores";
 import type { ReviewerType } from "@prisma/client";
 
 interface PageProps {
@@ -38,18 +39,21 @@ async function MyReportContent({ cycleId }: { cycleId: string }) {
     redirect("/login");
   }
 
+  const employeeId = session.companyUser.employeeId;
+  if (!employeeId) {
+    notFound();
+  }
+
   // Check if user has access to this report
   const participant = await prisma.cycleParticipant.findFirst({
     where: {
       cycleId,
-      companyUserId: session.companyUser.id,
+      employeeId,
       releasedAt: { not: null },
     },
     include: {
       cycle: true,
-      companyUser: {
-        include: { user: true },
-      },
+      employee: true,
     },
   });
 
@@ -58,7 +62,7 @@ async function MyReportContent({ cycleId }: { cycleId: string }) {
     const unreleased = await prisma.cycleParticipant.findFirst({
       where: {
         cycleId,
-        companyUserId: session.companyUser.id,
+        employeeId,
       },
       include: {
         cycle: true,
@@ -96,7 +100,7 @@ async function MyReportContent({ cycleId }: { cycleId: string }) {
   const report = await getEmployeeReport({
     cycleId,
     companyId: session.companyUser.companyId,
-    companyUserId: session.companyUser.id,
+    employeeId,
   });
 
   if (!report) {
@@ -190,6 +194,11 @@ async function MyReportContent({ cycleId }: { cycleId: string }) {
         />
         <RatingChart distribution={overallDistribution} />
       </div>
+
+      {/* Competency Scores */}
+      {report.competencyScores.length > 0 && (
+        <CompetencyScores scores={report.competencyScores} />
+      )}
 
       {/* Text Feedback Summary */}
       <TextFeedback

@@ -27,45 +27,52 @@ export default async function MemberDetailPage({
     where: { id: memberId, companyId },
     include: {
       user: true,
-      department: true,
       roleConfig: true,
-      manager: { include: { user: true } },
-      directReports: {
-        include: { user: true, department: true },
-        where: { isActive: true },
+      employee: {
+        include: {
+          department: true,
+          manager: true,
+          directReports: {
+            include: { department: true },
+            where: { isActive: true },
+          },
+        },
       },
     },
   });
 
   if (!member) notFound();
 
+  const employeeId = member.employeeId;
+
   const [reviewsReceived, reviewsGiven, nominations] = await Promise.all([
-    prisma.reviewAssignment.count({ where: { revieweeId: memberId } }),
-    prisma.reviewAssignment.count({ where: { reviewerId: memberId } }),
-    prisma.nomination.count({ where: { nomineeId: memberId, status: "APPROVED" } }),
+    employeeId ? prisma.reviewAssignment.count({ where: { revieweeId: employeeId } }) : Promise.resolve(0),
+    employeeId ? prisma.reviewAssignment.count({ where: { reviewerId: employeeId } }) : Promise.resolve(0),
+    employeeId ? prisma.nomination.count({ where: { nomineeId: employeeId, status: "APPROVED" } }) : Promise.resolve(0),
   ]);
 
-  const [departments, otherMembers] = await Promise.all([
+  const [departments, otherEmployees] = await Promise.all([
     prisma.department.findMany({
       where: { companyId },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
-    prisma.companyUser.findMany({
-      where: { companyId, id: { not: memberId }, isActive: true },
-      include: { user: { select: { name: true } } },
-      orderBy: { user: { name: "asc" } },
+    prisma.employee.findMany({
+      where: { companyId, id: { not: employeeId ?? undefined }, isActive: true },
+      orderBy: { name: "asc" },
     }),
   ]);
 
-  const cycleParticipations = await prisma.cycleParticipant.findMany({
-    where: { companyUserId: memberId },
-    include: {
-      cycle: { select: { id: true, name: true, status: true, reviewStartDate: true, reviewEndDate: true } },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-  });
+  const cycleParticipations = employeeId
+    ? await prisma.cycleParticipant.findMany({
+        where: { employeeId },
+        include: {
+          cycle: { select: { id: true, name: true, status: true, reviewStartDate: true, reviewEndDate: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      })
+    : [];
 
   return (
     <div className="space-y-6">
@@ -77,7 +84,7 @@ export default async function MemberDetailPage({
         </Link>
         <PageHeader
           title={member.user.name || "Member"}
-          description={member.title || member.user.email}
+          description={member.employee?.title || member.user.email}
           className="mb-0"
         />
       </div>
@@ -90,22 +97,22 @@ export default async function MemberDetailPage({
           image: member.user.image,
           role: member.role,
           roleConfigName: member.roleConfig?.name || null,
-          title: member.title,
-          employeeId: member.employeeId,
-          departmentId: member.departmentId,
-          department: member.department?.name || null,
-          managerId: member.managerId,
-          manager: member.manager
-            ? { id: member.manager.id, name: member.manager.user.name }
+          title: member.employee?.title || null,
+          employeeId: member.employee?.employeeCode || null,
+          departmentId: member.employee?.departmentId || null,
+          department: member.employee?.department?.name || null,
+          managerId: member.employee?.managerId || null,
+          manager: member.employee?.manager
+            ? { id: member.employee.manager.id, name: member.employee.manager.name }
             : null,
-          directReports: member.directReports.map((r) => ({
+          directReports: (member.employee?.directReports || []).map((r) => ({
             id: r.id,
-            name: r.user.name,
-            image: r.user.image,
+            name: r.name,
+            image: null,
             title: r.title,
             department: r.department?.name || null,
           })),
-          startDate: member.startDate?.toISOString() || null,
+          startDate: member.employee?.startDate?.toISOString() || null,
           isActive: member.isActive,
           createdAt: member.createdAt.toISOString(),
         }}
@@ -113,7 +120,7 @@ export default async function MemberDetailPage({
           reviewsReceived,
           reviewsGiven,
           nominations,
-          directReports: member.directReports.length,
+          directReports: member.employee?.directReports.length || 0,
         }}
         cycleParticipations={cycleParticipations.map((cp) => ({
           cycleId: cp.cycle.id,
@@ -124,9 +131,9 @@ export default async function MemberDetailPage({
         }))}
         currentUserId={session.user.id}
         departments={departments}
-        otherMembers={otherMembers.map((m) => ({
-          id: m.id,
-          name: m.user.name,
+        otherMembers={otherEmployees.map((e) => ({
+          id: e.id,
+          name: e.name,
         }))}
       />
     </div>

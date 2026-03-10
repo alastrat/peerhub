@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,16 +29,16 @@ import type { CompanyRole } from "@prisma/client";
 const ROLE_BADGE_STYLES: Record<CompanyRole, string> = {
   ADMIN: "bg-purple-100 text-purple-700 border-purple-200",
   MANAGER: "bg-blue-100 text-blue-700 border-blue-200",
-  EMPLOYEE: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  MEMBER: "bg-emerald-100 text-emerald-700 border-emerald-200",
 };
 
 export type PersonRow = {
   id: string;
-  role: CompanyRole;
+  name: string;
   title: string | null;
-  user: { name: string | null; image: string | null };
+  role: CompanyRole | null;
   department: { name: string } | null;
-  manager: { user: { name: string | null } } | null;
+  manager: { name: string } | null;
 };
 
 type SortField = "name" | "role" | "title" | "department" | "manager";
@@ -69,10 +69,10 @@ export function PeopleTable({ data }: { data: PersonRow[] }) {
       const q = search.toLowerCase();
       result = result.filter(
         (p) =>
-          p.user.name?.toLowerCase().includes(q) ||
+          p.name?.toLowerCase().includes(q) ||
           p.title?.toLowerCase().includes(q) ||
           p.department?.name.toLowerCase().includes(q) ||
-          p.manager?.user.name?.toLowerCase().includes(q)
+          p.manager?.name?.toLowerCase().includes(q)
       );
     }
 
@@ -91,15 +91,15 @@ export function PeopleTable({ data }: { data: PersonRow[] }) {
     const getValue = (p: PersonRow): string => {
       switch (sortField) {
         case "name":
-          return p.user.name || "";
+          return p.name || "";
         case "role":
-          return p.role;
+          return p.role || "";
         case "title":
           return p.title || "";
         case "department":
           return p.department?.name || "";
         case "manager":
-          return p.manager?.user.name || "";
+          return p.manager?.name || "";
       }
     };
 
@@ -167,7 +167,7 @@ export function PeopleTable({ data }: { data: PersonRow[] }) {
             <SelectItem value="all">All Roles</SelectItem>
             <SelectItem value="ADMIN">Admin</SelectItem>
             <SelectItem value="MANAGER">Manager</SelectItem>
-            <SelectItem value="EMPLOYEE">Employee</SelectItem>
+            <SelectItem value="MEMBER">Member</SelectItem>
           </SelectContent>
         </Select>
         <Select value={deptFilter} onValueChange={handleFilterChange(setDeptFilter)}>
@@ -210,18 +210,21 @@ export function PeopleTable({ data }: { data: PersonRow[] }) {
                   <TableCell>
                     <Link href={`/people/${person.id}`} className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={person.user.image || undefined} />
                         <AvatarFallback className="text-xs">
-                          {person.user.name ? getInitials(person.user.name) : "?"}
+                          {person.name ? getInitials(person.name) : "?"}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="font-medium">{person.user.name || "Unnamed"}</span>
+                      <span className="font-medium">{person.name || "Unnamed"}</span>
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={`text-xs border ${ROLE_BADGE_STYLES[person.role]}`}>
-                      {ROLE_LABELS[person.role]}
-                    </Badge>
+                    {person.role ? (
+                      <Badge variant="outline" className={`text-xs border ${ROLE_BADGE_STYLES[person.role]}`}>
+                        {ROLE_LABELS[person.role]}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {person.title || "—"}
@@ -230,7 +233,7 @@ export function PeopleTable({ data }: { data: PersonRow[] }) {
                     {person.department?.name || "—"}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {person.manager?.user.name || "—"}
+                    {person.manager?.name || "—"}
                   </TableCell>
                 </TableRow>
               ))

@@ -119,16 +119,16 @@ export async function deleteDepartment(id: string): Promise<ActionResult> {
 
     const dept = await prisma.department.findUnique({
       where: { id },
-      include: { _count: { select: { members: true, children: true } } },
+      include: { _count: { select: { employees: true, children: true } } },
     });
     if (!dept || dept.companyId !== companyId) {
       return { success: false, error: "Department not found" };
     }
 
-    if (dept._count.members > 0) {
+    if (dept._count.employees > 0) {
       return {
         success: false,
-        error: `Cannot delete: ${dept._count.members} member${dept._count.members !== 1 ? "s" : ""} still assigned`,
+        error: `Cannot delete: ${dept._count.employees} employee${dept._count.employees !== 1 ? "s" : ""} still assigned`,
       };
     }
 

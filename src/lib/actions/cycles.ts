@@ -7,6 +7,7 @@ import type { ActionResult } from "@/types";
 import type { Cycle, CycleStatus } from "@prisma/client";
 import { sendReviewRequestEmail, sendNominationRequestEmail } from "@/lib/email/templates";
 import { formatDate } from "@/lib/utils/dates";
+import { notifyEmployee } from "@/lib/utils/notify-employee";
 
 interface CreateCycleInput {
   name: string;
@@ -73,12 +74,12 @@ export async function createCycle(
       },
     });
 
-    // Add participants if provided
+    // Add participants if provided (participantIds are now employee IDs)
     if (input.participantIds?.length) {
       await prisma.cycleParticipant.createMany({
-        data: input.participantIds.map((userId) => ({
+        data: input.participantIds.map((employeeId) => ({
           cycleId: cycle.id,
-          companyUserId: userId,
+          employeeId,
         })),
       });
     }
@@ -167,23 +168,23 @@ export async function addParticipants(
       return { success: false, error: "Cycle not found" };
     }
 
-    // Filter out already added participants
+    // Filter out already added participants (userIds are now employee IDs)
     const existing = await prisma.cycleParticipant.findMany({
       where: {
         cycleId,
-        companyUserId: { in: userIds },
+        employeeId: { in: userIds },
       },
-      select: { companyUserId: true },
+      select: { employeeId: true },
     });
 
-    const existingIds = new Set(existing.map((p) => p.companyUserId));
+    const existingIds = new Set(existing.map((p) => p.employeeId));
     const newIds = userIds.filter((id) => !existingIds.has(id));
 
     if (newIds.length > 0) {
       await prisma.cycleParticipant.createMany({
-        data: newIds.map((userId) => ({
+        data: newIds.map((employeeId) => ({
           cycleId,
-          companyUserId: userId,
+          employeeId,
         })),
       });
     }
@@ -214,15 +215,10 @@ export async function launchCycle(
       include: {
         participants: {
           include: {
-            companyUser: {
+            employee: {
               include: {
-                user: true,
-                manager: {
-                  include: { user: true },
-                },
-                directReports: {
-                  include: { user: true },
-                },
+                manager: true,
+                directReports: true,
               },
             },
           },
@@ -252,35 +248,35 @@ export async function launchCycle(
     }[] = [];
 
     for (const participant of cycle.participants) {
-      const reviewee = participant.companyUser;
+      const employee = participant.employee;
 
       // Self review
       if (cycle.selfReviewEnabled) {
         assignments.push({
           cycleId: cycle.id,
-          reviewerId: reviewee.id,
-          revieweeId: reviewee.id,
+          reviewerId: employee.id,
+          revieweeId: employee.id,
           reviewerType: "SELF",
         });
       }
 
       // Manager review
-      if (cycle.managerReviewEnabled && reviewee.managerId) {
+      if (cycle.managerReviewEnabled && employee.managerId) {
         assignments.push({
           cycleId: cycle.id,
-          reviewerId: reviewee.managerId,
-          revieweeId: reviewee.id,
+          reviewerId: employee.managerId,
+          revieweeId: employee.id,
           reviewerType: "MANAGER",
         });
       }
 
       // Direct reports review
-      if (cycle.directReportEnabled && reviewee.directReports.length > 0) {
-        for (const report of reviewee.directReports) {
+      if (cycle.directReportEnabled && employee.directReports.length > 0) {
+        for (const report of employee.directReports) {
           assignments.push({
             cycleId: cycle.id,
             reviewerId: report.id,
-            revieweeId: reviewee.id,
+            revieweeId: employee.id,
             reviewerType: "DIRECT_REPORT",
           });
         }
@@ -309,18 +305,25 @@ export async function launchCycle(
       if (nextStatus === "NOMINATION") {
         // Send nomination request emails to all participants
         for (const participant of cycle.participants) {
-          const user = participant.companyUser.user;
+          const employee = participant.employee;
           try {
-            await sendNominationRequestEmail({
-              to: user.email,
-              employeeName: user.name || "there",
-              cycleName: cycle.name,
-              minPeers: cycle.minPeers,
-              maxPeers: cycle.maxPeers,
-              dueDate: cycle.nominationEndDate
-                ? formatDate(cycle.nominationEndDate)
-                : formatDate(cycle.reviewStartDate),
-              nominationUrl: `${APP_URL}/nominations/${cycle.id}`,
+            await notifyEmployee({
+              employeeId: employee.id,
+              subject: `Nominate your peer reviewers for "${cycle.name}"`,
+              dashboardUrl: `/nominations/${cycle.id}`,
+              sendMemberEmail: async (email, name, url) => {
+                await sendNominationRequestEmail({
+                  to: email,
+                  employeeName: name || "there",
+                  cycleName: cycle.name,
+                  minPeers: cycle.minPeers,
+                  maxPeers: cycle.maxPeers,
+                  dueDate: cycle.nominationEndDate
+                    ? formatDate(cycle.nominationEndDate)
+                    : formatDate(cycle.reviewStartDate),
+                  nominationUrl: url,
+                });
+              },
             });
           } catch (emailError) {
             console.error("Failed to send nomination email:", emailError);
@@ -332,27 +335,38 @@ export async function launchCycle(
 
         for (const reviewerId of uniqueReviewerIds) {
           const reviewer = cycle.participants.find(
-            (p) => p.companyUserId === reviewerId
-          )?.companyUser;
+            (p) => p.employeeId === reviewerId
+          )?.employee;
 
           if (reviewer) {
             const reviewerAssignments = assignments.filter((a) => a.reviewerId === reviewerId);
             for (const assignment of reviewerAssignments) {
               const reviewee = cycle.participants.find(
-                (p) => p.companyUserId === assignment.revieweeId
-              )?.companyUser;
+                (p) => p.employeeId === assignment.revieweeId
+              )?.employee;
 
               if (reviewee) {
                 try {
-                  await sendReviewRequestEmail({
-                    to: reviewer.user.email,
-                    reviewerName: reviewer.user.name || "there",
-                    revieweeName: assignment.reviewerType === "SELF"
-                      ? "yourself"
-                      : reviewee.user.name || reviewee.user.email,
-                    cycleName: cycle.name,
-                    dueDate: formatDate(cycle.reviewEndDate),
-                    reviewUrl: `${APP_URL}/my-reviews`,
+                  await notifyEmployee({
+                    employeeId: reviewer.id,
+                    subject: `Feedback requested for ${
+                      assignment.reviewerType === "SELF"
+                        ? "yourself"
+                        : reviewee.name || reviewee.email
+                    }`,
+                    dashboardUrl: `/my-reviews`,
+                    sendMemberEmail: async (email, name, url) => {
+                      await sendReviewRequestEmail({
+                        to: email,
+                        reviewerName: name || "there",
+                        revieweeName: assignment.reviewerType === "SELF"
+                          ? "yourself"
+                          : reviewee.name || reviewee.email,
+                        cycleName: cycle.name,
+                        dueDate: formatDate(cycle.reviewEndDate),
+                        reviewUrl: url,
+                      });
+                    },
                   });
                 } catch (emailError) {
                   console.error("Failed to send review request email:", emailError);
@@ -430,11 +444,9 @@ export async function addExternalRater(
       include: {
         company: true,
         participants: {
-          where: { companyUserId: input.revieweeId },
+          where: { employeeId: input.revieweeId },
           include: {
-            companyUser: {
-              include: { user: true },
-            },
+            employee: true,
           },
         },
       },
@@ -456,7 +468,7 @@ export async function addExternalRater(
       return { success: false, error: "Reviewee is not a participant in this cycle" };
     }
 
-    const reviewee = cycle.participants[0].companyUser;
+    const reviewee = cycle.participants[0].employee;
 
     // Check if this email already has a token for this cycle/reviewee
     const existingToken = await prisma.reviewToken.findFirst({
@@ -514,7 +526,7 @@ export async function addExternalRater(
       await sendExternalReviewRequestEmail({
         to: input.email,
         reviewerName: input.name,
-        revieweeName: reviewee.user.name || reviewee.user.email,
+        revieweeName: reviewee.name || reviewee.email,
         companyName: cycle.company.name,
         cycleName: cycle.name,
         dueDate: formatDate(cycle.reviewEndDate),

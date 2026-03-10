@@ -12,6 +12,7 @@ import { RatingSummary } from "@/components/reports/rating-summary";
 import { RatingChart } from "@/components/reports/rating-chart";
 import { SectionResults } from "@/components/reports/section-results";
 import { TextFeedback } from "@/components/reports/text-feedback";
+import { CompetencyScores } from "@/components/reports/competency-scores";
 import { ReleaseControls } from "@/components/reports/release-controls";
 import type { ReviewerType } from "@prisma/client";
 
@@ -47,7 +48,7 @@ async function ReportContent({
   const report = await getEmployeeReport({
     cycleId,
     companyId: session.companyUser.companyId,
-    companyUserId: userId,
+    employeeId: userId,
   });
 
   if (!report) {
@@ -58,12 +59,10 @@ async function ReportContent({
   const participant = await prisma.cycleParticipant.findFirst({
     where: {
       cycleId,
-      companyUserId: userId,
+      employeeId: userId,
     },
     include: {
-      companyUser: {
-        include: { user: true },
-      },
+      employee: true,
       cycle: true,
     },
   });
@@ -153,8 +152,8 @@ async function ReportContent({
       {/* Report Header */}
       <ReportHeader
         participantName={report.participantName}
-        participantEmail={participant?.companyUser.user.email}
-        participantImage={participant?.companyUser.user.image}
+        participantEmail={participant?.employee.email}
+        participantImage={null}
         cycleName={report.cycleName}
         overallScore={report.overallScore}
         responseCounts={report.responseCounts}
@@ -169,6 +168,11 @@ async function ReportContent({
         />
         <RatingChart distribution={overallDistribution} />
       </div>
+
+      {/* Competency Scores */}
+      {report.competencyScores.length > 0 && (
+        <CompetencyScores scores={report.competencyScores} />
+      )}
 
       {/* Text Feedback Summary */}
       <TextFeedback

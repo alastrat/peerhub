@@ -1,5 +1,4 @@
 import { PrismaClient, QuestionType, ReviewerType, CycleStatus } from "@prisma/client";
-import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -19,6 +18,7 @@ async function main() {
   await prisma.template.deleteMany();
   await prisma.invitation.deleteMany();
   await prisma.companyUser.deleteMany();
+  await prisma.employee.deleteMany();
   await prisma.department.deleteMany();
   await prisma.competency.deleteMany();
   await prisma.company.deleteMany();
@@ -57,187 +57,160 @@ async function main() {
 
   const [engineering, product, design, marketing, sales] = departments;
 
-  // Create users and company users
+  // Helper: create User + Employee + CompanyUser for a person
+  async function createPerson(opts: {
+    email: string;
+    name: string;
+    title: string;
+    companyRole: "ADMIN" | "MANAGER" | "MEMBER";
+    departmentId: string;
+    managerId?: string; // Employee.id of their manager
+  }) {
+    const user = await prisma.user.create({
+      data: {
+        email: opts.email,
+        name: opts.name,
+        emailVerified: new Date(),
+      },
+    });
+
+    const employee = await prisma.employee.create({
+      data: {
+        companyId: company.id,
+        email: opts.email,
+        name: opts.name,
+        title: opts.title,
+        departmentId: opts.departmentId,
+        managerId: opts.managerId,
+      },
+    });
+
+    const companyUser = await prisma.companyUser.create({
+      data: {
+        userId: user.id,
+        companyId: company.id,
+        role: opts.companyRole,
+        employeeId: employee.id,
+      },
+    });
+
+    return { user, employee, companyUser };
+  }
+
+  // Create users and employees
   console.log("Creating users...");
 
   // Admin user
-  const adminUser = await prisma.user.create({
-    data: {
-      email: "admin@acme.com",
-      name: "Alex Admin",
-      emailVerified: new Date(),
-    },
-  });
-
-  const adminCompanyUser = await prisma.companyUser.create({
-    data: {
-      userId: adminUser.id,
-      companyId: company.id,
-      role: "ADMIN",
-      title: "HR Director",
-      departmentId: engineering.id,
-    },
+  const admin = await createPerson({
+    email: "admin@acme.com",
+    name: "Alex Admin",
+    title: "HR Director",
+    companyRole: "ADMIN",
+    departmentId: engineering.id,
   });
 
   // Engineering team
-  const engManager = await prisma.user.create({
-    data: {
-      email: "sarah.eng@acme.com",
-      name: "Sarah Chen",
-      emailVerified: new Date(),
-    },
+  const engManager = await createPerson({
+    email: "sarah.eng@acme.com",
+    name: "Sarah Chen",
+    title: "Engineering Manager",
+    companyRole: "MANAGER",
+    departmentId: engineering.id,
   });
 
-  const engManagerCompany = await prisma.companyUser.create({
-    data: {
-      userId: engManager.id,
-      companyId: company.id,
-      role: "MANAGER",
-      title: "Engineering Manager",
-      departmentId: engineering.id,
-    },
-  });
-
-  const engineers = await Promise.all([
-    {
-      email: "james.dev@acme.com",
-      name: "James Wilson",
-      title: "Senior Software Engineer",
-    },
-    {
-      email: "maria.dev@acme.com",
-      name: "Maria Garcia",
-      title: "Software Engineer",
-    },
-    {
-      email: "kevin.dev@acme.com",
-      name: "Kevin Park",
-      title: "Software Engineer",
-    },
-    {
-      email: "emily.dev@acme.com",
-      name: "Emily Johnson",
-      title: "Junior Software Engineer",
-    },
-  ].map(async (eng) => {
-    const user = await prisma.user.create({
-      data: {
-        email: eng.email,
-        name: eng.name,
-        emailVerified: new Date(),
+  const engineers = await Promise.all(
+    [
+      {
+        email: "james.dev@acme.com",
+        name: "James Wilson",
+        title: "Senior Software Engineer",
       },
-    });
-    return prisma.companyUser.create({
-      data: {
-        userId: user.id,
-        companyId: company.id,
-        role: "EMPLOYEE",
-        title: eng.title,
+      {
+        email: "maria.dev@acme.com",
+        name: "Maria Garcia",
+        title: "Software Engineer",
+      },
+      {
+        email: "kevin.dev@acme.com",
+        name: "Kevin Park",
+        title: "Software Engineer",
+      },
+      {
+        email: "emily.dev@acme.com",
+        name: "Emily Johnson",
+        title: "Junior Software Engineer",
+      },
+    ].map((eng) =>
+      createPerson({
+        ...eng,
+        companyRole: "MEMBER",
         departmentId: engineering.id,
-        managerId: engManagerCompany.id,
-      },
-    });
-  }));
+        managerId: engManager.employee.id,
+      })
+    )
+  );
 
   // Product team
-  const productManager = await prisma.user.create({
-    data: {
-      email: "mike.product@acme.com",
-      name: "Mike Thompson",
-      emailVerified: new Date(),
-    },
+  const productMgr = await createPerson({
+    email: "mike.product@acme.com",
+    name: "Mike Thompson",
+    title: "Product Manager",
+    companyRole: "MANAGER",
+    departmentId: product.id,
   });
 
-  const productManagerCompany = await prisma.companyUser.create({
-    data: {
-      userId: productManager.id,
-      companyId: company.id,
-      role: "MANAGER",
-      title: "Product Manager",
-      departmentId: product.id,
-    },
-  });
-
-  const productTeam = await Promise.all([
-    {
-      email: "lisa.pm@acme.com",
-      name: "Lisa Brown",
-      title: "Associate Product Manager",
-    },
-    {
-      email: "david.pm@acme.com",
-      name: "David Lee",
-      title: "Product Analyst",
-    },
-  ].map(async (pm) => {
-    const user = await prisma.user.create({
-      data: {
-        email: pm.email,
-        name: pm.name,
-        emailVerified: new Date(),
+  const productTeam = await Promise.all(
+    [
+      {
+        email: "lisa.pm@acme.com",
+        name: "Lisa Brown",
+        title: "Associate Product Manager",
       },
-    });
-    return prisma.companyUser.create({
-      data: {
-        userId: user.id,
-        companyId: company.id,
-        role: "EMPLOYEE",
-        title: pm.title,
+      {
+        email: "david.pm@acme.com",
+        name: "David Lee",
+        title: "Product Analyst",
+      },
+    ].map((pm) =>
+      createPerson({
+        ...pm,
+        companyRole: "MEMBER",
         departmentId: product.id,
-        managerId: productManagerCompany.id,
-      },
-    });
-  }));
+        managerId: productMgr.employee.id,
+      })
+    )
+  );
 
   // Design team
-  const designManager = await prisma.user.create({
-    data: {
-      email: "anna.design@acme.com",
-      name: "Anna Martinez",
-      emailVerified: new Date(),
-    },
+  const designMgr = await createPerson({
+    email: "anna.design@acme.com",
+    name: "Anna Martinez",
+    title: "Design Lead",
+    companyRole: "MANAGER",
+    departmentId: design.id,
   });
 
-  const designManagerCompany = await prisma.companyUser.create({
-    data: {
-      userId: designManager.id,
-      companyId: company.id,
-      role: "MANAGER",
-      title: "Design Lead",
-      departmentId: design.id,
-    },
-  });
-
-  const designTeam = await Promise.all([
-    {
-      email: "tom.design@acme.com",
-      name: "Tom Anderson",
-      title: "Senior UX Designer",
-    },
-    {
-      email: "rachel.design@acme.com",
-      name: "Rachel Kim",
-      title: "UI Designer",
-    },
-  ].map(async (designer) => {
-    const user = await prisma.user.create({
-      data: {
-        email: designer.email,
-        name: designer.name,
-        emailVerified: new Date(),
+  const designTeam = await Promise.all(
+    [
+      {
+        email: "tom.design@acme.com",
+        name: "Tom Anderson",
+        title: "Senior UX Designer",
       },
-    });
-    return prisma.companyUser.create({
-      data: {
-        userId: user.id,
-        companyId: company.id,
-        role: "EMPLOYEE",
-        title: designer.title,
+      {
+        email: "rachel.design@acme.com",
+        name: "Rachel Kim",
+        title: "UI Designer",
+      },
+    ].map((designer) =>
+      createPerson({
+        ...designer,
+        companyRole: "MEMBER",
         departmentId: design.id,
-        managerId: designManagerCompany.id,
-      },
-    });
-  }));
+        managerId: designMgr.employee.id,
+      })
+    )
+  );
 
   // Create competencies
   console.log("Creating competencies...");
@@ -482,33 +455,33 @@ async function main() {
     },
   });
 
-  // Add participants (all employees)
+  // Add participants (all employees — using Employee.id)
   const allEmployees = [
-    engManagerCompany,
+    engManager,
     ...engineers,
-    productManagerCompany,
+    productMgr,
     ...productTeam,
-    designManagerCompany,
+    designMgr,
     ...designTeam,
   ];
 
   console.log("Adding participants...");
   await prisma.cycleParticipant.createMany({
-    data: allEmployees.map((emp) => ({
+    data: allEmployees.map((person) => ({
       cycleId: cycle.id,
-      companyUserId: emp.id,
+      employeeId: person.employee.id,
     })),
   });
 
-  // Create some review assignments
+  // Create some review assignments (using Employee.id)
   console.log("Creating review assignments...");
   for (const participant of allEmployees.slice(0, 4)) {
     // Self review
     await prisma.reviewAssignment.create({
       data: {
         cycleId: cycle.id,
-        reviewerId: participant.id,
-        revieweeId: participant.id,
+        reviewerId: participant.employee.id,
+        revieweeId: participant.employee.id,
         reviewerType: "SELF",
         status: "PENDING",
       },
@@ -520,8 +493,8 @@ async function main() {
     await prisma.reviewAssignment.create({
       data: {
         cycleId: cycle.id,
-        reviewerId: engManagerCompany.id,
-        revieweeId: eng.id,
+        reviewerId: engManager.employee.id,
+        revieweeId: eng.employee.id,
         reviewerType: "MANAGER",
         status: "PENDING",
       },
@@ -533,8 +506,8 @@ async function main() {
     await prisma.reviewAssignment.create({
       data: {
         cycleId: cycle.id,
-        reviewerId: engineers[0].id,
-        revieweeId: engineers[1].id,
+        reviewerId: engineers[0].employee.id,
+        revieweeId: engineers[1].employee.id,
         reviewerType: "PEER",
         status: "PENDING",
       },
@@ -542,8 +515,8 @@ async function main() {
     await prisma.reviewAssignment.create({
       data: {
         cycleId: cycle.id,
-        reviewerId: engineers[1].id,
-        revieweeId: engineers[0].id,
+        reviewerId: engineers[1].employee.id,
+        revieweeId: engineers[0].employee.id,
         reviewerType: "PEER",
         status: "PENDING",
       },

@@ -97,9 +97,9 @@ export function Header() {
                 <p className="text-xs leading-none text-muted-foreground">
                   {user?.email}
                 </p>
-                {companyUser?.title && (
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {companyUser.title}
+                {companyUser?.role && (
+                  <p className="text-xs leading-none text-muted-foreground capitalize">
+                    {companyUser.role.toLowerCase()}
                   </p>
                 )}
               </div>

@@ -191,8 +191,8 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
       }
 
       // Validate role if provided
-      if (data.role && !["ADMIN", "MANAGER", "EMPLOYEE"].includes(data.role.toUpperCase())) {
-        errors.push("Role must be Admin, Manager, or Employee");
+      if (data.role && !["ADMIN", "MANAGER", "MEMBER"].includes(data.role.toUpperCase())) {
+        errors.push("Role must be Admin, Manager, or Member");
       }
 
       results.push({

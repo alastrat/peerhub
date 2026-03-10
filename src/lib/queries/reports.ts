@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import type { ReviewerType } from "@prisma/client";
-import type { IndividualReport, QuestionReport, AggregatedRating } from "@/types";
+import type { IndividualReport, QuestionReport, AggregatedRating, CompetencyScore } from "@/types";
 import {
   aggregateRatings,
   aggregateTextResponses,
@@ -15,13 +15,13 @@ interface ReportQueryOptions {
 }
 
 interface EmployeeReportOptions extends ReportQueryOptions {
-  companyUserId: string;
+  employeeId: string;
 }
 
 export async function getEmployeeReport(
   options: EmployeeReportOptions
 ): Promise<IndividualReport | null> {
-  const { cycleId, companyId, companyUserId } = options;
+  const { cycleId, companyId, employeeId } = options;
 
   // Get cycle with template and participant info
   const cycle = await prisma.cycle.findFirst({
@@ -31,18 +31,20 @@ export async function getEmployeeReport(
         include: {
           sections: {
             include: {
-              questions: true,
+              questions: {
+                include: {
+                  competency: true,
+                },
+              },
             },
             orderBy: { order: "asc" },
           },
         },
       },
       participants: {
-        where: { companyUserId },
+        where: { employeeId },
         include: {
-          companyUser: {
-            include: { user: true },
-          },
+          employee: true,
         },
       },
     },
@@ -59,7 +61,7 @@ export async function getEmployeeReport(
   const assignments = await prisma.reviewAssignment.findMany({
     where: {
       cycleId,
-      revieweeId: companyUserId,
+      revieweeId: employeeId,
       status: "COMPLETED",
     },
     include: {
@@ -233,14 +235,125 @@ export async function getEmployeeReport(
     }
   });
 
+  // Aggregate competency scores
+  const competencyMap = new Map<
+    string,
+    {
+      competencyId: string;
+      competencyName: string;
+      category: string | null;
+      ratingsByType: Record<ReviewerType, number[]>;
+    }
+  >();
+
+  cycle.template.sections.forEach((section) => {
+    section.questions.forEach((question) => {
+      if (
+        question.type === "COMPETENCY_RATING" &&
+        question.competencyId &&
+        question.competency
+      ) {
+        if (!competencyMap.has(question.competencyId)) {
+          competencyMap.set(question.competencyId, {
+            competencyId: question.competencyId,
+            competencyName: question.competency.name,
+            category: question.competency.category,
+            ratingsByType: {
+              SELF: [],
+              MANAGER: [],
+              PEER: [],
+              DIRECT_REPORT: [],
+              EXTERNAL: [],
+            },
+          });
+        }
+
+        const entry = competencyMap.get(question.competencyId)!;
+        const responses = responsesByQuestion[question.id] || [];
+        responses.forEach((r) => {
+          if (r.ratingValue !== null && r.ratingValue !== undefined) {
+            entry.ratingsByType[r.reviewerType].push(r.ratingValue);
+          }
+        });
+      }
+    });
+  });
+
+  const competencyScores: CompetencyScore[] = Array.from(
+    competencyMap.values()
+  ).map((entry) => {
+    const byReviewerType: CompetencyScore["byReviewerType"] = {} as CompetencyScore["byReviewerType"];
+    let allRatingsSum = 0;
+    let allRatingsCount = 0;
+    let selfAvg: number | null = null;
+    let othersSum = 0;
+    let othersCount = 0;
+
+    const reviewerTypes: ReviewerType[] = [
+      "SELF",
+      "MANAGER",
+      "PEER",
+      "DIRECT_REPORT",
+      "EXTERNAL",
+    ];
+
+    for (const type of reviewerTypes) {
+      const ratings = entry.ratingsByType[type];
+      const typeThreshold =
+        type === "SELF" || type === "MANAGER" ? 1 : threshold;
+
+      if (ratings.length >= typeThreshold) {
+        const sum = ratings.reduce((a, b) => a + b, 0);
+        const avg = Math.round((sum / ratings.length) * 100) / 100;
+        byReviewerType[type] = { average: avg, count: ratings.length };
+        allRatingsSum += sum;
+        allRatingsCount += ratings.length;
+
+        if (type === "SELF") {
+          selfAvg = avg;
+        } else {
+          othersSum += sum;
+          othersCount += ratings.length;
+        }
+      } else {
+        byReviewerType[type] = null;
+      }
+    }
+
+    const overallAverage =
+      allRatingsCount > 0
+        ? Math.round((allRatingsSum / allRatingsCount) * 100) / 100
+        : null;
+
+    const othersAvg =
+      othersCount > 0
+        ? Math.round((othersSum / othersCount) * 100) / 100
+        : null;
+
+    const selfVsOthersGap =
+      selfAvg !== null && othersAvg !== null
+        ? Math.round((selfAvg - othersAvg) * 100) / 100
+        : null;
+
+    return {
+      competencyId: entry.competencyId,
+      competencyName: entry.competencyName,
+      category: entry.category,
+      overallAverage,
+      byReviewerType,
+      selfVsOthersGap,
+    };
+  });
+
   return {
     cycleId: cycle.id,
     cycleName: cycle.name,
-    participantId: companyUserId,
-    participantName: participant.companyUser.user.name || participant.companyUser.user.email,
+    participantId: employeeId,
+    participantName: participant.employee.name || participant.employee.email,
     overallScore: overallScoreResult?.score ?? null,
     responseCounts,
     sections,
+    competencyScores,
     strengths: shuffleArray(strengths),
     opportunities: shuffleArray(opportunities),
     releasedAt: participant.releasedAt,
@@ -255,9 +368,7 @@ export async function getCycleReportSummary(options: ReportQueryOptions) {
     include: {
       participants: {
         include: {
-          companyUser: {
-            include: { user: true },
-          },
+          employee: true,
         },
       },
       assignments: {
@@ -273,7 +384,7 @@ export async function getCycleReportSummary(options: ReportQueryOptions) {
   // Build participant summary
   const participantSummaries = cycle.participants.map((participant) => {
     const participantAssignments = cycle.assignments.filter(
-      (a) => a.revieweeId === participant.companyUserId
+      (a) => a.revieweeId === participant.employeeId
     );
 
     const completedCount = participantAssignments.filter(
@@ -284,11 +395,10 @@ export async function getCycleReportSummary(options: ReportQueryOptions) {
     const hasMinimumResponses = completedCount >= cycle.anonymityThreshold;
 
     return {
-      participantId: participant.companyUserId,
-      participantName:
-        participant.companyUser.user.name || participant.companyUser.user.email,
-      email: participant.companyUser.user.email,
-      avatarUrl: participant.companyUser.user.image,
+      participantId: participant.employeeId,
+      participantName: participant.employee.name || participant.employee.email,
+      email: participant.employee.email,
+      avatarUrl: null,
       completedReviews: completedCount,
       totalReviews: totalCount,
       hasMinimumResponses,
@@ -317,12 +427,12 @@ export async function getCycleReportSummary(options: ReportQueryOptions) {
 }
 
 export async function getReleasedReportsForUser(
-  companyUserId: string,
+  employeeId: string,
   companyId: string
 ) {
   const participants = await prisma.cycleParticipant.findMany({
     where: {
-      companyUserId,
+      employeeId,
       releasedAt: { not: null },
       cycle: { companyId },
     },
