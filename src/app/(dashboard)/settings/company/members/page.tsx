@@ -17,7 +17,10 @@ export default async function MembersPage() {
 
   const [members, invitations] = await Promise.all([
     prisma.companyUser.findMany({
-      where: { companyId },
+      where: {
+        companyId,
+        user: { globalRole: { not: "SUPER_ADMIN" } },
+      },
       include: {
         user: { select: { id: true, name: true, email: true, image: true } },
         department: { select: { name: true } },

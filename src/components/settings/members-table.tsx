@@ -61,6 +61,7 @@ import {
   X,
   Clock,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { getInitials } from "@/lib/utils/formatting";
 import {
   inviteMember,
@@ -111,6 +112,7 @@ export function MembersTable({
   companyId: string;
   currentUserId: string;
 }) {
+  const router = useRouter();
   const [members, setMembers] = useState(initialMembers);
   const [invitations, setInvitations] = useState(initialInvitations);
   const [tab, setTab] = useState<Tab>("active");
@@ -469,7 +471,8 @@ export function MembersTable({
                   return (
                     <TableRow
                       key={m.id}
-                      className="!bg-white hover:!bg-gray-50"
+                      className="!bg-white hover:!bg-gray-50 cursor-pointer"
+                      onClick={() => router.push(`/settings/company/members/${m.id}`)}
                     >
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -526,7 +529,7 @@ export function MembersTable({
                           {m.isActive ? "Active" : "Inactive"}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         {!isSelf && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>

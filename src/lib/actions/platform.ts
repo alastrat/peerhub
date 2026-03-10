@@ -394,6 +394,69 @@ export async function removeMember(
   }
 }
 
+export async function updateMemberDetails(input: {
+  companyUserId: string;
+  title?: string | null;
+  employeeId?: string | null;
+  departmentId?: string | null;
+  managerId?: string | null;
+  startDate?: string | null;
+}): Promise<ActionResult> {
+  try {
+    const { companyId } = await requireCompanyAdmin();
+
+    const member = await prisma.companyUser.findUnique({
+      where: { id: input.companyUserId },
+    });
+    if (!member) return { success: false, error: "Member not found" };
+    if (member.companyId !== companyId) {
+      return { success: false, error: "Member does not belong to this company" };
+    }
+
+    if (input.departmentId) {
+      const dept = await prisma.department.findUnique({
+        where: { id: input.departmentId },
+      });
+      if (!dept || dept.companyId !== companyId) {
+        return { success: false, error: "Department not found" };
+      }
+    }
+
+    if (input.managerId) {
+      if (input.managerId === input.companyUserId) {
+        return { success: false, error: "A member cannot be their own manager" };
+      }
+      const manager = await prisma.companyUser.findUnique({
+        where: { id: input.managerId },
+      });
+      if (!manager || manager.companyId !== companyId) {
+        return { success: false, error: "Manager not found" };
+      }
+    }
+
+    await prisma.companyUser.update({
+      where: { id: input.companyUserId },
+      data: {
+        title: input.title !== undefined ? (input.title || null) : undefined,
+        employeeId: input.employeeId !== undefined ? (input.employeeId || null) : undefined,
+        departmentId: input.departmentId !== undefined ? (input.departmentId || null) : undefined,
+        managerId: input.managerId !== undefined ? (input.managerId || null) : undefined,
+        startDate: input.startDate !== undefined
+          ? (input.startDate ? new Date(input.startDate) : null)
+          : undefined,
+      },
+    });
+
+    revalidatePath("/settings/company/members");
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update member",
+    };
+  }
+}
+
 export async function cancelInvitation(
   invitationId: string
 ): Promise<ActionResult> {

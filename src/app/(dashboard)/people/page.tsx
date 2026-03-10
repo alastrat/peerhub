@@ -20,7 +20,7 @@ import { PeopleTable } from "@/components/people/people-table";
 
 async function getPeople(companyId: string) {
   return prisma.companyUser.findMany({
-    where: { companyId, isActive: true },
+    where: { companyId, isActive: true, user: { globalRole: { not: "SUPER_ADMIN" } } },
     include: {
       user: true,
       department: true,
@@ -89,10 +89,11 @@ async function PeopleList() {
         icon={<Users className="h-8 w-8 text-muted-foreground" />}
         title="No employees yet"
         description="Add your first team member to get started with 360° feedback."
-        action={{
-          label: "Add Employee",
-          onClick: () => {},
-        }}
+        action={
+          <Link href="/people/new">
+            <Button>Add Employee</Button>
+          </Link>
+        }
       />
     );
   }
