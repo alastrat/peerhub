@@ -73,10 +73,11 @@ async function CyclesList() {
         icon={<RotateCcw className="h-8 w-8 text-muted-foreground" />}
         title="No review cycles yet"
         description="Create your first 360° review cycle to start collecting feedback."
-        action={{
-          label: "Create Cycle",
-          onClick: () => {},
-        }}
+        action={
+          <Link href="/cycles/new">
+            <Button>Create Cycle</Button>
+          </Link>
+        }
       />
     );
   }

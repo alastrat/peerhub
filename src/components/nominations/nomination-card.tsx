@@ -28,19 +28,14 @@ interface NominationCardProps {
     rejectionReason: string | null;
     nominee: {
       id: string;
+      name: string;
+      email: string;
       title: string | null;
-      user: {
-        name: string | null;
-        email: string;
-        image: string | null;
-      };
     };
     reviewee: {
       id: string;
-      user: {
-        name: string | null;
-        email: string;
-      };
+      name: string;
+      email: string;
     };
   };
   showReviewee?: boolean;
@@ -128,22 +123,22 @@ export function NominationCard({
   return (
     <div className="flex items-center gap-4 p-4 rounded-lg border">
       <Avatar className="h-10 w-10">
-        <AvatarImage src={nomination.nominee.user.image || undefined} />
+        <AvatarImage src={undefined} />
         <AvatarFallback>
-          {getInitials(nomination.nominee.user.name || nomination.nominee.user.email)}
+          {getInitials(nomination.nominee.name || nomination.nominee.email)}
         </AvatarFallback>
       </Avatar>
 
       <div className="flex-1 min-w-0">
         <p className="font-medium truncate">
-          {nomination.nominee.user.name || nomination.nominee.user.email}
+          {nomination.nominee.name || nomination.nominee.email}
         </p>
         <p className="text-sm text-muted-foreground truncate">
-          {nomination.nominee.title || nomination.nominee.user.email}
+          {nomination.nominee.title || nomination.nominee.email}
         </p>
         {showReviewee && (
           <p className="text-xs text-muted-foreground">
-            Reviewing: {nomination.reviewee.user.name || nomination.reviewee.user.email}
+            Reviewing: {nomination.reviewee.name || nomination.reviewee.email}
           </p>
         )}
         {nomination.status === "REJECTED" && nomination.rejectionReason && (
@@ -207,7 +202,7 @@ export function NominationCard({
               <AlertDialogTitle>Remove Nomination</AlertDialogTitle>
               <AlertDialogDescription>
                 Are you sure you want to remove{" "}
-                {nomination.nominee.user.name || nomination.nominee.user.email} as a
+                {nomination.nominee.name || nomination.nominee.email} as a
                 peer reviewer?
               </AlertDialogDescription>
             </AlertDialogHeader>

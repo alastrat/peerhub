@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/types";
 import { sendReportReleasedEmail } from "@/lib/email/templates";
 import { getEmployeeReport, getCycleReportSummary } from "@/lib/queries/reports";
+import { notifyEmployee } from "@/lib/utils/notify-employee";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -26,13 +27,11 @@ export async function releaseReport(
     const participant = await prisma.cycleParticipant.findFirst({
       where: {
         cycleId,
-        companyUserId: participantId,
+        employeeId: participantId,
         cycle: { companyId },
       },
       include: {
-        companyUser: {
-          include: { user: true },
-        },
+        employee: true,
         cycle: true,
       },
     });
@@ -70,11 +69,18 @@ export async function releaseReport(
     // Send email notification
     if (sendEmail) {
       try {
-        await sendReportReleasedEmail({
-          to: participant.companyUser.user.email,
-          employeeName: participant.companyUser.user.name || "there",
-          cycleName: participant.cycle.name,
-          reportUrl: `${APP_URL}/my-feedback/${cycleId}`,
+        await notifyEmployee({
+          employeeId: participant.employeeId,
+          subject: `Your feedback report for "${participant.cycle.name}" is ready`,
+          dashboardUrl: `/my-feedback/${cycleId}`,
+          sendMemberEmail: async (email, name, url) => {
+            await sendReportReleasedEmail({
+              to: email,
+              employeeName: name || "there",
+              cycleName: participant.cycle.name,
+              reportUrl: url,
+            });
+          },
         });
       } catch (emailError) {
         console.error("Failed to send report release email:", emailError);
@@ -110,9 +116,7 @@ export async function releaseAllReports(
         participants: {
           where: { releasedAt: null },
           include: {
-            companyUser: {
-              include: { user: true },
-            },
+            employee: true,
           },
         },
       },
@@ -130,7 +134,7 @@ export async function releaseAllReports(
       const completedCount = await prisma.reviewAssignment.count({
         where: {
           cycleId,
-          revieweeId: participant.companyUserId,
+          revieweeId: participant.employeeId,
           status: "COMPLETED",
         },
       });
@@ -147,11 +151,18 @@ export async function releaseAllReports(
         // Send email notification
         if (sendEmails) {
           try {
-            await sendReportReleasedEmail({
-              to: participant.companyUser.user.email,
-              employeeName: participant.companyUser.user.name || "there",
-              cycleName: cycle.name,
-              reportUrl: `${APP_URL}/my-feedback/${cycleId}`,
+            await notifyEmployee({
+              employeeId: participant.employeeId,
+              subject: `Your feedback report for "${cycle.name}" is ready`,
+              dashboardUrl: `/my-feedback/${cycleId}`,
+              sendMemberEmail: async (email, name, url) => {
+                await sendReportReleasedEmail({
+                  to: email,
+                  employeeName: name || "there",
+                  cycleName: cycle.name,
+                  reportUrl: url,
+                });
+              },
             });
           } catch (emailError) {
             console.error("Failed to send report release email:", emailError);
@@ -188,7 +199,7 @@ export async function exportReportCSV(
       const report = await getEmployeeReport({
         cycleId,
         companyId,
-        companyUserId: participantId,
+        employeeId: participantId,
       });
 
       if (!report) {
@@ -251,7 +262,7 @@ export async function unreleaseReport(
     const participant = await prisma.cycleParticipant.findFirst({
       where: {
         cycleId,
-        companyUserId: participantId,
+        employeeId: participantId,
         cycle: { companyId },
       },
     });

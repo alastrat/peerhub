@@ -17,10 +17,15 @@ export default async function MembersPage() {
 
   const [members, invitations] = await Promise.all([
     prisma.companyUser.findMany({
-      where: { companyId },
+      where: {
+        companyId,
+        user: { globalRole: { not: "SUPER_ADMIN" } },
+      },
       include: {
         user: { select: { id: true, name: true, email: true, image: true } },
-        department: { select: { name: true } },
+        employee: {
+          include: { department: { select: { name: true } } },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -46,8 +51,8 @@ export default async function MembersPage() {
           email: m.user.email,
           image: m.user.image,
           role: m.role,
-          title: m.title,
-          department: m.department?.name || null,
+          title: m.employee?.title || null,
+          department: m.employee?.department?.name || null,
           isActive: m.isActive,
           createdAt: m.createdAt.toISOString(),
         }))}

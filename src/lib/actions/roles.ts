@@ -41,7 +41,7 @@ export async function ensureSystemRoles(companyId: string) {
           ? "ADMIN"
           : slug === "manager"
             ? "MANAGER"
-            : "EMPLOYEE";
+            : "MEMBER";
       await prisma.companyRoleConfig.create({
         data: {
           companyId,
@@ -62,11 +62,33 @@ export async function ensureSystemRoles(companyId: string) {
 export async function getCompanyRoles(companyId: string) {
   await ensureSystemRoles(companyId);
 
-  return prisma.companyRoleConfig.findMany({
+  const roles = await prisma.companyRoleConfig.findMany({
     where: { companyId },
     include: { _count: { select: { members: true } } },
     orderBy: { order: "asc" },
   });
+
+  // For system roles, also count users matched by baseRole who have no roleConfigId
+  const unassignedCounts = await prisma.companyUser.groupBy({
+    by: ["role"],
+    where: { companyId, isActive: true, roleConfigId: null },
+    _count: true,
+  });
+
+  const unassignedMap = new Map(
+    unassignedCounts.map((g) => [g.role, g._count])
+  );
+
+  return roles.map((role) => ({
+    ...role,
+    _count: {
+      members:
+        role._count.members +
+        (role.isSystem && role.baseRole
+          ? unassignedMap.get(role.baseRole) ?? 0
+          : 0),
+    },
+  }));
 }
 
 export async function createRole(input: {
@@ -266,7 +288,7 @@ export async function deleteRole(input: {
         where: { roleConfigId: input.roleId },
         data: {
           roleConfigId: input.reassignToId,
-          role: target.baseRole || "EMPLOYEE",
+          role: target.baseRole || "MEMBER",
         },
       });
     }

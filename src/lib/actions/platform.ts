@@ -207,7 +207,7 @@ async function requireCompanyAdmin() {
 
 export async function inviteMember(input: {
   email: string;
-  role: "ADMIN" | "MANAGER" | "EMPLOYEE";
+  role: "ADMIN" | "MANAGER" | "MEMBER";
   companyId: string;
 }): Promise<ActionResult<{ inviteUrl: string }>> {
   try {
@@ -295,7 +295,7 @@ export async function inviteMember(input: {
 
 export async function updateMemberRole(input: {
   companyUserId: string;
-  role: "ADMIN" | "MANAGER" | "EMPLOYEE";
+  role: "ADMIN" | "MANAGER" | "MEMBER";
 }): Promise<ActionResult> {
   try {
     const { session, companyId } = await requireCompanyAdmin();
@@ -390,6 +390,74 @@ export async function removeMember(
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to remove member",
+    };
+  }
+}
+
+export async function updateMemberDetails(input: {
+  companyUserId: string;
+  title?: string | null;
+  employeeCode?: string | null;
+  departmentId?: string | null;
+  managerId?: string | null;
+  startDate?: string | null;
+}): Promise<ActionResult> {
+  try {
+    const { companyId } = await requireCompanyAdmin();
+
+    const member = await prisma.companyUser.findUnique({
+      where: { id: input.companyUserId },
+      include: { employee: true },
+    });
+    if (!member) return { success: false, error: "Member not found" };
+    if (member.companyId !== companyId) {
+      return { success: false, error: "Member does not belong to this company" };
+    }
+
+    if (!member.employee) {
+      return { success: false, error: "No employee record linked to this member" };
+    }
+
+    if (input.departmentId) {
+      const dept = await prisma.department.findUnique({
+        where: { id: input.departmentId },
+      });
+      if (!dept || dept.companyId !== companyId) {
+        return { success: false, error: "Department not found" };
+      }
+    }
+
+    if (input.managerId) {
+      if (input.managerId === member.employee.id) {
+        return { success: false, error: "An employee cannot be their own manager" };
+      }
+      const manager = await prisma.employee.findUnique({
+        where: { id: input.managerId },
+      });
+      if (!manager || manager.companyId !== companyId) {
+        return { success: false, error: "Manager not found" };
+      }
+    }
+
+    await prisma.employee.update({
+      where: { id: member.employee.id },
+      data: {
+        title: input.title !== undefined ? (input.title || null) : undefined,
+        employeeCode: input.employeeCode !== undefined ? (input.employeeCode || null) : undefined,
+        departmentId: input.departmentId !== undefined ? (input.departmentId || null) : undefined,
+        managerId: input.managerId !== undefined ? (input.managerId || null) : undefined,
+        startDate: input.startDate !== undefined
+          ? (input.startDate ? new Date(input.startDate) : null)
+          : undefined,
+      },
+    });
+
+    revalidatePath("/settings/company/members");
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update member",
     };
   }
 }

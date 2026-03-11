@@ -32,7 +32,9 @@ export default function DashboardLayout({
       <div className="flex min-h-screen flex-col pl-16">
         <Header />
         <main className="flex-1 rounded-tl-2xl bg-background p-6 shadow-sm">
-          {children}
+          <div className="mx-auto max-w-6xl">
+            {children}
+          </div>
         </main>
       </div>
     </div>

@@ -34,8 +34,18 @@ async function FeedbackList() {
     redirect("/login");
   }
 
+  if (!session.companyUser.employeeId) {
+    return (
+      <EmptyState
+        icon={<FileText className="h-8 w-8 text-muted-foreground" />}
+        title="No feedback reports yet"
+        description="Your feedback reports will appear here once they are released by your HR team. Check back after your review cycle ends."
+      />
+    );
+  }
+
   const reports = await getReleasedReportsForUser(
-    session.companyUser.id,
+    session.companyUser.employeeId,
     session.companyUser.companyId
   );
 

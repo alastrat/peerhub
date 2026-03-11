@@ -46,12 +46,10 @@ type FormValues = z.infer<typeof formSchema>;
 interface AddExternalRaterDialogProps {
   cycleId: string;
   participants: Array<{
-    companyUserId: string;
-    companyUser: {
-      user: {
-        name: string | null;
-        email: string;
-      };
+    employeeId: string;
+    employee: {
+      name: string;
+      email: string;
     };
   }>;
   children?: React.ReactNode;
@@ -164,8 +162,8 @@ export function AddExternalRaterDialog({
                     </FormControl>
                     <SelectContent>
                       {participants.map((p) => (
-                        <SelectItem key={p.companyUserId} value={p.companyUserId}>
-                          {p.companyUser.user.name || p.companyUser.user.email}
+                        <SelectItem key={p.employeeId} value={p.employeeId}>
+                          {p.employee.name || p.employee.email}
                         </SelectItem>
                       ))}
                     </SelectContent>

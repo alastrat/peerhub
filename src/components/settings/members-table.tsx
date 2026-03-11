@@ -61,6 +61,7 @@ import {
   X,
   Clock,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { getInitials } from "@/lib/utils/formatting";
 import {
   inviteMember,
@@ -74,7 +75,7 @@ import {
 const ROLE_BADGE_STYLES: Record<string, string> = {
   ADMIN: "bg-purple-100 text-purple-700 border-purple-200",
   MANAGER: "bg-blue-100 text-blue-700 border-blue-200",
-  EMPLOYEE: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  MEMBER: "bg-emerald-100 text-emerald-700 border-emerald-200",
 };
 
 type Tab = "active" | "inactive" | "invited";
@@ -111,6 +112,7 @@ export function MembersTable({
   companyId: string;
   currentUserId: string;
 }) {
+  const router = useRouter();
   const [members, setMembers] = useState(initialMembers);
   const [invitations, setInvitations] = useState(initialInvitations);
   const [tab, setTab] = useState<Tab>("active");
@@ -123,8 +125,8 @@ export function MembersTable({
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<
-    "ADMIN" | "MANAGER" | "EMPLOYEE"
-  >("EMPLOYEE");
+    "ADMIN" | "MANAGER" | "MEMBER"
+  >("MEMBER");
   const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
 
   // Confirm dialogs
@@ -135,7 +137,7 @@ export function MembersTable({
 
   const [roleChange, setRoleChange] = useState<{
     member: Member;
-    newRole: "ADMIN" | "MANAGER" | "EMPLOYEE";
+    newRole: "ADMIN" | "MANAGER" | "MEMBER";
   } | null>(null);
 
   // Counts
@@ -194,7 +196,7 @@ export function MembersTable({
           ...prev,
         ]);
         setInviteEmail("");
-        setInviteRole("EMPLOYEE");
+        setInviteRole("MEMBER");
       } else {
         setError(result.error || "Failed to send invitation");
       }
@@ -350,7 +352,7 @@ export function MembersTable({
               <SelectItem value="all">All Roles</SelectItem>
               <SelectItem value="ADMIN">Admin</SelectItem>
               <SelectItem value="MANAGER">Manager</SelectItem>
-              <SelectItem value="EMPLOYEE">Employee</SelectItem>
+              <SelectItem value="MEMBER">Member</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -398,14 +400,14 @@ export function MembersTable({
                   <Select
                     value={inviteRole}
                     onValueChange={(v) =>
-                      setInviteRole(v as "ADMIN" | "MANAGER" | "EMPLOYEE")
+                      setInviteRole(v as "ADMIN" | "MANAGER" | "MEMBER")
                     }
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="EMPLOYEE">Employee</SelectItem>
+                      <SelectItem value="MEMBER">Member</SelectItem>
                       <SelectItem value="MANAGER">Manager</SelectItem>
                       <SelectItem value="ADMIN">Admin</SelectItem>
                     </SelectContent>
@@ -469,7 +471,8 @@ export function MembersTable({
                   return (
                     <TableRow
                       key={m.id}
-                      className="!bg-white hover:!bg-gray-50"
+                      className="!bg-white hover:!bg-gray-50 cursor-pointer"
+                      onClick={() => router.push(`/settings/company/members/${m.id}`)}
                     >
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -526,7 +529,7 @@ export function MembersTable({
                           {m.isActive ? "Active" : "Inactive"}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         {!isSelf && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -568,17 +571,17 @@ export function MembersTable({
                                   Make Manager
                                 </DropdownMenuItem>
                               )}
-                              {m.role !== "EMPLOYEE" && (
+                              {m.role !== "MEMBER" && (
                                 <DropdownMenuItem
                                   onClick={() =>
                                     setRoleChange({
                                       member: m,
-                                      newRole: "EMPLOYEE",
+                                      newRole: "MEMBER",
                                     })
                                   }
                                 >
                                   <Shield className="mr-2 h-4 w-4" />
-                                  Make Employee
+                                  Make Member
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuSeparator />

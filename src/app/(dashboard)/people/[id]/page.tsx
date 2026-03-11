@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { getInitials } from "@/lib/utils/formatting";
 import { formatDate } from "@/lib/utils/dates";
@@ -23,36 +23,35 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-async function getEmployee(companyId: string, employeeId: string) {
-  return prisma.companyUser.findFirst({
+async function getEmployeeRecord(companyId: string, employeeId: string) {
+  return prisma.employee.findFirst({
     where: {
       id: employeeId,
       companyId,
     },
     include: {
-      user: true,
       department: true,
-      manager: {
-        include: { user: true },
-      },
+      manager: true,
       directReports: {
-        include: { user: true },
         where: { isActive: true },
+      },
+      companyUser: {
+        include: { user: true },
       },
     },
   });
 }
 
-async function getReviewStats(companyUserId: string) {
+async function getReviewStats(employeeId: string) {
   const [assignmentsAsReviewee, assignmentsAsReviewer, nominations] = await Promise.all([
     prisma.reviewAssignment.count({
-      where: { revieweeId: companyUserId },
+      where: { revieweeId: employeeId },
     }),
     prisma.reviewAssignment.count({
-      where: { reviewerId: companyUserId },
+      where: { reviewerId: employeeId },
     }),
     prisma.nomination.count({
-      where: { nomineeId: companyUserId, status: "APPROVED" },
+      where: { nomineeId: employeeId, status: "APPROVED" },
     }),
   ]);
 
@@ -73,19 +72,21 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
 
   // Only admins and the employee themselves can view
   const isAdmin = session.companyUser.role === "ADMIN";
-  const isSelf = session.companyUser.id === id;
+  // Check if the current user's linked employee matches the requested ID
+  const isSelf = session.companyUser.employeeId === id;
 
   if (!isAdmin && !isSelf) {
     redirect("/overview");
   }
 
-  const employee = await getEmployee(session.companyUser.companyId, id);
+  const employee = await getEmployeeRecord(session.companyUser.companyId, id);
 
   if (!employee) {
     notFound();
   }
 
   const stats = await getReviewStats(employee.id);
+  const companyUserRole = employee.companyUser?.role;
 
   return (
     <div className="space-y-6">
@@ -96,7 +97,7 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
           </Button>
         </Link>
         <PageHeader
-          title={employee.user.name || "Employee"}
+          title={employee.name || "Employee"}
           description={employee.title || "No title"}
         />
         {isAdmin && (
@@ -114,15 +115,16 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={employee.user.image || undefined} />
                 <AvatarFallback className="text-2xl">
-                  {employee.user.name ? getInitials(employee.user.name) : "?"}
+                  {employee.name ? getInitials(employee.name) : "?"}
                 </AvatarFallback>
               </Avatar>
-              <h2 className="mt-4 text-xl font-semibold">{employee.user.name}</h2>
+              <h2 className="mt-4 text-xl font-semibold">{employee.name}</h2>
               <p className="text-muted-foreground">{employee.title || "No title"}</p>
               <div className="mt-2 flex gap-2">
-                <Badge variant="secondary">{ROLE_LABELS[employee.role]}</Badge>
+                {companyUserRole && (
+                  <Badge variant="secondary">{ROLE_LABELS[companyUserRole]}</Badge>
+                )}
                 {!employee.isActive && <Badge variant="destructive">Inactive</Badge>}
               </div>
 
@@ -131,7 +133,7 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
               <div className="w-full space-y-3 text-left">
                 <div className="flex items-center gap-3 text-sm">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>{employee.user.email}</span>
+                  <span>{employee.email}</span>
                 </div>
                 {employee.department && (
                   <div className="flex items-center gap-3 text-sm">
@@ -142,7 +144,7 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
                 {employee.manager && (
                   <div className="flex items-center gap-3 text-sm">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    <span>Reports to {employee.manager.user.name}</span>
+                    <span>Reports to {employee.manager.name}</span>
                   </div>
                 )}
                 {employee.startDate && (
@@ -151,10 +153,10 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
                     <span>Started {formatDate(employee.startDate)}</span>
                   </div>
                 )}
-                {employee.employeeId && (
+                {employee.employeeCode && (
                   <div className="flex items-center gap-3 text-sm">
                     <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    <span>ID: {employee.employeeId}</span>
+                    <span>ID: {employee.employeeCode}</span>
                   </div>
                 )}
               </div>
@@ -207,13 +209,12 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
                       className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors"
                     >
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={report.user.image || undefined} />
                         <AvatarFallback>
-                          {report.user.name ? getInitials(report.user.name) : "?"}
+                          {report.name ? getInitials(report.name) : "?"}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">{report.user.name}</p>
+                        <p className="font-medium">{report.name}</p>
                         <p className="text-sm text-muted-foreground">
                           {report.title || "No title"}
                         </p>

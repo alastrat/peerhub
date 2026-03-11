@@ -24,33 +24,18 @@ export async function POST(request: NextRequest) {
 
     const data = parsed.data;
 
-    // Check if user with this email already exists in the company
-    const existingCompanyUser = await prisma.companyUser.findFirst({
+    // Check if employee with this email already exists in the company
+    const existingEmployee = await prisma.employee.findUnique({
       where: {
-        companyId,
-        user: { email: data.email },
+        companyId_email: { companyId, email: data.email },
       },
     });
 
-    if (existingCompanyUser) {
+    if (existingEmployee) {
       return NextResponse.json(
-        { message: "User already exists in this company" },
+        { message: "Employee already exists in this company" },
         { status: 400 }
       );
-    }
-
-    // Find or create user
-    let user = await prisma.user.findUnique({
-      where: { email: data.email },
-    });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email: data.email,
-          name: data.name,
-        },
-      });
     }
 
     // Find or create department if provided
@@ -77,13 +62,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Find manager if provided
+    // Find manager if provided (by email in the Employee table)
     let managerId: string | undefined;
     if (data.managerEmail) {
-      const manager = await prisma.companyUser.findFirst({
+      const manager = await prisma.employee.findUnique({
         where: {
-          companyId,
-          user: { email: data.managerEmail },
+          companyId_email: { companyId, email: data.managerEmail },
         },
       });
       if (manager) {
@@ -91,32 +75,52 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Determine role
-    const role = data.role
-      ? (data.role.toUpperCase() as "ADMIN" | "MANAGER" | "EMPLOYEE")
-      : "EMPLOYEE";
-
-    // Create company user
-    const companyUser = await prisma.companyUser.create({
+    // Create the Employee record
+    const employee = await prisma.employee.create({
       data: {
-        userId: user.id,
         companyId,
-        role,
+        email: data.email,
+        name: data.name,
         title: data.title || null,
+        employeeCode: data.employeeCode || null,
         departmentId,
         managerId,
-        employeeId: data.employeeId || null,
         startDate: data.startDate ? new Date(data.startDate) : null,
       },
       include: {
-        user: true,
         department: true,
       },
     });
 
+    // Optionally create User + CompanyUser for platform access
+    if (data.role) {
+      const role = data.role.toUpperCase() as "ADMIN" | "MANAGER" | "MEMBER";
+      let user = await prisma.user.findUnique({
+        where: { email: data.email },
+      });
+
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            email: data.email,
+            name: data.name,
+          },
+        });
+      }
+
+      await prisma.companyUser.create({
+        data: {
+          userId: user.id,
+          companyId,
+          role,
+          employeeId: employee.id,
+        },
+      });
+    }
+
     return NextResponse.json({
       message: "Employee imported successfully",
-      data: companyUser,
+      data: employee,
     });
   } catch (error) {
     console.error("Import error:", error);

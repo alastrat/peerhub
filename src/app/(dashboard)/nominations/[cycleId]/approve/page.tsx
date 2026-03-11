@@ -49,7 +49,7 @@ async function ApprovalContent({ cycleId }: { cycleId: string }) {
 
   const role = session.companyUser.role;
   const companyId = session.companyUser.companyId;
-  const companyUserId = session.companyUser.id;
+  const employeeId = session.companyUser.employeeId;
 
   // Only admins and managers can access this page
   if (role !== "ADMIN" && role !== "MANAGER") {
@@ -62,9 +62,8 @@ async function ApprovalContent({ cycleId }: { cycleId: string }) {
     include: {
       participants: {
         include: {
-          companyUser: {
+          employee: {
             include: {
-              user: true,
               manager: true,
             },
           },
@@ -79,19 +78,19 @@ async function ApprovalContent({ cycleId }: { cycleId: string }) {
 
   // Get nominations - for managers, only show their direct reports
   const nominationWhere: Record<string, unknown> = { cycleId };
-  if (role === "MANAGER") {
+  if (role === "MANAGER" && employeeId) {
     const directReportIds = cycle.participants
-      .filter((p) => p.companyUser.managerId === companyUserId)
-      .map((p) => p.companyUserId);
+      .filter((p) => p.employee.managerId === employeeId)
+      .map((p) => p.employeeId);
     nominationWhere.revieweeId = { in: directReportIds };
   }
 
   const nominations = await prisma.nomination.findMany({
     where: nominationWhere,
     include: {
-      nominator: { include: { user: true } },
-      nominee: { include: { user: true } },
-      reviewee: { include: { user: true } },
+      nominator: true,
+      nominee: true,
+      reviewee: true,
     },
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
   });
@@ -242,17 +241,17 @@ async function ApprovalContent({ cycleId }: { cycleId: string }) {
                     <div className="flex items-center gap-4">
                       <Avatar className="h-10 w-10">
                         <AvatarImage
-                          src={data.reviewee.user.image || undefined}
+                          src={undefined}
                         />
                         <AvatarFallback>
                           {getInitials(
-                            data.reviewee.user.name || data.reviewee.user.email
+                            data.reviewee.name || data.reviewee.email
                           )}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <CardTitle className="text-lg">
-                          {data.reviewee.user.name || data.reviewee.user.email}
+                          {data.reviewee.name || data.reviewee.email}
                         </CardTitle>
                         <CardDescription>
                           {data.nominations.length} nomination

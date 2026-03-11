@@ -56,27 +56,21 @@ async function getCycle(companyId: string, cycleId: string) {
       template: true,
       participants: {
         include: {
-          companyUser: {
-            include: { user: true },
-          },
+          employee: true,
         },
       },
       assignments: {
         include: {
-          reviewer: {
-            include: { user: true },
-          },
-          reviewee: {
-            include: { user: true },
-          },
+          reviewer: true,
+          reviewee: true,
         },
         orderBy: { createdAt: "desc" },
       },
       nominations: {
         include: {
-          nominator: { include: { user: true } },
-          nominee: { include: { user: true } },
-          reviewee: { include: { user: true } },
+          nominator: true,
+          nominee: true,
+          reviewee: true,
         },
       },
       _count: {
@@ -363,7 +357,7 @@ export default async function CycleDetailPage({ params }: PageProps) {
                 <div className="space-y-4">
                   {cycle.participants.map((participant) => {
                     const assignments = assignmentsByReviewee[
-                      participant.companyUserId
+                      participant.employeeId
                     ] || [];
                     const completed = assignments.filter(
                       (a) => a.status === "COMPLETED"
@@ -380,18 +374,18 @@ export default async function CycleDetailPage({ params }: PageProps) {
                       >
                         <Avatar className="h-10 w-10">
                           <AvatarImage
-                            src={participant.companyUser.user.image || undefined}
+                            src={undefined}
                           />
                           <AvatarFallback>
-                            {participant.companyUser.user.name
-                              ? getInitials(participant.companyUser.user.name)
+                            {participant.employee.name
+                              ? getInitials(participant.employee.name)
                               : "?"}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">
-                            {participant.companyUser.user.name ||
-                              participant.companyUser.user.email}
+                            {participant.employee.name ||
+                              participant.employee.email}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {assignments.length} reviewers assigned
@@ -490,14 +484,14 @@ export default async function CycleDetailPage({ params }: PageProps) {
                         <div key={revieweeId} className="p-4 rounded-lg border">
                           <div className="flex items-center gap-4 mb-3">
                             <Avatar className="h-10 w-10">
-                              <AvatarImage src={data.reviewee.user.image || undefined} />
+                              <AvatarImage src={undefined} />
                               <AvatarFallback>
-                                {getInitials(data.reviewee.user.name || data.reviewee.user.email)}
+                                {getInitials(data.reviewee.name || data.reviewee.email)}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
                               <p className="font-medium">
-                                {data.reviewee.user.name || data.reviewee.user.email}
+                                {data.reviewee.name || data.reviewee.email}
                               </p>
                               <p className="text-sm text-muted-foreground">
                                 {approved}/{cycle.minPeers} min peers approved
@@ -524,7 +518,7 @@ export default async function CycleDetailPage({ params }: PageProps) {
                                       : ""
                                 }
                               >
-                                {nomination.nominee.user.name || nomination.nominee.user.email}
+                                {nomination.nominee.name || nomination.nominee.email}
                                 {nomination.status === "PENDING" && (
                                   <Clock className="h-3 w-3 ml-1 text-yellow-500" />
                                 )}
@@ -577,7 +571,7 @@ export default async function CycleDetailPage({ params }: PageProps) {
                   {cycle.assignments.map((assignment) => {
                     const reviewerName = assignment.reviewerType === "EXTERNAL"
                       ? assignment.externalName || assignment.externalEmail || "External"
-                      : assignment.reviewer?.user.name || assignment.reviewer?.user.email;
+                      : assignment.reviewer?.name || assignment.reviewer?.email;
 
                     return (
                       <div
@@ -586,7 +580,7 @@ export default async function CycleDetailPage({ params }: PageProps) {
                       >
                         <Avatar className="h-8 w-8">
                           <AvatarImage
-                            src={assignment.reviewer?.user.image || undefined}
+                            src={undefined}
                           />
                           <AvatarFallback>
                             {reviewerName ? getInitials(reviewerName) : "?"}
@@ -597,7 +591,7 @@ export default async function CycleDetailPage({ params }: PageProps) {
                             <span className="font-medium">{reviewerName}</span>
                             <span className="text-muted-foreground"> reviewing </span>
                             <span className="font-medium">
-                              {assignment.reviewee.user.name}
+                              {assignment.reviewee.name}
                             </span>
                           </p>
                           {assignment.reviewerType === "EXTERNAL" && assignment.externalEmail && (

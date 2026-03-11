@@ -27,13 +27,11 @@ import {
 import { createUserSchema, type CreateUserInput } from "@/lib/validations/user";
 import { inviteUser, createUser } from "@/lib/actions/users";
 import { ROLE_LABELS } from "@/lib/constants/roles";
-import type { Department, CompanyUser, User } from "@prisma/client";
-
-type CompanyUserWithUser = CompanyUser & { user: User };
+import type { Department, Employee } from "@prisma/client";
 
 interface EmployeeFormProps {
   departments: Department[];
-  managers: CompanyUserWithUser[];
+  managers: Employee[];
   mode?: "invite" | "create";
 }
 
@@ -52,7 +50,7 @@ export function EmployeeForm({
       email: "",
       name: "",
       title: "",
-      role: "EMPLOYEE",
+      role: "MEMBER",
       departmentId: undefined,
       managerId: undefined,
     },
@@ -218,7 +216,7 @@ export function EmployeeForm({
                     <SelectItem value="none">No manager</SelectItem>
                     {managers.map((manager) => (
                       <SelectItem key={manager.id} value={manager.id}>
-                        {manager.user.name || manager.user.email}
+                        {manager.name || manager.email}
                       </SelectItem>
                     ))}
                   </SelectContent>

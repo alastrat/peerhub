@@ -12,10 +12,9 @@ async function getTemplates(companyId: string) {
 }
 
 async function getEmployees(companyId: string) {
-  return prisma.companyUser.findMany({
+  return prisma.employee.findMany({
     where: { companyId, isActive: true },
-    include: { user: true },
-    orderBy: { user: { name: "asc" } },
+    orderBy: { name: "asc" },
   });
 }
 

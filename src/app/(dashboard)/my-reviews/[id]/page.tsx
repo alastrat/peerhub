@@ -18,11 +18,11 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-async function getAssignment(companyUserId: string, assignmentId: string) {
+async function getAssignment(employeeId: string, assignmentId: string) {
   return prisma.reviewAssignment.findFirst({
     where: {
       id: assignmentId,
-      reviewerId: companyUserId,
+      reviewerId: employeeId,
       status: { in: ["PENDING", "IN_PROGRESS"] },
     },
     include: {
@@ -42,9 +42,7 @@ async function getAssignment(companyUserId: string, assignmentId: string) {
           },
         },
       },
-      reviewee: {
-        include: { user: true },
-      },
+      reviewee: true,
     },
   });
 }
@@ -53,11 +51,11 @@ export default async function ReviewDetailPage({ params }: PageProps) {
   const { id } = await params;
 
   const session = await auth();
-  if (!session?.companyUser) {
+  if (!session?.companyUser?.employeeId) {
     redirect("/login");
   }
 
-  const assignment = await getAssignment(session.companyUser.id, id);
+  const assignment = await getAssignment(session.companyUser.employeeId, id);
 
   if (!assignment) {
     notFound();
@@ -85,7 +83,7 @@ export default async function ReviewDetailPage({ params }: PageProps) {
           title={
             isSelfReview
               ? "Self Review"
-              : `Review for ${assignment.reviewee.user.name}`
+              : `Review for ${assignment.reviewee.name}`
           }
           description={assignment.cycle.name}
         />
@@ -95,16 +93,16 @@ export default async function ReviewDetailPage({ params }: PageProps) {
       <Card>
         <CardContent className="flex items-center gap-6 p-6">
           <Avatar className="h-16 w-16">
-            <AvatarImage src={assignment.reviewee.user.image || undefined} />
+            <AvatarImage src={undefined} />
             <AvatarFallback className="text-lg">
-              {assignment.reviewee.user.name
-                ? getInitials(assignment.reviewee.user.name)
+              {assignment.reviewee.name
+                ? getInitials(assignment.reviewee.name)
                 : "?"}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
             <h2 className="text-xl font-semibold">
-              {isSelfReview ? "Your Self Assessment" : assignment.reviewee.user.name}
+              {isSelfReview ? "Your Self Assessment" : assignment.reviewee.name}
             </h2>
             <p className="text-muted-foreground">
               {assignment.reviewee.title || "No title"}
@@ -135,7 +133,7 @@ export default async function ReviewDetailPage({ params }: PageProps) {
           <p className="text-sm text-muted-foreground">
             {isSelfReview
               ? "Take time to reflect on your own performance. Be honest and thoughtful in your self-assessment. This is an opportunity to highlight your achievements and identify areas for growth."
-              : `Please provide thoughtful and constructive feedback for ${assignment.reviewee.user.name}. Your responses will be anonymized and combined with other reviewers' feedback.`}
+              : `Please provide thoughtful and constructive feedback for ${assignment.reviewee.name}. Your responses will be anonymized and combined with other reviewers' feedback.`}
           </p>
           <ul className="list-disc list-inside text-sm text-muted-foreground mt-2 space-y-1">
             <li>Your progress is automatically saved every 30 seconds</li>
@@ -150,7 +148,7 @@ export default async function ReviewDetailPage({ params }: PageProps) {
       <ReviewForm
         assignmentId={assignment.id}
         revieweeName={
-          isSelfReview ? "yourself" : assignment.reviewee.user.name || "this person"
+          isSelfReview ? "yourself" : assignment.reviewee.name || "this person"
         }
         reviewerType={assignment.reviewerType as ReviewerType}
         sections={assignment.cycle.template.sections.map((s) => ({

@@ -13,14 +13,12 @@ async function getDepartments(companyId: string) {
 }
 
 async function getManagers(companyId: string) {
-  return prisma.companyUser.findMany({
+  return prisma.employee.findMany({
     where: {
       companyId,
       isActive: true,
-      role: { in: ["ADMIN", "MANAGER"] },
     },
-    include: { user: true },
-    orderBy: { user: { name: "asc" } },
+    orderBy: { name: "asc" },
   });
 }
 

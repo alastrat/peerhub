@@ -21,6 +21,7 @@ interface CreateTemplateInput {
       isRequired: boolean;
       order: number;
       config?: Record<string, unknown>;
+      competencyId?: string;
     }[];
   }[];
 }
@@ -61,6 +62,7 @@ export async function createTemplate(
                 isRequired: question.isRequired,
                 order: question.order,
                 config: question.config as Prisma.InputJsonValue | undefined,
+                competencyId: question.competencyId || null,
               })),
             },
           })),
@@ -132,6 +134,7 @@ export async function updateTemplate(
                   isRequired: question.isRequired,
                   order: question.order,
                   config: question.config as Prisma.InputJsonValue | undefined,
+                  competencyId: question.competencyId || null,
                 })),
               },
             })),
@@ -247,6 +250,7 @@ export async function duplicateTemplate(
                 isRequired: question.isRequired,
                 order: question.order,
                 config: question.config as Prisma.InputJsonValue | undefined,
+                competencyId: question.competencyId,
               })),
             },
           })),

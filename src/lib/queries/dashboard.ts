@@ -17,7 +17,7 @@ export async function getDashboardStats(options: DashboardStatsOptions) {
     recentCycles,
   ] = await Promise.all([
     // Total active employees
-    prisma.companyUser.count({
+    prisma.employee.count({
       where: { companyId, isActive: true },
     }),
 
@@ -183,8 +183,17 @@ export async function getCompletionBreakdown(companyId: string) {
   return breakdown;
 }
 
-export async function getEmployeeDashboardStats(companyUserId: string, companyId: string) {
-  // Get pending reviews for this user
+export async function getEmployeeDashboardStats(employeeId: string | null, companyId: string) {
+  if (!employeeId) {
+    return {
+      pendingReviews: 0,
+      completedReviews: 0,
+      releasedReports: 0,
+      pendingNominations: 0,
+    };
+  }
+
+  // Get pending reviews for this employee
   const [
     pendingReviews,
     completedReviews,
@@ -193,7 +202,7 @@ export async function getEmployeeDashboardStats(companyUserId: string, companyId
   ] = await Promise.all([
     prisma.reviewAssignment.count({
       where: {
-        reviewerId: companyUserId,
+        reviewerId: employeeId,
         status: { in: ["PENDING", "IN_PROGRESS"] },
         cycle: { companyId, status: "IN_PROGRESS" },
       },
@@ -201,7 +210,7 @@ export async function getEmployeeDashboardStats(companyUserId: string, companyId
 
     prisma.reviewAssignment.count({
       where: {
-        reviewerId: companyUserId,
+        reviewerId: employeeId,
         status: "COMPLETED",
         cycle: { companyId },
       },
@@ -209,7 +218,7 @@ export async function getEmployeeDashboardStats(companyUserId: string, companyId
 
     prisma.cycleParticipant.count({
       where: {
-        companyUserId,
+        employeeId,
         releasedAt: { not: null },
         cycle: { companyId },
       },
@@ -220,7 +229,7 @@ export async function getEmployeeDashboardStats(companyUserId: string, companyId
         companyId,
         status: "NOMINATION",
         participants: {
-          some: { companyUserId },
+          some: { employeeId },
         },
       },
     }),

@@ -22,7 +22,13 @@ export async function createNomination(
     }
 
     const companyId = session.companyUser.companyId;
-    const nominatorId = session.companyUser.id;
+    const employeeId = session.companyUser.employeeId;
+
+    if (!employeeId) {
+      return { success: false, error: "No employee record linked" };
+    }
+
+    const nominatorId = employeeId;
 
     // Verify cycle exists and is in nomination phase
     const cycle = await prisma.cycle.findFirst({
@@ -44,7 +50,7 @@ export async function createNomination(
     const participant = await prisma.cycleParticipant.findFirst({
       where: {
         cycleId: input.cycleId,
-        companyUserId: revieweeId,
+        employeeId: revieweeId,
       },
     });
 
@@ -53,7 +59,7 @@ export async function createNomination(
     }
 
     // Check if nominee exists and is in the same company
-    const nominee = await prisma.companyUser.findFirst({
+    const nominee = await prisma.employee.findFirst({
       where: {
         id: input.nomineeId,
         companyId,
@@ -189,7 +195,7 @@ export async function removeNomination(
 
     // Only the nominator or admin can remove
     const isAdmin = session.companyUser.role === "ADMIN";
-    const isNominator = nomination.nominatorId === session.companyUser.id;
+    const isNominator = nomination.nominatorId === session.companyUser.employeeId;
 
     if (!isAdmin && !isNominator) {
       return { success: false, error: "Unauthorized" };
@@ -242,9 +248,7 @@ export async function approveNomination(
         cycle: { companyId },
       },
       include: {
-        reviewee: {
-          include: { user: true },
-        },
+        reviewee: true,
         cycle: true,
       },
     });
@@ -259,7 +263,7 @@ export async function approveNomination(
 
     // Managers can only approve for their direct reports
     if (role === "MANAGER") {
-      const isDirectReport = nomination.reviewee.managerId === session.companyUser.id;
+      const isDirectReport = nomination.reviewee.managerId === session.companyUser.employeeId;
       if (!isDirectReport) {
         return { success: false, error: "You can only approve nominations for your direct reports" };
       }
@@ -327,7 +331,7 @@ export async function rejectNomination(
 
     // Managers can only reject for their direct reports
     if (role === "MANAGER") {
-      const isDirectReport = nomination.reviewee.managerId === session.companyUser.id;
+      const isDirectReport = nomination.reviewee.managerId === session.companyUser.employeeId;
       if (!isDirectReport) {
         return { success: false, error: "You can only reject nominations for your direct reports" };
       }
@@ -458,9 +462,9 @@ export async function getNominationsForCycle(
   return prisma.nomination.findMany({
     where,
     include: {
-      nominator: { include: { user: true } },
-      nominee: { include: { user: true } },
-      reviewee: { include: { user: true } },
+      nominator: true,
+      nominee: true,
+      reviewee: true,
     },
     orderBy: { createdAt: "desc" },
   });

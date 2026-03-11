@@ -187,54 +187,58 @@ async function AdminDashboard({ companyId }: { companyId: string }) {
 }
 
 async function EmployeeDashboard({
-  companyUserId,
+  employeeId,
   companyId,
 }: {
-  companyUserId: string;
+  employeeId: string | null;
   companyId: string;
 }) {
   const [stats, pendingReviews, releasedReports, nominationCycles] = await Promise.all([
-    getEmployeeDashboardStats(companyUserId, companyId),
+    getEmployeeDashboardStats(employeeId, companyId),
     // Get pending reviews
-    prisma.reviewAssignment.findMany({
-      where: {
-        reviewerId: companyUserId,
-        status: { in: ["PENDING", "IN_PROGRESS"] },
-        cycle: { companyId, status: "IN_PROGRESS" },
-      },
-      include: {
-        cycle: true,
-        reviewee: {
-          include: { user: true },
-        },
-      },
-      take: 5,
-      orderBy: { cycle: { reviewEndDate: "asc" } },
-    }),
+    employeeId
+      ? prisma.reviewAssignment.findMany({
+          where: {
+            reviewerId: employeeId,
+            status: { in: ["PENDING", "IN_PROGRESS"] },
+            cycle: { companyId, status: "IN_PROGRESS" },
+          },
+          include: {
+            cycle: true,
+            reviewee: true,
+          },
+          take: 5,
+          orderBy: { cycle: { reviewEndDate: "asc" } },
+        })
+      : Promise.resolve([]),
     // Get released reports
-    prisma.cycleParticipant.findMany({
-      where: {
-        companyUserId,
-        releasedAt: { not: null },
-        cycle: { companyId },
-      },
-      include: {
-        cycle: true,
-      },
-      take: 5,
-      orderBy: { releasedAt: "desc" },
-    }),
+    employeeId
+      ? prisma.cycleParticipant.findMany({
+          where: {
+            employeeId,
+            releasedAt: { not: null },
+            cycle: { companyId },
+          },
+          include: {
+            cycle: true,
+          },
+          take: 5,
+          orderBy: { releasedAt: "desc" },
+        })
+      : Promise.resolve([]),
     // Get nomination cycles
-    prisma.cycle.findMany({
-      where: {
-        companyId,
-        status: "NOMINATION",
-        participants: {
-          some: { companyUserId },
-        },
-      },
-      take: 3,
-    }),
+    employeeId
+      ? prisma.cycle.findMany({
+          where: {
+            companyId,
+            status: "NOMINATION",
+            participants: {
+              some: { employeeId },
+            },
+          },
+          take: 3,
+        })
+      : Promise.resolve([]),
   ]);
 
   return (
@@ -300,16 +304,16 @@ async function EmployeeDashboard({
                     <Link key={review.id} href={`/my-reviews/${review.id}`}>
                       <div className="flex items-center gap-4 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={review.reviewee.user.image || undefined} />
+                          <AvatarImage src={undefined} />
                           <AvatarFallback>
-                            {getInitials(review.reviewee.user.name || review.reviewee.user.email)}
+                            {getInitials(review.reviewee.name || review.reviewee.email)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <p className="font-medium">
                             {review.reviewerType === "SELF"
                               ? "Self Review"
-                              : review.reviewee.user.name || review.reviewee.user.email}
+                              : review.reviewee.name || review.reviewee.email}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {review.cycle.name}
@@ -410,9 +414,8 @@ async function EmployeeDashboard({
 
 export default async function OverviewPage() {
   const session = await auth();
-  if (!session?.companyUser) {
-    redirect("/login");
-  }
+  if (!session?.user) redirect("/login");
+  if (!session.companyUser) redirect("/onboarding");
 
   const isAdmin = session.companyUser.role === "ADMIN";
   const userName = session.user?.name?.split(" ")[0] || "there";
@@ -429,7 +432,7 @@ export default async function OverviewPage() {
           <AdminDashboard companyId={session.companyUser.companyId} />
         ) : (
           <EmployeeDashboard
-            companyUserId={session.companyUser.id}
+            employeeId={session.companyUser.employeeId}
             companyId={session.companyUser.companyId}
           />
         )}

@@ -74,10 +74,11 @@ async function TemplatesList() {
         icon={<FileText className="h-8 w-8 text-muted-foreground" />}
         title="No templates yet"
         description="Create your first review template with questions and rating scales."
-        action={{
-          label: "Create Template",
-          onClick: () => {},
-        }}
+        action={
+          <Link href="/templates/new">
+            <Button>Create Template</Button>
+          </Link>
+        }
       />
     );
   }

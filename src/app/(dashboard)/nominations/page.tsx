@@ -33,13 +33,23 @@ async function NominationCyclesList() {
     redirect("/login");
   }
 
-  const companyUserId = session.companyUser.id;
+  const employeeId = session.companyUser.employeeId;
   const companyId = session.companyUser.companyId;
+
+  if (!employeeId) {
+    return (
+      <EmptyState
+        icon={<Users className="h-8 w-8 text-muted-foreground" />}
+        title="No active nominations"
+        description="You'll see review cycles here when peer nomination is open."
+      />
+    );
+  }
 
   // Get cycles in nomination phase where user is a participant
   const participants = await prisma.cycleParticipant.findMany({
     where: {
-      companyUserId,
+      employeeId,
       cycle: {
         companyId,
         status: "NOMINATION",
@@ -62,7 +72,7 @@ async function NominationCyclesList() {
       const nominations = await prisma.nomination.findMany({
         where: {
           cycleId: p.cycleId,
-          revieweeId: companyUserId,
+          revieweeId: employeeId,
         },
       });
 

@@ -45,21 +45,23 @@ async function NominationContent({ cycleId }: { cycleId: string }) {
     redirect("/login");
   }
 
-  const companyUserId = session.companyUser.id;
+  const employeeId = session.companyUser.employeeId;
   const companyId = session.companyUser.companyId;
+
+  if (!employeeId) {
+    redirect("/overview");
+  }
 
   // Verify cycle exists and user is a participant
   const participant = await prisma.cycleParticipant.findFirst({
     where: {
       cycleId,
-      companyUserId,
+      employeeId,
       cycle: { companyId },
     },
     include: {
       cycle: true,
-      companyUser: {
-        include: { user: true },
-      },
+      employee: true,
     },
   });
 
@@ -75,16 +77,15 @@ async function NominationContent({ cycleId }: { cycleId: string }) {
 
   // Get nominations and stats
   const [nominations, stats, colleagues] = await Promise.all([
-    getNominationsForCycle(cycleId, companyUserId),
-    getNominationStats(cycleId, companyUserId),
-    prisma.companyUser.findMany({
+    getNominationsForCycle(cycleId, employeeId),
+    getNominationStats(cycleId, employeeId),
+    prisma.employee.findMany({
       where: {
         companyId,
         isActive: true,
-        id: { not: companyUserId },
+        id: { not: employeeId },
       },
       include: {
-        user: true,
         department: true,
       },
     }),
@@ -97,9 +98,9 @@ async function NominationContent({ cycleId }: { cycleId: string }) {
   const existingNomineeIds = nominations.map((n) => n.nomineeId);
   const colleaguesList = colleagues.map((c) => ({
     id: c.id,
-    name: c.user.name,
-    email: c.user.email,
-    image: c.user.image,
+    name: c.name,
+    email: c.email,
+    image: null as string | null,
     title: c.title,
     department: c.department?.name || null,
   }));
@@ -133,7 +134,7 @@ async function NominationContent({ cycleId }: { cycleId: string }) {
         <div className="lg:col-span-2">
           <PeerSelector
             cycleId={cycleId}
-            revieweeId={companyUserId}
+            revieweeId={employeeId}
             colleagues={colleaguesList}
             existingNomineeIds={existingNomineeIds}
             minPeers={cycle.minPeers}

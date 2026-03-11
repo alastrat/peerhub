@@ -3,7 +3,7 @@ import { CompanyRole, GlobalRole, ReviewerType } from "@prisma/client";
 export const ROLE_LABELS: Record<CompanyRole, string> = {
   ADMIN: "Admin",
   MANAGER: "Manager",
-  EMPLOYEE: "Employee",
+  MEMBER: "Member",
 };
 
 export const GLOBAL_ROLE_LABELS: Record<GlobalRole, string> = {
@@ -30,7 +30,7 @@ export const REVIEWER_TYPE_DESCRIPTIONS: Record<ReviewerType, string> = {
 export const ROLE_HIERARCHY: Record<CompanyRole, number> = {
   ADMIN: 3,
   MANAGER: 2,
-  EMPLOYEE: 1,
+  MEMBER: 1,
 };
 
 export function canManageRole(

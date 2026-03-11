@@ -10,27 +10,19 @@ interface Nomination {
   createdAt: Date;
   nominator: {
     id: string;
-    user: {
-      name: string | null;
-      email: string;
-      image: string | null;
-    };
+    name: string;
+    email: string;
   };
   nominee: {
     id: string;
+    name: string;
+    email: string;
     title: string | null;
-    user: {
-      name: string | null;
-      email: string;
-      image: string | null;
-    };
   };
   reviewee: {
     id: string;
-    user: {
-      name: string | null;
-      email: string;
-    };
+    name: string;
+    email: string;
   };
 }
 

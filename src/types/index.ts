@@ -2,6 +2,7 @@ import type {
   Company,
   User,
   CompanyUser,
+  Employee,
   Department,
   Template,
   TemplateSection,
@@ -25,6 +26,7 @@ export type {
   Company,
   User,
   CompanyUser,
+  Employee,
   Department,
   Template,
   TemplateSection,
@@ -50,12 +52,18 @@ export type UserWithCompanies = User & {
   })[];
 };
 
+export type EmployeeWithRelations = Employee & {
+  company: Company;
+  department: Department | null;
+  manager: Employee | null;
+  directReports: Employee[];
+  companyUser: (CompanyUser & { user: User }) | null;
+};
+
 export type CompanyUserWithRelations = CompanyUser & {
   user: User;
   company: Company;
-  department: Department | null;
-  manager: (CompanyUser & { user: User }) | null;
-  directReports: (CompanyUser & { user: User })[];
+  employee: EmployeeWithRelations | null;
 };
 
 export type TemplateWithSections = Template & {
@@ -67,7 +75,7 @@ export type TemplateWithSections = Template & {
 export type CycleWithRelations = Cycle & {
   template: Template;
   participants: (CycleParticipant & {
-    companyUser: CompanyUser & { user: User };
+    employee: Employee;
   })[];
   _count?: {
     participants: number;
@@ -77,15 +85,15 @@ export type CycleWithRelations = Cycle & {
 
 export type ReviewAssignmentWithRelations = ReviewAssignment & {
   cycle: Cycle;
-  reviewer: (CompanyUser & { user: User }) | null;
-  reviewee: CompanyUser & { user: User };
+  reviewer: Employee | null;
+  reviewee: Employee;
   responses: ReviewResponse[];
 };
 
 export type NominationWithRelations = Nomination & {
-  nominator: CompanyUser & { user: User };
-  nominee: CompanyUser & { user: User };
-  reviewee: CompanyUser & { user: User };
+  nominator: Employee;
+  nominee: Employee;
+  reviewee: Employee;
 };
 
 // Session types
@@ -103,7 +111,7 @@ export interface SessionCompanyUser {
   companyName: string;
   companySlug: string;
   role: CompanyRole;
-  title: string | null;
+  employeeId: string | null;
 }
 
 export interface ExtendedSession {
@@ -163,6 +171,18 @@ export interface QuestionReport {
   overall?: AggregatedRating;
 }
 
+export interface CompetencyScore {
+  competencyId: string;
+  competencyName: string;
+  category: string | null;
+  overallAverage: number | null;
+  byReviewerType: Record<
+    ReviewerType,
+    { average: number; count: number } | null
+  >;
+  selfVsOthersGap: number | null;
+}
+
 export interface IndividualReport {
   cycleId: string;
   cycleName: string;
@@ -175,6 +195,7 @@ export interface IndividualReport {
     sectionTitle: string;
     questions: QuestionReport[];
   }[];
+  competencyScores: CompetencyScore[];
   strengths: string[];
   opportunities: string[];
   releasedAt: Date | null;

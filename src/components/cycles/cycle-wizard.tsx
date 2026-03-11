@@ -44,13 +44,11 @@ import { cn } from "@/lib/utils";
 import { createCycleSchema, type CreateCycleInput } from "@/lib/validations/cycle";
 import { createCycle } from "@/lib/actions/cycles";
 import { getInitials } from "@/lib/utils/formatting";
-import type { Template, CompanyUser, User } from "@prisma/client";
-
-type CompanyUserWithUser = CompanyUser & { user: User };
+import type { Template, Employee } from "@prisma/client";
 
 interface CycleWizardProps {
   templates: Template[];
-  employees: CompanyUserWithUser[];
+  employees: Employee[];
 }
 
 type WizardStep = "basics" | "settings" | "participants" | "review";
@@ -639,16 +637,15 @@ export function CycleWizard({ templates, employees }: CycleWizardProps) {
                         >
                           <Checkbox checked={isSelected} />
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={employee.user.image || undefined} />
                             <AvatarFallback>
-                              {employee.user.name
-                                ? getInitials(employee.user.name)
+                              {employee.name
+                                ? getInitials(employee.name)
                                 : "?"}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <p className="font-medium truncate">
-                              {employee.user.name || employee.user.email}
+                              {employee.name || employee.email}
                             </p>
                             <p className="text-sm text-muted-foreground truncate">
                               {employee.title || "No title"}
