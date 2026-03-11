@@ -63,6 +63,43 @@ enum AccessTokenPurpose {
   COMPLETE_REVIEW
 }
 
+// Climate Survey enums
+enum ClimateSurveyType {
+  CLIMATE
+  PULSE
+  ENPS
+}
+
+enum ClimateSurveyStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+  ARCHIVED
+}
+
+enum SurveyQuestionType {
+  LIKERT
+  TEXT
+  NPS
+  RATING
+}
+
+enum SurveyTargetType {
+  ALL
+  DEPARTMENT
+  CUSTOM
+}
+
+enum SurveyFrequency {
+  ONCE
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  BIANNUAL
+  ANNUAL
+}
+
 // ============================================
 // CORE ENTITIES
 // ============================================
@@ -91,6 +128,10 @@ model Company {
   tokens       ReviewToken[]
   roleConfigs  CompanyRoleConfig[]
   accessTokens AccessToken[]
+
+  // Climate surveys
+  climateSurveys    ClimateSurvey[]
+  climateDimensions ClimateDimension[]
 
   @@index([slug])
 }
@@ -140,6 +181,7 @@ model Employee {
   nominationsReceived Nomination[]       @relation("NomineeRelation")
   nominationsFor      Nomination[]       @relation("RevieweeNominations")
   accessTokens        AccessToken[]
+  surveyResponses     SurveyResponse[]
 
   @@unique([companyId, email])
   @@index([companyId])
@@ -478,6 +520,118 @@ model CompanyRoleConfig {
 
   @@unique([companyId, slug])
   @@index([companyId])
+}
+
+// ============================================
+// CLIMATE SURVEYS (WORK ENVIRONMENT)
+// ============================================
+
+model ClimateSurvey {
+  id          String              @id @default(cuid())
+  name        String
+  description String?
+  companyId   String
+  type        ClimateSurveyType   @default(CLIMATE)
+  status      ClimateSurveyStatus @default(DRAFT)
+  frequency   SurveyFrequency     @default(ONCE)
+  isAnonymous Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  company       Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  questions     SurveyQuestion[]
+  distributions SurveyDistribution[]
+
+  @@index([companyId])
+  @@index([status])
+}
+
+model ClimateDimension {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  companyId   String?
+  icon        String?
+  order       Int      @default(0)
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company   Company?         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  questions SurveyQuestion[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+}
+
+model SurveyQuestion {
+  id          String             @id @default(cuid())
+  surveyId    String
+  dimensionId String?
+  text        String
+  type        SurveyQuestionType
+  order       Int
+  isRequired  Boolean            @default(true)
+  config      Json?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  survey    ClimateSurvey    @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  dimension ClimateDimension? @relation(fields: [dimensionId], references: [id])
+  answers   SurveyAnswer[]
+
+  @@index([surveyId])
+}
+
+model SurveyDistribution {
+  id              String           @id @default(cuid())
+  surveyId        String
+  targetType      SurveyTargetType @default(ALL)
+  targetIds       String[]
+  sentAt          DateTime?
+  dueDate         DateTime
+  reminderSentAt  DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  survey    ClimateSurvey    @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  responses SurveyResponse[]
+
+  @@index([surveyId])
+}
+
+model SurveyResponse {
+  id             String    @id @default(cuid())
+  distributionId String
+  employeeId     String?
+  submittedAt    DateTime?
+  isComplete     Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  distribution SurveyDistribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
+  employee     Employee?          @relation(fields: [employeeId], references: [id])
+  answers      SurveyAnswer[]
+
+  @@unique([distributionId, employeeId])
+  @@index([distributionId])
+  @@index([employeeId])
+}
+
+model SurveyAnswer {
+  id          String   @id @default(cuid())
+  responseId  String
+  questionId  String
+  ratingValue Int?
+  textValue   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  response SurveyResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question SurveyQuestion @relation(fields: [questionId], references: [id])
+
+  @@unique([responseId, questionId])
+  @@index([responseId])
 }
 
 // ============================================

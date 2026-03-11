@@ -12,6 +12,7 @@ import {
   BarChart3,
   Settings,
   UsersRound,
+  Thermometer,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Logo } from "@/components/design-system/logo";
@@ -28,6 +29,7 @@ const adminNavItems = [
   { href: "/templates", icon: FileText, label: "Templates" },
   { href: "/cycles", icon: RotateCcw, label: "Review Cycles" },
   { href: "/reports", icon: BarChart3, label: "Reports" },
+  { href: "/climate", icon: Thermometer, label: "Work Environment" },
 ];
 
 const employeeNavItems = [
