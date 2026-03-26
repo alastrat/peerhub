@@ -18,6 +18,7 @@ export default async function FeaturesPage() {
       featureAts: true,
       featureOnboarding: true,
       featureWorkEnv: true,
+      featureHubs: true,
     },
   });
 
@@ -35,6 +36,7 @@ export default async function FeaturesPage() {
           ats: company.featureAts,
           onboarding: company.featureOnboarding,
           workEnv: company.featureWorkEnv,
+          hubs: company.featureHubs,
         }}
       />
     </div>

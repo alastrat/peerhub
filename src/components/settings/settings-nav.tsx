@@ -14,6 +14,8 @@ import {
   Shield,
   Activity,
   Target,
+  MapPin,
+  UsersRound,
 } from "lucide-react";
 
 export interface NavItem {
@@ -36,8 +38,11 @@ const COMPANY_ITEMS: NavItem[] = [
   { href: "/settings/company/members", label: "Members", icon: Users },
   { href: "/settings/company/roles", label: "Roles", icon: Shield },
   { href: "/settings/company/departments", label: "Departments", icon: Layers },
+  { href: "/settings/company/teams", label: "Teams", icon: UsersRound },
   { href: "/settings/company/competencies", label: "Competencies", icon: Target },
 ];
+
+const HUB_ITEM: NavItem = { href: "/settings/company/hubs", label: "Hubs", icon: MapPin };
 
 const PLATFORM_ITEMS: NavItem[] = [
   { href: "/settings/company/domain", label: "Company Domain", icon: Globe },
@@ -49,16 +54,21 @@ const PLATFORM_ITEMS: NavItem[] = [
 export function SettingsNav({
   isCompanyAdmin,
   isSuperAdmin,
+  featureHubs = false,
 }: {
   isCompanyAdmin: boolean;
   isSuperAdmin: boolean;
+  featureHubs?: boolean;
 }) {
   const pathname = usePathname();
 
   const sections: NavSection[] = [{ items: GENERAL_ITEMS }];
 
   if (isCompanyAdmin) {
-    sections.push({ title: "Company", items: COMPANY_ITEMS });
+    const companyItems = featureHubs
+      ? [...COMPANY_ITEMS.slice(0, 4), HUB_ITEM, ...COMPANY_ITEMS.slice(4)]
+      : COMPANY_ITEMS;
+    sections.push({ title: "Company", items: companyItems });
   }
 
   if (isSuperAdmin) {

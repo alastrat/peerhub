@@ -78,7 +78,7 @@ export async function createClimateSurvey(
       },
     });
 
-    revalidatePath("/climate");
+    revalidatePath("/surveys/climate");
     return { success: true, data: survey };
   } catch (error) {
     console.error("Failed to create climate survey:", error);
@@ -136,7 +136,7 @@ export async function updateClimateSurvey(
       },
     });
 
-    revalidatePath("/climate");
+    revalidatePath("/surveys/climate");
     return { success: true, data: survey };
   } catch (error) {
     console.error("Failed to update climate survey:", error);
@@ -166,7 +166,7 @@ export async function deleteClimateSurvey(surveyId: string): Promise<ActionResul
       await prisma.climateSurvey.delete({ where: { id: surveyId } });
     }
 
-    revalidatePath("/climate");
+    revalidatePath("/surveys/climate");
     return { success: true };
   } catch (error) {
     console.error("Failed to delete climate survey:", error);
@@ -214,7 +214,7 @@ export async function duplicateClimateSurvey(
       },
     });
 
-    revalidatePath("/climate");
+    revalidatePath("/surveys/climate");
     return { success: true, data: survey };
   } catch (error) {
     console.error("Failed to duplicate climate survey:", error);

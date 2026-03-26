@@ -6,13 +6,11 @@ import { useSession } from "next-auth/react";
 import {
   LayoutDashboard,
   Users,
-  FileText,
-  RotateCcw,
   ClipboardList,
   BarChart3,
   Settings,
   UsersRound,
-  Thermometer,
+  ClipboardCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Logo } from "@/components/design-system/logo";
@@ -26,10 +24,8 @@ import {
 const adminNavItems = [
   { href: "/overview", icon: LayoutDashboard, label: "Overview" },
   { href: "/people", icon: Users, label: "People" },
-  { href: "/templates", icon: FileText, label: "Templates" },
-  { href: "/cycles", icon: RotateCcw, label: "Review Cycles" },
+  { href: "/surveys", icon: ClipboardCheck, label: "Surveys" },
   { href: "/reports", icon: BarChart3, label: "Reports" },
-  { href: "/climate", icon: Thermometer, label: "Work Environment" },
 ];
 
 const employeeNavItems = [

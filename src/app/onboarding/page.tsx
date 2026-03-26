@@ -27,7 +27,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createCompany } from "@/lib/actions/company";
+import { createCompany, getAvailableCompanies, switchCompany } from "@/lib/actions/company";
 import { toast } from "sonner";
 
 const companySchema = z.object({
@@ -103,14 +103,29 @@ export default function OnboardingPage() {
     }
   };
 
-  // If user already has a company, redirect to overview
+  // If user already has a company in session, redirect to overview
+  // Also check if user has existing companies even without one selected in session
+  const [checking, setChecking] = useState(true);
   useEffect(() => {
     if (session?.companyUser) {
       router.push("/overview");
+      return;
     }
-  }, [session?.companyUser, router]);
+    if (session?.user?.id) {
+      getAvailableCompanies().then(async (companies) => {
+        if (companies.length > 0) {
+          // User already has companies — select the first one and redirect
+          await switchCompany(companies[0].companyId);
+          await update({ companyId: companies[0].companyId });
+          router.push("/overview");
+        } else {
+          setChecking(false);
+        }
+      });
+    }
+  }, [session?.companyUser, session?.user?.id, router, update]);
 
-  if (session?.companyUser) {
+  if (session?.companyUser || checking) {
     return null;
   }
 

@@ -72,7 +72,7 @@ async function NominationContent({ cycleId }: { cycleId: string }) {
   const cycle = participant.cycle;
 
   if (cycle.status !== "NOMINATION") {
-    redirect(`/cycles/${cycleId}`);
+    redirect(`/surveys/360/${cycleId}`);
   }
 
   // Get nominations and stats

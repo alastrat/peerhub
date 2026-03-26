@@ -1,4 +1,5 @@
 import { PrismaClient, QuestionType, ReviewerType, CycleStatus } from "@prisma/client";
+import { seedSystemTemplates } from "./seed-system-templates";
 
 const prisma = new PrismaClient();
 
@@ -522,6 +523,9 @@ async function main() {
       },
     });
   }
+
+  // Seed system templates (360 + climate)
+  await seedSystemTemplates();
 
   console.log("✅ Seed completed successfully!");
   console.log("");

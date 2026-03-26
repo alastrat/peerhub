@@ -126,7 +126,7 @@ export function SurveyWizard({ dimensions }: { dimensions: DimensionOption[] }) 
         })),
       });
       if (result.success) {
-        router.push(`/climate/${result.data?.id}`);
+        router.push(`/surveys/climate/${result.data?.id}`);
       } else {
         setError(result.error || "Failed to create survey");
       }
@@ -383,7 +383,7 @@ export function SurveyWizard({ dimensions }: { dimensions: DimensionOption[] }) 
       <div className="flex justify-between">
         <Button
           variant="outline"
-          onClick={() => (step === 0 ? router.push("/climate") : setStep(step - 1))}
+          onClick={() => (step === 0 ? router.push("/surveys/climate") : setStep(step - 1))}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {step === 0 ? "Cancel" : "Back"}

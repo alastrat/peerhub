@@ -46,9 +46,18 @@ import { createCycle } from "@/lib/actions/cycles";
 import { getInitials } from "@/lib/utils/formatting";
 import type { Template, Employee } from "@prisma/client";
 
+interface ScopeOption {
+  id: string;
+  name: string;
+}
+
 interface CycleWizardProps {
   templates: Template[];
   employees: Employee[];
+  departments?: ScopeOption[];
+  teams?: ScopeOption[];
+  hubs?: ScopeOption[];
+  featureHubs?: boolean;
 }
 
 type WizardStep = "basics" | "settings" | "participants" | "review";
@@ -60,7 +69,14 @@ const STEPS: { id: WizardStep; title: string; icon: React.ElementType }[] = [
   { id: "review", title: "Review", icon: Check },
 ];
 
-export function CycleWizard({ templates, employees }: CycleWizardProps) {
+export function CycleWizard({
+  templates,
+  employees,
+  departments = [],
+  teams = [],
+  hubs = [],
+  featureHubs = false,
+}: CycleWizardProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [currentStep, setCurrentStep] = useState<WizardStep>("basics");
@@ -149,11 +165,13 @@ export function CycleWizard({ templates, employees }: CycleWizardProps) {
         ...data,
         reviewStartDate: new Date(data.reviewStartDate),
         reviewEndDate: new Date(data.reviewEndDate),
+        scope: data.scope || "CUSTOM",
+        scopeIds: data.scopeIds || [],
       });
 
       if (result.success) {
         toast.success("Cycle created successfully");
-        router.push(`/cycles/${result.data?.id}`);
+        router.push(`/surveys/360/${result.data?.id}`);
         router.refresh();
       } else {
         toast.error(result.error || "Something went wrong");
@@ -586,76 +604,215 @@ export function CycleWizard({ templates, employees }: CycleWizardProps) {
           {currentStep === "participants" && (
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Select Participants</CardTitle>
-                    <CardDescription>
-                      Choose which employees will be reviewed in this cycle
-                    </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={selectAllParticipants}
-                    >
-                      Select All
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={clearAllParticipants}
-                    >
-                      Clear
-                    </Button>
-                  </div>
-                </div>
+                <CardTitle>Select Participants</CardTitle>
+                <CardDescription>
+                  Choose how to select employees for this cycle
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="mb-4">
-                  <Badge variant="secondary">
-                    {participantIds.length} of {employees.length} selected
-                  </Badge>
+              <CardContent className="space-y-4">
+                {/* Scope selector */}
+                <div className="space-y-2">
+                  <FormField
+                    control={form.control}
+                    name="scope"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Scope</FormLabel>
+                        <Select
+                          onValueChange={(v) => {
+                            field.onChange(v);
+                            form.setValue("scopeIds", []);
+                            form.setValue("participantIds", []);
+                          }}
+                          value={field.value || "CUSTOM"}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="ALL">All Employees</SelectItem>
+                            {featureHubs && <SelectItem value="HUB">By Hub</SelectItem>}
+                            <SelectItem value="DEPARTMENT">By Department</SelectItem>
+                            <SelectItem value="TEAM">By Team</SelectItem>
+                            <SelectItem value="CUSTOM">Custom Selection</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          {form.watch("scope") === "ALL" && "All active employees will be included"}
+                          {form.watch("scope") === "HUB" && "Select which hubs to include"}
+                          {form.watch("scope") === "DEPARTMENT" && "Select which departments to include"}
+                          {form.watch("scope") === "TEAM" && "Select which teams to include (includes cross-department members)"}
+                          {(form.watch("scope") === "CUSTOM" || !form.watch("scope")) && "Manually select individual employees"}
+                        </FormDescription>
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
-                <ScrollArea className="h-96 rounded border p-4">
+                {/* Scope-based selection */}
+                {form.watch("scope") === "HUB" && (
                   <div className="space-y-2">
-                    {employees.map((employee) => {
-                      const isSelected = participantIds.includes(employee.id);
-                      return (
-                        <div
-                          key={employee.id}
-                          onClick={() => toggleParticipant(employee.id)}
-                          className={cn(
-                            "flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors",
-                            isSelected
-                              ? "bg-primary/10 border border-primary/20"
-                              : "hover:bg-muted"
-                          )}
-                        >
-                          <Checkbox checked={isSelected} />
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback>
-                              {employee.name
-                                ? getInitials(employee.name)
-                                : "?"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">
-                              {employee.name || employee.email}
-                            </p>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {employee.title || "No title"}
-                            </p>
+                    <label className="text-sm font-medium">Select Hubs</label>
+                    <div className="space-y-2 rounded border p-4 max-h-64 overflow-auto">
+                      {hubs.map((hub) => {
+                        const scopeIds = form.watch("scopeIds") || [];
+                        const isSelected = scopeIds.includes(hub.id);
+                        return (
+                          <div
+                            key={hub.id}
+                            onClick={() => {
+                              const current = form.getValues("scopeIds") || [];
+                              form.setValue("scopeIds",
+                                isSelected
+                                  ? current.filter((id) => id !== hub.id)
+                                  : [...current, hub.id]
+                              );
+                            }}
+                            className={cn(
+                              "flex items-center gap-3 p-2 rounded cursor-pointer",
+                              isSelected ? "bg-primary/10" : "hover:bg-muted"
+                            )}
+                          >
+                            <Checkbox checked={isSelected} />
+                            <span>{hub.name}</span>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </ScrollArea>
+                )}
+
+                {form.watch("scope") === "DEPARTMENT" && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Select Departments</label>
+                    <div className="space-y-2 rounded border p-4 max-h-64 overflow-auto">
+                      {departments.map((dept) => {
+                        const scopeIds = form.watch("scopeIds") || [];
+                        const isSelected = scopeIds.includes(dept.id);
+                        return (
+                          <div
+                            key={dept.id}
+                            onClick={() => {
+                              const current = form.getValues("scopeIds") || [];
+                              form.setValue("scopeIds",
+                                isSelected
+                                  ? current.filter((id) => id !== dept.id)
+                                  : [...current, dept.id]
+                              );
+                            }}
+                            className={cn(
+                              "flex items-center gap-3 p-2 rounded cursor-pointer",
+                              isSelected ? "bg-primary/10" : "hover:bg-muted"
+                            )}
+                          >
+                            <Checkbox checked={isSelected} />
+                            <span>{dept.name}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {form.watch("scope") === "TEAM" && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Select Teams</label>
+                    <div className="space-y-2 rounded border p-4 max-h-64 overflow-auto">
+                      {teams.map((team) => {
+                        const scopeIds = form.watch("scopeIds") || [];
+                        const isSelected = scopeIds.includes(team.id);
+                        return (
+                          <div
+                            key={team.id}
+                            onClick={() => {
+                              const current = form.getValues("scopeIds") || [];
+                              form.setValue("scopeIds",
+                                isSelected
+                                  ? current.filter((id) => id !== team.id)
+                                  : [...current, team.id]
+                              );
+                            }}
+                            className={cn(
+                              "flex items-center gap-3 p-2 rounded cursor-pointer",
+                              isSelected ? "bg-primary/10" : "hover:bg-muted"
+                            )}
+                          >
+                            <Checkbox checked={isSelected} />
+                            <span>{team.name}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Manual selection for CUSTOM scope */}
+                {(form.watch("scope") === "CUSTOM" || !form.watch("scope")) && (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <Badge variant="secondary">
+                        {participantIds.length} of {employees.length} selected
+                      </Badge>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={selectAllParticipants}
+                        >
+                          Select All
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={clearAllParticipants}
+                        >
+                          Clear
+                        </Button>
+                      </div>
+                    </div>
+
+                    <ScrollArea className="h-80 rounded border p-4">
+                      <div className="space-y-2">
+                        {employees.map((employee) => {
+                          const isSelected = participantIds.includes(employee.id);
+                          return (
+                            <div
+                              key={employee.id}
+                              onClick={() => toggleParticipant(employee.id)}
+                              className={cn(
+                                "flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors",
+                                isSelected
+                                  ? "bg-primary/10 border border-primary/20"
+                                  : "hover:bg-muted"
+                              )}
+                            >
+                              <Checkbox checked={isSelected} />
+                              <Avatar className="h-8 w-8">
+                                <AvatarFallback>
+                                  {employee.name
+                                    ? getInitials(employee.name)
+                                    : "?"}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">
+                                  {employee.name || employee.email}
+                                </p>
+                                <p className="text-sm text-muted-foreground truncate">
+                                  {employee.title || "No title"}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </ScrollArea>
+                  </>
+                )}
               </CardContent>
             </Card>
           )}
@@ -726,16 +883,35 @@ export function CycleWizard({ templates, employees }: CycleWizardProps) {
 
                 <div className="space-y-4">
                   <h3 className="font-medium">Participants</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {participantIds.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        No participants selected. You can add them later.
-                      </p>
-                    ) : (
-                      <Badge variant="secondary">
-                        {participantIds.length} participant
-                        {participantIds.length !== 1 ? "s" : ""}
-                      </Badge>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Scope</span>
+                      <span className="font-medium">
+                        {{
+                          ALL: "All Employees",
+                          HUB: "By Hub",
+                          DEPARTMENT: "By Department",
+                          TEAM: "By Team",
+                          CUSTOM: "Custom Selection",
+                        }[form.getValues("scope") || "CUSTOM"]}
+                      </span>
+                    </div>
+                    {form.getValues("scope") === "CUSTOM" && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Selected</span>
+                        <Badge variant="secondary">
+                          {participantIds.length} participant
+                          {participantIds.length !== 1 ? "s" : ""}
+                        </Badge>
+                      </div>
+                    )}
+                    {(form.getValues("scopeIds")?.length ?? 0) > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Targets</span>
+                        <Badge variant="secondary">
+                          {form.getValues("scopeIds")?.length} selected
+                        </Badge>
+                      </div>
                     )}
                   </div>
                 </div>

@@ -25,6 +25,7 @@ async function getPeople(companyId: string) {
       department: true,
       manager: true,
       companyUser: true,
+      hub: true,
     },
     orderBy: { name: "asc" },
   });
@@ -79,7 +80,11 @@ async function PeopleList() {
     redirect("/login");
   }
 
-  const people = await getPeople(session.companyUser.companyId);
+  const companyId = session.companyUser.companyId;
+  const [people, company] = await Promise.all([
+    getPeople(companyId),
+    prisma.company.findUnique({ where: { id: companyId }, select: { featureHubs: true } }),
+  ]);
 
   if (people.length === 0) {
     return (
@@ -103,9 +108,10 @@ async function PeopleList() {
     role: p.companyUser?.role ?? null,
     department: p.department ? { name: p.department.name } : null,
     manager: p.manager ? { name: p.manager.name } : null,
+    hub: p.hub ? { name: p.hub.name } : null,
   }));
 
-  return <PeopleTable data={rows} />;
+  return <PeopleTable data={rows} featureHubs={company?.featureHubs ?? false} />;
 }
 
 export default async function PeoplePage() {

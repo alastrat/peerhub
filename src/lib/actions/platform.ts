@@ -585,11 +585,12 @@ const FEATURE_FIELD_MAP = {
   ats: "featureAts",
   onboarding: "featureOnboarding",
   workEnv: "featureWorkEnv",
+  hubs: "featureHubs",
 } as const;
 
 export async function toggleCompanyFeature(input: {
   companyId: string;
-  feature: "ats" | "onboarding" | "workEnv";
+  feature: "ats" | "onboarding" | "workEnv" | "hubs";
   enabled: boolean;
 }): Promise<ActionResult> {
   try {

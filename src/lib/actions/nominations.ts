@@ -431,8 +431,8 @@ export async function transitionToInProgress(
       data: { status: "IN_PROGRESS" },
     });
 
-    revalidatePath("/cycles");
-    revalidatePath(`/cycles/${cycleId}`);
+    revalidatePath("/surveys/360");
+    revalidatePath(`/surveys/360/${cycleId}`);
     return { success: true };
   } catch (error) {
     console.error("Failed to transition cycle:", error);

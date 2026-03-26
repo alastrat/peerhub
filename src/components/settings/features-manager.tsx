@@ -4,11 +4,11 @@ import { useState, useTransition } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Briefcase, UserPlus, BarChart3 } from "lucide-react";
+import { Briefcase, UserPlus, BarChart3, MapPin } from "lucide-react";
 import { toggleCompanyFeature } from "@/lib/actions/platform";
 
 interface Feature {
-  key: "ats" | "onboarding" | "workEnv";
+  key: "ats" | "onboarding" | "workEnv" | "hubs";
   label: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -40,6 +40,14 @@ const FEATURES: Feature[] = [
     icon: BarChart3,
     badge: "Culture",
   },
+  {
+    key: "hubs",
+    label: "Hubs (Multi-Location)",
+    description:
+      "Manage multiple offices, branches, or business units. Assign employees to hubs, scope evaluations by location, and view hub-level reports.",
+    icon: MapPin,
+    badge: "Organization",
+  },
 ];
 
 export function FeaturesManager({
@@ -47,13 +55,13 @@ export function FeaturesManager({
   features: initial,
 }: {
   companyId: string;
-  features: Record<"ats" | "onboarding" | "workEnv", boolean>;
+  features: Record<"ats" | "onboarding" | "workEnv" | "hubs", boolean>;
 }) {
   const [features, setFeatures] = useState(initial);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const handleToggle = (key: "ats" | "onboarding" | "workEnv") => {
+  const handleToggle = (key: "ats" | "onboarding" | "workEnv" | "hubs") => {
     const newValue = !features[key];
     setError(null);
 

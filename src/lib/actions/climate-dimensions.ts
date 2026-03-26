@@ -44,7 +44,7 @@ export async function createDimension(input: {
       },
     });
 
-    revalidatePath("/climate");
+    revalidatePath("/surveys/climate");
     revalidatePath("/settings/company/dimensions");
     return { success: true, data: dimension };
   } catch (error) {
@@ -92,7 +92,7 @@ export async function updateDimension(input: {
       },
     });
 
-    revalidatePath("/climate");
+    revalidatePath("/surveys/climate");
     revalidatePath("/settings/company/dimensions");
     return { success: true };
   } catch (error) {
@@ -124,7 +124,7 @@ export async function deleteDimension(id: string): Promise<ActionResult> {
 
     await prisma.climateDimension.delete({ where: { id } });
 
-    revalidatePath("/climate");
+    revalidatePath("/surveys/climate");
     revalidatePath("/settings/company/dimensions");
     return { success: true };
   } catch (error) {

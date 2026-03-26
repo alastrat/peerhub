@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Mail, Building2, User, Calendar, Briefcase } from "lucide-react";
+import { ArrowLeft, Mail, Building2, User, Calendar, Briefcase, MapPin, Users } from "lucide-react";
 import { PageHeader } from "@/components/design-system/page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,11 +32,20 @@ async function getEmployeeRecord(companyId: string, employeeId: string) {
     include: {
       department: true,
       manager: true,
+      hub: true,
       directReports: {
         where: { isActive: true },
       },
       companyUser: {
         include: { user: true },
+      },
+      teamMemberships: {
+        include: {
+          team: {
+            include: { department: { select: { name: true } } },
+          },
+        },
+        orderBy: { joinedAt: "asc" },
       },
     },
   });
@@ -147,6 +156,12 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
                     <span>Reports to {employee.manager.name}</span>
                   </div>
                 )}
+                {employee.hub && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span>{employee.hub.name}</span>
+                  </div>
+                )}
                 {employee.startDate && (
                   <div className="flex items-center gap-3 text-sm">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -220,6 +235,42 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
                         </p>
                       </div>
                     </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Team Memberships */}
+          {employee.teamMemberships.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Teams</CardTitle>
+                <CardDescription>
+                  Member of {employee.teamMemberships.length} team
+                  {employee.teamMemberships.length !== 1 ? "s" : ""}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {employee.teamMemberships.map((tm) => (
+                    <div
+                      key={tm.team.id}
+                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/50"
+                    >
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex-1">
+                        <p className="font-medium">{tm.team.name}</p>
+                        {tm.team.department && (
+                          <p className="text-xs text-muted-foreground">
+                            {tm.team.department.name}
+                          </p>
+                        )}
+                      </div>
+                      <Badge variant={tm.role === "LEAD" ? "default" : "secondary"} className="text-xs">
+                        {tm.role === "LEAD" ? "Lead" : "Member"}
+                      </Badge>
+                    </div>
                   ))}
                 </div>
               </CardContent>

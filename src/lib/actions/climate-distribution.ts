@@ -19,7 +19,7 @@ async function requireCompanyAdmin() {
 
 export async function distributeSurvey(input: {
   surveyId: string;
-  targetType: "ALL" | "DEPARTMENT" | "CUSTOM";
+  targetType: "ALL" | "HUB" | "DEPARTMENT" | "TEAM" | "CUSTOM";
   targetIds?: string[];
   dueDate: Date;
 }): Promise<ActionResult<SurveyDistribution>> {
@@ -42,6 +42,15 @@ export async function distributeSurvey(input: {
         select: { id: true },
       });
       employeeIds = employees.map((e) => e.id);
+    } else if (input.targetType === "HUB") {
+      if (!input.targetIds?.length) {
+        return { success: false, error: "Select at least one hub" };
+      }
+      const employees = await prisma.employee.findMany({
+        where: { companyId, isActive: true, hubId: { in: input.targetIds } },
+        select: { id: true },
+      });
+      employeeIds = employees.map((e) => e.id);
     } else if (input.targetType === "DEPARTMENT") {
       if (!input.targetIds?.length) {
         return { success: false, error: "Select at least one department" };
@@ -51,6 +60,19 @@ export async function distributeSurvey(input: {
         select: { id: true },
       });
       employeeIds = employees.map((e) => e.id);
+    } else if (input.targetType === "TEAM") {
+      if (!input.targetIds?.length) {
+        return { success: false, error: "Select at least one team" };
+      }
+      // Resolve ALL team members regardless of their primary department (cross-dept)
+      const members = await prisma.teamMember.findMany({
+        where: {
+          team: { companyId, id: { in: input.targetIds } },
+          employee: { isActive: true },
+        },
+        select: { employeeId: true },
+      });
+      employeeIds = [...new Set(members.map((m) => m.employeeId))];
     } else if (input.targetType === "CUSTOM") {
       if (!input.targetIds?.length) {
         return { success: false, error: "Select at least one employee" };
@@ -86,8 +108,8 @@ export async function distributeSurvey(input: {
       });
     }
 
-    revalidatePath("/climate");
-    revalidatePath(`/climate/${input.surveyId}`);
+    revalidatePath("/surveys/climate");
+    revalidatePath(`/surveys/climate/${input.surveyId}`);
     return { success: true, data: distribution };
   } catch (error) {
     console.error("Failed to distribute survey:", error);
@@ -114,8 +136,8 @@ export async function closeSurvey(surveyId: string): Promise<ActionResult> {
       data: { status: "CLOSED" },
     });
 
-    revalidatePath("/climate");
-    revalidatePath(`/climate/${surveyId}`);
+    revalidatePath("/surveys/climate");
+    revalidatePath(`/surveys/climate/${surveyId}`);
     return { success: true };
   } catch (error) {
     return {

@@ -6,6 +6,7 @@ export const employeeFieldsSchema = z.object({
   employeeCode: z.string().optional().nullable(),
   departmentId: z.string().optional().nullable(),
   managerId: z.string().optional().nullable(),
+  hubId: z.string().optional().nullable(),
   startDate: z.coerce.date().optional().nullable(),
 });
 
@@ -19,6 +20,7 @@ export const createUserSchema = z.object({
   employeeCode: z.string().optional(),
   departmentId: z.string().optional(),
   managerId: z.string().optional(),
+  hubId: z.string().optional(),
   startDate: z.coerce.date().optional(),
 });
 
@@ -32,6 +34,7 @@ export const updateUserSchema = z.object({
   employeeCode: z.string().optional().nullable(),
   departmentId: z.string().optional().nullable(),
   managerId: z.string().optional().nullable(),
+  hubId: z.string().optional().nullable(),
   startDate: z.coerce.date().optional().nullable(),
 });
 
@@ -41,6 +44,7 @@ export const updateEmployeeDetailsSchema = z.object({
   employeeCode: z.string().optional().nullable(),
   departmentId: z.string().optional().nullable(),
   managerId: z.string().optional().nullable(),
+  hubId: z.string().optional().nullable(),
   startDate: z.coerce.date().optional().nullable(),
 });
 

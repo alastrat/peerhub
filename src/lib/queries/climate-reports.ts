@@ -28,6 +28,24 @@ export interface DepartmentDimensionScore {
   count: number;
 }
 
+export interface TeamDimensionScore {
+  teamId: string;
+  teamName: string;
+  dimensionId: string;
+  dimensionName: string;
+  average: number;
+  count: number;
+}
+
+export interface HubDimensionScore {
+  hubId: string;
+  hubName: string;
+  dimensionId: string;
+  dimensionName: string;
+  average: number;
+  count: number;
+}
+
 export interface SurveyResults {
   surveyId: string;
   surveyName: string;
@@ -39,6 +57,8 @@ export interface SurveyResults {
   dimensionScores: DimensionScore[];
   questionResults: QuestionResult[];
   departmentBreakdown: DepartmentDimensionScore[];
+  teamBreakdown: TeamDimensionScore[];
+  hubBreakdown: HubDimensionScore[];
 }
 
 export async function getSurveyResults(
@@ -58,7 +78,15 @@ export async function getSurveyResults(
             include: {
               answers: true,
               employee: {
-                select: { departmentId: true, department: { select: { id: true, name: true } } },
+                select: {
+                  departmentId: true,
+                  department: { select: { id: true, name: true } },
+                  hubId: true,
+                  hub: { select: { id: true, name: true } },
+                  teamMemberships: {
+                    select: { team: { select: { id: true, name: true } } },
+                  },
+                },
               },
             },
           },
@@ -188,6 +216,87 @@ export async function getSurveyResults(
     }
   }
 
+  // Team breakdown
+  const teamDimensionMap = new Map<string, { teamName: string; dimensions: Map<string, { dimensionName: string; ratings: number[] }> }>();
+
+  for (const response of completedResponses) {
+    const memberships = response.employee?.teamMemberships ?? [];
+    for (const tm of memberships) {
+      const team = tm.team;
+      if (!teamDimensionMap.has(team.id)) {
+        teamDimensionMap.set(team.id, { teamName: team.name, dimensions: new Map() });
+      }
+      const teamEntry = teamDimensionMap.get(team.id)!;
+
+      for (const answer of response.answers) {
+        if (answer.ratingValue == null) continue;
+        const question = survey.questions.find((q) => q.id === answer.questionId);
+        if (!question?.dimensionId || !question.dimension) continue;
+
+        if (!teamEntry.dimensions.has(question.dimensionId)) {
+          teamEntry.dimensions.set(question.dimensionId, { dimensionName: question.dimension.name, ratings: [] });
+        }
+        teamEntry.dimensions.get(question.dimensionId)!.ratings.push(answer.ratingValue);
+      }
+    }
+  }
+
+  const teamBreakdown: TeamDimensionScore[] = [];
+  for (const [teamId, { teamName, dimensions }] of teamDimensionMap) {
+    for (const [dimensionId, { dimensionName, ratings }] of dimensions) {
+      if (ratings.length > 0) {
+        teamBreakdown.push({
+          teamId,
+          teamName,
+          dimensionId,
+          dimensionName,
+          average: Math.round((ratings.reduce((s, r) => s + r, 0) / ratings.length) * 100) / 100,
+          count: ratings.length,
+        });
+      }
+    }
+  }
+
+  // Hub breakdown
+  const hubDimensionMap = new Map<string, { hubName: string; dimensions: Map<string, { dimensionName: string; ratings: number[] }> }>();
+
+  for (const response of completedResponses) {
+    const hub = response.employee?.hub;
+    if (!hub) continue;
+
+    if (!hubDimensionMap.has(hub.id)) {
+      hubDimensionMap.set(hub.id, { hubName: hub.name, dimensions: new Map() });
+    }
+    const hubEntry = hubDimensionMap.get(hub.id)!;
+
+    for (const answer of response.answers) {
+      if (answer.ratingValue == null) continue;
+      const question = survey.questions.find((q) => q.id === answer.questionId);
+      if (!question?.dimensionId || !question.dimension) continue;
+
+      if (!hubEntry.dimensions.has(question.dimensionId)) {
+        hubEntry.dimensions.set(question.dimensionId, { dimensionName: question.dimension.name, ratings: [] });
+      }
+      hubEntry.dimensions.get(question.dimensionId)!.ratings.push(answer.ratingValue);
+    }
+  }
+
+  const hubBreakdown: HubDimensionScore[] = [];
+  for (const [hubId, { hubName, dimensions }] of hubDimensionMap) {
+    for (const [dimensionId, { dimensionName, ratings }] of dimensions) {
+      if (ratings.length > 0) {
+        hubBreakdown.push({
+          hubId,
+          hubName,
+          dimensionId,
+          dimensionName,
+          average: Math.round((ratings.reduce((s, r) => s + r, 0) / ratings.length) * 100) / 100,
+          count: ratings.length,
+        });
+      }
+    }
+  }
+
   return {
     surveyId: survey.id,
     surveyName: survey.name,
@@ -199,6 +308,8 @@ export async function getSurveyResults(
     dimensionScores,
     questionResults,
     departmentBreakdown,
+    teamBreakdown,
+    hubBreakdown,
   };
 }
 

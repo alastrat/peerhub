@@ -52,10 +52,13 @@ export default async function EditEmployeePage({ params }: PageProps) {
     redirect("/overview");
   }
 
-  const [employee, departments, managers] = await Promise.all([
-    getEmployee(session.companyUser.companyId, id),
-    getDepartments(session.companyUser.companyId),
-    getManagers(session.companyUser.companyId, id),
+  const companyId = session.companyUser.companyId;
+  const [employee, departments, managers, hubs, company] = await Promise.all([
+    getEmployee(companyId, id),
+    getDepartments(companyId),
+    getManagers(companyId, id),
+    prisma.hub.findMany({ where: { companyId, isActive: true }, orderBy: { name: "asc" } }),
+    prisma.company.findUnique({ where: { id: companyId }, select: { featureHubs: true } }),
   ]);
 
   if (!employee) {
@@ -88,6 +91,8 @@ export default async function EditEmployeePage({ params }: PageProps) {
             employee={employee}
             departments={departments}
             managers={managers}
+            hubs={hubs}
+            featureHubs={company?.featureHubs ?? false}
           />
         </CardContent>
       </Card>

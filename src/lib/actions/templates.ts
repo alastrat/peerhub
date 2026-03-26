@@ -78,7 +78,7 @@ export async function createTemplate(
       },
     });
 
-    revalidatePath("/templates");
+    revalidatePath("/surveys/360/templates");
     return { success: true, data: template };
   } catch (error) {
     console.error("Failed to create template:", error);
@@ -151,7 +151,7 @@ export async function updateTemplate(
       },
     });
 
-    revalidatePath("/templates");
+    revalidatePath("/surveys/360/templates");
     return { success: true, data: template };
   } catch (error) {
     console.error("Failed to update template:", error);
@@ -194,7 +194,7 @@ export async function deleteTemplate(templateId: string): Promise<ActionResult> 
       });
     }
 
-    revalidatePath("/templates");
+    revalidatePath("/surveys/360/templates");
     return { success: true };
   } catch (error) {
     console.error("Failed to delete template:", error);
@@ -266,7 +266,7 @@ export async function duplicateTemplate(
       },
     });
 
-    revalidatePath("/templates");
+    revalidatePath("/surveys/360/templates");
     return { success: true, data: template };
   } catch (error) {
     console.error("Failed to duplicate template:", error);

@@ -48,7 +48,7 @@ export async function createCompetency(input: {
     });
 
     revalidatePath("/settings/company/competencies");
-    revalidatePath("/templates");
+    revalidatePath("/surveys/360/templates");
     return { success: true, data: competency };
   } catch (error) {
     return {
@@ -96,7 +96,7 @@ export async function updateCompetency(input: {
     });
 
     revalidatePath("/settings/company/competencies");
-    revalidatePath("/templates");
+    revalidatePath("/surveys/360/templates");
     return { success: true };
   } catch (error) {
     return {
@@ -128,7 +128,7 @@ export async function deleteCompetency(id: string): Promise<ActionResult> {
     await prisma.competency.delete({ where: { id } });
 
     revalidatePath("/settings/company/competencies");
-    revalidatePath("/templates");
+    revalidatePath("/surveys/360/templates");
     return { success: true };
   } catch (error) {
     return {
