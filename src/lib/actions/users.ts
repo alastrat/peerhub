@@ -15,6 +15,7 @@ interface CreateUserInput {
   employeeCode?: string;
   departmentId?: string;
   managerId?: string;
+  hubId?: string;
   startDate?: string | Date;
   role?: CompanyRole;
 }
@@ -137,6 +138,16 @@ export async function createUser(
       return { success: false, error: "User already exists in this company" };
     }
 
+    // Resolve hubId: use provided or default hub
+    let hubId = input.hubId;
+    if (!hubId) {
+      const defaultHub = await prisma.hub.findFirst({
+        where: { companyId, isDefault: true },
+        select: { id: true },
+      });
+      hubId = defaultHub?.id;
+    }
+
     // Create Employee record first with org-chart fields
     const employee = await prisma.employee.create({
       data: {
@@ -147,6 +158,7 @@ export async function createUser(
         employeeCode: input.employeeCode,
         departmentId: input.departmentId,
         managerId: input.managerId,
+        hubId: hubId || undefined,
         startDate: input.startDate ? new Date(input.startDate) : undefined,
       },
     });
@@ -175,6 +187,7 @@ export async function updateUser(
     title?: string | null;
     departmentId?: string | null;
     managerId?: string | null;
+    hubId?: string | null;
     role?: CompanyRole;
     isActive?: boolean;
   }
@@ -207,13 +220,14 @@ export async function updateUser(
       data: companyUserData,
     });
 
-    // Update Employee fields (title, departmentId, managerId) if linked
-    const hasEmployeeFields = data.title !== undefined || data.departmentId !== undefined || data.managerId !== undefined;
+    // Update Employee fields (title, departmentId, managerId, hubId) if linked
+    const hasEmployeeFields = data.title !== undefined || data.departmentId !== undefined || data.managerId !== undefined || data.hubId !== undefined;
     if (hasEmployeeFields && existingUser.employeeId) {
-      const employeeData: { title?: string | null; departmentId?: string | null; managerId?: string | null } = {};
+      const employeeData: { title?: string | null; departmentId?: string | null; managerId?: string | null; hubId?: string | null } = {};
       if (data.title !== undefined) employeeData.title = data.title;
       if (data.departmentId !== undefined) employeeData.departmentId = data.departmentId;
       if (data.managerId !== undefined) employeeData.managerId = data.managerId;
+      if (data.hubId !== undefined) employeeData.hubId = data.hubId;
 
       await prisma.employee.update({
         where: { id: existingUser.employeeId },

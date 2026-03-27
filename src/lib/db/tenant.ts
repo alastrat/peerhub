@@ -86,6 +86,15 @@ export async function createCompanyWithAdmin(data: {
       },
     });
 
+    // Create default hub
+    await tx.hub.create({
+      data: {
+        name: "Main Office",
+        companyId: company.id,
+        isDefault: true,
+      },
+    });
+
     // Create the company user as admin
     const companyUser = await tx.companyUser.create({
       data: {
@@ -125,33 +134,45 @@ export function withCompanyScope<T extends { companyId: string }>(
 export async function validateResourceOwnership(
   resourceId: string,
   companyId: string,
-  resourceType: "user" | "department" | "template" | "cycle"
+  resourceType: "user" | "department" | "template" | "cycle" | "hub" | "team"
 ): Promise<boolean> {
   switch (resourceType) {
-    case "user":
+    case "user": {
       const user = await prisma.companyUser.findFirst({
         where: { id: resourceId, companyId },
       });
       return !!user;
-
-    case "department":
+    }
+    case "department": {
       const dept = await prisma.department.findFirst({
         where: { id: resourceId, companyId },
       });
       return !!dept;
-
-    case "template":
+    }
+    case "template": {
       const template = await prisma.template.findFirst({
         where: { id: resourceId, companyId },
       });
       return !!template;
-
-    case "cycle":
+    }
+    case "cycle": {
       const cycle = await prisma.cycle.findFirst({
         where: { id: resourceId, companyId },
       });
       return !!cycle;
-
+    }
+    case "hub": {
+      const hub = await prisma.hub.findFirst({
+        where: { id: resourceId, companyId },
+      });
+      return !!hub;
+    }
+    case "team": {
+      const team = await prisma.team.findFirst({
+        where: { id: resourceId, companyId },
+      });
+      return !!team;
+    }
     default:
       return false;
   }

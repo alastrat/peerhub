@@ -105,7 +105,7 @@ async function AdminDashboard({ companyId }: { companyId: string }) {
               </Card>
             </Link>
 
-            <Link href="/templates">
+            <Link href="/surveys/360/templates">
               <Card className="cursor-pointer transition-shadow hover:shadow-md">
                 <CardContent className="flex items-center gap-4 p-6">
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
@@ -122,7 +122,7 @@ async function AdminDashboard({ companyId }: { companyId: string }) {
               </Card>
             </Link>
 
-            <Link href="/cycles/new">
+            <Link href="/surveys/360/new">
               <Card className="cursor-pointer transition-shadow hover:shadow-md">
                 <CardContent className="flex items-center gap-4 p-6">
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
@@ -150,7 +150,7 @@ async function AdminDashboard({ companyId }: { companyId: string }) {
               <CardTitle>Recent Cycles</CardTitle>
               <CardDescription>Your latest review cycles</CardDescription>
             </div>
-            <Link href="/cycles">
+            <Link href="/surveys/360">
               <Button variant="outline" size="sm">
                 View All
               </Button>
@@ -159,7 +159,7 @@ async function AdminDashboard({ companyId }: { companyId: string }) {
           <CardContent>
             <div className="space-y-4">
               {stats.recentCycles.map((cycle) => (
-                <Link key={cycle.id} href={`/cycles/${cycle.id}`}>
+                <Link key={cycle.id} href={`/surveys/360/${cycle.id}`}>
                   <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">

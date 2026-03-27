@@ -39,14 +39,15 @@ export type PersonRow = {
   role: CompanyRole | null;
   department: { name: string } | null;
   manager: { name: string } | null;
+  hub?: { name: string } | null;
 };
 
-type SortField = "name" | "role" | "title" | "department" | "manager";
+type SortField = "name" | "role" | "title" | "department" | "manager" | "hub";
 type SortDir = "asc" | "desc";
 
 const PAGE_SIZE = 10;
 
-export function PeopleTable({ data }: { data: PersonRow[] }) {
+export function PeopleTable({ data, featureHubs = false }: { data: PersonRow[]; featureHubs?: boolean }) {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [deptFilter, setDeptFilter] = useState<string>("all");
@@ -100,6 +101,8 @@ export function PeopleTable({ data }: { data: PersonRow[] }) {
           return p.department?.name || "";
         case "manager":
           return p.manager?.name || "";
+        case "hub":
+          return p.hub?.name || "";
       }
     };
 
@@ -194,13 +197,14 @@ export function PeopleTable({ data }: { data: PersonRow[] }) {
               <TableHead><SortButton field="role">Role</SortButton></TableHead>
               <TableHead><SortButton field="title">Title</SortButton></TableHead>
               <TableHead><SortButton field="department">Department</SortButton></TableHead>
+              {featureHubs && <TableHead><SortButton field="hub">Hub</SortButton></TableHead>}
               <TableHead><SortButton field="manager">Manager</SortButton></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paged.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={featureHubs ? 6 : 5} className="h-24 text-center text-muted-foreground">
                   No results found.
                 </TableCell>
               </TableRow>
@@ -232,6 +236,11 @@ export function PeopleTable({ data }: { data: PersonRow[] }) {
                   <TableCell className="text-muted-foreground">
                     {person.department?.name || "—"}
                   </TableCell>
+                  {featureHubs && (
+                    <TableCell className="text-muted-foreground">
+                      {person.hub?.name || "—"}
+                    </TableCell>
+                  )}
                   <TableCell className="text-muted-foreground">
                     {person.manager?.name || "—"}
                   </TableCell>

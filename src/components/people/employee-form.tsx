@@ -27,17 +27,21 @@ import {
 import { createUserSchema, type CreateUserInput } from "@/lib/validations/user";
 import { inviteUser, createUser } from "@/lib/actions/users";
 import { ROLE_LABELS } from "@/lib/constants/roles";
-import type { Department, Employee } from "@prisma/client";
+import type { Department, Employee, Hub } from "@prisma/client";
 
 interface EmployeeFormProps {
   departments: Department[];
   managers: Employee[];
+  hubs?: Hub[];
+  featureHubs?: boolean;
   mode?: "invite" | "create";
 }
 
 export function EmployeeForm({
   departments,
   managers,
+  hubs = [],
+  featureHubs = false,
   mode = "invite",
 }: EmployeeFormProps) {
   const router = useRouter();
@@ -225,6 +229,37 @@ export function EmployeeForm({
               </FormItem>
             )}
           />
+
+          {featureHubs && (
+            <FormField
+              control={form.control}
+              name="hubId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Hub</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a hub" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">No hub</SelectItem>
+                      {hubs.map((hub) => (
+                        <SelectItem key={hub.id} value={hub.id}>
+                          {hub.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
 
         <div className="flex justify-end gap-4">

@@ -186,7 +186,7 @@ export function TemplateBuilder({
             ? "Template updated successfully"
             : "Template created successfully"
         );
-        router.push("/templates");
+        router.push("/surveys/360/templates");
         router.refresh();
       } else {
         toast.error(result.error || "Something went wrong");

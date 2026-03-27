@@ -1,20 +1,57 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "../ui/Button";
 import { AnimatedElement } from "../ui/AnimatedElement";
 import { ArrowRight, Play } from "lucide-react";
 
+const HERO_IMAGES = [
+  "/images/hero/hero-conference.jpg",
+  "/images/hero/hero-event-1.jpg",
+  "/images/team/team-workshop.jpg",
+  "/images/team/gallery-3.jpg",
+];
+
+const INTERVAL_MS = 6000;
+
 export function HeroSection() {
   const t = useTranslations("home.hero");
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const advance = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(advance, INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [advance]);
 
   return (
-    <section
-      className="relative min-h-screen flex items-center pt-20 bg-cover bg-center bg-no-repeat"
-      style={{
-        backgroundImage: `linear-gradient(to right, rgba(29, 107, 63, 0.95), rgba(29, 107, 63, 0.75)), url('/images/hero/hero-conference.jpg')`,
-      }}
-    >
+    <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+      {/* Background carousel with crossfade */}
+      {HERO_IMAGES.map((src, i) => (
+        <div
+          key={src}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out"
+          style={{
+            backgroundImage: `url('${src}')`,
+            opacity: i === currentIndex ? 1 : 0,
+          }}
+          aria-hidden={i !== currentIndex}
+        />
+      ))}
+
+      {/* Green overlay */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to right, rgba(29, 107, 63, 0.95), rgba(29, 107, 63, 0.75))",
+        }}
+      />
+
       <div className="kultiva-container relative z-10 py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="text-white">
@@ -97,6 +134,22 @@ export function HeroSection() {
             </div>
           </AnimatedElement>
         </div>
+      </div>
+
+      {/* Slide indicators */}
+      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+        {HERO_IMAGES.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentIndex(i)}
+            className={`h-1.5 rounded-full transition-all duration-500 ${
+              i === currentIndex
+                ? "w-8 bg-kultiva-accent"
+                : "w-3 bg-white/40 hover:bg-white/60"
+            }`}
+            aria-label={`Slide ${i + 1}`}
+          />
+        ))}
       </div>
 
       {/* Decorative bottom wave */}

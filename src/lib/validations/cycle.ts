@@ -30,6 +30,10 @@ export const createCycleSchema = z
 
     // Participants
     participantIds: z.array(z.string()).optional(),
+
+    // Scope
+    scope: z.enum(["ALL", "HUB", "DEPARTMENT", "TEAM", "CUSTOM"]).default("CUSTOM"),
+    scopeIds: z.array(z.string()).optional(),
   })
   .refine((data) => data.reviewEndDate > data.reviewStartDate, {
     message: "End date must be after start date",

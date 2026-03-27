@@ -63,6 +63,50 @@ enum AccessTokenPurpose {
   COMPLETE_REVIEW
 }
 
+// Climate Survey enums
+enum ClimateSurveyType {
+  CLIMATE
+  PULSE
+  ENPS
+}
+
+enum ClimateSurveyStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+  ARCHIVED
+}
+
+enum SurveyQuestionType {
+  LIKERT
+  TEXT
+  NPS
+  RATING
+}
+
+enum SurveyTargetType {
+  ALL
+  HUB
+  DEPARTMENT
+  TEAM
+  CUSTOM
+}
+
+enum TeamRole {
+  LEAD
+  MEMBER
+}
+
+enum SurveyFrequency {
+  ONCE
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  BIANNUAL
+  ANNUAL
+}
+
 // ============================================
 // CORE ENTITIES
 // ============================================
@@ -81,16 +125,24 @@ model Company {
   featureAts        Boolean @default(false)
   featureOnboarding Boolean @default(false)
   featureWorkEnv    Boolean @default(false)
+  featureHubs       Boolean @default(false)
 
   users        CompanyUser[]
   employees    Employee[]
   departments  Department[]
+  hubs         Hub[]
+  teams        Team[]
   templates    Template[]
   cycles       Cycle[]
   invitations  Invitation[]
   tokens       ReviewToken[]
   roleConfigs  CompanyRoleConfig[]
   accessTokens AccessToken[]
+
+  // Climate surveys
+  climateSurveys          ClimateSurvey[]
+  climateDimensions       ClimateDimension[]
+  climateSurveyTemplates  ClimateSurveyTemplate[]
 
   @@index([slug])
 }
@@ -126,10 +178,13 @@ model Employee {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  hubId        String?
+
   company       Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
   manager       Employee?   @relation("EmployeeManager", fields: [managerId], references: [id])
   directReports Employee[]  @relation("EmployeeManager")
   department    Department? @relation(fields: [departmentId], references: [id])
+  hub           Hub?        @relation(fields: [hubId], references: [id])
 
   companyUser CompanyUser?
 
@@ -140,11 +195,14 @@ model Employee {
   nominationsReceived Nomination[]       @relation("NomineeRelation")
   nominationsFor      Nomination[]       @relation("RevieweeNominations")
   accessTokens        AccessToken[]
+  surveyResponses     SurveyResponse[]
+  teamMemberships     TeamMember[]
 
   @@unique([companyId, email])
   @@index([companyId])
   @@index([managerId])
   @@index([departmentId])
+  @@index([hubId])
 }
 
 model CompanyUser {
@@ -180,9 +238,70 @@ model Department {
   parent    Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id])
   children  Department[] @relation("DepartmentHierarchy")
   employees Employee[]
+  teams     Team[]
 
   @@index([companyId])
   @@index([parentId])
+}
+
+// ============================================
+// HUBS & TEAMS
+// ============================================
+
+model Hub {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  address     String?
+  companyId   String
+  isDefault   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employees Employee[]
+  teams     Team[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+}
+
+model Team {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  companyId    String
+  hubId        String?
+  departmentId String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  hub        Hub?        @relation(fields: [hubId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+  members    TeamMember[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@index([hubId])
+  @@index([departmentId])
+}
+
+model TeamMember {
+  id         String   @id @default(cuid())
+  teamId     String
+  employeeId String
+  role       TeamRole @default(MEMBER)
+  joinedAt   DateTime @default(now())
+
+  team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, employeeId])
+  @@index([teamId])
+  @@index([employeeId])
 }
 
 // ============================================
@@ -193,13 +312,13 @@ model Template {
   id          String   @id @default(cuid())
   name        String
   description String?
-  companyId   String
+  companyId   String?
   isDefault   Boolean  @default(false)
   isArchived  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  company  Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company  Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   sections TemplateSection[]
   cycles   Cycle[]
 
@@ -286,6 +405,9 @@ model Cycle {
 
   employeeNominatePeers Boolean @default(true)
   managerApprovePeers   Boolean @default(true)
+
+  scope    SurveyTargetType @default(CUSTOM)
+  scopeIds String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -442,6 +564,7 @@ model Invitation {
   roleConfigId String?
   departmentId String?
   managerId    String?
+  hubId        String?
   token        String      @unique @default(cuid())
   expiresAt    DateTime
   acceptedAt   DateTime?
@@ -478,6 +601,157 @@ model CompanyRoleConfig {
 
   @@unique([companyId, slug])
   @@index([companyId])
+}
+
+// ============================================
+// CLIMATE SURVEYS (WORK ENVIRONMENT)
+// ============================================
+
+model ClimateSurveyTemplate {
+  id          String            @id @default(cuid())
+  name        String
+  description String?
+  companyId   String?
+  type        ClimateSurveyType @default(CLIMATE)
+  isDefault   Boolean           @default(false)
+  isArchived  Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  company   Company?                        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  questions ClimateSurveyTemplateQuestion[]
+  surveys   ClimateSurvey[]
+
+  @@index([companyId])
+}
+
+model ClimateSurveyTemplateQuestion {
+  id          String             @id @default(cuid())
+  templateId  String
+  dimensionId String?
+  text        String
+  type        SurveyQuestionType
+  order       Int
+  isRequired  Boolean            @default(true)
+  config      Json?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  template  ClimateSurveyTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  dimension ClimateDimension?     @relation(fields: [dimensionId], references: [id])
+
+  @@index([templateId])
+}
+
+model ClimateSurvey {
+  id          String              @id @default(cuid())
+  name        String
+  description String?
+  companyId   String
+  templateId  String?
+  type        ClimateSurveyType   @default(CLIMATE)
+  status      ClimateSurveyStatus @default(DRAFT)
+  frequency   SurveyFrequency     @default(ONCE)
+  isAnonymous Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  company       Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  template      ClimateSurveyTemplate? @relation(fields: [templateId], references: [id])
+  questions     SurveyQuestion[]
+  distributions SurveyDistribution[]
+
+  @@index([companyId])
+  @@index([status])
+}
+
+model ClimateDimension {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  companyId   String?
+  icon        String?
+  order       Int      @default(0)
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company           Company?                        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  questions         SurveyQuestion[]
+  templateQuestions  ClimateSurveyTemplateQuestion[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+}
+
+model SurveyQuestion {
+  id          String             @id @default(cuid())
+  surveyId    String
+  dimensionId String?
+  text        String
+  type        SurveyQuestionType
+  order       Int
+  isRequired  Boolean            @default(true)
+  config      Json?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  survey    ClimateSurvey    @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  dimension ClimateDimension? @relation(fields: [dimensionId], references: [id])
+  answers   SurveyAnswer[]
+
+  @@index([surveyId])
+}
+
+model SurveyDistribution {
+  id              String           @id @default(cuid())
+  surveyId        String
+  targetType      SurveyTargetType @default(ALL)
+  targetIds       String[]
+  sentAt          DateTime?
+  dueDate         DateTime
+  reminderSentAt  DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  survey    ClimateSurvey    @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  responses SurveyResponse[]
+
+  @@index([surveyId])
+}
+
+model SurveyResponse {
+  id             String    @id @default(cuid())
+  distributionId String
+  employeeId     String?
+  submittedAt    DateTime?
+  isComplete     Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  distribution SurveyDistribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
+  employee     Employee?          @relation(fields: [employeeId], references: [id])
+  answers      SurveyAnswer[]
+
+  @@unique([distributionId, employeeId])
+  @@index([distributionId])
+  @@index([employeeId])
+}
+
+model SurveyAnswer {
+  id          String   @id @default(cuid())
+  responseId  String
+  questionId  String
+  ratingValue Int?
+  textValue   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  response SurveyResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question SurveyQuestion @relation(fields: [questionId], references: [id])
+
+  @@unique([responseId, questionId])
+  @@index([responseId])
 }
 
 // ============================================

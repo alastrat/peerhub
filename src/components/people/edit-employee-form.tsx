@@ -39,7 +39,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import type { Department, Employee, CompanyUser } from "@prisma/client";
+import type { Department, Employee, CompanyUser, Hub } from "@prisma/client";
 
 type EmployeeWithRelations = Employee & {
   department: Department | null;
@@ -51,12 +51,16 @@ interface EditEmployeeFormProps {
   employee: EmployeeWithRelations;
   departments: Department[];
   managers: Employee[];
+  hubs?: Hub[];
+  featureHubs?: boolean;
 }
 
 export function EditEmployeeForm({
   employee,
   departments,
   managers,
+  hubs = [],
+  featureHubs = false,
 }: EditEmployeeFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -70,6 +74,7 @@ export function EditEmployeeForm({
       role: employee.companyUser?.role || "MEMBER",
       departmentId: employee.departmentId || undefined,
       managerId: employee.managerId || undefined,
+      hubId: employee.hubId || undefined,
       isActive: employee.isActive,
     },
   });
@@ -81,6 +86,7 @@ export function EditEmployeeForm({
         ...data,
         departmentId: data.departmentId === "none" ? null : data.departmentId,
         managerId: data.managerId === "none" ? null : data.managerId,
+        hubId: data.hubId === "none" ? null : data.hubId,
       };
 
       const result = await updateUser(employee.id, cleanedData);
@@ -241,6 +247,37 @@ export function EditEmployeeForm({
               </FormItem>
             )}
           />
+
+          {featureHubs && (
+            <FormField
+              control={form.control}
+              name="hubId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Hub</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value || "none"}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a hub" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">No hub</SelectItem>
+                      {hubs.map((hub) => (
+                        <SelectItem key={hub.id} value={hub.id}>
+                          {hub.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
 
         <FormField

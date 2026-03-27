@@ -20,8 +20,11 @@ import { CompanySwitcher } from "@/components/layout/company-switcher";
 const PAGE_TITLES: Record<string, string> = {
   "/overview": "Overview",
   "/people": "People",
-  "/templates": "Templates",
-  "/cycles": "Review Cycles",
+  "/surveys": "Surveys",
+  "/surveys/360": "360 Reviews",
+  "/surveys/360/templates": "Review Templates",
+  "/surveys/climate": "Org Climate",
+  "/surveys/climate/templates": "Climate Templates",
   "/reports": "Reports",
   "/settings/profile": "Settings",
   "/settings/company": "Settings",

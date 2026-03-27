@@ -54,7 +54,7 @@ async function ReportsCycleList() {
         description="Reports will appear here once review cycles are in progress or completed."
         action={
           <Button asChild>
-            <Link href="/cycles">View Cycles</Link>
+            <Link href="/surveys/360">View Cycles</Link>
           </Button>
         }
       />

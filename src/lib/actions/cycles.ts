@@ -28,6 +28,8 @@ interface CreateCycleInput {
   employeeNominatePeers?: boolean;
   managerApprovePeers?: boolean;
   participantIds?: string[];
+  scope?: "ALL" | "HUB" | "DEPARTMENT" | "TEAM" | "CUSTOM";
+  scopeIds?: string[];
 }
 
 export async function createCycle(
@@ -50,6 +52,40 @@ export async function createCycle(
       return { success: false, error: "Template not found" };
     }
 
+    // Resolve scope-based participants
+    const scope = input.scope ?? "CUSTOM";
+    const scopeIds = input.scopeIds ?? [];
+    let resolvedParticipantIds = input.participantIds ?? [];
+
+    if (scope === "ALL") {
+      const employees = await prisma.employee.findMany({
+        where: { companyId, isActive: true },
+        select: { id: true },
+      });
+      resolvedParticipantIds = employees.map((e) => e.id);
+    } else if (scope === "HUB" && scopeIds.length > 0) {
+      const employees = await prisma.employee.findMany({
+        where: { companyId, isActive: true, hubId: { in: scopeIds } },
+        select: { id: true },
+      });
+      resolvedParticipantIds = employees.map((e) => e.id);
+    } else if (scope === "DEPARTMENT" && scopeIds.length > 0) {
+      const employees = await prisma.employee.findMany({
+        where: { companyId, isActive: true, departmentId: { in: scopeIds } },
+        select: { id: true },
+      });
+      resolvedParticipantIds = employees.map((e) => e.id);
+    } else if (scope === "TEAM" && scopeIds.length > 0) {
+      const members = await prisma.teamMember.findMany({
+        where: {
+          team: { companyId, id: { in: scopeIds } },
+          employee: { isActive: true },
+        },
+        select: { employeeId: true },
+      });
+      resolvedParticipantIds = [...new Set(members.map((m) => m.employeeId))];
+    }
+
     const cycle = await prisma.cycle.create({
       data: {
         name: input.name,
@@ -70,21 +106,23 @@ export async function createCycle(
         anonymityThreshold: input.anonymityThreshold ?? 3,
         employeeNominatePeers: input.employeeNominatePeers ?? true,
         managerApprovePeers: input.managerApprovePeers ?? true,
+        scope,
+        scopeIds,
         status: "DRAFT",
       },
     });
 
-    // Add participants if provided (participantIds are now employee IDs)
-    if (input.participantIds?.length) {
+    // Add resolved participants
+    if (resolvedParticipantIds.length > 0) {
       await prisma.cycleParticipant.createMany({
-        data: input.participantIds.map((employeeId) => ({
+        data: resolvedParticipantIds.map((employeeId) => ({
           cycleId: cycle.id,
           employeeId,
         })),
       });
     }
 
-    revalidatePath("/cycles");
+    revalidatePath("/surveys/360");
     return { success: true, data: cycle };
   } catch (error) {
     console.error("Failed to create cycle:", error);
@@ -139,7 +177,7 @@ export async function updateCycle(
       },
     });
 
-    revalidatePath("/cycles");
+    revalidatePath("/surveys/360");
     return { success: true, data: cycle };
   } catch (error) {
     console.error("Failed to update cycle:", error);
@@ -189,7 +227,7 @@ export async function addParticipants(
       });
     }
 
-    revalidatePath(`/cycles/${cycleId}`);
+    revalidatePath(`/surveys/360/${cycleId}`);
     return { success: true };
   } catch (error) {
     console.error("Failed to add participants:", error);
@@ -378,7 +416,7 @@ export async function launchCycle(
       }
     }
 
-    revalidatePath("/cycles");
+    revalidatePath("/surveys/360");
     return { success: true, data: updatedCycle };
   } catch (error) {
     console.error("Failed to launch cycle:", error);
@@ -408,7 +446,7 @@ export async function closeCycle(cycleId: string): Promise<ActionResult<Cycle>> 
       data: { status: "CLOSED" },
     });
 
-    revalidatePath("/cycles");
+    revalidatePath("/surveys/360");
     return { success: true, data: updatedCycle };
   } catch (error) {
     console.error("Failed to close cycle:", error);
@@ -537,7 +575,7 @@ export async function addExternalRater(
       // Don't fail the action if email fails, token is still created
     }
 
-    revalidatePath(`/cycles/${cycleId}`);
+    revalidatePath(`/surveys/360/${cycleId}`);
     return { success: true, data: { tokenUrl } };
   } catch (error) {
     console.error("Failed to add external rater:", error);
