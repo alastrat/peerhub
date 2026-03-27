@@ -94,7 +94,7 @@ export async function distributeSurvey(input: {
         sentAt: new Date(),
         responses: {
           create: employeeIds.map((employeeId) => ({
-            employeeId: survey.isAnonymous ? null : employeeId,
+            employeeId,
           })),
         },
       },

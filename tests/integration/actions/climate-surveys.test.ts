@@ -280,10 +280,18 @@ describe("climate survey actions", () => {
       });
     });
 
-    it("replaces questions when provided", async () => {
+    it("replaces questions atomically via transaction when provided", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
-      mockPrisma.surveyQuestion.deleteMany.mockResolvedValue({ count: 2 });
-      mockPrisma.climateSurvey.update.mockResolvedValue(sampleSurveyWithQuestions);
+
+      let capturedTxClient: MockPrismaClient | null = null;
+      mockPrisma.$transaction.mockImplementation(
+        async (fn: (tx: MockPrismaClient) => Promise<unknown>) => {
+          capturedTxClient = createMockPrisma();
+          capturedTxClient.surveyQuestion.deleteMany.mockResolvedValue({ count: 2 });
+          capturedTxClient.climateSurvey.update.mockResolvedValue(sampleSurveyWithQuestions);
+          return fn(capturedTxClient);
+        }
+      );
 
       const newQuestions = [
         { text: "New question", type: "NPS" as const, order: 1, isRequired: true },
@@ -294,10 +302,10 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(true);
-      expect(mockPrisma.surveyQuestion.deleteMany).toHaveBeenCalledWith({
+      expect(capturedTxClient!.surveyQuestion.deleteMany).toHaveBeenCalledWith({
         where: { surveyId: "survey-1" },
       });
-      expect(mockPrisma.climateSurvey.update).toHaveBeenCalledWith({
+      expect(capturedTxClient!.climateSurvey.update).toHaveBeenCalledWith({
         where: { id: "survey-1" },
         data: expect.objectContaining({
           questions: {

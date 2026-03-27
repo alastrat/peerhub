@@ -103,37 +103,50 @@ export async function updateClimateSurvey(
       return { success: false, error: "Only draft surveys can be edited" };
     }
 
-    // If questions are provided, delete and recreate
+    // Reject empty questions array
+    if (input.questions && input.questions.length === 0) {
+      return { success: false, error: "At least one question is required" };
+    }
+
+    const updateData: Parameters<typeof prisma.climateSurvey.update>[0]["data"] = {
+      ...(input.name && { name: input.name.trim() }),
+      ...(input.description !== undefined && { description: input.description?.trim() || null }),
+      ...(input.type && { type: input.type }),
+      ...(input.frequency && { frequency: input.frequency as Prisma.EnumSurveyFrequencyFieldUpdateOperationsInput["set"] }),
+      ...(input.isAnonymous !== undefined && { isAnonymous: input.isAnonymous }),
+    };
+
+    // If questions are provided, delete and recreate atomically in a transaction
     if (input.questions) {
-      await prisma.surveyQuestion.deleteMany({ where: { surveyId } });
+      const survey = await prisma.$transaction(async (tx) => {
+        await tx.surveyQuestion.deleteMany({ where: { surveyId } });
+        return tx.climateSurvey.update({
+          where: { id: surveyId },
+          data: {
+            ...updateData,
+            questions: {
+              create: input.questions!.map((q) => ({
+                text: q.text,
+                type: q.type,
+                dimensionId: q.dimensionId || null,
+                order: q.order,
+                isRequired: q.isRequired,
+                config: q.config as Prisma.InputJsonValue | undefined,
+              })),
+            },
+          },
+          include: { questions: { orderBy: { order: "asc" } } },
+        });
+      });
+
+      revalidatePath("/surveys/climate");
+      return { success: true, data: survey };
     }
 
     const survey = await prisma.climateSurvey.update({
       where: { id: surveyId },
-      data: {
-        ...(input.name && { name: input.name.trim() }),
-        ...(input.description !== undefined && { description: input.description?.trim() || null }),
-        ...(input.type && { type: input.type }),
-        ...(input.frequency && { frequency: input.frequency as Prisma.EnumSurveyFrequencyFieldUpdateOperationsInput["set"] }),
-        ...(input.isAnonymous !== undefined && { isAnonymous: input.isAnonymous }),
-        ...(input.questions && {
-          questions: {
-            create: input.questions.map((q) => ({
-              text: q.text,
-              type: q.type,
-              dimensionId: q.dimensionId || null,
-              order: q.order,
-              isRequired: q.isRequired,
-              config: q.config as Prisma.InputJsonValue | undefined,
-            })),
-          },
-        }),
-      },
-      include: {
-        questions: {
-          orderBy: { order: "asc" },
-        },
-      },
+      data: updateData,
+      include: { questions: { orderBy: { order: "asc" } } },
     });
 
     revalidatePath("/surveys/climate");

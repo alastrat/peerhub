@@ -137,42 +137,42 @@ export async function validateResourceOwnership(
   resourceType: "user" | "department" | "template" | "cycle" | "hub" | "team"
 ): Promise<boolean> {
   switch (resourceType) {
-    case "user":
+    case "user": {
       const user = await prisma.companyUser.findFirst({
         where: { id: resourceId, companyId },
       });
       return !!user;
-
-    case "department":
+    }
+    case "department": {
       const dept = await prisma.department.findFirst({
         where: { id: resourceId, companyId },
       });
       return !!dept;
-
-    case "template":
+    }
+    case "template": {
       const template = await prisma.template.findFirst({
         where: { id: resourceId, companyId },
       });
       return !!template;
-
-    case "cycle":
+    }
+    case "cycle": {
       const cycle = await prisma.cycle.findFirst({
         where: { id: resourceId, companyId },
       });
       return !!cycle;
-
-    case "hub":
+    }
+    case "hub": {
       const hub = await prisma.hub.findFirst({
         where: { id: resourceId, companyId },
       });
       return !!hub;
-
-    case "team":
+    }
+    case "team": {
       const team = await prisma.team.findFirst({
         where: { id: resourceId, companyId },
       });
       return !!team;
-
+    }
     default:
       return false;
   }

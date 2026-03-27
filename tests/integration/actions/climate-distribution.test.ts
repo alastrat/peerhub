@@ -304,7 +304,7 @@ describe("climate distribution actions", () => {
       expect(mockPrisma.surveyDistribution.create).not.toHaveBeenCalled();
     });
 
-    it("should set employeeId to null for anonymous surveys", async () => {
+    it("should keep employeeId for anonymous surveys (anonymity handled at read time)", async () => {
       const anonymousSurvey = { ...baseSurvey, isAnonymous: true };
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(anonymousSurvey);
       mockPrisma.employee.findMany.mockResolvedValue([
@@ -324,8 +324,8 @@ describe("climate distribution actions", () => {
 
       const createCall = mockPrisma.surveyDistribution.create.mock.calls[0][0];
       expect(createCall.data.responses.create).toEqual([
-        { employeeId: null },
-        { employeeId: null },
+        { employeeId: "e1" },
+        { employeeId: "e2" },
       ]);
     });
 

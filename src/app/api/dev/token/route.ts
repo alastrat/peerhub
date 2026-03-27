@@ -2,10 +2,18 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { encode } from "next-auth/jwt";
 
-// DEV ONLY - Remove after testing
-// Creates a session JWT directly for a given email (bypasses email verification)
+// DEV ONLY — Creates a session JWT directly for a given email (bypasses email verification)
 // Sets the session cookie and redirects to /overview
 export async function GET(request: Request) {
+  if (process.env.NODE_ENV !== "development") {
+    return NextResponse.json({ error: "not found" }, { status: 404 });
+  }
+
+  const secret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+  if (!secret) {
+    return NextResponse.json({ error: "auth secret missing" }, { status: 500 });
+  }
+
   const { searchParams } = new URL(request.url);
   const email = searchParams.get("email");
   const redirectTo = searchParams.get("redirect") || "/overview";
@@ -15,7 +23,6 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Find the user
     const user = await prisma.user.findUnique({
       where: { email },
       select: { id: true, email: true, name: true, globalRole: true },
@@ -25,13 +32,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "user not found" }, { status: 404 });
     }
 
-    // Find the user's company
     const companyUser = await prisma.companyUser.findFirst({
       where: { userId: user.id, isActive: true },
       include: { company: { select: { id: true, name: true, slug: true } } },
     });
 
-    // Create a JWT token directly
     const jwt = await encode({
       token: {
         id: user.id,
@@ -40,10 +45,9 @@ export async function GET(request: Request) {
         globalRole: user.globalRole || "USER",
         ...(companyUser ? { currentCompanyId: companyUser.companyId } : {}),
       },
-      secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "",
+      secret,
     });
 
-    // Set the session cookie via response header and redirect
     const cookieName = "next-auth.session-token";
     const response = NextResponse.redirect(new URL(redirectTo, request.url));
 
@@ -55,7 +59,7 @@ export async function GET(request: Request) {
     });
 
     return response;
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message, stack: error.stack }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
   }
 }
