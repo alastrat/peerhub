@@ -26,12 +26,12 @@ export function ServiceFAQ({ serviceKey }: ServiceFAQProps) {
       <div className="row">
         <div className="col-xl-6">
           <div className="section-title">
-            <span className="sub-title" data-aos="fade-down" data-aos-duration="1000">
+            <span className="sub-title">
               FAQ
             </span>
             <h2 className="text-anm">{t("faq.title")}</h2>
           </div>
-          <div className="bizzen-button mt-40 mb-5 mb-xl-0" data-aos="fade-up" data-aos-duration="1200">
+          <div className="bizzen-button mt-40 mb-5 mb-xl-0">
             <Link href="/faq" className="theme-btn style-one">
               {t("faq.see_all")} <i className="far fa-arrow-right"></i>
             </Link>
@@ -39,7 +39,7 @@ export function ServiceFAQ({ serviceKey }: ServiceFAQProps) {
         </div>
         <div className="col-xl-6">
           {/* Accordion */}
-          <div className="accordion" data-aos="fade-up" data-aos-duration="1000">
+          <div className="accordion">
             {faqs.map((faq, index) => (
               <div key={index} className="accordion-card style-two mb-25">
                 <div className="accordion-header">

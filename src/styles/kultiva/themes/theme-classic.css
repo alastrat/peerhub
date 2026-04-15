@@ -5,8 +5,8 @@
  */
 
 [data-theme="classic"] {
-  --heading-font: var(--font-kanit), "Kanit", sans-serif;
-  --body-font: var(--font-jakarta), "Plus Jakarta Sans", sans-serif;
+  --heading-font: var(--font-quicksand), "Quicksand", sans-serif;
+  --body-font: var(--font-quicksand), "Quicksand", sans-serif;
 
   --primary-color: #4a9960;
   --secondary-color: #be6840;

@@ -1,4 +1,4 @@
-// Home page sections
+// Home page sections (legacy consulting)
 export { HeroSection } from "./HeroSection";
 export { ServiceSection } from "./ServiceSection";
 export { AboutSection } from "./AboutSection";
@@ -8,6 +8,21 @@ export { TestimonialSection } from "./TestimonialSection";
 export { ContactSection } from "./ContactSection";
 export { BlogSection } from "./BlogSection";
 export { ClientsSection } from "./ClientsSection";
+
+// Platform (SaaS) sections
+export { PlatformHeroSection } from "./PlatformHeroSection";
+export { FeaturesGridSection } from "./FeaturesGridSection";
+export { HowItWorksSection } from "./HowItWorksSection";
+export { SocialProofSection } from "./SocialProofSection";
+export { CTABannerSection } from "./CTABannerSection";
+export { PricingSection } from "./PricingSection";
+export { PlatformOverviewSection } from "./PlatformOverviewSection";
+export { TransversalCapabilitiesSection } from "./TransversalCapabilitiesSection";
+export { PricingComparisonSection } from "./PricingComparisonSection";
+export { DemoRequestSection } from "./DemoRequestSection";
+export { ModuleDetailSection } from "./ModuleDetailSection";
+export { ModulesCarouselSection } from "./ModulesCarouselSection";
+export { VerticalTimelineSection } from "./VerticalTimelineSection";
 
 // Inner page sections
 export { AboutPageSection } from "./AboutPageSection";

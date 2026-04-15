@@ -30,7 +30,7 @@ export function ServiceHelpCards({ serviceKey }: ServiceHelpCardsProps) {
   return (
     <div className="help-cards-section mt-80 mb-80">
       {/* Section Title */}
-      <div className="section-title text-center mb-50" data-aos="fade-up" data-aos-duration="600">
+      <div className="section-title text-center mb-50">
         <span className="sub-title">{t(`${serviceKey}.help_section_title`)}</span>
       </div>
 
@@ -40,8 +40,6 @@ export function ServiceHelpCards({ serviceKey }: ServiceHelpCardsProps) {
           <div
             key={index}
             className="col-lg-4 col-md-6 col-sm-12 mb-30"
-            data-aos="fade-up"
-            data-aos-duration={600 + index * 100}
           >
             <div className="service-help-card">
               <h5 className="service-help-card-title">{card.title}</h5>
@@ -52,7 +50,7 @@ export function ServiceHelpCards({ serviceKey }: ServiceHelpCardsProps) {
       </div>
 
       {/* Quote */}
-      <div className="text-center mt-50" data-aos="fade-up" data-aos-duration="800">
+      <div className="text-center mt-50">
         <blockquote className="service-help-quote">
           &ldquo;{quote}&rdquo;
         </blockquote>

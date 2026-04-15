@@ -94,16 +94,12 @@ export function HeroSection() {
               <div className="hero-content">
                 <span
                   className="sub-title"
-                  data-aos="fade-down"
-                  data-aos-duration="1000"
                 >
                   {t("subtitle")}
                 </span>
                 <h1 className="text-anm">{t("title")}</h1>
                 <div
                   className="hero-button"
-                  data-aos="fade-up"
-                  data-aos-duration="1400"
                 >
                   <Link href="/contacto" className="theme-btn style-one">
                     {t("cta_secondary")}
@@ -115,8 +111,6 @@ export function HeroSection() {
             <div className="col-lg-4">
               <div
                 className="text-box mb-5 mb-xl-0"
-                data-aos="fade-up"
-                data-aos-duration="1000"
               >
                 {/* Stat carousel with crossfade */}
                 <div style={{ position: "relative", minHeight: "280px" }}>
@@ -172,8 +166,6 @@ export function HeroSection() {
               {/* Hero Image with carousel transition */}
               <div
                 className="hero-image text-center"
-                data-aos="fade-up"
-                data-aos-duration="1200"
                 style={{ position: "relative", overflow: "hidden" }}
               >
                 {HERO_IMAGES.map((src, i) => (

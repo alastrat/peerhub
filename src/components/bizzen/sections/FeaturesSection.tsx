@@ -37,8 +37,6 @@ export function FeaturesSection() {
             <div className="section-title text-center mb-50">
               <span
                 className="sub-title"
-                data-aos="fade-down"
-                data-aos-duration="1000"
               >
                 {t("subtitle")}
               </span>
@@ -57,8 +55,6 @@ export function FeaturesSection() {
                 {/* Bizzen Features Item */}
                 <div
                   className="bizzen-features-item style-one text-center"
-                  data-aos="fade-up"
-                  data-aos-duration={feature.duration}
                 >
                   <div className="content">
                     <h4>{t(`${feature.key}.title`)}</h4>

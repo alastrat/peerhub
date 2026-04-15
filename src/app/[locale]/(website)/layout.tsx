@@ -1,4 +1,4 @@
-import { Header, Footer, AOSProvider } from "@/components/bizzen";
+import { Header, Footer } from "@/components/bizzen";
 import { ThemeSwitcher } from "@/components/bizzen/ThemeSwitcher";
 
 interface WebsiteLayoutProps {
@@ -7,7 +7,7 @@ interface WebsiteLayoutProps {
 
 export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
   return (
-    <AOSProvider>
+    <>
       <div id="smooth-wrapper">
         <div id="smooth-content">
           <Header />
@@ -16,6 +16,6 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
         </div>
       </div>
       <ThemeSwitcher />
-    </AOSProvider>
+    </>
   );
 }

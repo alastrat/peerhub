@@ -71,16 +71,16 @@ export default async function ToolsPage({
               <div className="section-title text-center mb-50">
                 <span
                   className="sub-title"
-                  data-aos="fade-down"
-                  data-aos-duration="800"
+
+
                 >
                   {t("subtitle")}
                 </span>
                 <h2 className="text-anm">{t("title")}</h2>
                 <p
                   className="mt-3"
-                  data-aos="fade-up"
-                  data-aos-duration="1000"
+
+
                 >
                   {t("description")}
                 </p>
@@ -93,8 +93,8 @@ export default async function ToolsPage({
               <div key={index} className="col-lg-6">
                 <div
                   className="bizzen-iconic-item style-one mb-30"
-                  data-aos="fade-up"
-                  data-aos-duration={tool.duration}
+
+
                 >
                   <div className="icon">
                     <img src={tool.icon} alt="icon" />

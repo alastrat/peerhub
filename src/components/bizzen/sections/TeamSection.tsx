@@ -34,8 +34,6 @@ export function TeamSection({ teamMembers = [] }: TeamSectionProps) {
             <div className="section-title text-center mb-60">
               <span
                 className="sub-title"
-                data-aos="fade-down"
-                data-aos-duration="800"
               >
                 {t("subtitle")}
               </span>
@@ -49,8 +47,6 @@ export function TeamSection({ teamMembers = [] }: TeamSectionProps) {
               {/* Bizzen Team Item */}
               <div
                 className="bizzen-team-item style-two mb-40"
-                data-aos="fade-up"
-                data-aos-duration={member.duration}
               >
                 <div className="member-image">
                   <img src={member.image || ""} alt={member.name} />

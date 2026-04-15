@@ -88,8 +88,9 @@
 }
 
 /* Scoped to website layout only — dashboard has its own layout */
+/* Header is now fixed/floating, no padding needed — each section handles its own top spacing */
 #smooth-wrapper {
-  padding-top: 90px;
+  padding-top: 0;
 }
 
 /* ==========================================================================

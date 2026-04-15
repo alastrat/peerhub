@@ -17,8 +17,6 @@ export function AboutPageSection() {
               <div className="bizzen-item-list">
                 <div
                   className="bizzen-iconic-item style-one"
-                  data-aos="fade-up"
-                  data-aos-duration="800"
                 >
                   <div className="icon">
                     <img
@@ -33,8 +31,6 @@ export function AboutPageSection() {
                 </div>
                 <div
                   className="bizzen-iconic-item style-one"
-                  data-aos="fade-up"
-                  data-aos-duration="1000"
                 >
                   <div className="icon">
                     <img
@@ -55,8 +51,6 @@ export function AboutPageSection() {
                 <div className="section-title">
                   <span
                     className="sub-title"
-                    data-aos="fade-down"
-                    data-aos-duration="800"
                   >
                     {t("subtitle")}
                   </span>
@@ -64,22 +58,20 @@ export function AboutPageSection() {
                 </div>
                 <p
                   className="mb-4"
-                  data-aos="fade-up"
-                  data-aos-duration="1000"
                 >
                   {t("description1")}
                 </p>
                 <p
                   className="mb-4"
-                  data-aos="fade-up"
-                  data-aos-duration="1200"
+
+
                 >
                   {t("description2")}
                 </p>
                 <div
                   className="bizzen-button"
-                  data-aos="fade-up"
-                  data-aos-duration="1400"
+
+
                 >
                   <Link href="/contacto" className="theme-btn style-one">
                     {t("cta").toUpperCase()}

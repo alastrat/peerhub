@@ -230,12 +230,12 @@ export default async function BlogPostPage({
             <div className="col-xl-8">
               <div className="blog-details-wrapper">
                 {/* Blog Post Main */}
-                <div className="blog-post-main mb-70" data-aos="fade-up" data-aos-duration="1000">
+                <div className="blog-post-main mb-70">
                   <div className="blog-post-item">
                     <div className="post-thumbnail">
                       <img src={post.image} alt={post.title} />
                     </div>
-                    <div className="post-content" data-aos="fade-up" data-aos-duration="800">
+                    <div className="post-content">
                       <div className="post-meta">
                         <span>
                           <i className="far fa-user" /> {t("by")}{" "}
@@ -254,7 +254,7 @@ export default async function BlogPostPage({
                       <div dangerouslySetInnerHTML={{ __html: post.content }} />
                     </div>
                   </div>
-                  <div className="entry-footer mt-30" data-aos="fade-up" data-aos-duration="1000">
+                  <div className="entry-footer mt-30">
                     <div className="tag-links">
                       <span>Tags:</span>
                       {post.tags.map((tag, index) => (
@@ -272,7 +272,7 @@ export default async function BlogPostPage({
                 </div>
 
                 {/* Post Navigation */}
-                <div className="post-navigation mb-70" data-aos="fade-up" data-aos-duration="1000">
+                <div className="post-navigation mb-70">
                   <div className="row">
                     <div className="col-6">
                       <Link href="/blog" className="nav-link prev">
@@ -288,7 +288,7 @@ export default async function BlogPostPage({
             <div className="col-xl-4">
               <div className="sidebar-widget-area mb-20">
                 {/* Search Widget */}
-                <div className="sidebar-widget sidebar-search-widget mb-30" data-aos="fade-up" data-aos-duration="600">
+                <div className="sidebar-widget sidebar-search-widget mb-30">
                   <div className="widget-content">
                     <form>
                       <div className="form-group">
@@ -307,7 +307,7 @@ export default async function BlogPostPage({
                 </div>
 
                 {/* Category Widget */}
-                <div className="sidebar-widget sidebar-nav-widget mb-30" data-aos="fade-up" data-aos-duration="800">
+                <div className="sidebar-widget sidebar-nav-widget mb-30">
                   <h4 className="widget-title">{t("categories")}</h4>
                   <div className="widget-content">
                     <ul>
@@ -326,7 +326,7 @@ export default async function BlogPostPage({
                 </div>
 
                 {/* Recent Posts Widget */}
-                <div className="sidebar-widget sidebar-post-widget mb-40" data-aos="fade-up" data-aos-duration="1000">
+                <div className="sidebar-widget sidebar-post-widget mb-40">
                   <h4 className="widget-title">{t("recent_posts")}</h4>
                   <div className="widget-content">
                     <ul className="recent-post-list">
@@ -350,7 +350,7 @@ export default async function BlogPostPage({
                 </div>
 
                 {/* Tags Widget */}
-                <div className="sidebar-widget sidebar-tag-widget mb-30" data-aos="fade-up" data-aos-duration="1200">
+                <div className="sidebar-widget sidebar-tag-widget mb-30">
                   <h4 className="widget-title">{t("popular_tags")}</h4>
                   <div className="widget-content">
                     {popularTags.map((tag, index) => (

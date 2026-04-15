@@ -45,8 +45,6 @@ export function ServiceSection({ services: sanityServices = [] }: ServiceSection
             <div className="section-title text-center mb-60">
               <span
                 className="sub-title"
-                data-aos="fade-up"
-                data-aos-duration="1000"
               >
                 {t("subtitle")}
               </span>
@@ -61,8 +59,6 @@ export function ServiceSection({ services: sanityServices = [] }: ServiceSection
               {/* Bizzen Service Item */}
               <div
                 className="bizzen-service-item style-one mb-30"
-                data-aos="fade-up"
-                data-aos-duration={service.duration}
               >
                 <div className="service-inner-content">
                   <div className="icon">
@@ -91,8 +87,6 @@ export function ServiceSection({ services: sanityServices = [] }: ServiceSection
             {/* Text Box */}
             <div
               className="text-box text-center mt-30"
-              data-aos="fade-up"
-              data-aos-duration="1800"
             >
               <p>
                 {t("description")}{" "}

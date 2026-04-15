@@ -30,8 +30,6 @@ export function ContactSection() {
             <div className="section-title text-white">
               <span
                 className="sub-title"
-                data-aos="fade-down"
-                data-aos-duration="1000"
               >
                 {t("subtitle")}
               </span>
@@ -39,8 +37,6 @@ export function ContactSection() {
             </div>
             <p
               className="mb-50"
-              data-aos="fade-up"
-              data-aos-duration="1200"
             >
               {t("description")}
             </p>
@@ -48,8 +44,6 @@ export function ContactSection() {
             <form
               autoComplete="off"
               className="contact-form"
-              data-aos="fade-up"
-              data-aos-duration="1400"
               style={{ color: "#fff" }}
             >
               <div className="row">

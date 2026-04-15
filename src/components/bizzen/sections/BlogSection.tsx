@@ -53,8 +53,6 @@ export function BlogSection({ posts: sanityPosts = [] }: BlogSectionProps) {
               <div className="section-title">
                 <span
                   className="sub-title"
-                  data-aos="fade-down"
-                  data-aos-duration="1000"
                 >
                   {t("subtitle")}
                 </span>
@@ -62,8 +60,6 @@ export function BlogSection({ posts: sanityPosts = [] }: BlogSectionProps) {
               </div>
               <div
                 className="bizzen-button"
-                data-aos="fade-up"
-                data-aos-duration="1000"
               >
                 <Link href="/blog" className="theme-btn style-one">
                   {t("cta").toUpperCase()}{" "}
@@ -80,8 +76,6 @@ export function BlogSection({ posts: sanityPosts = [] }: BlogSectionProps) {
                 <div
                   key={post.slug || index}
                   className="bizzen-blog-post-item style-one mb-30"
-                  data-aos="fade-up"
-                  data-aos-duration={post.duration}
                 >
                   <div className="post-thumbnail">
                     <img src={post.image || ""} alt="Post Thumbnail" />

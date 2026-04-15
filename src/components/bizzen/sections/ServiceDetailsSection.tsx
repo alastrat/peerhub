@@ -34,10 +34,10 @@ export function ServiceDetailsSection({ serviceKey, image }: ServiceDetailsProps
         <div className="service-details-wrapper">
           {/* Service Main */}
           <div className="service-item-main mb-60">
-            <div className="service-thumbnail mb-30" data-aos="fade-up" data-aos-duration="800">
+            <div className="service-thumbnail mb-30">
               <img src={image} alt={t("title")} />
             </div>
-            <div className="service-content" data-aos="fade-up" data-aos-duration="800">
+            <div className="service-content">
               <h4 className="title">{t("headline")}</h4>
               <p>{t("description")}</p>
               <p>{t("description2")}</p>
@@ -66,8 +66,6 @@ export function ServiceDetailsSection({ serviceKey, image }: ServiceDetailsProps
                 <div key={index} className="col-xl-3 col-md-6 col-sm-12">
                   <div
                     className="bizzen-process-item style-three mb-40"
-                    data-aos="fade-up"
-                    data-aos-duration={800 + index * 200}
                   >
                     <div className="line"></div>
                     <div className="number">{step.number}</div>
@@ -82,7 +80,7 @@ export function ServiceDetailsSection({ serviceKey, image }: ServiceDetailsProps
           </div>
 
           {/* Key Features Section */}
-          <div className="intro-wrapper mb-80" data-aos="fade-up" data-aos-duration="1600">
+          <div className="intro-wrapper mb-80">
             <h3 className="mb-20">{t("features_title")}</h3>
             <p className="mb-25">{t("features_description")}</p>
             <div className="bizzen-image-box">
@@ -91,7 +89,7 @@ export function ServiceDetailsSection({ serviceKey, image }: ServiceDetailsProps
           </div>
 
           {/* CTA Section */}
-          <div className="cta-wrapper text-center" data-aos="fade-up" data-aos-duration="800">
+          <div className="cta-wrapper text-center">
             <h3 className="mb-20">{tCommon("cta_title")}</h3>
             <p className="mb-30">{tCommon("cta_description")}</p>
             <Link href="/contacto" className="theme-btn style-one">

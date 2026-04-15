@@ -14,8 +14,6 @@ export function ProcessSection() {
             <div className="section-title mb-5 mb-xl-0">
               <span
                 className="sub-title"
-                data-aos="fade-down"
-                data-aos-duration="1000"
               >
                 {t("subtitle")}
               </span>
@@ -28,8 +26,6 @@ export function ProcessSection() {
             <div className="bizzen-work-list">
               <div
                 className="bizzen-process-item style-one"
-                data-aos="fade-up"
-                data-aos-duration="1000"
               >
                 <div className="number">01</div>
                 <div className="content">
@@ -39,8 +35,6 @@ export function ProcessSection() {
 
               <div
                 className="bizzen-process-item style-one"
-                data-aos="fade-up"
-                data-aos-duration="1200"
               >
                 <div className="number">02</div>
                 <div className="content">
@@ -50,8 +44,6 @@ export function ProcessSection() {
 
               <div
                 className="bizzen-process-item style-one"
-                data-aos="fade-up"
-                data-aos-duration="1400"
               >
                 <div className="number">03</div>
                 <div className="content">
@@ -61,8 +53,6 @@ export function ProcessSection() {
 
               <div
                 className="bizzen-process-item style-one"
-                data-aos="fade-up"
-                data-aos-duration="1600"
               >
                 <div className="number">04</div>
                 <div className="content">
@@ -76,8 +66,6 @@ export function ProcessSection() {
             {/* Text Box */}
             <div
               className="text-box mt-5 mt-md-0"
-              data-aos="fade-up"
-              data-aos-duration="1600"
             >
               <span>
                 Maximiza los resultados de tu organización con nuestras

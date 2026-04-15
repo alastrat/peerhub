@@ -94,10 +94,10 @@ export default async function ServiceDetailPage({
           <div className="service-details-wrapper">
             {/* Service Main */}
             <div className="service-item-main mb-60">
-              <div className="service-thumbnail mb-30" data-aos="fade-up" data-aos-duration="800">
+              <div className="service-thumbnail mb-30">
                 <img src={service.image} alt={t(`${service.key}.title`)} />
               </div>
-              <div className="service-content" data-aos="fade-up" data-aos-duration="800">
+              <div className="service-content">
                 <h4 className="title">{t(`${service.key}.headline`)}</h4>
                 <p>{t(`${service.key}.description`)}</p>
                 <p>{t(`${service.key}.description2`)}</p>
@@ -129,8 +129,8 @@ export default async function ServiceDetailPage({
                   <div key={index} className="col-xl-3 col-md-6 col-sm-12">
                     <div
                       className="bizzen-process-item style-three mb-40"
-                      data-aos="fade-up"
-                      data-aos-duration={800 + index * 200}
+
+
                     >
                       <div className="line"></div>
                       <div className="number">{step.number}</div>
@@ -145,7 +145,7 @@ export default async function ServiceDetailPage({
             </div>
 
             {/* Key Features Section */}
-            <div className="intro-wrapper mb-80" data-aos="fade-up" data-aos-duration="1600">
+            <div className="intro-wrapper mb-80">
               <h3 className="mb-20">{t(`${service.key}.features_title`)}</h3>
               <p className="mb-25">{t(`${service.key}.features_description`)}</p>
               <div className="bizzen-image-box">
@@ -157,7 +157,7 @@ export default async function ServiceDetailPage({
             <ServiceFAQ serviceKey={service.key} />
 
             {/* CTA Section */}
-            <div className="cta-wrapper text-center mt-80" data-aos="fade-up" data-aos-duration="800">
+            <div className="cta-wrapper text-center mt-80">
               <h3 className="mb-20">{t("cta.title")}</h3>
               <p className="mb-30">{t("cta.description")}</p>
               <Link href="/contacto" className="theme-btn style-one">

@@ -1,22 +1,14 @@
 import { getTranslations } from "next-intl/server";
 import {
-  HeroSection,
-  ServiceSection,
-  AboutSection,
-  CounterSection,
-  ProcessSection,
-  TestimonialSection,
-  ContactSection,
-  BlogSection,
+  PlatformHeroSection,
+  FeaturesGridSection,
+  HowItWorksSection,
+  SocialProofSection,
+  CTABannerSection,
+  PricingSection,
   ClientsSection,
 } from "@/components/bizzen";
-import {
-  getTestimonials,
-  getClients,
-  getServices,
-  getRecentPosts,
-  type Locale,
-} from "@/lib/sanity";
+import { getClients, type Locale } from "@/lib/sanity";
 
 export async function generateMetadata({
   params,
@@ -40,25 +32,17 @@ export default async function HomePage({
   const { locale } = await params;
   const sanityLocale = locale as Locale;
 
-  // Fetch data from Sanity in parallel
-  const [testimonials, clients, services, recentPosts] = await Promise.all([
-    getTestimonials(sanityLocale),
-    getClients(sanityLocale),
-    getServices(sanityLocale),
-    getRecentPosts(sanityLocale, 3),
-  ]);
+  const clients = await getClients(sanityLocale);
 
   return (
     <>
-      <HeroSection />
-      <ServiceSection services={services} />
-      <AboutSection />
-      <CounterSection />
-      <ProcessSection />
-      <TestimonialSection testimonials={testimonials} />
-      <ContactSection />
-      <BlogSection posts={recentPosts} />
-      <ClientsSection clients={clients} />
+      <PlatformHeroSection />
+      {/* <ClientsSection clients={clients} /> */}
+      <FeaturesGridSection />
+      <HowItWorksSection />
+      <SocialProofSection />
+      <PricingSection />
+      <CTABannerSection />
     </>
   );
 }

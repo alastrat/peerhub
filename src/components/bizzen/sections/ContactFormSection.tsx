@@ -13,8 +13,6 @@ export function ContactFormSection() {
             {/* Map Box */}
             <div
               className="map-box mb-5 mb-xl-0"
-              data-aos="fade-up"
-              data-aos-duration="1300"
             >
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d125221.51098779548!2d-74.87478169999999!3d10.96389565!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8ef42d4ec6d0a8ef%3A0x1fbb1b0ccbb57d31!2sBarranquilla%2C%20Atlantico%2C%20Colombia!5e0!3m2!1sen!2sus!4v1640000000000!5m2!1sen!2sus"
@@ -27,8 +25,6 @@ export function ContactFormSection() {
             {/* Contact Wrapper */}
             <div
               className="contact-wrapper"
-              data-aos="fade-left"
-              data-aos-duration="1400"
             >
               <h2>{t("title")}</h2>
               <form id="contact-form" className="contact-form">

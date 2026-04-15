@@ -91,8 +91,6 @@ export function BlogGridSection() {
               {/* Bizzen Blog Post */}
               <div
                 className="bizzen-blog-post-item style-two mb-35"
-                data-aos="fade-up"
-                data-aos-duration={post.duration}
               >
                 <div className="post-thumbnail">
                   <img src={post.image} alt={post.title} />
@@ -132,8 +130,6 @@ export function BlogGridSection() {
           <div className="col-lg-12">
             <div
               className="theme-pagination text-center mt-30"
-              data-aos="fade-up"
-              data-aos-duration="2200"
             >
               <ul>
                 <li>

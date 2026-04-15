@@ -17,8 +17,6 @@ export function ServicesPageSection() {
               <div className="section-title mb-4">
                 <span
                   className="sub-title"
-                  data-aos="fade-down"
-                  data-aos-duration="800"
                 >
                   {t("subtitle")}
                 </span>
@@ -26,15 +24,11 @@ export function ServicesPageSection() {
               </div>
               <p
                 className="mb-30"
-                data-aos="fade-up"
-                data-aos-duration="1000"
               >
                 {t("description")}
               </p>
               <div
                 className="bizzen-button"
-                data-aos="fade-up"
-                data-aos-duration="1200"
               >
                 <Link href="/contacto" className="theme-btn style-one">
                   {tNav("cta").toUpperCase()}
@@ -50,8 +44,6 @@ export function ServicesPageSection() {
                   {/* Bizzen Iconic Box */}
                   <div
                     className="bizzen-iconic-box style-one mb-40"
-                    data-aos="fade-up"
-                    data-aos-duration="800"
                   >
                     <div className="icon">
                       <img
@@ -68,8 +60,6 @@ export function ServicesPageSection() {
                 <div className="col-md-6">
                   <div
                     className="bizzen-iconic-box style-one mb-40"
-                    data-aos="fade-up"
-                    data-aos-duration="1000"
                   >
                     <div className="icon">
                       <img
@@ -86,8 +76,6 @@ export function ServicesPageSection() {
                 <div className="col-md-6">
                   <div
                     className="bizzen-iconic-box style-one mb-40"
-                    data-aos="fade-up"
-                    data-aos-duration="1200"
                   >
                     <div className="icon">
                       <img
@@ -104,8 +92,6 @@ export function ServicesPageSection() {
                 <div className="col-md-6">
                   <div
                     className="bizzen-iconic-box style-one mb-40"
-                    data-aos="fade-up"
-                    data-aos-duration="1600"
                   >
                     <div className="icon">
                       <img
