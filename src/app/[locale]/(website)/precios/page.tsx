@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import {
   PageHero,
   PricingSection,
-  PricingComparisonSection,
+  PricingFeaturesTableSection,
   CTABannerSection,
   FAQSection,
 } from "@/components/bizzen";
@@ -33,7 +33,7 @@ export default async function PreciosPage({
     <>
       <PageHero title={t("title")} breadcrumb={t("breadcrumb")} />
       <PricingSection />
-      <PricingComparisonSection />
+      <PricingFeaturesTableSection />
       <FAQSection />
       <CTABannerSection />
     </>

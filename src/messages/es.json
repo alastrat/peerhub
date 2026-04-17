@@ -394,6 +394,15 @@
     "title": "Mas de 50 clientes confian en nosotros",
     "description": "Cada servicio esta disenado para abordar los desafios especificos de tu organizacion, con metodologias probadas y un enfoque centrado en las personas.",
     "cta": "Solicitar una Consulta",
+    "list": {
+      "subtitle": "Servicios de Consultoria",
+      "title": "Soluciones integrales para tu organizacion",
+      "description": "Complementamos nuestra plataforma con servicios especializados de consultoria. Acompanamos a tu equipo en cada paso del proceso de transformacion organizacional."
+    },
+    "clima": {
+      "title": "Diagnostico de Clima",
+      "short_description": "Medimos y analizamos el clima organizacional para identificar oportunidades de mejora y planes de accion concretos."
+    },
     "process": {
       "step1": {
         "title": "Diagnostico",
@@ -441,6 +450,7 @@
     "cultura": {
       "title": "Cultura Organizacional",
       "short": "Cultura",
+      "short_description": "Construye una cultura que inspire, alinea valores con estrategia y convierte la cultura en una ventaja competitiva real.",
       "headline": "Construye una cultura que inspire y genere resultados sostenibles",
       "description": "Disenamos e implementamos estrategias para construir culturas organizacionales solidas que impulsen el compromiso, la innovacion y los resultados del negocio.",
       "description2": "Una cultura fuerte es la base del exito organizacional. Trabajamos contigo para definir, comunicar y vivir los valores que hacen unica a tu empresa, creando un ambiente donde las personas dan lo mejor de si.",
@@ -500,6 +510,7 @@
     "seleccion": {
       "title": "Seleccion Especializada",
       "short": "Seleccion",
+      "short_description": "Encontramos el talento ideal evaluando competencias tecnicas, fit cultural y potencial de crecimiento.",
       "headline": "Encuentra el talento ideal que impulse tu organizacion",
       "description": "Encontramos el talento ideal para tu organizacion a traves de procesos de seleccion rigurosos que evaluan competencias tecnicas, culturales y de liderazgo.",
       "description2": "El talento adecuado marca la diferencia. Nuestro proceso de seleccion va mas alla del curriculum, evaluando el fit cultural y el potencial de crecimiento para asegurar contrataciones exitosas a largo plazo.",
@@ -559,6 +570,7 @@
     "cambio": {
       "title": "Gestion del Cambio",
       "short": "Cambio",
+      "short_description": "Acompanamos transformaciones organizacionales para asegurar adopcion, minimizar resistencia y sostener resultados.",
       "headline": "Navega el cambio con confianza y minimiza la resistencia",
       "description": "Facilitamos procesos de cambio organizacional minimizando la resistencia y maximizando la adopcion, asegurando transiciones exitosas.",
       "description2": "El cambio es inevitable, pero el fracaso no lo es. Te acompanamos en cada etapa del proceso de cambio, asegurando que las personas entiendan, acepten y adopten las nuevas formas de trabajo.",
@@ -590,6 +602,7 @@
     "comunicacion": {
       "title": "Comunicacion Interna",
       "short": "Comunicacion",
+      "short_description": "Disenamos estrategias de comunicacion interna que conectan al equipo con los objetivos y valores del negocio.",
       "headline": "Conecta a tu equipo con mensajes que inspiran accion",
       "description": "Desarrollamos estrategias de comunicacion interna que fortalecen la conexion entre colaboradores, alinean equipos y refuerzan la cultura organizacional.",
       "description2": "Una comunicacion efectiva es el sistema nervioso de tu organizacion. Disenamos estrategias y canales que aseguran que los mensajes correctos lleguen a las personas indicadas en el momento oportuno.",

@@ -33,6 +33,18 @@ interface CreateSurveyInput {
   frequency?: string;
   isAnonymous?: boolean;
   questions: SurveyQuestionInput[];
+  templateId?: string;
+  welcomeTitle?: string;
+  welcomeBody?: string;
+  welcomeBannerUrl?: string;
+  welcomeCtaText?: string;
+  themeColor?: string;
+  thankYouTitle?: string;
+  thankYouBody?: string;
+  thankYouCtaText?: string;
+  wallpaperConfig?: Record<string, unknown> | null;
+  colorConfig?: Record<string, unknown> | null;
+  questionsPerPage?: number | null;
 }
 
 type SurveyWithQuestions = ClimateSurvey & {
@@ -60,6 +72,18 @@ export async function createClimateSurvey(
         type: input.type,
         frequency: (input.frequency as Prisma.EnumSurveyFrequencyFieldUpdateOperationsInput["set"]) || "ONCE",
         isAnonymous: input.isAnonymous ?? true,
+        templateId: input.templateId || null,
+        welcomeTitle: input.welcomeTitle?.trim() || null,
+        welcomeBody: input.welcomeBody ?? null,
+        welcomeBannerUrl: input.welcomeBannerUrl?.trim() || null,
+        welcomeCtaText: input.welcomeCtaText?.trim() || null,
+        themeColor: input.themeColor?.trim() || null,
+        thankYouTitle: input.thankYouTitle?.trim() || null,
+        thankYouBody: input.thankYouBody ?? null,
+        thankYouCtaText: input.thankYouCtaText?.trim() || null,
+        wallpaperConfig: input.wallpaperConfig ? (input.wallpaperConfig as Prisma.InputJsonValue) : Prisma.JsonNull,
+        colorConfig: input.colorConfig ? (input.colorConfig as Prisma.InputJsonValue) : Prisma.JsonNull,
+        questionsPerPage: input.questionsPerPage ?? null,
         questions: {
           create: input.questions.map((q) => ({
             text: q.text,
@@ -82,7 +106,14 @@ export async function createClimateSurvey(
     return { success: true, data: survey };
   } catch (error) {
     console.error("Failed to create climate survey:", error);
-    return { success: false, error: "Failed to create survey" };
+    // Surface the underlying Prisma/DB error so the UI can show what's wrong
+    const msg =
+      error instanceof Prisma.PrismaClientKnownRequestError
+        ? `${error.code}: ${error.message.split("\n").pop() ?? error.message}`
+        : error instanceof Error
+          ? error.message
+          : "Failed to create survey";
+    return { success: false, error: msg };
   }
 }
 
@@ -108,12 +139,31 @@ export async function updateClimateSurvey(
       return { success: false, error: "At least one question is required" };
     }
 
-    const updateData: Parameters<typeof prisma.climateSurvey.update>[0]["data"] = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateData: any = {
       ...(input.name && { name: input.name.trim() }),
       ...(input.description !== undefined && { description: input.description?.trim() || null }),
       ...(input.type && { type: input.type }),
       ...(input.frequency && { frequency: input.frequency as Prisma.EnumSurveyFrequencyFieldUpdateOperationsInput["set"] }),
       ...(input.isAnonymous !== undefined && { isAnonymous: input.isAnonymous }),
+      ...(input.templateId !== undefined && { templateId: input.templateId || null }),
+      ...(input.welcomeTitle !== undefined && { welcomeTitle: input.welcomeTitle?.trim() || null }),
+      ...(input.welcomeBody !== undefined && { welcomeBody: input.welcomeBody || null }),
+      ...(input.welcomeBannerUrl !== undefined && { welcomeBannerUrl: input.welcomeBannerUrl?.trim() || null }),
+      ...(input.welcomeCtaText !== undefined && { welcomeCtaText: input.welcomeCtaText?.trim() || null }),
+      ...(input.themeColor !== undefined && { themeColor: input.themeColor?.trim() || null }),
+      ...(input.thankYouTitle !== undefined && { thankYouTitle: input.thankYouTitle?.trim() || null }),
+      ...(input.thankYouBody !== undefined && { thankYouBody: input.thankYouBody || null }),
+      ...(input.thankYouCtaText !== undefined && { thankYouCtaText: input.thankYouCtaText?.trim() || null }),
+      ...(input.wallpaperConfig !== undefined && {
+        wallpaperConfig: input.wallpaperConfig ? (input.wallpaperConfig as Prisma.InputJsonValue) : Prisma.JsonNull,
+      }),
+      ...(input.colorConfig !== undefined && {
+        colorConfig: input.colorConfig ? (input.colorConfig as Prisma.InputJsonValue) : Prisma.JsonNull,
+      }),
+      ...(input.questionsPerPage !== undefined && {
+        questionsPerPage: input.questionsPerPage ?? null,
+      }),
     };
 
     // If questions are provided, delete and recreate atomically in a transaction
@@ -153,7 +203,13 @@ export async function updateClimateSurvey(
     return { success: true, data: survey };
   } catch (error) {
     console.error("Failed to update climate survey:", error);
-    return { success: false, error: "Failed to update survey" };
+    const msg =
+      error instanceof Prisma.PrismaClientKnownRequestError
+        ? `${error.code}: ${error.message.split("\n").pop() ?? error.message}`
+        : error instanceof Error
+          ? error.message
+          : "Failed to update survey";
+    return { success: false, error: msg };
   }
 }
 
@@ -211,6 +267,19 @@ export async function duplicateClimateSurvey(
         type: original.type,
         frequency: original.frequency,
         isAnonymous: original.isAnonymous,
+        // Copy all customization fields
+        templateId: original.templateId,
+        welcomeTitle: original.welcomeTitle,
+        welcomeBody: original.welcomeBody,
+        welcomeBannerUrl: original.welcomeBannerUrl,
+        welcomeCtaText: original.welcomeCtaText,
+        themeColor: original.themeColor,
+        wallpaperConfig: original.wallpaperConfig ?? Prisma.JsonNull,
+        colorConfig: original.colorConfig ?? Prisma.JsonNull,
+        thankYouTitle: original.thankYouTitle,
+        thankYouBody: original.thankYouBody,
+        thankYouCtaText: original.thankYouCtaText,
+        questionsPerPage: original.questionsPerPage,
         questions: {
           create: original.questions.map((q) => ({
             text: q.text,

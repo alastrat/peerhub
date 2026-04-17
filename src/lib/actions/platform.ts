@@ -263,24 +263,25 @@ export async function inviteMember(input: {
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:4999";
     const inviteUrl = `${baseUrl}/invite/${invitation.token}`;
 
-    const emailResult = await sendEmail({
-      to: email,
-      subject: `You're invited to join ${invitation.company.name} on Kultiva`,
-      html: `
-        <h2>You've been invited!</h2>
-        <p><strong>${session.user.name || session.user.email}</strong> has invited you to join <strong>${invitation.company.name}</strong> on Kultiva.</p>
-        <p>Click the link below to accept:</p>
-        <p><a href="${inviteUrl}" style="display:inline-block;background:#613171;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;">Accept Invitation</a></p>
-        <p>Or copy this link: ${inviteUrl}</p>
-        <p><em>This invitation expires in 7 days.</em></p>
-      `,
-      text: `You've been invited to join ${invitation.company.name} on Kultiva. Accept here: ${inviteUrl}`,
-    });
-
-    if (!emailResult.success) {
+    try {
+      await sendEmail({
+        to: email,
+        subject: `You're invited to join ${invitation.company.name} on Kultiva`,
+        html: `
+          <h2>You've been invited!</h2>
+          <p><strong>${session.user.name || session.user.email}</strong> has invited you to join <strong>${invitation.company.name}</strong> on Kultiva.</p>
+          <p>Click the link below to accept:</p>
+          <p><a href="${inviteUrl}" style="display:inline-block;background:#613171;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;">Accept Invitation</a></p>
+          <p>Or copy this link: ${inviteUrl}</p>
+          <p><em>This invitation expires in 7 days.</em></p>
+        `,
+        text: `You've been invited to join ${invitation.company.name} on Kultiva. Accept here: ${inviteUrl}`,
+      });
+    } catch (emailError) {
       // Roll back the invitation if email failed
       await prisma.invitation.delete({ where: { id: invitation.id } });
-      return { success: false, error: emailResult.error || "Failed to send email" };
+      const msg = emailError instanceof Error ? emailError.message : "Failed to send email";
+      return { success: false, error: msg, code: "EMAIL_DELIVERY_FAILED" };
     }
 
     revalidatePath("/settings/company/members");
@@ -514,22 +515,23 @@ export async function resendInvitation(
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:4999";
     const inviteUrl = `${baseUrl}/invite/${invitation.token}`;
 
-    const emailResult = await sendEmail({
-      to: invitation.email,
-      subject: `Reminder: You're invited to join ${invitation.company.name} on Kultiva`,
-      html: `
-        <h2>You've been invited!</h2>
-        <p><strong>${session.user.name || session.user.email}</strong> has invited you to join <strong>${invitation.company.name}</strong> on Kultiva.</p>
-        <p>Click the link below to accept:</p>
-        <p><a href="${inviteUrl}" style="display:inline-block;background:#613171;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;">Accept Invitation</a></p>
-        <p>Or copy this link: ${inviteUrl}</p>
-        <p><em>This invitation expires in 7 days.</em></p>
-      `,
-      text: `You've been invited to join ${invitation.company.name} on Kultiva. Accept here: ${inviteUrl}`,
-    });
-
-    if (!emailResult.success) {
-      return { success: false, error: emailResult.error || "Failed to send email" };
+    try {
+      await sendEmail({
+        to: invitation.email,
+        subject: `Reminder: You're invited to join ${invitation.company.name} on Kultiva`,
+        html: `
+          <h2>You've been invited!</h2>
+          <p><strong>${session.user.name || session.user.email}</strong> has invited you to join <strong>${invitation.company.name}</strong> on Kultiva.</p>
+          <p>Click the link below to accept:</p>
+          <p><a href="${inviteUrl}" style="display:inline-block;background:#613171;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;">Accept Invitation</a></p>
+          <p>Or copy this link: ${inviteUrl}</p>
+          <p><em>This invitation expires in 7 days.</em></p>
+        `,
+        text: `You've been invited to join ${invitation.company.name} on Kultiva. Accept here: ${inviteUrl}`,
+      });
+    } catch (emailError) {
+      const msg = emailError instanceof Error ? emailError.message : "Failed to send email";
+      return { success: false, error: msg, code: "EMAIL_DELIVERY_FAILED" };
     }
 
     revalidatePath("/settings/company/members");

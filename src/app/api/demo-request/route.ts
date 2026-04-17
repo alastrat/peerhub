@@ -40,15 +40,15 @@ ${message ? `Mensaje: ${message}` : ""}`;
       process.env.EMAIL_FROM ||
       "noreply@kultiva.com";
 
-    const result = await sendEmail({
-      to: recipient,
-      subject,
-      html,
-      text,
-    });
-
-    if (!result.success) {
-      console.error("Demo request email failed:", result.error);
+    try {
+      await sendEmail({
+        to: recipient,
+        subject,
+        html,
+        text,
+      });
+    } catch (emailError) {
+      console.error("[demo-request] Email delivery failed:", emailError);
       return NextResponse.json(
         { error: "email_send_failed" },
         { status: 500 }

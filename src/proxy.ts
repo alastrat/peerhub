@@ -15,6 +15,6 @@ export const config = {
     // - /_next (Next.js internals)
     // - /.*\\..* (files with extensions like .ico, .png, etc.)
     // - Dashboard and auth routes (they don't need i18n)
-    "/((?!api|_next|.*\\..*|overview|surveys|cycles|templates|people|nominations|my-reviews|my-feedback|my-surveys|reports|analytics|settings|login|signup|auth|onboarding|portal|review|climate).*)",
+    "/((?!api|_next|.*\\..*|overview|surveys|cycles|templates|people|nominations|my-reviews|my-feedback|my-surveys|reports|analytics|settings|login|signup|auth|onboarding|portal|review|climate|invite|survey-preview).*)",
   ],
 };

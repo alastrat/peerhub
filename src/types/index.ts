@@ -125,6 +125,11 @@ export interface ActionResult<T = void> {
   success: boolean;
   data?: T;
   error?: string;
+  /**
+   * Non-fatal warning — the primary action succeeded but a secondary step
+   * (e.g. email delivery) failed. UI should surface this to the user.
+   */
+  warning?: string;
   code?: string;
 }
 

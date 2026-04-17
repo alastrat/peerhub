@@ -2,23 +2,35 @@
 
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/config";
+import { getPortalSession } from "@/lib/auth/portal-session";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/types";
 
 async function requireEmployee() {
+  // Portal session takes precedence (employees signing in through /portal)
+  const portalSession = await getPortalSession();
+  if (portalSession) {
+    const employee = await prisma.employee.findUnique({
+      where: { id: portalSession.employeeId },
+      select: { id: true, companyId: true },
+    });
+    if (!employee) throw new Error("Employee not found");
+    return { companyId: employee.companyId, employeeId: employee.id };
+  }
+
+  // Fallback: dashboard session (admin/manager also in the company)
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
   const companyId = session.companyUser?.companyId;
   if (!companyId) throw new Error("No active company");
 
-  // Find the employee record for this user
   const companyUser = await prisma.companyUser.findFirst({
     where: { userId: session.user.id, companyId, isActive: true },
     include: { employee: true },
   });
   if (!companyUser?.employee) throw new Error("Employee not found");
 
-  return { session, companyId, employeeId: companyUser.employee.id };
+  return { companyId, employeeId: companyUser.employee.id };
 }
 
 export async function saveSurveyDraft(input: {

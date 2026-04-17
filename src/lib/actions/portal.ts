@@ -12,7 +12,8 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 // ============================================
 
 export async function requestPortalAccess(
-  email: string
+  email: string,
+  redirectTo?: string,
 ): Promise<ActionResult> {
   try {
     const normalizedEmail = email.trim().toLowerCase();
@@ -45,9 +46,27 @@ export async function requestPortalAccess(
       },
     });
 
-    // Send the magic link email
-    const magicLinkUrl = `${APP_URL}/portal/verify/${token}`;
-    await sendPortalMagicLinkEmail(normalizedEmail, employee.name, magicLinkUrl);
+    // Build the magic link URL, optionally including a redirect param
+    let magicLinkUrl = `${APP_URL}/portal/verify/${token}`;
+    if (redirectTo && redirectTo.startsWith("/portal/")) {
+      magicLinkUrl += `?redirect=${encodeURIComponent(redirectTo)}`;
+    }
+
+    // Send the magic link email. If delivery fails we still return success
+    // (to avoid email enumeration), but we log loudly and mark the token
+    // as used so it's not left orphaned.
+    try {
+      await sendPortalMagicLinkEmail(normalizedEmail, employee.name, magicLinkUrl);
+    } catch (emailError) {
+      console.error(
+        "[portal] Magic link email failed to deliver. The user will see a generic 'check your email' message.",
+        { email: normalizedEmail, employeeId: employee.id, emailError },
+      );
+      await prisma.accessToken.update({
+        where: { token },
+        data: { usedAt: new Date() },
+      });
+    }
 
     return { success: true };
   } catch (error) {
@@ -123,6 +142,13 @@ export async function getPortalDashboard(employeeId: string): Promise<{
     minPeers: number;
     maxPeers: number;
   }>;
+  pendingClimateSurveys: Array<{
+    distributionId: string;
+    surveyName: string;
+    surveyType: string;
+    dueDate: string;
+    isAnonymous: boolean;
+  }>;
   releasedReports: Array<{
     cycleId: string;
     cycleName: string;
@@ -193,5 +219,68 @@ export async function getPortalDashboard(employeeId: string): Promise<{
     releasedAt: p.releasedAt!.toISOString(),
   }));
 
-  return { pendingReviews, pendingNominations, releasedReports };
+  // Pending climate surveys: active distributions targeting this employee without a completed response
+  const employee = await prisma.employee.findUnique({
+    where: { id: employeeId },
+    select: {
+      companyId: true,
+      departmentId: true,
+      hubId: true,
+      teamMemberships: { select: { teamId: true } },
+    },
+  });
+
+  let pendingClimateSurveys: Array<{
+    distributionId: string;
+    surveyName: string;
+    surveyType: string;
+    dueDate: string;
+    isAnonymous: boolean;
+  }> = [];
+
+  if (employee) {
+    const teamIds = employee.teamMemberships.map((m) => m.teamId);
+    const targetFilters: Array<Record<string, unknown>> = [{ targetType: "ALL" }];
+    if (employee.departmentId) {
+      targetFilters.push({ targetType: "DEPARTMENT", targetIds: { has: employee.departmentId } });
+    }
+    if (employee.hubId) {
+      targetFilters.push({ targetType: "HUB", targetIds: { has: employee.hubId } });
+    }
+    if (teamIds.length > 0) {
+      targetFilters.push({ targetType: "TEAM", targetIds: { hasSome: teamIds } });
+    }
+    targetFilters.push({ targetType: "CUSTOM", targetIds: { has: employeeId } });
+
+    const climateDistributions = await prisma.surveyDistribution.findMany({
+      where: {
+        survey: { status: "ACTIVE", companyId: employee.companyId },
+        OR: targetFilters,
+        NOT: {
+          responses: { some: { employeeId, isComplete: true } },
+        },
+      },
+      include: {
+        survey: {
+          select: { id: true, name: true, type: true, isAnonymous: true },
+        },
+      },
+      orderBy: { dueDate: "asc" },
+    });
+
+    pendingClimateSurveys = climateDistributions.map((d) => ({
+      distributionId: d.id,
+      surveyName: d.survey.name,
+      surveyType: d.survey.type,
+      dueDate: d.dueDate.toISOString(),
+      isAnonymous: d.survey.isAnonymous,
+    }));
+  }
+
+  return {
+    pendingReviews,
+    pendingNominations,
+    pendingClimateSurveys,
+    releasedReports,
+  };
 }

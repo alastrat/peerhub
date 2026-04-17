@@ -80,47 +80,11 @@ export function Header() {
           {/* Desktop Nav */}
           <nav className="hidden md:absolute md:left-1/2 md:top-1/2 md:block md:-translate-x-1/2 md:-translate-y-1/2 md:transform">
             <div className="flex items-center gap-6">
-              {/* Plataforma — dropdown */}
-              <div
-                className="relative"
-                onMouseEnter={() => openDropdown("platform")}
-                onMouseLeave={closeDropdown}
-              >
-                <Link
-                  className={cn("flex items-center gap-1 px-2 py-1 text-sm font-medium transition-colors", linkColor)}
-                  href="/plataforma"
-                >
-                  {t("platform")}
-                  <ChevronDown className={cn("w-3.5 h-3.5 transition-opacity", chevronColor, activeDropdown === "platform" && "opacity-100")} />
-                </Link>
-                <div
-                  className={cn(
-                    "absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2 transition-all duration-200",
-                    activeDropdown === "platform" ? "visible opacity-100" : "invisible opacity-0",
-                  )}
-                >
-                  <div className="w-56 rounded-xl border border-gray-100 bg-white p-2 shadow-xl shadow-black/5">
-                    <Link href="/modulos/feedback-360" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-[#613171]/5 hover:text-[#613171] transition-colors">
-                      {t("platform_360")}
-                    </Link>
-                    <Link href="/modulos/encuestas-clima" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-[#613171]/5 hover:text-[#613171] transition-colors">
-                      {t("platform_climate")}
-                    </Link>
-                    <Link href="/modulos/gestion-personas" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-[#613171]/5 hover:text-[#613171] transition-colors">
-                      {t("platform_people")}
-                    </Link>
-                    <Link href="/modulos/estructura-organizacional" className="block rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-[#613171]/5 hover:text-[#613171] transition-colors">
-                      {t("platform_org")}
-                    </Link>
-                  </div>
-                </div>
-              </div>
-
               <Link
                 className={cn("px-2 py-1 text-sm font-medium transition-colors", linkColor)}
-                href="/precios"
+                href="/plataforma"
               >
-                {t("pricing")}
+                {t("platform")}
               </Link>
 
               <Link
@@ -128,6 +92,13 @@ export function Header() {
                 href="/servicios"
               >
                 {t("services")}
+              </Link>
+
+              <Link
+                className={cn("px-2 py-1 text-sm font-medium transition-colors", linkColor)}
+                href="/precios"
+              >
+                {t("pricing")}
               </Link>
 
               {/* Recursos — dropdown */}
@@ -212,13 +183,13 @@ export function Header() {
               </Link>
             </li>
             <li onClick={() => setOpen(false)}>
-              <Link href="/precios" className="text-gray-900 hover:text-[#613171] transition-colors">
-                {t("pricing")}
+              <Link href="/servicios" className="text-gray-900 hover:text-[#613171] transition-colors">
+                {t("services")}
               </Link>
             </li>
             <li onClick={() => setOpen(false)}>
-              <Link href="/servicios" className="text-gray-900 hover:text-[#613171] transition-colors">
-                {t("services")}
+              <Link href="/precios" className="text-gray-900 hover:text-[#613171] transition-colors">
+                {t("pricing")}
               </Link>
             </li>
             <li onClick={() => setOpen(false)}>

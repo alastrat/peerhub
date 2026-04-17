@@ -107,3 +107,35 @@ export async function sendPortalMagicLinkEmail(
     text: `Hi ${name}, you requested access to your ${APP_NAME} employee portal. Sign in here: ${magicLinkUrl} — This link will expire in 24 hours.`,
   });
 }
+
+export function buildSurveyInvitationEmail(opts: {
+  employeeName: string;
+  surveyName: string;
+  dueDate: string;
+  surveyUrl: string;
+  isAnonymous: boolean;
+}): { subject: string; html: string; text: string } {
+  const { employeeName, surveyName, dueDate, surveyUrl, isAnonymous } = opts;
+
+  const anonymousNote = isAnonymous
+    ? `<div class="highlight"><strong>Your answers are anonymous.</strong> Your identity will not be linked to your responses.</div>`
+    : "";
+
+  const subject = `You've been invited to complete: ${surveyName}`;
+
+  const html = baseTemplate(`
+    <h1>You have a new survey</h1>
+    <p>Hi ${employeeName},</p>
+    <p>You've been invited to complete <strong>${surveyName}</strong>. Your feedback is important and helps us improve.</p>
+    ${anonymousNote}
+    <div class="highlight">
+      <strong>Due date:</strong> ${dueDate}
+    </div>
+    <a href="${surveyUrl}" class="button">Complete Survey</a>
+    <p class="secondary-text">Click the button above to access the survey through the ${APP_NAME} employee portal.</p>
+  `);
+
+  const text = `Hi ${employeeName}, you've been invited to complete "${surveyName}". Due date: ${dueDate}. ${isAnonymous ? "Your answers are anonymous. " : ""}Complete it here: ${surveyUrl}`;
+
+  return { subject, html, text };
+}

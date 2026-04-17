@@ -78,6 +78,9 @@ export function EmployeeForm({
             ? "Invitation sent successfully"
             : "Employee added successfully"
         );
+        if (result.warning) {
+          toast.warning(result.warning);
+        }
         router.push("/people");
         router.refresh();
       } else {

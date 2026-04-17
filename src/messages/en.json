@@ -270,6 +270,15 @@
     "title": "Consulting services that transform organizations",
     "description": "Each service is designed to address your organization's specific challenges, with proven methodologies and a people-centered approach.",
     "cta": "Learn More",
+    "list": {
+      "subtitle": "Consulting Services",
+      "title": "Comprehensive solutions for your organization",
+      "description": "We complement our platform with specialized consulting services. We support your team through every step of the organizational transformation journey."
+    },
+    "clima": {
+      "title": "Climate Diagnostic",
+      "short_description": "We measure and analyze organizational climate to identify improvement opportunities and actionable plans."
+    },
     "process": {
       "step1": {
         "title": "Diagnosis",
@@ -299,6 +308,7 @@
     "cultura": {
       "title": "Organizational Culture",
       "short": "Culture",
+      "short_description": "Build a culture that inspires, aligns values with strategy, and turns culture into real competitive advantage.",
       "headline": "Build a culture that inspires and generates sustainable results",
       "description": "We design and implement strategies to build solid organizational cultures that drive engagement, innovation, and business results.",
       "description2": "A strong culture is the foundation of organizational success. We work with you to define, communicate, and live the values that make your company unique, creating an environment where people give their best.",
@@ -358,6 +368,7 @@
     "seleccion": {
       "title": "Specialized Recruitment",
       "short": "Recruitment",
+      "short_description": "We find the right talent by evaluating technical competencies, cultural fit, and growth potential.",
       "headline": "Find the ideal talent that drives your organization",
       "description": "We find the ideal talent for your organization through rigorous selection processes that evaluate technical, cultural, and leadership competencies.",
       "description2": "The right talent makes the difference. Our selection process goes beyond the resume, evaluating cultural fit and growth potential to ensure successful long-term hires.",
@@ -417,6 +428,7 @@
     "cambio": {
       "title": "Change Management",
       "short": "Change",
+      "short_description": "We guide organizational transformations to ensure adoption, minimize resistance, and sustain results.",
       "headline": "Navigate change with confidence and minimize resistance",
       "description": "We facilitate organizational change processes by minimizing resistance and maximizing adoption, ensuring successful transitions.",
       "description2": "Change is inevitable, but failure is not. We accompany you at every stage of the change process, ensuring people understand, accept, and adopt new ways of working.",
@@ -448,6 +460,7 @@
     "comunicacion": {
       "title": "Internal Communication",
       "short": "Communication",
+      "short_description": "We design internal communication strategies that connect teams with business objectives and values.",
       "headline": "Connect your team with messages that inspire action",
       "description": "We develop internal communication strategies that strengthen connection between employees, align teams, and reinforce organizational culture.",
       "description2": "Effective communication is your organization's nervous system. We design strategies and channels that ensure the right messages reach the right people at the right time.",

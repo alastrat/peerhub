@@ -653,8 +653,28 @@ model ClimateSurvey {
   status      ClimateSurveyStatus @default(DRAFT)
   frequency   SurveyFrequency     @default(ONCE)
   isAnonymous Boolean             @default(true)
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+
+  // Welcome page customization (shown to respondents before the form)
+  welcomeTitle     String?
+  welcomeBody      String?
+  welcomeBannerUrl String?
+  welcomeCtaText   String?
+  themeColor       String?
+
+  // Wallpaper configuration (JSON — controls the welcome page header/background)
+  wallpaperConfig  Json?
+  // Color scheme (JSON — background, buttons, buttonText, pageText, titleText)
+  colorConfig      Json?
+  // Questions per page: null or 0 = all on one page, >0 = paginated
+  questionsPerPage Int?
+
+  // Thank-you page customization (shown to respondents after submission)
+  thankYouTitle    String?
+  thankYouBody     String?
+  thankYouCtaText  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   company       Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
   template      ClimateSurveyTemplate? @relation(fields: [templateId], references: [id])

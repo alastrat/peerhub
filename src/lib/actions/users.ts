@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/types";
 import type { CompanyUser, CompanyRole } from "@prisma/client";
 import { sendInvitationEmail } from "@/lib/email/templates";
+import { EmailDeliveryError } from "@/lib/email/resend";
 import { generateInviteToken, getExpiryDate } from "@/lib/utils";
 
 interface CreateUserInput {
@@ -64,6 +65,41 @@ export async function inviteUser(
       return { success: false, error: "An invitation is already pending for this email" };
     }
 
+    // Normalize form sentinel values. Shadcn's Select can't use empty strings
+    // as values, so the form uses the literal "none" for "no selection".
+    // Treat that (and empty strings) as null so we don't store invalid FKs.
+    const normalizeId = (v: string | undefined | null): string | null => {
+      if (!v) return null;
+      const trimmed = v.trim();
+      if (!trimmed || trimmed === "none") return null;
+      return trimmed;
+    };
+
+    const normalizedDepartmentId = normalizeId(input.departmentId);
+    const normalizedManagerId = normalizeId(input.managerId);
+
+    // Validate referenced rows actually exist in THIS company. If the admin
+    // selected a value that was since deleted, fall back to null rather than
+    // persisting a dangling reference.
+    if (normalizedDepartmentId) {
+      const dept = await prisma.department.findFirst({
+        where: { id: normalizedDepartmentId, companyId },
+        select: { id: true },
+      });
+      if (!dept) {
+        return { success: false, error: "Selected department does not exist" };
+      }
+    }
+    if (normalizedManagerId) {
+      const mgr = await prisma.employee.findFirst({
+        where: { id: normalizedManagerId, companyId },
+        select: { id: true },
+      });
+      if (!mgr) {
+        return { success: false, error: "Selected manager does not exist" };
+      }
+    }
+
     // Create invitation
     const token = generateInviteToken();
     const invitation = await prisma.invitation.create({
@@ -71,8 +107,8 @@ export async function inviteUser(
         email: input.email,
         companyId,
         role: input.role || "MEMBER",
-        departmentId: input.departmentId,
-        managerId: input.managerId,
+        departmentId: normalizedDepartmentId,
+        managerId: normalizedManagerId,
         token,
         expiresAt: getExpiryDate(7),
       },
@@ -83,14 +119,28 @@ export async function inviteUser(
       where: { id: companyId },
     });
 
-    // Send invitation email
+    // Send invitation email. If this fails, the invitation row is useless
+    // (the invitee can't reach the sign-up link), so roll it back and return
+    // a clear error.
     const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/invite/${token}`;
-    await sendInvitationEmail({
-      to: input.email,
-      inviterName: session.user.name || "Your admin",
-      companyName: company?.name || "Your company",
-      inviteUrl,
-    });
+    try {
+      await sendInvitationEmail({
+        to: input.email,
+        inviterName: session.user.name || "Your admin",
+        companyName: company?.name || "Your company",
+        inviteUrl,
+      });
+    } catch (emailError) {
+      await prisma.invitation.delete({ where: { id: invitation.id } });
+      if (emailError instanceof EmailDeliveryError) {
+        return {
+          success: false,
+          error: `Could not deliver the invitation email: ${emailError.message}`,
+          code: "EMAIL_DELIVERY_FAILED",
+        };
+      }
+      throw emailError;
+    }
 
     revalidatePath("/people");
     return { success: true, data: { invitationId: invitation.id } };
