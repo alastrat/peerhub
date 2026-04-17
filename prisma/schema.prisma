@@ -673,6 +673,13 @@ model ClimateSurvey {
   thankYouBody     String?
   thankYouCtaText  String?
 
+  // Branding
+  logoUrl          String?
+
+  // Access control
+  accessStartDate  DateTime?
+  accessEndDate    DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

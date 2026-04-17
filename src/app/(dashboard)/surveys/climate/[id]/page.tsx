@@ -27,10 +27,11 @@ import {
   SURVEY_QUESTION_TYPE_LABELS,
   SURVEY_FREQUENCY_LABELS,
 } from "@/lib/constants/climate-survey";
-import { formatRelativeTime, formatDate } from "@/lib/utils/dates";
+import { formatRelativeTime } from "@/lib/utils/dates";
 import { DistributeDialog } from "@/components/climate/distribute-dialog";
 import { SurveyDetailActions } from "@/components/climate/survey-detail-actions";
 import { SurveyAnswersTab } from "@/components/climate/survey-answers-tab";
+import { SurveySettingsTab } from "@/components/climate/survey-settings-tab";
 import { SurveyInsightsTab } from "@/components/climate/survey-insights-tab";
 import { getSurveyResults } from "@/lib/queries/climate-reports";
 
@@ -360,179 +361,29 @@ export default async function SurveyDetailPage({ params }: PageProps) {
 
         {/* Settings Tab */}
         <TabsContent value="settings">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Survey Configuration</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Type</p>
-                    <p className="font-medium">
-                      {CLIMATE_SURVEY_TYPE_LABELS[survey.type]}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Frequency</p>
-                    <p className="font-medium">
-                      {SURVEY_FREQUENCY_LABELS[survey.frequency]}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Anonymous</p>
-                    <p className="font-medium">
-                      {survey.isAnonymous ? "Yes" : "No"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Questions per page</p>
-                    <p className="font-medium">
-                      {survey.questionsPerPage
-                        ? `${survey.questionsPerPage} per page`
-                        : "All on one page"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Theme Color</p>
-                    <div className="flex items-center gap-2">
-                      {survey.themeColor ? (
-                        <>
-                          <div
-                            className="h-4 w-4 rounded-full border"
-                            style={{ backgroundColor: survey.themeColor }}
-                          />
-                          <span className="font-medium">
-                            {survey.themeColor}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="font-medium text-muted-foreground">
-                          Default
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Created</p>
-                    <p className="font-medium">
-                      {formatDate(survey.createdAt)}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Welcome Page</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Title</p>
-                  <p className="font-medium">
-                    {survey.welcomeTitle || "Default"}
-                  </p>
-                </div>
-                {survey.welcomeBody && (
-                  <div>
-                    <p className="text-muted-foreground">Body</p>
-                    <p className="font-medium">{survey.welcomeBody}</p>
-                  </div>
-                )}
-                <div>
-                  <p className="text-muted-foreground">CTA Button</p>
-                  <p className="font-medium">
-                    {survey.welcomeCtaText || "Comenzar encuesta"}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Thank You Page</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Title</p>
-                  <p className="font-medium">
-                    {survey.thankYouTitle || "Default"}
-                  </p>
-                </div>
-                {survey.thankYouBody && (
-                  <div>
-                    <p className="text-muted-foreground">Body</p>
-                    <p className="font-medium">{survey.thankYouBody}</p>
-                  </div>
-                )}
-                <div>
-                  <p className="text-muted-foreground">CTA Button</p>
-                  <p className="font-medium">
-                    {survey.thankYouCtaText || "Volver al inicio"}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Distributions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Distributions</CardTitle>
-                <CardDescription>
-                  {survey.distributions.length} distribution
-                  {survey.distributions.length !== 1 ? "s" : ""}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {survey.distributions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No distributions yet. Send the survey to start collecting
-                    responses.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {survey.distributions.map((dist) => {
-                      const completed = dist.responses.filter(
-                        (r) => r.isComplete
-                      ).length;
-                      const total = dist._count.responses;
-                      return (
-                        <div
-                          key={dist.id}
-                          className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-                        >
-                          <div>
-                            <p className="text-sm font-medium">
-                              Sent{" "}
-                              {dist.sentAt
-                                ? formatRelativeTime(dist.sentAt)
-                                : "Not sent"}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Due {formatRelativeTime(dist.dueDate)} · Target:{" "}
-                              {dist.targetType}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-medium">
-                              {completed}/{total} completed
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {total > 0
-                                ? Math.round((completed / total) * 100)
-                                : 0}
-                              % completion
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+          <SurveySettingsTab
+            surveyId={survey.id}
+            initialValues={{
+              name: survey.name,
+              description: survey.description,
+              type: survey.type,
+              frequency: survey.frequency,
+              isAnonymous: survey.isAnonymous,
+              questionsPerPage: survey.questionsPerPage,
+              logoUrl: survey.logoUrl,
+              accessStartDate: survey.accessStartDate,
+              accessEndDate: survey.accessEndDate,
+            }}
+            distributions={survey.distributions.map((dist) => ({
+              id: dist.id,
+              sentAt: dist.sentAt,
+              dueDate: dist.dueDate,
+              targetType: dist.targetType,
+              responseCount: dist._count.responses,
+              completedCount: dist.responses.filter((r) => r.isComplete)
+                .length,
+            }))}
+          />
         </TabsContent>
 
         {/* Insights Tab */}

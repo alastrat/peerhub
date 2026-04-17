@@ -19,6 +19,18 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
+vi.mock("@/lib/email/resend", () => ({
+  sendBulkEmails: vi.fn(() => Promise.resolve({ failureCount: 0 })),
+}));
+
+vi.mock("@/lib/email/portal-templates", () => ({
+  buildSurveyInvitationEmail: vi.fn(() => ({
+    subject: "Test Subject",
+    html: "<p>test</p>",
+    text: "test",
+  })),
+}));
+
 // Import AFTER mocks
 import { distributeSurvey, closeSurvey } from "@/lib/actions/climate-distribution";
 
@@ -57,8 +69,8 @@ describe("climate distribution actions", () => {
     it("should distribute to ALL active employees", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(baseSurvey);
       mockPrisma.employee.findMany.mockResolvedValue([
-        { id: "e1" },
-        { id: "e2" },
+        { id: "e1", name: "Alice", email: "alice@acme.com" },
+        { id: "e2", name: "Bob", email: "bob@acme.com" },
       ]);
       mockPrisma.surveyDistribution.create.mockResolvedValue({ id: "d1" });
       mockPrisma.climateSurvey.update.mockResolvedValue({});
@@ -73,7 +85,7 @@ describe("climate distribution actions", () => {
       expect(result.data).toEqual({ id: "d1" });
       expect(mockPrisma.employee.findMany).toHaveBeenCalledWith({
         where: { companyId: "company-1", isActive: true },
-        select: { id: true },
+        select: { id: true, name: true, email: true },
       });
       expect(mockPrisma.surveyDistribution.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -93,7 +105,7 @@ describe("climate distribution actions", () => {
 
     it("should distribute to employees in specified HUBs", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(baseSurvey);
-      mockPrisma.employee.findMany.mockResolvedValue([{ id: "e1" }]);
+      mockPrisma.employee.findMany.mockResolvedValue([{ id: "e1", name: "Alice", email: "alice@acme.com" }]);
       mockPrisma.surveyDistribution.create.mockResolvedValue({ id: "d1" });
       mockPrisma.climateSurvey.update.mockResolvedValue({});
 
@@ -107,7 +119,7 @@ describe("climate distribution actions", () => {
       expect(result.success).toBe(true);
       expect(mockPrisma.employee.findMany).toHaveBeenCalledWith({
         where: { companyId: "company-1", isActive: true, hubId: { in: ["hub1"] } },
-        select: { id: true },
+        select: { id: true, name: true, email: true },
       });
       expect(mockPrisma.surveyDistribution.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -122,7 +134,7 @@ describe("climate distribution actions", () => {
 
     it("should distribute to employees in specified DEPARTMENTs", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(baseSurvey);
-      mockPrisma.employee.findMany.mockResolvedValue([{ id: "e1" }]);
+      mockPrisma.employee.findMany.mockResolvedValue([{ id: "e1", name: "Alice", email: "alice@acme.com" }]);
       mockPrisma.surveyDistribution.create.mockResolvedValue({ id: "d1" });
       mockPrisma.climateSurvey.update.mockResolvedValue({});
 
@@ -136,7 +148,7 @@ describe("climate distribution actions", () => {
       expect(result.success).toBe(true);
       expect(mockPrisma.employee.findMany).toHaveBeenCalledWith({
         where: { companyId: "company-1", isActive: true, departmentId: { in: ["dept1"] } },
-        select: { id: true },
+        select: { id: true, name: true, email: true },
       });
       expect(mockPrisma.surveyDistribution.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -152,9 +164,9 @@ describe("climate distribution actions", () => {
     it("should distribute to TEAM members with deduplication", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(baseSurvey);
       mockPrisma.teamMember.findMany.mockResolvedValue([
-        { employeeId: "e1" },
-        { employeeId: "e1" },
-        { employeeId: "e2" },
+        { employee: { id: "e1", name: "Alice", email: "alice@acme.com" } },
+        { employee: { id: "e1", name: "Alice", email: "alice@acme.com" } },
+        { employee: { id: "e2", name: "Bob", email: "bob@acme.com" } },
       ]);
       mockPrisma.surveyDistribution.create.mockResolvedValue({ id: "d1" });
       mockPrisma.climateSurvey.update.mockResolvedValue({});
@@ -172,7 +184,9 @@ describe("climate distribution actions", () => {
           team: { companyId: "company-1", id: { in: ["t1"] } },
           employee: { isActive: true },
         },
-        select: { employeeId: true },
+        select: {
+          employee: { select: { id: true, name: true, email: true } },
+        },
       });
 
       // Verify deduplication: only 2 unique employees
@@ -188,6 +202,10 @@ describe("climate distribution actions", () => {
 
     it("should distribute to CUSTOM employee list", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(baseSurvey);
+      mockPrisma.employee.findMany.mockResolvedValue([
+        { id: "e1", name: "Alice", email: "alice@acme.com" },
+        { id: "e2", name: "Bob", email: "bob@acme.com" },
+      ]);
       mockPrisma.surveyDistribution.create.mockResolvedValue({ id: "d1" });
       mockPrisma.climateSurvey.update.mockResolvedValue({});
 
@@ -199,20 +217,10 @@ describe("climate distribution actions", () => {
       });
 
       expect(result.success).toBe(true);
-      expect(mockPrisma.surveyDistribution.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          targetType: "CUSTOM",
-          targetIds: ["e1", "e2"],
-          responses: {
-            create: [
-              { employeeId: "e1" },
-              { employeeId: "e2" },
-            ],
-          },
-        }),
+      expect(mockPrisma.employee.findMany).toHaveBeenCalledWith({
+        where: { id: { in: ["e1", "e2"] }, companyId: "company-1", isActive: true },
+        select: { id: true, name: true, email: true },
       });
-      // Should not query employees — uses targetIds directly
-      expect(mockPrisma.employee.findMany).not.toHaveBeenCalled();
     });
 
     it("should return error when survey not found", async () => {

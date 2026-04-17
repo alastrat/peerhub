@@ -47,6 +47,9 @@ import {
   addExternalRater,
 } from "@/lib/actions/cycles";
 
+import { notifyEmployee } from "@/lib/utils/notify-employee";
+import { sendExternalReviewRequestEmail } from "@/lib/email/templates";
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -702,6 +705,206 @@ describe("cycle lifecycle actions", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Failed to add external rater");
+    });
+
+    it("returns warning when email delivery fails but still succeeds", async () => {
+      mockPrisma.cycle.findFirst.mockResolvedValue(activeCycleWithExternal);
+      mockPrisma.reviewToken.findFirst.mockResolvedValue(null);
+
+      mockPrisma.$transaction.mockImplementation(
+        async (fn: (tx: MockPrismaClient) => Promise<unknown>) => {
+          const txClient = createMockPrisma();
+          txClient.reviewToken.create.mockResolvedValue({
+            id: "rt-1",
+            token: "test-token",
+            email: "external@partner.com",
+            name: "External Reviewer",
+          });
+          txClient.reviewAssignment.create.mockResolvedValue({ id: "ra-1" });
+          return fn(txClient);
+        }
+      );
+
+      // Make email sending fail
+      vi.mocked(sendExternalReviewRequestEmail).mockRejectedValue(
+        new Error("SMTP down")
+      );
+
+      const result = await addExternalRater("cycle-1", externalInput);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual({
+        tokenUrl: expect.stringContaining("test-token"),
+      });
+      expect(result.warning).toContain("could not be delivered");
+      expect(result.warning).toContain("external@partner.com");
+    });
+  });
+
+  // =========================================================================
+  // launchCycle — email sending paths
+  // =========================================================================
+
+  describe("launchCycle email notifications", () => {
+    const launchableCycleForEmails = {
+      ...baseCycle,
+      status: "DRAFT",
+      peerReviewEnabled: true,
+      selfReviewEnabled: true,
+      managerReviewEnabled: false,
+      directReportEnabled: false,
+      template: { id: "t1", name: "Template" },
+      participants: [
+        {
+          employeeId: "emp-1",
+          employee: {
+            id: "emp-1",
+            name: "Alice",
+            email: "alice@acme.com",
+            managerId: null,
+            manager: null,
+            directReports: [],
+          },
+        },
+      ],
+    };
+
+    it("sends nomination emails when launching to NOMINATION status", async () => {
+      mockPrisma.cycle.findFirst.mockResolvedValue(launchableCycleForEmails);
+      mockPrisma.reviewAssignment.createMany.mockResolvedValue({ count: 1 });
+      mockPrisma.cycle.update.mockResolvedValue({
+        ...baseCycle,
+        status: "NOMINATION",
+      });
+
+      const result = await launchCycle("cycle-1", true);
+
+      expect(result.success).toBe(true);
+      expect(vi.mocked(notifyEmployee)).toHaveBeenCalledWith(
+        expect.objectContaining({
+          employeeId: "emp-1",
+          subject: expect.stringContaining("Nominate"),
+        })
+      );
+    });
+
+    it("returns warning when some nomination emails fail", async () => {
+      mockPrisma.cycle.findFirst.mockResolvedValue({
+        ...launchableCycleForEmails,
+        participants: [
+          ...launchableCycleForEmails.participants,
+          {
+            employeeId: "emp-2",
+            employee: {
+              id: "emp-2",
+              name: "Bob",
+              email: "bob@acme.com",
+              managerId: null,
+              manager: null,
+              directReports: [],
+            },
+          },
+        ],
+      });
+      mockPrisma.reviewAssignment.createMany.mockResolvedValue({ count: 2 });
+      mockPrisma.cycle.update.mockResolvedValue({
+        ...baseCycle,
+        status: "NOMINATION",
+      });
+
+      // First call succeeds, second fails
+      vi.mocked(notifyEmployee)
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error("SMTP down"));
+
+      const result = await launchCycle("cycle-1", true);
+
+      expect(result.success).toBe(true);
+      expect(result.warning).toContain("1 of 2");
+      expect(result.warning).toContain("failed to send");
+    });
+
+    it("sends review request emails when launching to IN_PROGRESS", async () => {
+      const noPeerCycle = {
+        ...launchableCycleForEmails,
+        peerReviewEnabled: false,
+        selfReviewEnabled: true,
+        participants: [
+          {
+            employeeId: "emp-1",
+            employee: {
+              id: "emp-1",
+              name: "Alice",
+              email: "alice@acme.com",
+              managerId: null,
+              manager: null,
+              directReports: [],
+            },
+          },
+        ],
+      };
+      mockPrisma.cycle.findFirst.mockResolvedValue(noPeerCycle);
+      mockPrisma.reviewAssignment.createMany.mockResolvedValue({ count: 1 });
+      mockPrisma.cycle.update.mockResolvedValue({
+        ...baseCycle,
+        status: "IN_PROGRESS",
+      });
+
+      const result = await launchCycle("cycle-1", true);
+
+      expect(result.success).toBe(true);
+      // notifyEmployee should have been called for the self-review assignment
+      expect(vi.mocked(notifyEmployee)).toHaveBeenCalled();
+    });
+
+    it("returns warning when some review request emails fail", async () => {
+      const noPeerCycle = {
+        ...launchableCycleForEmails,
+        peerReviewEnabled: false,
+        selfReviewEnabled: true,
+        participants: [
+          {
+            employeeId: "emp-1",
+            employee: {
+              id: "emp-1",
+              name: "Alice",
+              email: "alice@acme.com",
+              managerId: null,
+              manager: null,
+              directReports: [],
+            },
+          },
+        ],
+      };
+      mockPrisma.cycle.findFirst.mockResolvedValue(noPeerCycle);
+      mockPrisma.reviewAssignment.createMany.mockResolvedValue({ count: 1 });
+      mockPrisma.cycle.update.mockResolvedValue({
+        ...baseCycle,
+        status: "IN_PROGRESS",
+      });
+
+      vi.mocked(notifyEmployee).mockRejectedValue(new Error("SMTP down"));
+
+      const result = await launchCycle("cycle-1", true);
+
+      expect(result.success).toBe(true);
+      expect(result.warning).toBeDefined();
+      expect(result.warning).toContain("failed to send");
+    });
+
+    it("does not send emails when sendEmails is false", async () => {
+      mockPrisma.cycle.findFirst.mockResolvedValue(launchableCycleForEmails);
+      mockPrisma.reviewAssignment.createMany.mockResolvedValue({ count: 1 });
+      mockPrisma.cycle.update.mockResolvedValue({
+        ...baseCycle,
+        status: "NOMINATION",
+      });
+
+      const result = await launchCycle("cycle-1", false);
+
+      expect(result.success).toBe(true);
+      expect(vi.mocked(notifyEmployee)).not.toHaveBeenCalled();
+      expect(result.warning).toBeUndefined();
     });
   });
 });

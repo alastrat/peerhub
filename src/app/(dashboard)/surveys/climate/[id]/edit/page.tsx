@@ -46,11 +46,6 @@ export default async function EditClimateSurveyPage({ params }: PageProps) {
 
   if (!survey) notFound();
 
-  // Only draft surveys are editable
-  if (survey.status !== "DRAFT") {
-    redirect(`/surveys/climate/${id}`);
-  }
-
   const initialData = {
     id: survey.id,
     name: survey.name,
@@ -103,7 +98,11 @@ export default async function EditClimateSurveyPage({ params }: PageProps) {
         </Link>
         <PageHeader
           title={`Edit: ${survey.name}`}
-          description="Modify this draft survey"
+          description={
+            survey.status === "DRAFT"
+              ? "Modify this draft survey"
+              : "Edit appearance and presentation settings"
+          }
         />
       </div>
       <SurveyWizard

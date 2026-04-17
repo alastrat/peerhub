@@ -629,10 +629,7 @@ describe("inviteMember", () => {
       token: "abc-token",
       company: { name: "Acme Corp" },
     });
-    mockSendEmail.mockResolvedValue({
-      success: false,
-      error: "SMTP connection refused",
-    });
+    mockSendEmail.mockRejectedValue(new Error("SMTP connection refused"));
     mockPrisma.invitation.delete.mockResolvedValue({});
 
     const result = await inviteMember({
@@ -1246,10 +1243,7 @@ describe("resendInvitation", () => {
       company: { name: "Acme Corp" },
     });
     mockPrisma.invitation.update.mockResolvedValue({ id: "inv-1" });
-    mockSendEmail.mockResolvedValue({
-      success: false,
-      error: "Email service unavailable",
-    });
+    mockSendEmail.mockRejectedValue(new Error("Email service unavailable"));
 
     const result = await resendInvitation("inv-1");
 

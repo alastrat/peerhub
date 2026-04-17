@@ -93,14 +93,12 @@ export function SurveyDetailActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {isDraft && (
-          <DropdownMenuItem asChild>
-            <Link href={`/surveys/climate/${surveyId}/edit`}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit survey
-            </Link>
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuItem asChild>
+          <Link href={`/surveys/climate/${surveyId}/edit`}>
+            <Edit className="mr-2 h-4 w-4" />
+            Edit survey
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <a
             href={`/survey-preview/${surveyId}`}
