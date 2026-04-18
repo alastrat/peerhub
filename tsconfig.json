@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "studio-kultiva", "prisma/seed.ts", "prisma/seed-system-templates.ts", "prisma/seeds"]
+  "exclude": ["node_modules", "studio-kultiva", "prisma/seed.ts", "prisma/seed-system-templates.ts", "prisma/seeds", "prisma/scripts"]
 }

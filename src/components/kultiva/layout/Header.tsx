@@ -77,14 +77,14 @@ export function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <span
+            {/* <span
               className={cn(
                 "text-2xl font-bold font-kanit transition-colors",
                 isScrolled ? "text-kultiva-ink" : "text-white"
               )}
             >
               Kultiva
-            </span>
+            </span> */}
           </Link>
 
           {/* Desktop Navigation */}

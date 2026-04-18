@@ -1,13 +1,56 @@
 import { describe, it, expect } from "vitest";
 import {
+  employeeFieldsSchema,
   createUserSchema,
   updateUserSchema,
   updateEmployeeDetailsSchema,
   inviteUserSchema,
+  bulkInviteSchema,
   csvImportRowSchema,
 } from "@/lib/validations/user";
 
 describe("user validations", () => {
+  describe("employeeFieldsSchema", () => {
+    it("accepts an empty object (all fields optional)", () => {
+      const result = employeeFieldsSchema.safeParse({});
+      expect(result.success).toBe(true);
+    });
+
+    it("accepts all fields populated", () => {
+      const result = employeeFieldsSchema.safeParse({
+        title: "Engineer",
+        employeeCode: "EMP-001",
+        departmentId: "dept-1",
+        managerId: "mgr-1",
+        hubId: "hub-1",
+        startDate: new Date("2024-01-15"),
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("accepts null values for nullable fields", () => {
+      const result = employeeFieldsSchema.safeParse({
+        title: null,
+        employeeCode: null,
+        departmentId: null,
+        managerId: null,
+        hubId: null,
+        startDate: null,
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("coerces date strings to Date objects", () => {
+      const result = employeeFieldsSchema.safeParse({
+        startDate: "2024-01-15",
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.startDate).toBeInstanceOf(Date);
+      }
+    });
+  });
+
   describe("createUserSchema", () => {
     it("accepts valid input", () => {
       const result = createUserSchema.safeParse({
@@ -130,6 +173,45 @@ describe("user validations", () => {
     it("rejects invalid email", () => {
       const result = inviteUserSchema.safeParse({
         email: "bad",
+      });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe("bulkInviteSchema", () => {
+    it("validates a valid input with one invitation", () => {
+      const result = bulkInviteSchema.safeParse({
+        invitations: [{ email: "a@b.com", role: "MEMBER" }],
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("validates multiple invitations", () => {
+      const result = bulkInviteSchema.safeParse({
+        invitations: [
+          { email: "a@b.com" },
+          { email: "c@d.com", role: "ADMIN" },
+        ],
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("rejects empty invitations array", () => {
+      const result = bulkInviteSchema.safeParse({ invitations: [] });
+      expect(result.success).toBe(false);
+    });
+
+    it("rejects missing invitations", () => {
+      const result = bulkInviteSchema.safeParse({});
+      expect(result.success).toBe(false);
+    });
+
+    it("rejects when any invitation has invalid email", () => {
+      const result = bulkInviteSchema.safeParse({
+        invitations: [
+          { email: "valid@example.com" },
+          { email: "not-valid" },
+        ],
       });
       expect(result.success).toBe(false);
     });

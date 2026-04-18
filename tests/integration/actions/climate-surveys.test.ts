@@ -23,6 +23,7 @@ import {
   updateClimateSurvey,
   deleteClimateSurvey,
   duplicateClimateSurvey,
+  updateSurveySettings,
 } from "@/lib/actions/climate-surveys";
 
 // ---------------------------------------------------------------------------
@@ -223,7 +224,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Failed to create survey");
+      expect(result.error).toContain("Unauthorized");
     });
 
     it("returns error when no session exists", async () => {
@@ -250,7 +251,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Failed to create survey");
+      expect(result.error).toBe("DB error");
     });
   });
 
@@ -375,31 +376,41 @@ describe("climate survey actions", () => {
       expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
     });
 
-    it("returns error when survey is not in DRAFT status", async () => {
+    it("strips structural fields for non-DRAFT ACTIVE survey", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue({
         ...sampleSurvey,
         status: "ACTIVE",
       });
+      mockPrisma.climateSurvey.update.mockResolvedValue(sampleSurvey);
 
       const result = await updateClimateSurvey("survey-1", {
         name: "Cannot Edit",
+        themeColor: "#613171",
       });
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBe("Only draft surveys can be edited");
-      expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
+      // Should succeed but strip the name (structural), keep themeColor (presentation)
+      expect(result.success).toBe(true);
+      const updateCall = mockPrisma.climateSurvey.update.mock.calls[0][0];
+      expect(updateCall.data).not.toHaveProperty("name");
+      expect(updateCall.data).toHaveProperty("themeColor", "#613171");
     });
 
-    it("returns error for CLOSED survey", async () => {
+    it("strips structural fields for CLOSED survey", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue({
         ...sampleSurvey,
         status: "CLOSED",
       });
+      mockPrisma.climateSurvey.update.mockResolvedValue(sampleSurvey);
 
-      const result = await updateClimateSurvey("survey-1", { name: "Nope" });
+      const result = await updateClimateSurvey("survey-1", {
+        name: "Nope",
+        welcomeTitle: "Hello",
+      });
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBe("Only draft surveys can be edited");
+      expect(result.success).toBe(true);
+      const updateCall = mockPrisma.climateSurvey.update.mock.calls[0][0];
+      expect(updateCall.data).not.toHaveProperty("name");
+      expect(updateCall.data).toHaveProperty("welcomeTitle", "Hello");
     });
 
     it("requires admin role", async () => {
@@ -410,7 +421,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Failed to update survey");
+      expect(result.error).toContain("Unauthorized");
     });
 
     it("handles database errors gracefully", async () => {
@@ -424,7 +435,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Failed to update survey");
+      expect(result.error).toBe("Update failed");
     });
   });
 
@@ -625,6 +636,250 @@ describe("climate survey actions", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Failed to duplicate survey");
+    });
+  });
+
+  // =========================================================================
+  // updateClimateSurvey — non-DRAFT behavior
+  // =========================================================================
+
+  describe("updateClimateSurvey (non-DRAFT surveys)", () => {
+    const activeSurvey = { ...sampleSurvey, status: "ACTIVE" };
+
+    it("blocks question changes on non-DRAFT surveys", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(activeSurvey);
+
+      const result = await updateClimateSurvey("survey-1", {
+        questions: [{ text: "New Q", type: "LIKERT" as const, order: 1, isRequired: true }],
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Questions cannot be changed");
+    });
+
+    it("allows presentation-only updates on ACTIVE surveys", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(activeSurvey);
+      mockPrisma.climateSurvey.update.mockResolvedValue({ ...activeSurvey, themeColor: "#ff0000" });
+
+      const result = await updateClimateSurvey("survey-1", {
+        themeColor: "#ff0000",
+        welcomeTitle: "Welcome!",
+      });
+
+      expect(result.success).toBe(true);
+      expect(mockPrisma.climateSurvey.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            themeColor: "#ff0000",
+            welcomeTitle: "Welcome!",
+          }),
+        })
+      );
+    });
+
+    it("strips structural fields from non-DRAFT updates", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(activeSurvey);
+      mockPrisma.climateSurvey.update.mockResolvedValue(activeSurvey);
+
+      await updateClimateSurvey("survey-1", {
+        name: "New Name",
+        type: "PULSE",
+        themeColor: "#613171",
+      });
+
+      // name and type should be stripped, only themeColor should pass through
+      const updateCall = mockPrisma.climateSurvey.update.mock.calls[0][0];
+      expect(updateCall.data).not.toHaveProperty("name");
+      expect(updateCall.data).not.toHaveProperty("type");
+      expect(updateCall.data).toHaveProperty("themeColor", "#613171");
+    });
+
+    it("allows presentation updates on CLOSED surveys", async () => {
+      const closedSurvey = { ...sampleSurvey, status: "CLOSED" };
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(closedSurvey);
+      mockPrisma.climateSurvey.update.mockResolvedValue(closedSurvey);
+
+      const result = await updateClimateSurvey("survey-1", {
+        thankYouTitle: "Thanks!",
+        thankYouBody: "We appreciate your feedback.",
+      });
+
+      expect(result.success).toBe(true);
+    });
+  });
+
+  // =========================================================================
+  // updateSurveySettings
+  // =========================================================================
+
+  describe("updateSurveySettings", () => {
+    it("updates name successfully", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+      mockPrisma.climateSurvey.update.mockResolvedValue({});
+
+      const result = await updateSurveySettings("survey-1", {
+        name: "  Updated Name  ",
+      });
+
+      expect(result.success).toBe(true);
+      expect(mockPrisma.climateSurvey.update).toHaveBeenCalledWith({
+        where: { id: "survey-1" },
+        data: { name: "Updated Name" },
+      });
+    });
+
+    it("returns error when name is empty whitespace", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+
+      const result = await updateSurveySettings("survey-1", {
+        name: "   ",
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Name is required");
+    });
+
+    it("returns error when survey not found", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(null);
+
+      const result = await updateSurveySettings("nonexistent", {
+        name: "Test",
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Survey not found");
+    });
+
+    it("returns success with no updates when input is empty", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+
+      const result = await updateSurveySettings("survey-1", {});
+
+      expect(result.success).toBe(true);
+      expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
+    });
+
+    it("updates multiple fields at once", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+      mockPrisma.climateSurvey.update.mockResolvedValue({});
+
+      const result = await updateSurveySettings("survey-1", {
+        description: "  New description  ",
+        type: "PULSE",
+        isAnonymous: false,
+        questionsPerPage: 5,
+      });
+
+      expect(result.success).toBe(true);
+      expect(mockPrisma.climateSurvey.update).toHaveBeenCalledWith({
+        where: { id: "survey-1" },
+        data: {
+          description: "New description",
+          type: "PULSE",
+          isAnonymous: false,
+          questionsPerPage: 5,
+        },
+      });
+    });
+
+    it("handles logoUrl update", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+      mockPrisma.climateSurvey.update.mockResolvedValue({});
+
+      const result = await updateSurveySettings("survey-1", {
+        logoUrl: "  https://example.com/logo.png  ",
+      });
+
+      expect(result.success).toBe(true);
+      expect(mockPrisma.climateSurvey.update).toHaveBeenCalledWith({
+        where: { id: "survey-1" },
+        data: { logoUrl: "https://example.com/logo.png" },
+      });
+    });
+
+    it("clears logoUrl when set to null", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+      mockPrisma.climateSurvey.update.mockResolvedValue({});
+
+      const result = await updateSurveySettings("survey-1", {
+        logoUrl: null,
+      });
+
+      expect(result.success).toBe(true);
+      expect(mockPrisma.climateSurvey.update).toHaveBeenCalledWith({
+        where: { id: "survey-1" },
+        data: { logoUrl: null },
+      });
+    });
+
+    it("converts date strings to Date objects", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+      mockPrisma.climateSurvey.update.mockResolvedValue({});
+
+      const result = await updateSurveySettings("survey-1", {
+        accessStartDate: "2026-04-01",
+        accessEndDate: "2026-04-30",
+      });
+
+      expect(result.success).toBe(true);
+      const updateCall = mockPrisma.climateSurvey.update.mock.calls[0][0];
+      expect(updateCall.data.accessStartDate).toBeInstanceOf(Date);
+      expect(updateCall.data.accessEndDate).toBeInstanceOf(Date);
+    });
+
+    it("clears access dates when set to null", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+      mockPrisma.climateSurvey.update.mockResolvedValue({});
+
+      const result = await updateSurveySettings("survey-1", {
+        accessStartDate: null,
+        accessEndDate: null,
+      });
+
+      expect(result.success).toBe(true);
+      expect(mockPrisma.climateSurvey.update).toHaveBeenCalledWith({
+        where: { id: "survey-1" },
+        data: { accessStartDate: null, accessEndDate: null },
+      });
+    });
+
+    it("requires admin role", async () => {
+      mockSession = createMemberSession();
+
+      const result = await updateSurveySettings("survey-1", {
+        name: "Test",
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("Unauthorized");
+    });
+
+    it("handles database errors gracefully", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+      mockPrisma.climateSurvey.update.mockRejectedValue(
+        new Error("Connection lost")
+      );
+
+      const result = await updateSurveySettings("survey-1", {
+        name: "Test",
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Connection lost");
+    });
+
+    it("clears description when set to empty string", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+      mockPrisma.climateSurvey.update.mockResolvedValue({});
+
+      await updateSurveySettings("survey-1", {
+        description: "",
+      });
+
+      expect(mockPrisma.climateSurvey.update).toHaveBeenCalledWith({
+        where: { id: "survey-1" },
+        data: { description: null },
+      });
     });
   });
 });

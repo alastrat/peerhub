@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "title": "Kultiva | Consultoria Organizacional",
-    "description": "Agencia de consultoria organizacional. Transformamos cultura, clima, comunicacion y liderazgo en tu organizacion."
+    "title": "Kultiva | Plataforma de Gestion de Talento para LATAM",
+    "description": "Plataforma SaaS para medir clima, gestionar feedback 360 y desarrollar talento. Disenada para equipos de RR.HH. en Latinoamerica."
   },
   "navigation": {
     "home": "Inicio",
@@ -15,15 +15,219 @@
     "blog": "Blog",
     "contact": "Contacto",
     "faq": "Preguntas Frecuentes",
-    "cta": "Agenda una Consulta"
+    "platform": "Plataforma",
+    "platform_360": "Feedback 360",
+    "platform_climate": "Encuestas de Clima",
+    "platform_people": "Gestion de Personas",
+    "platform_org": "Estructura Organizacional",
+    "pricing": "Precios",
+    "login": "Iniciar Sesion",
+    "demo": "Solicitar Demo",
+    "cta": "Solicitar Demo"
   },
   "home": {
     "hero": {
-      "subtitle": "Agencia de Consultoria Organizacional",
-      "title": "Transformamos cultura, clima, comunicacion y liderazgo",
-      "description": "Transformamos organizaciones a traves de estrategias innovadoras en cultura, cambio, seleccion y comunicacion interna.",
-      "cta_primary": "Conoce Nuestros Servicios",
-      "cta_secondary": "Agenda una Consulta"
+      "subtitle": "Plataforma de Gestion de Talento para LATAM",
+      "title": "Desarrolla a tu equipo con datos, no con suposiciones",
+      "description": "Kultiva centraliza feedback 360, encuestas de clima, gestion de personas y estructura organizacional en una sola plataforma disenada para la realidad de Latinoamerica.",
+      "cta_primary": "Solicitar Demo Gratis",
+      "cta_secondary": "Ver la Plataforma",
+      "trusted_by": "Confian en nosotros"
+    },
+    "features": {
+      "subtitle": "Capacidades de la plataforma",
+      "title": "Todo lo que necesitas para gestionar talento",
+      "description": "Cuatro modulos integrados con capacidades transversales que se adaptan a tu organizacion.",
+      "performance": {
+        "title": "Ciclos de evaluacion",
+        "description": "Configura ciclos de feedback con multiples tipos de evaluador, fechas y competencias a medida."
+      },
+      "feedback360": {
+        "title": "Feedback 360",
+        "description": "Autoevaluacion, jefe, pares, reportes directos y externos. Umbral de anonimato y control de reportes."
+      },
+      "engagement": {
+        "title": "Encuestas de Clima",
+        "description": "Clima, Pulso y eNPS con plantillas listas, dimensiones personalizables y segmentacion por sede o equipo."
+      },
+      "growth": {
+        "title": "Gestion de Personas",
+        "description": "Directorio centralizado, carga masiva por CSV, jerarquias de jefaturas y perfiles completos."
+      },
+      "culture": {
+        "title": "Estructura Organizacional",
+        "description": "Modela sedes, departamentos y equipos transversales. Define el alcance de cada encuesta con precision."
+      },
+      "managers": {
+        "title": "Reportes y Analitica",
+        "description": "Dashboards en tiempo real, exportacion a CSV y control granular sobre la liberacion de reportes."
+      }
+    },
+    "how_it_works": {
+      "subtitle": "Proceso simple",
+      "title": "En tres pasos, estas listo",
+      "step1": {
+        "number": "1",
+        "title": "Configura",
+        "description": "Crea tu cuenta, sube tu equipo por CSV y define tu estructura organizacional. En minutos, no en semanas."
+      },
+      "step2": {
+        "number": "2",
+        "title": "Lanza",
+        "description": "Activa ciclos de feedback 360, encuestas de clima o pulso con plantillas listas o personalizadas."
+      },
+      "step3": {
+        "number": "3",
+        "title": "Actua",
+        "description": "Recibe reportes claros por persona, equipo o dimension. Toma decisiones con evidencia, no con intuicion."
+      },
+      "cta": "Solicitar Demo Gratis"
+    },
+    "modules_carousel": {
+      "subtitle": "Modulos",
+      "title": "Una plataforma, cuatro modulos",
+      "description": "Disenados para trabajar juntos. Empieza con uno o usa todos.",
+      "view_detail": "Ver detalle",
+      "view_full": "Ver modulo completo",
+      "feedback360": {
+        "title": "Feedback 360",
+        "summary": "Ciclos con multiples evaluadores y reportes individuales",
+        "features": {
+          "1": "Self, jefe, pares, reportes directos y externos",
+          "2": "Competencias y escalas configurables",
+          "3": "Umbral de anonimato configurable",
+          "4": "Control granular de liberacion de reportes"
+        }
+      },
+      "climate": {
+        "title": "Encuestas de Clima",
+        "summary": "Mide el pulso de tu organizacion con encuestas CLIMATE, PULSE y eNPS",
+        "features": {
+          "1": "Plantillas listas o personalizadas",
+          "2": "Dimensiones configurables con segmentacion",
+          "3": "Encuestas de pulso rapidas y periodicas",
+          "4": "Benchmarks internos por equipo o hub"
+        }
+      },
+      "people": {
+        "title": "Gestion de Personas",
+        "summary": "Directorio centralizado con perfiles completos y carga masiva",
+        "features": {
+          "1": "Importacion masiva por CSV",
+          "2": "Jerarquias de jefe y reportes directos",
+          "3": "Perfiles con datos demograficos y de rol",
+          "4": "Busqueda y filtros avanzados"
+        }
+      },
+      "org": {
+        "title": "Estructura Organizacional",
+        "summary": "Modela hubs, departamentos y equipos transversales",
+        "features": {
+          "1": "Hubs y equipos jerarquicos",
+          "2": "Equipos transversales y funcionales",
+          "3": "Alcance preciso para encuestas y ciclos",
+          "4": "Visualizacion del organigrama completo"
+        }
+      }
+    },
+    "social_proof": {
+      "subtitle": "Historias reales",
+      "title": "Resultados que hablan por si solos",
+      "stories": {
+        "1": {
+          "metric": "92%",
+          "metric_label": "participacion en feedback",
+          "quote": "Con Kultiva logramos que el 92% de nuestro equipo participara en la evaluacion 360. Antes no pasabamos del 60%.",
+          "name": "Maria Claudia Buendia",
+          "role": "Gerente de RRHH",
+          "company": "BIS",
+          "employees": "+200 empleados"
+        },
+        "2": {
+          "metric": "+35%",
+          "metric_label": "mejora en engagement",
+          "quote": "Las encuestas de clima nos dieron visibilidad sobre problemas que no conociamos. Actuamos rapido y el impacto fue inmediato.",
+          "name": "Narly Herrera",
+          "role": "Jefe de Gestion Humana",
+          "company": "Habitat de los Andes",
+          "employees": "+150 empleados"
+        },
+        "3": {
+          "metric": "-70%",
+          "metric_label": "tiempo en preparar reportes",
+          "quote": "Pasamos de armar reportes manualmente durante semanas a tener dashboards listos en minutos. Liberamos tiempo para lo importante.",
+          "name": "Denesi Becerra",
+          "role": "Directora de Talento Humano",
+          "company": "Fintra SAS",
+          "employees": "+300 empleados"
+        },
+        "4": {
+          "metric": "3x",
+          "metric_label": "mas ciclos al ano",
+          "quote": "Antes haciamos un ciclo de feedback al ano con mucho esfuerzo. Ahora corremos tres ciclos y dos pulsos sin sobrecargar al equipo.",
+          "name": "Equipo de Talento",
+          "role": "Direccion de Personas",
+          "company": "Marymount",
+          "employees": "+100 empleados"
+        }
+      }
+    },
+    "cta_banner": {
+      "title": "Transforma la gestion de talento de tu empresa",
+      "description": "Agenda una demo personalizada y te mostramos como Kultiva se adapta a tu organizacion. 30 minutos, sin compromiso.",
+      "cta_primary": "Agendar Demo Gratis",
+      "cta_secondary": "Ver Precios"
+    },
+    "pricing": {
+      "subtitle": "Planes y precios",
+      "title": "Planes que crecen contigo",
+      "popular": "Mas Popular",
+      "per_user": "usuario/mes",
+      "billing_note": "Facturacion anual en USD",
+      "cta": "Comenzar",
+      "cta_contact": "Contactar Ventas",
+      "tiers": {
+        "starter": {
+          "name": "Starter",
+          "description": "Para equipos pequenos que quieren profesionalizar su proceso de feedback.",
+          "price": "3",
+          "features": {
+            "1": "Feedback 360 completo",
+            "2": "Gestion de Personas",
+            "3": "Estructura Organizacional",
+            "4": "Hasta 50 usuarios",
+            "5": "Soporte por email"
+          }
+        },
+        "growth": {
+          "name": "Business",
+          "description": "Para empresas en crecimiento que necesitan medir clima y dar feedback de forma continua.",
+          "price": "5",
+          "features": {
+            "1": "Todo lo de Starter",
+            "2": "Encuestas de Clima (CLIMATE, PULSE, eNPS)",
+            "3": "Hasta 200 usuarios",
+            "4": "3 administradores",
+            "5": "Plantillas de clima incluidas",
+            "6": "Onboarding guiado",
+            "7": "Soporte prioritario"
+          }
+        },
+        "scale": {
+          "name": "Enterprise",
+          "description": "Para organizaciones con multiples sedes que requieren integraciones y soporte dedicado.",
+          "price": "Custom",
+          "features": {
+            "1": "Todo lo de Business",
+            "2": "Usuarios ilimitados",
+            "3": "SSO y SAML",
+            "4": "API de integracion",
+            "5": "SLA garantizado",
+            "6": "Plantillas personalizadas",
+            "7": "Account manager dedicado"
+          }
+        }
+      }
     },
     "services": {
       "subtitle": "Nuestros Servicios",
@@ -98,7 +302,7 @@
     },
     "clients": {
       "subtitle": "Nuestros Clientes",
-      "title": "Empresas que confian en nosotros",
+      "title": "Nuestros clientes",
       "list": {
         "1": "Business Integrity Services",
         "2": "Constructora Habitat De Los Andes",
@@ -190,6 +394,15 @@
     "title": "Mas de 50 clientes confian en nosotros",
     "description": "Cada servicio esta disenado para abordar los desafios especificos de tu organizacion, con metodologias probadas y un enfoque centrado en las personas.",
     "cta": "Solicitar una Consulta",
+    "list": {
+      "subtitle": "Servicios de Consultoria",
+      "title": "Soluciones integrales para tu organizacion",
+      "description": "Complementamos nuestra plataforma con servicios especializados de consultoria. Acompanamos a tu equipo en cada paso del proceso de transformacion organizacional."
+    },
+    "clima": {
+      "title": "Diagnostico de Clima",
+      "short_description": "Medimos y analizamos el clima organizacional para identificar oportunidades de mejora y planes de accion concretos."
+    },
     "process": {
       "step1": {
         "title": "Diagnostico",
@@ -237,6 +450,7 @@
     "cultura": {
       "title": "Cultura Organizacional",
       "short": "Cultura",
+      "short_description": "Construye una cultura que inspire, alinea valores con estrategia y convierte la cultura en una ventaja competitiva real.",
       "headline": "Construye una cultura que inspire y genere resultados sostenibles",
       "description": "Disenamos e implementamos estrategias para construir culturas organizacionales solidas que impulsen el compromiso, la innovacion y los resultados del negocio.",
       "description2": "Una cultura fuerte es la base del exito organizacional. Trabajamos contigo para definir, comunicar y vivir los valores que hacen unica a tu empresa, creando un ambiente donde las personas dan lo mejor de si.",
@@ -296,6 +510,7 @@
     "seleccion": {
       "title": "Seleccion Especializada",
       "short": "Seleccion",
+      "short_description": "Encontramos el talento ideal evaluando competencias tecnicas, fit cultural y potencial de crecimiento.",
       "headline": "Encuentra el talento ideal que impulse tu organizacion",
       "description": "Encontramos el talento ideal para tu organizacion a traves de procesos de seleccion rigurosos que evaluan competencias tecnicas, culturales y de liderazgo.",
       "description2": "El talento adecuado marca la diferencia. Nuestro proceso de seleccion va mas alla del curriculum, evaluando el fit cultural y el potencial de crecimiento para asegurar contrataciones exitosas a largo plazo.",
@@ -355,6 +570,7 @@
     "cambio": {
       "title": "Gestion del Cambio",
       "short": "Cambio",
+      "short_description": "Acompanamos transformaciones organizacionales para asegurar adopcion, minimizar resistencia y sostener resultados.",
       "headline": "Navega el cambio con confianza y minimiza la resistencia",
       "description": "Facilitamos procesos de cambio organizacional minimizando la resistencia y maximizando la adopcion, asegurando transiciones exitosas.",
       "description2": "El cambio es inevitable, pero el fracaso no lo es. Te acompanamos en cada etapa del proceso de cambio, asegurando que las personas entiendan, acepten y adopten las nuevas formas de trabajo.",
@@ -386,6 +602,7 @@
     "comunicacion": {
       "title": "Comunicacion Interna",
       "short": "Comunicacion",
+      "short_description": "Disenamos estrategias de comunicacion interna que conectan al equipo con los objetivos y valores del negocio.",
       "headline": "Conecta a tu equipo con mensajes que inspiran accion",
       "description": "Desarrollamos estrategias de comunicacion interna que fortalecen la conexion entre colaboradores, alinean equipos y refuerzan la cultura organizacional.",
       "description2": "Una comunicacion efectiva es el sistema nervioso de tu organizacion. Disenamos estrategias y canales que aseguran que los mensajes correctos lleguen a las personas indicadas en el momento oportuno.",
@@ -562,17 +779,434 @@
     }
   },
   "footer": {
-    "description": "Agencia de consultoria organizacional. Sembrando ideas para recoger grandes resultados.",
-    "newsletter": "Suscribete a nuestro boletin semanal para recibir las ultimas actualizaciones",
+    "description": "Plataforma de gestion de talento para LATAM. Centralizamos feedback, clima, personas y estructura organizacional.",
+    "newsletter": "Recibe novedades sobre gestion de talento y mejores practicas de RR.HH.",
     "newsletter_placeholder": "Ingresa tu correo electronico",
-    "cta": "Hablemos de Negocios?",
+    "cta": "Solicitar Demo",
+    "big_text": "Listo para transformar la gestion de talento?",
+    "cta_demo": "Solicitar Demo Gratis",
+    "cta_pricing": "Ver Precios",
     "services": "Servicios",
     "company": "Empresa",
     "contact": "Contacto",
     "social": "Siguenos",
     "copyright": "Todos los derechos reservados",
     "privacy": "Politica de Privacidad",
-    "terms": "Terminos y Condiciones"
+    "terms": "Terminos y Condiciones",
+    "nav": {
+      "platform": "Plataforma",
+      "resources": "Recursos",
+      "company": "Empresa",
+      "legal": "Legal"
+    }
+  },
+  "plataforma": {
+    "metadata": {
+      "title": "Plataforma | Kultiva",
+      "description": "Cuatro modulos integrados para gestionar feedback 360, encuestas de clima, personas y estructura organizacional."
+    },
+    "hero": {
+      "title": "Conoce Kultiva por dentro",
+      "breadcrumb": "Plataforma"
+    },
+    "modules": {
+      "badge": "Modulo",
+      "cta_detail": "Ver detalle",
+      "feedback360": {
+        "title": "Feedback 360",
+        "description": "Lanza ciclos de evaluacion donde cada colaborador recibe retroalimentacion de su jefe, pares, reportes directos y evaluadores externos. Configura competencias, anonimato y liberacion de reportes.",
+        "features": {
+          "f1": "Multiples tipos de evaluador (autoevaluacion, jefe, par, reporte, externo)",
+          "f2": "Competencias y preguntas configurables",
+          "f3": "Umbral de anonimato para proteger la honestidad del feedback",
+          "f4": "Control granular sobre la liberacion de reportes individuales"
+        }
+      },
+      "climate": {
+        "title": "Encuestas de Clima",
+        "description": "Mide la percepcion de tu equipo con tres tipos de encuesta: Clima completo, Pulso rapido y eNPS. Usa plantillas listas o crea las tuyas con dimensiones personalizadas.",
+        "features": {
+          "f1": "Tres tipos: CLIMATE (completa), PULSE (rapida), eNPS (lealtad)",
+          "f2": "Dimensiones y preguntas configurables por plantilla",
+          "f3": "Segmentacion: empresa, hub, departamento, equipo o personalizada",
+          "f4": "Plantillas incluidas con mejores practicas de la region"
+        }
+      },
+      "people": {
+        "title": "Gestion de Personas",
+        "description": "Centraliza la informacion de tus colaboradores en perfiles completos. Importa tu equipo de una sola vez con carga masiva por CSV y manten tu directorio actualizado sin hojas de calculo.",
+        "features": {
+          "f1": "CRUD completo de colaboradores con perfiles enriquecidos",
+          "f2": "Importacion masiva por archivo CSV",
+          "f3": "Asignacion de jerarquia de jefaturas",
+          "f4": "Datos de contacto, cargo, departamento y sede"
+        }
+      },
+      "org": {
+        "title": "Estructura Organizacional",
+        "description": "Define como se organiza tu empresa: sedes (hubs), departamentos y equipos transversales. Esta estructura alimenta la segmentacion de encuestas y el alcance de los ciclos de feedback.",
+        "features": {
+          "f1": "Hubs para modelar sedes o ubicaciones geograficas",
+          "f2": "Departamentos dentro de cada hub",
+          "f3": "Equipos transversales que cruzan departamentos",
+          "f4": "Alcance preciso para cada encuesta o ciclo de evaluacion"
+        }
+      }
+    },
+    "capabilities": {
+      "subtitle": "Bases solidas",
+      "title": "Construida para equipos serios",
+      "security": {
+        "title": "Seguridad de datos",
+        "description": "Cifrado en transito y en reposo. Infraestructura cloud con backups automaticos."
+      },
+      "multitenant": {
+        "title": "Multi-tenant",
+        "description": "Cada empresa opera en su propio espacio aislado. Tus datos nunca se mezclan."
+      },
+      "roles": {
+        "title": "Roles y permisos",
+        "description": "Control granular: Admin, Manager, Empleado y roles personalizados por empresa."
+      },
+      "export": {
+        "title": "Exportacion CSV",
+        "description": "Descarga reportes y listados en CSV para procesar en tu herramienta favorita."
+      }
+    }
+  },
+  "modulos": {
+    "feedback360": {
+      "metadata": {
+        "title": "Feedback 360 | Kultiva",
+        "description": "Ciclos de evaluacion 360 con multiples evaluadores, competencias configurables y reportes individuales."
+      },
+      "badge": "Modulo de Feedback",
+      "hero": {
+        "title": "Feedback 360 que realmente transforma",
+        "description": "Lanza ciclos de evaluacion donde cada persona recibe retroalimentacion honesta de multiples perspectivas. Configura todo: competencias, evaluadores, anonimato y liberacion de reportes.",
+        "cta_primary": "Solicitar Demo",
+        "cta_secondary": "Ver capacidades"
+      },
+      "problem": {
+        "title": "El feedback sin estructura no sirve",
+        "description": "Recoger evaluaciones 360 con formularios de Google o Excel consume semanas. Los datos llegan incompletos, los reportes se arman a mano y cuando estan listos ya perdieron relevancia. Tu gente merece retroalimentacion oportuna y util."
+      },
+      "capabilities": {
+        "title": "Todo lo que necesitas en un ciclo de feedback",
+        "evaluators": {
+          "title": "Tipos de evaluador",
+          "description": "Autoevaluacion, jefe directo, pares, reportes directos y evaluadores externos. Tu defines cuales aplican."
+        },
+        "competencies": {
+          "title": "Competencias configurables",
+          "description": "Crea tus propias competencias y escalas, o usa las que incluimos como punto de partida."
+        },
+        "anonymity": {
+          "title": "Anonimato inteligente",
+          "description": "Define un umbral minimo de evaluadores por tipo. Si no se alcanza, las respuestas se agregan."
+        },
+        "nominations": {
+          "title": "Nominaciones flexibles",
+          "description": "Permite que los pares nominen a sus evaluadores o asignalos directamente desde el panel."
+        },
+        "release": {
+          "title": "Control de reportes",
+          "description": "Decide cuando se libera cada reporte individual, a quien y que secciones son visibles."
+        },
+        "reports": {
+          "title": "Reportes individuales",
+          "description": "Cada persona recibe sus fortalezas, areas de mejora y comparacion auto vs otros."
+        }
+      },
+      "process": {
+        "title": "Asi funciona un ciclo",
+        "create": { "title": "Crea el ciclo", "description": "Nombre, fechas, competencias y tipos de evaluador." },
+        "nominate": { "title": "Nomina evaluadores", "description": "Pares nominan o tu equipo asigna directamente." },
+        "evaluate": { "title": "Evaluacion en linea", "description": "Evaluadores responden y monitoreas avance." },
+        "review": { "title": "Revisa los datos", "description": "Resultados agregados antes de liberar." },
+        "release": { "title": "Libera reportes", "description": "Entrega individual con sesion de retroalimentacion." }
+      },
+      "faq": {
+        "title": "Preguntas frecuentes sobre Feedback 360",
+        "q1": { "q": "Cuantos evaluadores puede tener una persona?", "a": "Sin limite fijo. Configuras minimos y maximos por tipo de evaluador en cada ciclo." },
+        "q2": { "q": "Se puede excluir la autoevaluacion?", "a": "Si. Cada tipo de evaluador es opcional y se activa o desactiva por ciclo." },
+        "q3": { "q": "Como funciona el umbral de anonimato?", "a": "Si defines umbral 3 para pares y solo hay 2 evaluaciones, esas respuestas se agregan con otro grupo." },
+        "q4": { "q": "Se pueden usar competencias diferentes por cargo?", "a": "Si. Cada ciclo tiene su propio set de competencias. Crea ciclos para ejecutivos, mandos medios y contribuidores." },
+        "q5": { "q": "Que formato tienen los reportes?", "a": "Visualizaciones de radar, barras por competencia y comparacion auto vs otros. Exportables a PDF y CSV." }
+      },
+      "cta": {
+        "title": "Ve el Feedback 360 en accion",
+        "description": "Agenda 30 minutos y te mostramos un ciclo completo con datos reales.",
+        "button": "Agendar Demo"
+      },
+      "crosslinks": {
+        "climate": "Encuestas de Clima",
+        "people": "Gestion de Personas"
+      }
+    },
+    "encuestasClima": {
+      "metadata": {
+        "title": "Encuestas de Clima | Kultiva",
+        "description": "Mide clima, pulso y eNPS con plantillas listas, dimensiones configurables y segmentacion flexible."
+      },
+      "badge": "Modulo de Clima",
+      "hero": {
+        "title": "Encuestas que realmente miden el clima",
+        "description": "Tres tipos de encuesta para diferentes momentos: Clima completo, Pulso rapido y eNPS. Plantillas incluidas, dimensiones configurables y segmentacion por sede, departamento o equipo.",
+        "cta_primary": "Solicitar Demo",
+        "cta_secondary": "Ver capacidades"
+      },
+      "problem": {
+        "title": "El clima se mide o se asume",
+        "description": "Hacer una encuesta anual de clima ya no es suficiente. Necesitas medir continuamente, actuar rapido y demostrar mejoras concretas. Excel y Google Forms no escalan a esa velocidad."
+      },
+      "capabilities": {
+        "title": "Tres tipos de encuesta, una sola plataforma",
+        "types": {
+          "title": "CLIMATE, PULSE y eNPS",
+          "description": "Encuesta completa anual, pulsos rapidos mensuales y eNPS para medir lealtad continuamente."
+        },
+        "templates": {
+          "title": "Plantillas listas",
+          "description": "Empieza con plantillas validadas o crea las tuyas. Reutilizables entre ciclos."
+        },
+        "dimensions": {
+          "title": "Dimensiones configurables",
+          "description": "Agrupa preguntas por dimension (liderazgo, cultura, etc.) para reportes mas claros."
+        },
+        "scope": {
+          "title": "Segmentacion flexible",
+          "description": "Lanza a toda la empresa, a una sede, departamento, equipo o seleccion personalizada."
+        },
+        "anonymity": {
+          "title": "Anonimato configurable",
+          "description": "Decide si las respuestas son anonimas y configura umbrales minimos para mostrar resultados."
+        },
+        "trends": {
+          "title": "Tendencias en el tiempo",
+          "description": "Compara periodos y dimensiones. Identifica que mejora y que requiere atencion."
+        }
+      },
+      "process": {
+        "title": "Lanzar una encuesta es simple",
+        "create": { "title": "Elige tipo", "description": "CLIMATE, PULSE o eNPS segun tu necesidad." },
+        "configure": { "title": "Configura preguntas", "description": "Usa plantilla o personaliza dimensiones y preguntas." },
+        "distribute": { "title": "Define alcance", "description": "Toda la empresa, sede, departamento o seleccion." },
+        "monitor": { "title": "Monitorea avance", "description": "Sigue la tasa de respuesta en tiempo real." },
+        "analyze": { "title": "Analiza resultados", "description": "Reportes por dimension, segmento y comparacion." }
+      },
+      "faq": {
+        "title": "Preguntas frecuentes sobre Encuestas de Clima",
+        "q1": { "q": "Cual es la diferencia entre CLIMATE, PULSE y eNPS?", "a": "CLIMATE es completa (anual). PULSE es corta (mensual o trimestral). eNPS mide lealtad con una sola pregunta clave." },
+        "q2": { "q": "Las respuestas son anonimas?", "a": "Si configuras la encuesta como anonima, los nombres no se asocian a respuestas individuales en los reportes." },
+        "q3": { "q": "Puedo segmentar resultados por sede o departamento?", "a": "Si. Los reportes desglosan por hub, departamento y equipo. Tambien puedes ver tendencias entre periodos." },
+        "q4": { "q": "Cuantas encuestas puedo lanzar al ano?", "a": "Las que necesites. Recomendamos una CLIMATE anual + PULSE mensuales o trimestrales para seguimiento continuo." },
+        "q5": { "q": "Como invitamos a los colaboradores a responder?", "a": "Reciben un enlace por correo. Tambien puedes generar enlaces unicos para distribuir manualmente." }
+      },
+      "cta": {
+        "title": "Mide el clima de tu organizacion",
+        "description": "Agenda una demo y te mostramos como configurar tu primera encuesta en minutos.",
+        "button": "Agendar Demo"
+      },
+      "crosslinks": {
+        "feedback360": "Feedback 360",
+        "people": "Gestion de Personas"
+      }
+    },
+    "gestionPersonas": {
+      "metadata": {
+        "title": "Gestion de Personas | Kultiva",
+        "description": "Directorio de colaboradores con carga masiva CSV, jerarquias de jefaturas y perfiles completos."
+      },
+      "badge": "Modulo de Personas",
+      "hero": {
+        "title": "Tu directorio de personas, sin hojas de calculo",
+        "description": "Centraliza la informacion de tu equipo en perfiles completos. Carga masiva por CSV, jerarquias de jefaturas y datos siempre actualizados.",
+        "cta_primary": "Solicitar Demo",
+        "cta_secondary": "Ver capacidades"
+      },
+      "problem": {
+        "title": "Tu directorio vive en un Excel desactualizado",
+        "description": "Cada area mantiene su propia version de los datos del equipo. Cuando lanzas una encuesta o un ciclo de feedback, toca consolidar todo a mano. Errores, inconsistencias y horas perdidas."
+      },
+      "capabilities": {
+        "title": "Una sola fuente de verdad para tu equipo",
+        "directory": { "title": "Directorio centralizado", "description": "Toda la informacion del equipo en un solo lugar, accesible desde cualquier lado." },
+        "csv": { "title": "Carga masiva CSV", "description": "Importa cientos de colaboradores en minutos con un archivo bien estructurado." },
+        "hierarchy": { "title": "Jerarquia de jefaturas", "description": "Define quien reporta a quien. La estructura alimenta los ciclos de feedback." },
+        "profiles": { "title": "Perfiles completos", "description": "Datos de contacto, cargo, departamento, sede, fecha de ingreso y mas." },
+        "roles": { "title": "Roles del sistema", "description": "Asigna roles (Admin, Manager, Empleado) para controlar accesos." },
+        "deactivation": { "title": "Bajas controladas", "description": "Desactiva colaboradores sin perder su historial de evaluaciones." }
+      },
+      "process": {
+        "title": "Configura tu directorio en pasos simples",
+        "import": { "title": "Importa", "description": "Sube tu CSV con todos los colaboradores." },
+        "verify": { "title": "Verifica", "description": "Revisa la importacion y corrige errores." },
+        "assign": { "title": "Asigna", "description": "Define jefes, departamentos y sedes." },
+        "manage": { "title": "Mantiene", "description": "Actualiza datos a medida que cambia tu equipo." },
+        "audit": { "title": "Audita", "description": "Consulta historial y exporta cuando necesites." }
+      },
+      "faq": {
+        "title": "Preguntas frecuentes sobre Gestion de Personas",
+        "q1": { "q": "Cuantos colaboradores puedo cargar de una vez?", "a": "Sin limite practico. Hemos cargado archivos con miles de colaboradores en una sola operacion." },
+        "q2": { "q": "Que pasa si alguien deja la empresa?", "a": "Se desactiva el perfil. Mantiene su historial pero no aparece en encuestas nuevas." },
+        "q3": { "q": "Puedo importar desde mi sistema HRIS?", "a": "Si. Exportas un CSV desde tu HRIS y lo importas en Kultiva. Proximamente integraciones nativas." },
+        "q4": { "q": "Quien puede ver los datos de los colaboradores?", "a": "Solo los Admins de tu empresa. Los Managers ven a su equipo. Los Empleados ven su propio perfil." },
+        "q5": { "q": "Como manejan datos personales y privacidad?", "a": "Cumplimos con la normativa colombiana de habeas data y aplicamos cifrado en transito y en reposo." }
+      },
+      "cta": {
+        "title": "Ten tu directorio listo en minutos",
+        "description": "Agenda una demo y te mostramos como cargar tu equipo y configurar la jerarquia en una sesion.",
+        "button": "Agendar Demo"
+      },
+      "crosslinks": {
+        "feedback360": "Feedback 360",
+        "org": "Estructura Organizacional"
+      }
+    },
+    "estructuraOrganizacional": {
+      "metadata": {
+        "title": "Estructura Organizacional | Kultiva",
+        "description": "Modela hubs (sedes), departamentos y equipos transversales para definir el alcance de cada encuesta."
+      },
+      "badge": "Modulo de Estructura",
+      "hero": {
+        "title": "Modela tu organizacion como realmente es",
+        "description": "Multiples sedes, departamentos por sede y equipos que cruzan departamentos. La estructura define el alcance de cada encuesta y ciclo de feedback con precision.",
+        "cta_primary": "Solicitar Demo",
+        "cta_secondary": "Ver capacidades"
+      },
+      "problem": {
+        "title": "Tu organizacion no es plana",
+        "description": "Tienes oficinas en Bogota y Medellin, departamentos clasicos pero tambien equipos de proyecto que cruzan areas. Las herramientas anglosajonas no entienden esto. Kultiva si."
+      },
+      "capabilities": {
+        "title": "Una estructura que se adapta a tu realidad",
+        "hubs": { "title": "Hubs (sedes)", "description": "Modela sedes geograficas: Bogota, Medellin, Cali. Cada sede con sus departamentos." },
+        "departments": { "title": "Departamentos", "description": "Estructura clasica por departamento. RR.HH., Comercial, Operaciones, etc." },
+        "teams": { "title": "Equipos transversales", "description": "Equipos que cruzan departamentos (proyectos, comites, squads)." },
+        "scoping": { "title": "Alcance preciso", "description": "Lanza una encuesta solo a una sede, un departamento, un equipo o una seleccion personalizada." },
+        "permissions": { "title": "Permisos por estructura", "description": "Los Managers ven solo a su equipo. Los Admins de sede ven solo su sede." },
+        "reporting": { "title": "Reportes desglosados", "description": "Compara resultados entre sedes, departamentos o equipos." }
+      },
+      "process": {
+        "title": "Configura tu estructura en cinco pasos",
+        "model": { "title": "Modela", "description": "Define hubs, departamentos y equipos." },
+        "assign": { "title": "Asigna", "description": "Asocia cada colaborador a su sede y departamento." },
+        "validate": { "title": "Valida", "description": "Confirma que la estructura refleja tu organizacion." },
+        "scope": { "title": "Segmenta", "description": "Usa la estructura para definir alcance de encuestas." },
+        "report": { "title": "Reporta", "description": "Compara resultados entre sedes y equipos." }
+      },
+      "faq": {
+        "title": "Preguntas frecuentes sobre Estructura Organizacional",
+        "q1": { "q": "Que diferencia hay entre departamento y equipo?", "a": "Departamento es la estructura formal (RR.HH., Comercial). Equipo es transversal y puede tener miembros de varios departamentos." },
+        "q2": { "q": "Una persona puede estar en varios equipos?", "a": "Si. Una persona pertenece a un solo departamento pero puede estar en multiples equipos." },
+        "q3": { "q": "Como manejan organizaciones con grupos empresariales?", "a": "Cada empresa del grupo es un tenant independiente. Si necesitas vista consolidada, contactanos para Enterprise." },
+        "q4": { "q": "Puedo cambiar la estructura una vez creada?", "a": "Si. La estructura es flexible y puedes ajustarla en cualquier momento sin perder datos historicos." },
+        "q5": { "q": "Hay limite de sedes o departamentos?", "a": "No en planes Business y Enterprise. En Starter, hasta 3 sedes y 10 departamentos." }
+      },
+      "cta": {
+        "title": "Modela tu organizacion en Kultiva",
+        "description": "Agenda una demo y configuramos tu estructura juntos en la primera sesion.",
+        "button": "Agendar Demo"
+      },
+      "crosslinks": {
+        "feedback360": "Feedback 360",
+        "climate": "Encuestas de Clima"
+      }
+    }
+  },
+  "precios": {
+    "metadata": {
+      "title": "Precios | Kultiva",
+      "description": "Planes claros por usuario en USD: Starter, Business y Enterprise. Sin costos escondidos."
+    },
+    "hero": {
+      "title": "Planes que crecen contigo",
+      "breadcrumb": "Precios"
+    },
+    "comparison": {
+      "title": "Compara los planes en detalle",
+      "subtitle": "Todas las caracteristicas, lado a lado.",
+      "feature_label": "Caracteristica",
+      "tiers": {
+        "starter": "Starter",
+        "growth": "Business",
+        "scale": "Enterprise"
+      },
+      "features": {
+        "feedback360": { "label": "Feedback 360", "starter": "Si", "growth": "Si", "scale": "Si" },
+        "climate": { "label": "Encuestas de Clima", "starter": "—", "growth": "Si", "scale": "Si" },
+        "people": { "label": "Gestion de Personas", "starter": "Si", "growth": "Si", "scale": "Si" },
+        "org": { "label": "Estructura Organizacional", "starter": "Si", "growth": "Si", "scale": "Si" },
+        "users": { "label": "Usuarios", "starter": "Hasta 50", "growth": "Hasta 200", "scale": "Ilimitados" },
+        "admins": { "label": "Administradores", "starter": "1", "growth": "3", "scale": "Ilimitados" },
+        "templates": { "label": "Plantillas de clima", "starter": "—", "growth": "Incluidas", "scale": "Personalizadas" },
+        "csv": { "label": "Exportacion CSV", "starter": "Si", "growth": "Si", "scale": "Si" },
+        "support": { "label": "Soporte", "starter": "Email", "growth": "Prioritario", "scale": "Dedicado" },
+        "sso": { "label": "SSO / SAML", "starter": "—", "growth": "—", "scale": "Si" },
+        "api": { "label": "API de integracion", "starter": "—", "growth": "—", "scale": "Si" },
+        "sla": { "label": "SLA garantizado", "starter": "—", "growth": "—", "scale": "Si" },
+        "onboarding": { "label": "Onboarding guiado", "starter": "—", "growth": "Si", "scale": "Si" }
+      }
+    }
+  },
+  "demo": {
+    "metadata": {
+      "title": "Solicitar Demo | Kultiva",
+      "description": "Agenda una demo personalizada de Kultiva. 30 minutos, sin compromiso, sin tarjeta de credito."
+    },
+    "hero": {
+      "title": "Ve Kultiva en accion",
+      "breadcrumb": "Demo"
+    },
+    "form": {
+      "title": "Solicita tu demo",
+      "name_label": "Nombre completo",
+      "name_placeholder": "Maria Garcia",
+      "email_label": "Correo corporativo",
+      "email_placeholder": "tu@empresa.com",
+      "company_label": "Empresa",
+      "company_placeholder": "Nombre de tu empresa",
+      "role_label": "Cargo",
+      "role_placeholder": "Gerente de RRHH",
+      "employees_label": "Numero de empleados",
+      "employees_placeholder": "Selecciona un rango",
+      "modules_label": "Que modulos te interesan?",
+      "modules": {
+        "feedback360": "Feedback 360",
+        "climate": "Encuestas de Clima",
+        "people": "Gestion de Personas",
+        "org": "Estructura Org.",
+        "all": "Todos"
+      },
+      "message_label": "Mensaje (opcional)",
+      "message_placeholder": "Cuentanos que buscas...",
+      "submit": "Solicitar Demo Gratis",
+      "submitting": "Enviando...",
+      "disclaimer": "Te respondemos en menos de 24 horas habiles.",
+      "success_title": "Solicitud enviada!",
+      "success_message": "Te contactaremos pronto para coordinar la demo.",
+      "error": "No pudimos enviar la solicitud. Intentalo de nuevo o escribenos a info@kultiva.com.co"
+    },
+    "expect": {
+      "title": "Que pasa despues?",
+      "steps": {
+        "1": {
+          "title": "Confirmacion rapida",
+          "description": "Te contactamos en menos de 24 horas habiles para coordinar un horario que te funcione."
+        },
+        "2": {
+          "title": "Demo en vivo (30 min)",
+          "description": "Te mostramos la plataforma con datos de ejemplo adaptados a tu tipo de empresa."
+        },
+        "3": {
+          "title": "Siguiente paso",
+          "description": "Si Kultiva es para ti, activamos un piloto con tus datos reales para que pruebes con tu equipo."
+        }
+      },
+      "trust": "Sin compromiso. Sin tarjeta de credito. Sin llamadas de ventas agresivas."
+    }
   },
   "common": {
     "learn_more": "Conoce Mas",

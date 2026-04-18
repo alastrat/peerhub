@@ -20,5 +20,12 @@ export async function GET(
 
   await createPortalSession(employeeId, companyId, email);
 
-  return NextResponse.redirect(new URL("/portal/home", request.url));
+  // Support redirect after login (e.g. deep-linking to a specific survey)
+  const redirectTo = request.nextUrl.searchParams.get("redirect");
+  const destination =
+    redirectTo && redirectTo.startsWith("/portal/")
+      ? redirectTo
+      : "/portal/home";
+
+  return NextResponse.redirect(new URL(destination, request.url));
 }

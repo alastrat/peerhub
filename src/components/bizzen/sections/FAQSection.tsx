@@ -22,14 +22,12 @@ export function FAQSection() {
               <div className="section-title">
                 <span
                   className="sub-title"
-                  data-aos="fade-down"
-                  data-aos-duration="1000"
                 >
                   {t("subtitle")}
                 </span>
                 <h2 className="text-anm">{t("title")}</h2>
               </div>
-              <p data-aos="fade-up" data-aos-duration="1200">
+              <p>
                 {t("description")}
               </p>
             </div>
@@ -38,8 +36,6 @@ export function FAQSection() {
             {/* Accordion */}
             <div
               className="accordion"
-              data-aos="fade-up"
-              data-aos-duration="1200"
             >
               {faqKeys.map((key, index) => (
                 <div key={key} className="accordion-card style-two mb-25">

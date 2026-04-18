@@ -336,14 +336,16 @@ export async function launchCycle(
       data: { status: nextStatus },
     });
 
-    // Send emails
+    // Send emails — track failures so the action can surface them as a warning
+    let emailAttempts = 0;
+    let emailFailures = 0;
     if (sendEmails) {
-      const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
       if (nextStatus === "NOMINATION") {
         // Send nomination request emails to all participants
         for (const participant of cycle.participants) {
           const employee = participant.employee;
+          emailAttempts++;
           try {
             await notifyEmployee({
               employeeId: employee.id,
@@ -364,7 +366,11 @@ export async function launchCycle(
               },
             });
           } catch (emailError) {
-            console.error("Failed to send nomination email:", emailError);
+            emailFailures++;
+            console.error(
+              `[cycles] Nomination email failed for employee ${employee.id} (${employee.email}):`,
+              emailError,
+            );
           }
         }
       } else {
@@ -384,6 +390,7 @@ export async function launchCycle(
               )?.employee;
 
               if (reviewee) {
+                emailAttempts++;
                 try {
                   await notifyEmployee({
                     employeeId: reviewer.id,
@@ -407,7 +414,11 @@ export async function launchCycle(
                     },
                   });
                 } catch (emailError) {
-                  console.error("Failed to send review request email:", emailError);
+                  emailFailures++;
+                  console.error(
+                    `[cycles] Review request email failed for reviewer ${reviewer.id} (${reviewer.email}):`,
+                    emailError,
+                  );
                 }
               }
             }
@@ -417,7 +428,11 @@ export async function launchCycle(
     }
 
     revalidatePath("/surveys/360");
-    return { success: true, data: updatedCycle };
+    const warning =
+      emailFailures > 0
+        ? `${emailFailures} of ${emailAttempts} notification email${emailAttempts !== 1 ? "s" : ""} failed to send. Check the server logs for details.`
+        : undefined;
+    return { success: true, data: updatedCycle, warning };
   } catch (error) {
     console.error("Failed to launch cycle:", error);
     return { success: false, error: "Failed to launch cycle" };
@@ -559,7 +574,10 @@ export async function addExternalRater(
 
     const tokenUrl = `${APP_URL}/review/${token}`;
 
-    // Send email
+    // Send email. If delivery fails we still return success (the token URL is
+    // returned to the caller so the admin can share it manually), but we flag
+    // the failure via `warning`.
+    let warning: string | undefined;
     try {
       await sendExternalReviewRequestEmail({
         to: input.email,
@@ -571,12 +589,15 @@ export async function addExternalRater(
         reviewUrl: tokenUrl,
       });
     } catch (emailError) {
-      console.error("Failed to send external rater email:", emailError);
-      // Don't fail the action if email fails, token is still created
+      console.error(
+        `[cycles] External rater email failed for ${input.email}:`,
+        emailError,
+      );
+      warning = `External review token was created but the invitation email to ${input.email} could not be delivered. Share the token URL manually.`;
     }
 
     revalidatePath(`/surveys/360/${cycleId}`);
-    return { success: true, data: { tokenUrl } };
+    return { success: true, data: { tokenUrl }, warning };
   } catch (error) {
     console.error("Failed to add external rater:", error);
     return { success: false, error: "Failed to add external rater" };

@@ -32,7 +32,7 @@ export default async function AboutPage({
   const t = await getTranslations({ locale, namespace: "about" });
 
   // Fetch data from Sanity
-  const [teamMembers, testimonials] = await Promise.all([
+  const [teamMembers] = await Promise.all([
     getTeamMembers(sanityLocale),
     getTestimonials(sanityLocale),
   ]);
@@ -41,10 +41,9 @@ export default async function AboutPage({
     <>
       <PageHero title={t("hero.title")} breadcrumb={t("hero.breadcrumb")} />
       <AboutPageSection />
+      <TeamSection teamMembers={teamMembers} />
       <CounterSection />
       <FeaturesSection />
-      <TeamSection teamMembers={teamMembers} />
-      <TestimonialSection testimonials={testimonials} />
     </>
   );
 }

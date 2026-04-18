@@ -99,12 +99,12 @@ export function FeaturesManager({
                   <f.icon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-base flex items-center gap-2">
+                 {/*  <CardTitle className="text-base flex items-center gap-2">
                     {f.label}
                     <Badge variant="outline" className="text-xs font-normal">
                       {f.badge}
                     </Badge>
-                  </CardTitle>
+                  </CardTitle> */}
                 </div>
               </div>
               <Switch

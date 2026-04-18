@@ -21,8 +21,6 @@ export function Footer() {
               {/* Footer Widget - About */}
               <div
                 className="footer-widget footer-about-widget pt-100"
-                data-aos="fade-up"
-                data-aos-duration="800"
               >
                 <div className="widget-content">
                   <div className="footer-logo mb-20">
@@ -58,10 +56,33 @@ export function Footer() {
                 {/* Footer Top */}
                 <div
                   className="footer-top"
-                  data-aos="fade-up"
-                  data-aos-duration="1000"
                 >
-                  <div className="big-text" style={{ fontSize: '42px' }}>¿Hablamos de tu negocio?</div>
+                  <div className="big-text" style={{ fontSize: '42px' }}>{t("big_text")}</div>
+                  <div style={{ marginTop: "20px", display: "flex", gap: "16px", flexWrap: "wrap" }}>
+                    <Link
+                      href="/demo"
+                      className="theme-btn style-one"
+                      style={{ padding: "12px 24px", fontSize: "14px" }}
+                    >
+                      {t("cta_demo")}
+                    </Link>
+                    <Link
+                      href="/precios"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        padding: "12px 24px",
+                        color: "rgba(255,255,255,0.85)",
+                        fontSize: "14px",
+                        textDecoration: "none",
+                        border: "1px solid rgba(255,255,255,0.2)",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      {t("cta_pricing")}
+                    </Link>
+                  </div>
                 </div>
 
                 <div className="footer-widget-area">
@@ -70,8 +91,6 @@ export function Footer() {
                       {/* Footer Widget - Contact */}
                       <div
                         className="footer-widget footer-contact-info-widget mb-40"
-                        data-aos="fade-up"
-                        data-aos-duration="1200"
                       >
                         <div className="widget-content">
                           <h6>{tContact("info.address.title")}</h6>
@@ -91,8 +110,6 @@ export function Footer() {
                       {/* Footer Widget - Email */}
                       <div
                         className="footer-widget footer-contact-info-widget mb-40"
-                        data-aos="fade-up"
-                        data-aos-duration="1400"
                       >
                         <div className="widget-content">
                           <h6>{tContact("info.email.title")}</h6>
@@ -112,8 +129,6 @@ export function Footer() {
                       {/* Footer Widget - Social */}
                       <div
                         className="footer-widget footer-social-widget mb-40"
-                        data-aos="fade-up"
-                        data-aos-duration="1600"
                       >
                         <h4 className="widget-title">{t("social")}:</h4>
                         <div className="widget-content">
@@ -153,6 +168,123 @@ export function Footer() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Platform Navigation Strip */}
+      <div
+        style={{
+          padding: "32px 0",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
+          backgroundColor: "rgba(0,0,0,0.15)",
+        }}
+      >
+        <div className="container">
+          <div className="row">
+            <div className="col-md-3 col-6 mb-4 mb-md-0">
+              <h6 style={{ color: "#fff", fontSize: "14px", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.5px", opacity: 0.9 }}>
+                {t("nav.platform")}
+              </h6>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/modulos/feedback-360" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    Feedback 360
+                  </Link>
+                </li>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/modulos/encuestas-clima" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    Encuestas de Clima
+                  </Link>
+                </li>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/modulos/gestion-personas" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    Gestión de Personas
+                  </Link>
+                </li>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/modulos/estructura-organizacional" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    Estructura Org.
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div className="col-md-3 col-6 mb-4 mb-md-0">
+              <h6 style={{ color: "#fff", fontSize: "14px", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.5px", opacity: 0.9 }}>
+                {t("nav.resources")}
+              </h6>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/blog" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    Blog
+                  </Link>
+                </li>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/herramientas" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    Herramientas
+                  </Link>
+                </li>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/diagnostico-clima" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    Diagnóstico de Clima
+                  </Link>
+                </li>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/faq" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    FAQ
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div className="col-md-3 col-6 mb-4 mb-md-0">
+              <h6 style={{ color: "#fff", fontSize: "14px", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.5px", opacity: 0.9 }}>
+                {t("nav.company")}
+              </h6>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/nosotros" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    Nosotros
+                  </Link>
+                </li>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/precios" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    Precios
+                  </Link>
+                </li>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/contacto" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    Contacto
+                  </Link>
+                </li>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/servicios" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    Consultoría
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div className="col-md-3 col-6 mb-4 mb-md-0">
+              <h6 style={{ color: "#fff", fontSize: "14px", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.5px", opacity: 0.9 }}>
+                {t("nav.legal")}
+              </h6>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/terminos" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    Términos
+                  </Link>
+                </li>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/privacidad" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    Privacidad
+                  </Link>
+                </li>
+                <li style={{ marginBottom: "6px" }}>
+                  <Link href="/habeas-data" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", textDecoration: "none" }}>
+                    Habeas Data
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
         </div>

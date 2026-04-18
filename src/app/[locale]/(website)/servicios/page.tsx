@@ -1,8 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import {
   PageHero,
+  ServicesListSection,
   ServicesPageSection,
-  ServiceSection,
 } from "@/components/bizzen";
 
 export async function generateMetadata({
@@ -29,8 +29,8 @@ export default async function ServicesPage({
   return (
     <>
       <PageHero title={t("hero.title")} breadcrumb={t("hero.breadcrumb")} />
+      <ServicesListSection />
       <ServicesPageSection />
-      <ServiceSection />
     </>
   );
 }

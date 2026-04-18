@@ -67,8 +67,8 @@ export default async function ConferencesPage({
               <div className="bizzen-image-box mb-5 mb-xl-0">
                 <div
                   className="bizzen-image image-one"
-                  data-aos="fade-up"
-                  data-aos-duration="800"
+
+
                 >
                   <img
                     src="/images/team/iskya-speaking.jpg"
@@ -83,21 +83,21 @@ export default async function ConferencesPage({
                 <div className="section-title mb-30">
                   <span
                     className="sub-title"
-                    data-aos="fade-down"
-                    data-aos-duration="800"
+
+
                   >
                     {t("subtitle")}
                   </span>
                   <h2 className="text-anm">{t("title")}</h2>
                 </div>
                 <div className="content-wrap">
-                  <p data-aos="fade-up" data-aos-duration="1000">
+                  <p>
                     {t("description")}
                   </p>
                   <div
                     className="bizzen-button mt-30"
-                    data-aos="fade-up"
-                    data-aos-duration="1200"
+
+
                   >
                     <Link href="/contacto" className="theme-btn style-one">
                       SOLICITAR CONFERENCIA
@@ -120,8 +120,8 @@ export default async function ConferencesPage({
               <div className="section-title text-center mb-50">
                 <span
                   className="sub-title"
-                  data-aos="fade-down"
-                  data-aos-duration="1000"
+
+
                 >
                   TEMATICAS
                 </span>
@@ -140,8 +140,8 @@ export default async function ConferencesPage({
                   {/* Bizzen Features Item */}
                   <div
                     className="bizzen-features-item style-one text-center"
-                    data-aos="fade-up"
-                    data-aos-duration={topic.duration}
+
+
                   >
                     <div className="content">
                       <h4>{topic.title}</h4>

@@ -22,8 +22,6 @@ export function CounterSection() {
               <div className="section-title text-white">
                 <span
                   className="sub-title"
-                  data-aos="fade-down"
-                  data-aos-duration="1000"
                 >
                   Logros
                 </span>
@@ -31,7 +29,7 @@ export function CounterSection() {
                   Impulsando el éxito de organizaciones en Colombia
                 </h2>
               </div>
-              <p data-aos="fade-up" data-aos-duration="1200">
+              <p>
                 Nuestra misión es empoderar a las organizaciones de todos los
                 tamaños para prosperar en un mercado en constante cambio. En el
                 dinámico entorno empresarial actual, la clave del éxito radica
@@ -46,8 +44,6 @@ export function CounterSection() {
             {/* Bizzen Counter Item */}
             <div
               className="bizzen-counter-item style-one mb-30"
-              data-aos="fade-up"
-              data-aos-duration="1000"
             >
               <div className="number">
                 <h2>
@@ -66,8 +62,6 @@ export function CounterSection() {
             {/* Bizzen Counter Item */}
             <div
               className="bizzen-counter-item style-one mb-30"
-              data-aos="fade-up"
-              data-aos-duration="1200"
             >
               <div className="number">
                 <h2>
@@ -86,8 +80,6 @@ export function CounterSection() {
             {/* Bizzen Counter Item */}
             <div
               className="bizzen-counter-item style-one mb-30"
-              data-aos="fade-up"
-              data-aos-duration="1400"
             >
               <div className="number">
                 <h2>

@@ -1,0 +1,263 @@
+"use server";
+
+import { prisma } from "@/lib/db/prisma";
+import type { ActionResult } from "@/types";
+import type { CompanyRole } from "@prisma/client";
+
+// ============================================
+// Read an invitation by token (for the accept page)
+// ============================================
+
+export interface InvitationPreview {
+  id: string;
+  email: string;
+  role: CompanyRole;
+  companyName: string;
+  companySlug: string;
+  inviterEmail: string | null;
+  expiresAt: string;
+  acceptedAt: string | null;
+  isExpired: boolean;
+  departmentName: string | null;
+  hubName: string | null;
+}
+
+export async function getInvitationByToken(
+  token: string,
+): Promise<ActionResult<InvitationPreview>> {
+  try {
+    const invitation = await prisma.invitation.findUnique({
+      where: { token },
+      include: {
+        company: { select: { name: true, slug: true } },
+      },
+    });
+
+    if (!invitation) {
+      return { success: false, error: "Invitation not found" };
+    }
+
+    // Best-effort lookup of department/hub/inviter for display
+    const [department, hub] = await Promise.all([
+      invitation.departmentId
+        ? prisma.department.findUnique({
+            where: { id: invitation.departmentId },
+            select: { name: true },
+          })
+        : null,
+      invitation.hubId
+        ? prisma.hub.findUnique({
+            where: { id: invitation.hubId },
+            select: { name: true },
+          })
+        : null,
+    ]);
+
+    const now = new Date();
+    const isExpired = invitation.expiresAt < now;
+
+    return {
+      success: true,
+      data: {
+        id: invitation.id,
+        email: invitation.email,
+        role: invitation.role,
+        companyName: invitation.company.name,
+        companySlug: invitation.company.slug,
+        inviterEmail: null,
+        expiresAt: invitation.expiresAt.toISOString(),
+        acceptedAt: invitation.acceptedAt?.toISOString() ?? null,
+        isExpired,
+        departmentName: department?.name ?? null,
+        hubName: hub?.name ?? null,
+      },
+    };
+  } catch (error) {
+    console.error("Failed to load invitation:", error);
+    return { success: false, error: "Failed to load invitation" };
+  }
+}
+
+// ============================================
+// Accept an invitation — creates User, CompanyUser, Employee
+// ============================================
+
+export async function acceptInvitation(
+  token: string,
+  displayName: string,
+): Promise<ActionResult<{ email: string; companySlug: string }>> {
+  try {
+    const invitation = await prisma.invitation.findUnique({
+      where: { token },
+    });
+
+    if (!invitation) {
+      return { success: false, error: "Invitation not found" };
+    }
+    if (invitation.acceptedAt) {
+      return {
+        success: false,
+        error: "This invitation has already been accepted. Please sign in instead.",
+        code: "ALREADY_ACCEPTED",
+      };
+    }
+    if (invitation.expiresAt < new Date()) {
+      return {
+        success: false,
+        error: "This invitation has expired. Please ask the admin to resend it.",
+        code: "EXPIRED",
+      };
+    }
+
+    const email = invitation.email.toLowerCase().trim();
+    const name = displayName.trim() || email.split("@")[0];
+
+    // Defensively resolve the invitation's FK-like references. Older invites
+    // may carry sentinel strings like "none" or ids whose target row has since
+    // been deleted. We silently drop any that don't resolve to a real row in
+    // the invitation's company.
+    const isValidId = (v: string | null | undefined): v is string =>
+      typeof v === "string" && v.trim().length > 0 && v !== "none";
+
+    const [resolvedDepartmentId, resolvedManagerId, resolvedHubId] = await Promise.all([
+      isValidId(invitation.departmentId)
+        ? prisma.department
+            .findFirst({
+              where: { id: invitation.departmentId, companyId: invitation.companyId },
+              select: { id: true },
+            })
+            .then((d) => d?.id ?? null)
+        : Promise.resolve(null),
+      isValidId(invitation.managerId)
+        ? prisma.employee
+            .findFirst({
+              where: { id: invitation.managerId, companyId: invitation.companyId },
+              select: { id: true },
+            })
+            .then((e) => e?.id ?? null)
+        : Promise.resolve(null),
+      isValidId(invitation.hubId)
+        ? prisma.hub
+            .findFirst({
+              where: { id: invitation.hubId, companyId: invitation.companyId },
+              select: { id: true },
+            })
+            .then((h) => h?.id ?? null)
+        : Promise.resolve(null),
+    ]);
+
+    // Use a transaction so we don't leave half-created records if anything fails
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Find or create the User
+      let user = await tx.user.findUnique({ where: { email } });
+      if (!user) {
+        user = await tx.user.create({
+          data: {
+            email,
+            name,
+            globalRole: "USER",
+          },
+        });
+      }
+
+      // 2. Find or create the Employee record (before CompanyUser so we can link)
+      let employee = await tx.employee.findUnique({
+        where: {
+          companyId_email: {
+            companyId: invitation.companyId,
+            email,
+          },
+        },
+      });
+
+      if (employee) {
+        // Fill in any empty fields from the invitation; don't overwrite existing
+        const employeeUpdates: Record<string, unknown> = {};
+        if (!employee.name && name) employeeUpdates.name = name;
+        if (resolvedDepartmentId && !employee.departmentId) {
+          employeeUpdates.departmentId = resolvedDepartmentId;
+        }
+        if (resolvedManagerId && !employee.managerId) {
+          employeeUpdates.managerId = resolvedManagerId;
+        }
+        if (resolvedHubId && !employee.hubId) {
+          employeeUpdates.hubId = resolvedHubId;
+        }
+        if (!employee.isActive) employeeUpdates.isActive = true;
+        if (Object.keys(employeeUpdates).length > 0) {
+          employee = await tx.employee.update({
+            where: { id: employee.id },
+            data: employeeUpdates,
+          });
+        }
+      } else {
+        employee = await tx.employee.create({
+          data: {
+            companyId: invitation.companyId,
+            email,
+            name,
+            departmentId: resolvedDepartmentId,
+            managerId: resolvedManagerId,
+            hubId: resolvedHubId,
+            isActive: true,
+          },
+        });
+      }
+
+      // 3. Create or update the CompanyUser link, connecting to the Employee
+      const existingCompanyUser = await tx.companyUser.findUnique({
+        where: {
+          userId_companyId: {
+            userId: user.id,
+            companyId: invitation.companyId,
+          },
+        },
+      });
+
+      if (existingCompanyUser) {
+        await tx.companyUser.update({
+          where: { id: existingCompanyUser.id },
+          data: {
+            role: invitation.role,
+            roleConfigId: invitation.roleConfigId,
+            employeeId: existingCompanyUser.employeeId ?? employee.id,
+            isActive: true,
+          },
+        });
+      } else {
+        await tx.companyUser.create({
+          data: {
+            userId: user.id,
+            companyId: invitation.companyId,
+            role: invitation.role,
+            roleConfigId: invitation.roleConfigId,
+            employeeId: employee.id,
+            isActive: true,
+          },
+        });
+      }
+
+      // 4. Mark invitation as accepted
+      await tx.invitation.update({
+        where: { id: invitation.id },
+        data: { acceptedAt: new Date() },
+      });
+
+      const company = await tx.company.findUnique({
+        where: { id: invitation.companyId },
+        select: { slug: true },
+      });
+
+      return { email, companySlug: company?.slug ?? "" };
+    });
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Failed to accept invitation:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to accept invitation",
+    };
+  }
+}

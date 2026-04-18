@@ -60,20 +60,20 @@ export default async function ClimateDiagnosticPage({
                 <div className="section-title mb-4">
                   <span
                     className="sub-title"
-                    data-aos="fade-down"
-                    data-aos-duration="800"
+
+
                   >
                     {t("subtitle")}
                   </span>
                   <h2 className="text-anm">{t("title")}</h2>
                 </div>
-                <p className="mb-30" data-aos="fade-up" data-aos-duration="1000">
+                <p className="mb-30">
                   {t("description")}
                 </p>
                 <div
                   className="bizzen-button"
-                  data-aos="fade-up"
-                  data-aos-duration="1200"
+
+
                 >
                   <Link href="/contacto" className="theme-btn style-one">
                     {t("cta").toUpperCase()}
@@ -90,8 +90,8 @@ export default async function ClimateDiagnosticPage({
                       {/* Bizzen Iconic Box */}
                       <div
                         className="bizzen-iconic-box style-one mb-40"
-                        data-aos="fade-up"
-                        data-aos-duration={feature.duration}
+
+
                       >
                         <div className="icon">
                           <img src={feature.icon} alt="icon" />
@@ -123,8 +123,8 @@ export default async function ClimateDiagnosticPage({
                 <div className="section-title mb-4">
                   <span
                     className="sub-title"
-                    data-aos="fade-down"
-                    data-aos-duration="800"
+
+
                   >
                     COMIENZA HOY
                   </span>
@@ -132,14 +132,14 @@ export default async function ClimateDiagnosticPage({
                     Mide el clima de tu organizacion
                   </h2>
                 </div>
-                <p data-aos="fade-up" data-aos-duration="1000">
+                <p>
                   Solicita una demo gratuita y descubre como nuestra plataforma
                   puede ayudarte a transformar el feedback en acciones concretas.
                 </p>
                 <div
                   className="bizzen-button mb-40"
-                  data-aos="fade-up"
-                  data-aos-duration="1200"
+
+
                 >
                   <Link href="/contacto" className="theme-btn style-one">
                     {t("cta").toUpperCase()} <i className="far fa-arrow-right" />
@@ -151,8 +151,8 @@ export default async function ClimateDiagnosticPage({
               {/* Bizzen Image */}
               <div
                 className="bizzen-image mb-50"
-                data-aos="fade-up"
-                data-aos-duration="1000"
+
+
               >
                 <img
                   src="/bizzen/images/innerpage/gallery/biz-img1.jpg"

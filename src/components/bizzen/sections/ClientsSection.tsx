@@ -83,8 +83,6 @@ export function ClientsSection({ clients: sanityClients = [] }: ClientsSectionPr
           <div className="col-lg-12">
             <div
               className="text-box text-center mb-30"
-              data-aos="fade-up"
-              data-aos-duration="1000"
             >
               <h6>{t("title")}</h6>
             </div>
@@ -94,7 +92,7 @@ export function ClientsSection({ clients: sanityClients = [] }: ClientsSectionPr
 
       <div className="container-fluid">
         {/* Clients Slider */}
-        <div data-aos="fade-up" data-aos-duration="1200">
+        <div>
           <Slider {...sliderSettings} className="clients-slider">
             {clients.map((client, index) => (
               <div key={index} className="bizzen-client-item">

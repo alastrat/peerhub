@@ -7,7 +7,6 @@ import { Providers } from "@/providers";
 import "@/styles/bizzen/plugins/bootstrap.min.css";
 import "@/styles/bizzen/plugins/slick.css";
 import "@/styles/bizzen/plugins/magnific-popup.css";
-import "@/styles/bizzen/plugins/aos.css";
 import "@/styles/bizzen/spacings.css";
 import "@/styles/bizzen/style.css";
 
@@ -58,7 +57,7 @@ const jsonLd = {
       url: siteUrl,
       logo: {
         "@type": "ImageObject",
-        url: `${siteUrl}/images/logo-new.png`,
+        url: `${siteUrl}/images/logo.png`,
         width: 200,
         height: 60,
       },
@@ -186,7 +185,7 @@ export const metadata: Metadata = {
       "Transformamos organizaciones a través de estrategias innovadoras en cultura, cambio, selección y comunicación interna. +15 años de experiencia en Colombia.",
     images: [
       {
-        url: "/images/logo-new.png",
+        url: "/images/logo.png",
         width: 1200,
         height: 630,
         alt: "Kultiva - Consultoría Organizacional",

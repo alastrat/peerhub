@@ -67,6 +67,7 @@ export async function releaseReport(
     });
 
     // Send email notification
+    let warning: string | undefined;
     if (sendEmail) {
       try {
         await notifyEmployee({
@@ -83,14 +84,17 @@ export async function releaseReport(
           },
         });
       } catch (emailError) {
-        console.error("Failed to send report release email:", emailError);
-        // Don't fail the action if email fails
+        console.error(
+          `[reports] Report release email failed for employee ${participant.employeeId}:`,
+          emailError,
+        );
+        warning = "Report was released but the notification email could not be delivered. Check the server logs.";
       }
     }
 
     revalidatePath(`/reports/${cycleId}`);
     revalidatePath("/my-feedback");
-    return { success: true };
+    return { success: true, warning };
   } catch (error) {
     console.error("Failed to release report:", error);
     return { success: false, error: "Failed to release report" };
@@ -128,6 +132,7 @@ export async function releaseAllReports(
 
     let released = 0;
     let skipped = 0;
+    let emailFailures = 0;
 
     for (const participant of cycle.participants) {
       // Check if participant has minimum responses
@@ -165,7 +170,11 @@ export async function releaseAllReports(
               },
             });
           } catch (emailError) {
-            console.error("Failed to send report release email:", emailError);
+            emailFailures++;
+            console.error(
+              `[reports] Bulk release email failed for employee ${participant.employeeId}:`,
+              emailError,
+            );
           }
         }
       } else {
@@ -175,7 +184,11 @@ export async function releaseAllReports(
 
     revalidatePath(`/reports/${cycleId}`);
     revalidatePath("/my-feedback");
-    return { success: true, data: { released, skipped } };
+    const warning =
+      emailFailures > 0
+        ? `${emailFailures} notification email${emailFailures !== 1 ? "s" : ""} failed to send. Reports were released but affected employees won't be notified by email. Check the server logs.`
+        : undefined;
+    return { success: true, data: { released, skipped }, warning };
   } catch (error) {
     console.error("Failed to release all reports:", error);
     return { success: false, error: "Failed to release reports" };

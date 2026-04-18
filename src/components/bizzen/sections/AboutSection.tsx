@@ -16,8 +16,6 @@ export function AboutSection() {
             {/* Bizzen Image */}
             <div
               className="bizzen-image mb-5 mb-xl-0"
-              data-aos="fade-up"
-              data-aos-duration="800"
             >
               <img
                 src="/images/about/cultura-organizacional.webp"
@@ -31,8 +29,6 @@ export function AboutSection() {
               <div className="section-title mb-50">
                 <span
                   className="sub-title"
-                  data-aos="fade-down"
-                  data-aos-duration="1000"
                 >
                   {t("subtitle")}
                 </span>
@@ -41,21 +37,17 @@ export function AboutSection() {
               <div className="experience-text-wrap">
                 <div
                   className="experience-box"
-                  data-aos="fade-up"
-                  data-aos-duration="1000"
                 >
                   <h2>
                     15+ <span>{tStats("years")}</span>
                   </h2>
                 </div>
                 <div className="text-box">
-                  <p data-aos="fade-up" data-aos-duration="1000">
+                  <p>
                     {t("description")}
                   </p>
                   <ul
                     className="check-list style-one"
-                    data-aos="fade-up"
-                    data-aos-duration="1200"
                   >
                     <li>
                       <i className="fas fa-check-circle" />
@@ -72,8 +64,6 @@ export function AboutSection() {
                   </ul>
                   <div
                     className="bizzen-button"
-                    data-aos="fade-up"
-                    data-aos-duration="1400"
                   >
                     <Link href="/nosotros" className="theme-btn style-one">
                       {tCommon("learn_more").toUpperCase()}{" "}

@@ -19,6 +19,7 @@ import { requestPortalAccess } from "@/lib/actions/portal";
 export default function PortalLoginPage() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
+  const redirectTo = searchParams.get("redirect");
 
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -37,7 +38,10 @@ export default function PortalLoginPage() {
     }
 
     startTransition(async () => {
-      const result = await requestPortalAccess(email.trim().toLowerCase());
+      const result = await requestPortalAccess(
+        email.trim().toLowerCase(),
+        redirectTo || undefined,
+      );
 
       if (result.success) {
         setSent(true);

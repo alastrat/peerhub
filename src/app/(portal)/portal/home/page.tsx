@@ -9,6 +9,7 @@ import {
   ArrowRight,
   Calendar,
   UserCheck,
+  BarChart3,
 } from "lucide-react";
 import { getPortalSession } from "@/lib/auth/portal-session";
 import { getPortalDashboard } from "@/lib/actions/portal";
@@ -128,6 +129,79 @@ async function DashboardContent() {
                               : `Due ${formatDate(review.dueDate)}`}
                         </p>
                         <Button size="sm">Start</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* Pending Climate Surveys */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-emerald-600" />
+            Encuestas de Clima
+          </h2>
+          {dashboard.pendingClimateSurveys.length > 0 && (
+            <Badge variant="secondary">
+              {dashboard.pendingClimateSurveys.length} pendiente{dashboard.pendingClimateSurveys.length !== 1 ? "s" : ""}
+            </Badge>
+          )}
+        </div>
+
+        {dashboard.pendingClimateSurveys.length === 0 ? (
+          <EmptyState
+            icon={<CheckCircle2 className="h-8 w-8 text-muted-foreground" />}
+            title="Sin encuestas pendientes"
+            description="Cuando tu organización lance una encuesta de clima, aparecerá aquí."
+            className="py-10"
+          />
+        ) : (
+          <div className="space-y-3">
+            {dashboard.pendingClimateSurveys.map((survey) => {
+              const daysLeft = daysUntil(survey.dueDate);
+              const isOverdue = isDateInPast(survey.dueDate);
+
+              return (
+                <Link
+                  key={survey.distributionId}
+                  href={`/portal/climate-survey/${survey.distributionId}`}
+                >
+                  <Card className="transition-shadow hover:shadow-md border-emerald-200 bg-emerald-50/30 dark:border-emerald-900 dark:bg-emerald-950/10">
+                    <CardContent className="flex items-center gap-4 p-4">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
+                        <BarChart3 className="h-5 w-5 text-emerald-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium truncate">{survey.surveyName}</p>
+                          <Badge variant="outline">{survey.surveyType}</Badge>
+                          {survey.isAnonymous && (
+                            <Badge variant="secondary" className="text-xs">
+                              Anónima
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <p
+                          className={`text-xs ${
+                            isOverdue
+                              ? "text-destructive font-medium"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {isOverdue
+                            ? "Vencida"
+                            : daysLeft <= 3
+                              ? `${daysLeft} día${daysLeft !== 1 ? "s" : ""}`
+                              : `Hasta ${formatDate(survey.dueDate)}`}
+                        </p>
+                        <Button size="sm">Responder</Button>
                       </div>
                     </CardContent>
                   </Card>

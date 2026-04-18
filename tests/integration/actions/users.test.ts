@@ -199,6 +199,9 @@ describe("user actions", () => {
     it("passes departmentId and managerId to invitation", async () => {
       mockPrisma.companyUser.findFirst.mockResolvedValue(null);
       mockPrisma.invitation.findFirst.mockResolvedValue(null);
+      // Validate department and manager exist
+      mockPrisma.department.findFirst.mockResolvedValue({ id: "dept-1" });
+      mockPrisma.employee.findFirst.mockResolvedValue({ id: "mgr-1" });
       mockPrisma.invitation.create.mockResolvedValue({
         ...sampleInvitation,
         departmentId: "dept-1",

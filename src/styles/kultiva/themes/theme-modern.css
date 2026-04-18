@@ -6,7 +6,7 @@
 
 [data-theme="modern"] {
   --heading-font: var(--font-quicksand), "Quicksand", sans-serif;
-  --body-font: var(--font-jakarta), "Plus Jakarta Sans", sans-serif;
+  --body-font: var(--font-quicksand), "Quicksand", sans-serif;
 
   --primary-color: #613171;
   --secondary-color: #9CC445;
