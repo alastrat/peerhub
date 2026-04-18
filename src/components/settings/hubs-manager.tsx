@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Plus, Pencil, Trash2, MapPin, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,7 @@ interface Hub {
 export function HubsManager({ hubs }: { hubs: Hub[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("dashboard.hubs");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingHub, setEditingHub] = useState<Hub | null>(null);
   const [name, setName] = useState("");
@@ -78,7 +80,7 @@ export function HubsManager({ hubs }: { hubs: Hub[] }) {
           });
 
       if (result.success) {
-        toast.success(editingHub ? "Hub updated" : "Hub created");
+        toast.success(editingHub ? t("hubUpdated") : t("hubCreated"));
         setDialogOpen(false);
         router.refresh();
       } else {
@@ -88,11 +90,11 @@ export function HubsManager({ hubs }: { hubs: Hub[] }) {
   }
 
   function handleDelete(hub: Hub) {
-    if (!confirm(`Delete "${hub.name}"? This cannot be undone.`)) return;
+    if (!confirm(t("deleteConfirm", { name: hub.name }))) return;
     startTransition(async () => {
       const result = await deleteHub(hub.id);
       if (result.success) {
-        toast.success("Hub deleted");
+        toast.success(t("hubDeleted"));
         router.refresh();
       } else {
         toast.error(result.error);
@@ -104,14 +106,14 @@ export function HubsManager({ hubs }: { hubs: Hub[] }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-medium">Hubs</h3>
+          <h3 className="text-lg font-medium">{t("title")}</h3>
           <p className="text-sm text-muted-foreground">
-            Manage your business locations and branches
+            {t("subtitle")}
           </p>
         </div>
         <Button onClick={openCreate} size="sm">
           <Plus className="mr-2 h-4 w-4" />
-          Add Hub
+          {t("addHub")}
         </Button>
       </div>
 
@@ -119,18 +121,18 @@ export function HubsManager({ hubs }: { hubs: Hub[] }) {
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
-              <TableHead>Name</TableHead>
-              <TableHead>Address</TableHead>
-              <TableHead>Employees</TableHead>
-              <TableHead>Teams</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
+              <TableHead>{t("name")}</TableHead>
+              <TableHead>{t("address")}</TableHead>
+              <TableHead>{t("employees")}</TableHead>
+              <TableHead>{t("teams")}</TableHead>
+              <TableHead className="w-[100px]">{t("actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {hubs.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                  No hubs yet. Create your first hub to get started.
+                  {t("noHubs")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -142,7 +144,7 @@ export function HubsManager({ hubs }: { hubs: Hub[] }) {
                       <span className="font-medium">{hub.name}</span>
                       {hub.isDefault && (
                         <Badge variant="secondary" className="text-xs">
-                          Default
+                          {t("default")}
                         </Badge>
                       )}
                     </div>
@@ -188,47 +190,47 @@ export function HubsManager({ hubs }: { hubs: Hub[] }) {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingHub ? "Edit Hub" : "New Hub"}</DialogTitle>
+            <DialogTitle>{editingHub ? t("editHub") : t("newHub")}</DialogTitle>
             <DialogDescription>
               {editingHub
-                ? "Update the hub details"
-                : "Add a new business location or branch"}
+                ? t("updateDetails")
+                : t("addLocation")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Name</Label>
+              <Label>{t("name")}</Label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Bogota Office"
+                placeholder={t("namePlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Description (optional)</Label>
+              <Label>{t("descriptionOptional")}</Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Brief description of this hub..."
+                placeholder={t("descriptionPlaceholder")}
                 rows={2}
               />
             </div>
             <div className="space-y-2">
-              <Label>Address (optional)</Label>
+              <Label>{t("addressOptional")}</Label>
               <Input
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="e.g. Calle 100 #19-61, Bogota"
+                placeholder={t("addressPlaceholder")}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={isPending}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button onClick={handleSave} disabled={isPending || !name.trim()}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {editingHub ? "Save" : "Create"}
+              {editingHub ? t("save") : t("create")}
             </Button>
           </DialogFooter>
         </DialogContent>

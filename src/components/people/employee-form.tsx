@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -46,6 +47,7 @@ export function EmployeeForm({
 }: EmployeeFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("dashboard.employeeForm");
 
   const form = useForm<CreateUserInput>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,8 +77,8 @@ export function EmployeeForm({
       if (result.success) {
         toast.success(
           mode === "invite"
-            ? "Invitation sent successfully"
-            : "Employee added successfully"
+            ? t("invitationSent")
+            : t("employeeAdded")
         );
         if (result.warning) {
           toast.warning(result.warning);
@@ -84,7 +86,7 @@ export function EmployeeForm({
         router.push("/people");
         router.refresh();
       } else {
-        toast.error(result.error || "Something went wrong");
+        toast.error(result.error || t("somethingWrong"));
       }
     });
   }
@@ -98,18 +100,18 @@ export function EmployeeForm({
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email address</FormLabel>
+                <FormLabel>{t("emailAddress")}</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="john@company.com"
+                    placeholder={t("emailPlaceholder")}
                     {...field}
                   />
                 </FormControl>
                 <FormDescription>
                   {mode === "invite"
-                    ? "An invitation will be sent to this email"
-                    : "The employee's work email address"}
+                    ? t("inviteEmailDesc")
+                    : t("createEmailDesc")}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -121,9 +123,9 @@ export function EmployeeForm({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full name</FormLabel>
+                <FormLabel>{t("fullName")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} />
+                  <Input placeholder={t("namePlaceholder")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -135,9 +137,9 @@ export function EmployeeForm({
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Job title</FormLabel>
+                <FormLabel>{t("jobTitle")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Software Engineer" {...field} />
+                  <Input placeholder={t("titlePlaceholder")} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -149,14 +151,14 @@ export function EmployeeForm({
             name="role"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Role</FormLabel>
+                <FormLabel>{t("role")}</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a role" />
+                      <SelectValue placeholder={t("selectRole")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -168,7 +170,7 @@ export function EmployeeForm({
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  Admins can manage all settings, Managers can view team reports
+                  {t("roleDescription")}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -180,18 +182,18 @@ export function EmployeeForm({
             name="departmentId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Department</FormLabel>
+                <FormLabel>{t("department")}</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a department" />
+                      <SelectValue placeholder={t("selectDepartment")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="none">No department</SelectItem>
+                    <SelectItem value="none">{t("noDepartment")}</SelectItem>
                     {departments.map((dept) => (
                       <SelectItem key={dept.id} value={dept.id}>
                         {dept.name}
@@ -209,18 +211,18 @@ export function EmployeeForm({
             name="managerId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Manager</FormLabel>
+                <FormLabel>{t("manager")}</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a manager" />
+                      <SelectValue placeholder={t("selectManager")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="none">No manager</SelectItem>
+                    <SelectItem value="none">{t("noManager")}</SelectItem>
                     {managers.map((manager) => (
                       <SelectItem key={manager.id} value={manager.id}>
                         {manager.name || manager.email}
@@ -239,18 +241,18 @@ export function EmployeeForm({
               name="hubId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Hub</FormLabel>
+                  <FormLabel>{t("hub")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a hub" />
+                        <SelectValue placeholder={t("selectHub")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="none">No hub</SelectItem>
+                      <SelectItem value="none">{t("noHub")}</SelectItem>
                       {hubs.map((hub) => (
                         <SelectItem key={hub.id} value={hub.id}>
                           {hub.name}
@@ -272,11 +274,11 @@ export function EmployeeForm({
             onClick={() => router.back()}
             disabled={isPending}
           >
-            Cancel
+            {t("cancel")}
           </Button>
           <Button type="submit" disabled={isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {mode === "invite" ? "Send Invitation" : "Add Employee"}
+            {mode === "invite" ? t("sendInvitation") : t("addEmployee")}
           </Button>
         </div>
       </form>

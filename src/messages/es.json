@@ -393,7 +393,10 @@
     "subtitle": "Lo Que Hacemos",
     "title": "Mas de 50 clientes confian en nosotros",
     "description": "Cada servicio esta disenado para abordar los desafios especificos de tu organizacion, con metodologias probadas y un enfoque centrado en las personas.",
-    "cta": "Solicitar una Consulta",
+    "cta": {
+      "title": "Listo para transformar tu organizacion?",
+      "description": "Contactanos para una consulta gratuita y descubre como podemos ayudarte a alcanzar tus objetivos."
+    },
     "list": {
       "subtitle": "Servicios de Consultoria",
       "title": "Soluciones integrales para tu organizacion",
@@ -424,10 +427,6 @@
     "faq": {
       "title": "Obtén todas las respuestas aquí",
       "see_all": "Ver Todas las FAQ"
-    },
-    "cta": {
-      "title": "Listo para transformar tu organizacion?",
-      "description": "Contactanos para una consulta gratuita y descubre como podemos ayudarte a alcanzar tus objetivos."
     },
     "features": {
       "expert": {
@@ -920,19 +919,49 @@
       },
       "process": {
         "title": "Asi funciona un ciclo",
-        "create": { "title": "Crea el ciclo", "description": "Nombre, fechas, competencias y tipos de evaluador." },
-        "nominate": { "title": "Nomina evaluadores", "description": "Pares nominan o tu equipo asigna directamente." },
-        "evaluate": { "title": "Evaluacion en linea", "description": "Evaluadores responden y monitoreas avance." },
-        "review": { "title": "Revisa los datos", "description": "Resultados agregados antes de liberar." },
-        "release": { "title": "Libera reportes", "description": "Entrega individual con sesion de retroalimentacion." }
+        "create": {
+          "title": "Crea el ciclo",
+          "description": "Nombre, fechas, competencias y tipos de evaluador."
+        },
+        "nominate": {
+          "title": "Nomina evaluadores",
+          "description": "Pares nominan o tu equipo asigna directamente."
+        },
+        "evaluate": {
+          "title": "Evaluacion en linea",
+          "description": "Evaluadores responden y monitoreas avance."
+        },
+        "review": {
+          "title": "Revisa los datos",
+          "description": "Resultados agregados antes de liberar."
+        },
+        "release": {
+          "title": "Libera reportes",
+          "description": "Entrega individual con sesion de retroalimentacion."
+        }
       },
       "faq": {
         "title": "Preguntas frecuentes sobre Feedback 360",
-        "q1": { "q": "Cuantos evaluadores puede tener una persona?", "a": "Sin limite fijo. Configuras minimos y maximos por tipo de evaluador en cada ciclo." },
-        "q2": { "q": "Se puede excluir la autoevaluacion?", "a": "Si. Cada tipo de evaluador es opcional y se activa o desactiva por ciclo." },
-        "q3": { "q": "Como funciona el umbral de anonimato?", "a": "Si defines umbral 3 para pares y solo hay 2 evaluaciones, esas respuestas se agregan con otro grupo." },
-        "q4": { "q": "Se pueden usar competencias diferentes por cargo?", "a": "Si. Cada ciclo tiene su propio set de competencias. Crea ciclos para ejecutivos, mandos medios y contribuidores." },
-        "q5": { "q": "Que formato tienen los reportes?", "a": "Visualizaciones de radar, barras por competencia y comparacion auto vs otros. Exportables a PDF y CSV." }
+        "q1": {
+          "q": "Cuantos evaluadores puede tener una persona?",
+          "a": "Sin limite fijo. Configuras minimos y maximos por tipo de evaluador en cada ciclo."
+        },
+        "q2": {
+          "q": "Se puede excluir la autoevaluacion?",
+          "a": "Si. Cada tipo de evaluador es opcional y se activa o desactiva por ciclo."
+        },
+        "q3": {
+          "q": "Como funciona el umbral de anonimato?",
+          "a": "Si defines umbral 3 para pares y solo hay 2 evaluaciones, esas respuestas se agregan con otro grupo."
+        },
+        "q4": {
+          "q": "Se pueden usar competencias diferentes por cargo?",
+          "a": "Si. Cada ciclo tiene su propio set de competencias. Crea ciclos para ejecutivos, mandos medios y contribuidores."
+        },
+        "q5": {
+          "q": "Que formato tienen los reportes?",
+          "a": "Visualizaciones de radar, barras por competencia y comparacion auto vs otros. Exportables a PDF y CSV."
+        }
       },
       "cta": {
         "title": "Ve el Feedback 360 en accion",
@@ -989,19 +1018,49 @@
       },
       "process": {
         "title": "Lanzar una encuesta es simple",
-        "create": { "title": "Elige tipo", "description": "CLIMATE, PULSE o eNPS segun tu necesidad." },
-        "configure": { "title": "Configura preguntas", "description": "Usa plantilla o personaliza dimensiones y preguntas." },
-        "distribute": { "title": "Define alcance", "description": "Toda la empresa, sede, departamento o seleccion." },
-        "monitor": { "title": "Monitorea avance", "description": "Sigue la tasa de respuesta en tiempo real." },
-        "analyze": { "title": "Analiza resultados", "description": "Reportes por dimension, segmento y comparacion." }
+        "create": {
+          "title": "Elige tipo",
+          "description": "CLIMATE, PULSE o eNPS segun tu necesidad."
+        },
+        "configure": {
+          "title": "Configura preguntas",
+          "description": "Usa plantilla o personaliza dimensiones y preguntas."
+        },
+        "distribute": {
+          "title": "Define alcance",
+          "description": "Toda la empresa, sede, departamento o seleccion."
+        },
+        "monitor": {
+          "title": "Monitorea avance",
+          "description": "Sigue la tasa de respuesta en tiempo real."
+        },
+        "analyze": {
+          "title": "Analiza resultados",
+          "description": "Reportes por dimension, segmento y comparacion."
+        }
       },
       "faq": {
         "title": "Preguntas frecuentes sobre Encuestas de Clima",
-        "q1": { "q": "Cual es la diferencia entre CLIMATE, PULSE y eNPS?", "a": "CLIMATE es completa (anual). PULSE es corta (mensual o trimestral). eNPS mide lealtad con una sola pregunta clave." },
-        "q2": { "q": "Las respuestas son anonimas?", "a": "Si configuras la encuesta como anonima, los nombres no se asocian a respuestas individuales en los reportes." },
-        "q3": { "q": "Puedo segmentar resultados por sede o departamento?", "a": "Si. Los reportes desglosan por hub, departamento y equipo. Tambien puedes ver tendencias entre periodos." },
-        "q4": { "q": "Cuantas encuestas puedo lanzar al ano?", "a": "Las que necesites. Recomendamos una CLIMATE anual + PULSE mensuales o trimestrales para seguimiento continuo." },
-        "q5": { "q": "Como invitamos a los colaboradores a responder?", "a": "Reciben un enlace por correo. Tambien puedes generar enlaces unicos para distribuir manualmente." }
+        "q1": {
+          "q": "Cual es la diferencia entre CLIMATE, PULSE y eNPS?",
+          "a": "CLIMATE es completa (anual). PULSE es corta (mensual o trimestral). eNPS mide lealtad con una sola pregunta clave."
+        },
+        "q2": {
+          "q": "Las respuestas son anonimas?",
+          "a": "Si configuras la encuesta como anonima, los nombres no se asocian a respuestas individuales en los reportes."
+        },
+        "q3": {
+          "q": "Puedo segmentar resultados por sede o departamento?",
+          "a": "Si. Los reportes desglosan por hub, departamento y equipo. Tambien puedes ver tendencias entre periodos."
+        },
+        "q4": {
+          "q": "Cuantas encuestas puedo lanzar al ano?",
+          "a": "Las que necesites. Recomendamos una CLIMATE anual + PULSE mensuales o trimestrales para seguimiento continuo."
+        },
+        "q5": {
+          "q": "Como invitamos a los colaboradores a responder?",
+          "a": "Reciben un enlace por correo. Tambien puedes generar enlaces unicos para distribuir manualmente."
+        }
       },
       "cta": {
         "title": "Mide el clima de tu organizacion",
@@ -1031,28 +1090,76 @@
       },
       "capabilities": {
         "title": "Una sola fuente de verdad para tu equipo",
-        "directory": { "title": "Directorio centralizado", "description": "Toda la informacion del equipo en un solo lugar, accesible desde cualquier lado." },
-        "csv": { "title": "Carga masiva CSV", "description": "Importa cientos de colaboradores en minutos con un archivo bien estructurado." },
-        "hierarchy": { "title": "Jerarquia de jefaturas", "description": "Define quien reporta a quien. La estructura alimenta los ciclos de feedback." },
-        "profiles": { "title": "Perfiles completos", "description": "Datos de contacto, cargo, departamento, sede, fecha de ingreso y mas." },
-        "roles": { "title": "Roles del sistema", "description": "Asigna roles (Admin, Manager, Empleado) para controlar accesos." },
-        "deactivation": { "title": "Bajas controladas", "description": "Desactiva colaboradores sin perder su historial de evaluaciones." }
+        "directory": {
+          "title": "Directorio centralizado",
+          "description": "Toda la informacion del equipo en un solo lugar, accesible desde cualquier lado."
+        },
+        "csv": {
+          "title": "Carga masiva CSV",
+          "description": "Importa cientos de colaboradores en minutos con un archivo bien estructurado."
+        },
+        "hierarchy": {
+          "title": "Jerarquia de jefaturas",
+          "description": "Define quien reporta a quien. La estructura alimenta los ciclos de feedback."
+        },
+        "profiles": {
+          "title": "Perfiles completos",
+          "description": "Datos de contacto, cargo, departamento, sede, fecha de ingreso y mas."
+        },
+        "roles": {
+          "title": "Roles del sistema",
+          "description": "Asigna roles (Admin, Manager, Empleado) para controlar accesos."
+        },
+        "deactivation": {
+          "title": "Bajas controladas",
+          "description": "Desactiva colaboradores sin perder su historial de evaluaciones."
+        }
       },
       "process": {
         "title": "Configura tu directorio en pasos simples",
-        "import": { "title": "Importa", "description": "Sube tu CSV con todos los colaboradores." },
-        "verify": { "title": "Verifica", "description": "Revisa la importacion y corrige errores." },
-        "assign": { "title": "Asigna", "description": "Define jefes, departamentos y sedes." },
-        "manage": { "title": "Mantiene", "description": "Actualiza datos a medida que cambia tu equipo." },
-        "audit": { "title": "Audita", "description": "Consulta historial y exporta cuando necesites." }
+        "import": {
+          "title": "Importa",
+          "description": "Sube tu CSV con todos los colaboradores."
+        },
+        "verify": {
+          "title": "Verifica",
+          "description": "Revisa la importacion y corrige errores."
+        },
+        "assign": {
+          "title": "Asigna",
+          "description": "Define jefes, departamentos y sedes."
+        },
+        "manage": {
+          "title": "Mantiene",
+          "description": "Actualiza datos a medida que cambia tu equipo."
+        },
+        "audit": {
+          "title": "Audita",
+          "description": "Consulta historial y exporta cuando necesites."
+        }
       },
       "faq": {
         "title": "Preguntas frecuentes sobre Gestion de Personas",
-        "q1": { "q": "Cuantos colaboradores puedo cargar de una vez?", "a": "Sin limite practico. Hemos cargado archivos con miles de colaboradores en una sola operacion." },
-        "q2": { "q": "Que pasa si alguien deja la empresa?", "a": "Se desactiva el perfil. Mantiene su historial pero no aparece en encuestas nuevas." },
-        "q3": { "q": "Puedo importar desde mi sistema HRIS?", "a": "Si. Exportas un CSV desde tu HRIS y lo importas en Kultiva. Proximamente integraciones nativas." },
-        "q4": { "q": "Quien puede ver los datos de los colaboradores?", "a": "Solo los Admins de tu empresa. Los Managers ven a su equipo. Los Empleados ven su propio perfil." },
-        "q5": { "q": "Como manejan datos personales y privacidad?", "a": "Cumplimos con la normativa colombiana de habeas data y aplicamos cifrado en transito y en reposo." }
+        "q1": {
+          "q": "Cuantos colaboradores puedo cargar de una vez?",
+          "a": "Sin limite practico. Hemos cargado archivos con miles de colaboradores en una sola operacion."
+        },
+        "q2": {
+          "q": "Que pasa si alguien deja la empresa?",
+          "a": "Se desactiva el perfil. Mantiene su historial pero no aparece en encuestas nuevas."
+        },
+        "q3": {
+          "q": "Puedo importar desde mi sistema HRIS?",
+          "a": "Si. Exportas un CSV desde tu HRIS y lo importas en Kultiva. Proximamente integraciones nativas."
+        },
+        "q4": {
+          "q": "Quien puede ver los datos de los colaboradores?",
+          "a": "Solo los Admins de tu empresa. Los Managers ven a su equipo. Los Empleados ven su propio perfil."
+        },
+        "q5": {
+          "q": "Como manejan datos personales y privacidad?",
+          "a": "Cumplimos con la normativa colombiana de habeas data y aplicamos cifrado en transito y en reposo."
+        }
       },
       "cta": {
         "title": "Ten tu directorio listo en minutos",
@@ -1082,28 +1189,76 @@
       },
       "capabilities": {
         "title": "Una estructura que se adapta a tu realidad",
-        "hubs": { "title": "Hubs (sedes)", "description": "Modela sedes geograficas: Bogota, Medellin, Cali. Cada sede con sus departamentos." },
-        "departments": { "title": "Departamentos", "description": "Estructura clasica por departamento. RR.HH., Comercial, Operaciones, etc." },
-        "teams": { "title": "Equipos transversales", "description": "Equipos que cruzan departamentos (proyectos, comites, squads)." },
-        "scoping": { "title": "Alcance preciso", "description": "Lanza una encuesta solo a una sede, un departamento, un equipo o una seleccion personalizada." },
-        "permissions": { "title": "Permisos por estructura", "description": "Los Managers ven solo a su equipo. Los Admins de sede ven solo su sede." },
-        "reporting": { "title": "Reportes desglosados", "description": "Compara resultados entre sedes, departamentos o equipos." }
+        "hubs": {
+          "title": "Hubs (sedes)",
+          "description": "Modela sedes geograficas: Bogota, Medellin, Cali. Cada sede con sus departamentos."
+        },
+        "departments": {
+          "title": "Departamentos",
+          "description": "Estructura clasica por departamento. RR.HH., Comercial, Operaciones, etc."
+        },
+        "teams": {
+          "title": "Equipos transversales",
+          "description": "Equipos que cruzan departamentos (proyectos, comites, squads)."
+        },
+        "scoping": {
+          "title": "Alcance preciso",
+          "description": "Lanza una encuesta solo a una sede, un departamento, un equipo o una seleccion personalizada."
+        },
+        "permissions": {
+          "title": "Permisos por estructura",
+          "description": "Los Managers ven solo a su equipo. Los Admins de sede ven solo su sede."
+        },
+        "reporting": {
+          "title": "Reportes desglosados",
+          "description": "Compara resultados entre sedes, departamentos o equipos."
+        }
       },
       "process": {
         "title": "Configura tu estructura en cinco pasos",
-        "model": { "title": "Modela", "description": "Define hubs, departamentos y equipos." },
-        "assign": { "title": "Asigna", "description": "Asocia cada colaborador a su sede y departamento." },
-        "validate": { "title": "Valida", "description": "Confirma que la estructura refleja tu organizacion." },
-        "scope": { "title": "Segmenta", "description": "Usa la estructura para definir alcance de encuestas." },
-        "report": { "title": "Reporta", "description": "Compara resultados entre sedes y equipos." }
+        "model": {
+          "title": "Modela",
+          "description": "Define hubs, departamentos y equipos."
+        },
+        "assign": {
+          "title": "Asigna",
+          "description": "Asocia cada colaborador a su sede y departamento."
+        },
+        "validate": {
+          "title": "Valida",
+          "description": "Confirma que la estructura refleja tu organizacion."
+        },
+        "scope": {
+          "title": "Segmenta",
+          "description": "Usa la estructura para definir alcance de encuestas."
+        },
+        "report": {
+          "title": "Reporta",
+          "description": "Compara resultados entre sedes y equipos."
+        }
       },
       "faq": {
         "title": "Preguntas frecuentes sobre Estructura Organizacional",
-        "q1": { "q": "Que diferencia hay entre departamento y equipo?", "a": "Departamento es la estructura formal (RR.HH., Comercial). Equipo es transversal y puede tener miembros de varios departamentos." },
-        "q2": { "q": "Una persona puede estar en varios equipos?", "a": "Si. Una persona pertenece a un solo departamento pero puede estar en multiples equipos." },
-        "q3": { "q": "Como manejan organizaciones con grupos empresariales?", "a": "Cada empresa del grupo es un tenant independiente. Si necesitas vista consolidada, contactanos para Enterprise." },
-        "q4": { "q": "Puedo cambiar la estructura una vez creada?", "a": "Si. La estructura es flexible y puedes ajustarla en cualquier momento sin perder datos historicos." },
-        "q5": { "q": "Hay limite de sedes o departamentos?", "a": "No en planes Business y Enterprise. En Starter, hasta 3 sedes y 10 departamentos." }
+        "q1": {
+          "q": "Que diferencia hay entre departamento y equipo?",
+          "a": "Departamento es la estructura formal (RR.HH., Comercial). Equipo es transversal y puede tener miembros de varios departamentos."
+        },
+        "q2": {
+          "q": "Una persona puede estar en varios equipos?",
+          "a": "Si. Una persona pertenece a un solo departamento pero puede estar en multiples equipos."
+        },
+        "q3": {
+          "q": "Como manejan organizaciones con grupos empresariales?",
+          "a": "Cada empresa del grupo es un tenant independiente. Si necesitas vista consolidada, contactanos para Enterprise."
+        },
+        "q4": {
+          "q": "Puedo cambiar la estructura una vez creada?",
+          "a": "Si. La estructura es flexible y puedes ajustarla en cualquier momento sin perder datos historicos."
+        },
+        "q5": {
+          "q": "Hay limite de sedes o departamentos?",
+          "a": "No en planes Business y Enterprise. En Starter, hasta 3 sedes y 10 departamentos."
+        }
       },
       "cta": {
         "title": "Modela tu organizacion en Kultiva",
@@ -1135,19 +1290,84 @@
         "scale": "Enterprise"
       },
       "features": {
-        "feedback360": { "label": "Feedback 360", "starter": "Si", "growth": "Si", "scale": "Si" },
-        "climate": { "label": "Encuestas de Clima", "starter": "—", "growth": "Si", "scale": "Si" },
-        "people": { "label": "Gestion de Personas", "starter": "Si", "growth": "Si", "scale": "Si" },
-        "org": { "label": "Estructura Organizacional", "starter": "Si", "growth": "Si", "scale": "Si" },
-        "users": { "label": "Usuarios", "starter": "Hasta 50", "growth": "Hasta 200", "scale": "Ilimitados" },
-        "admins": { "label": "Administradores", "starter": "1", "growth": "3", "scale": "Ilimitados" },
-        "templates": { "label": "Plantillas de clima", "starter": "—", "growth": "Incluidas", "scale": "Personalizadas" },
-        "csv": { "label": "Exportacion CSV", "starter": "Si", "growth": "Si", "scale": "Si" },
-        "support": { "label": "Soporte", "starter": "Email", "growth": "Prioritario", "scale": "Dedicado" },
-        "sso": { "label": "SSO / SAML", "starter": "—", "growth": "—", "scale": "Si" },
-        "api": { "label": "API de integracion", "starter": "—", "growth": "—", "scale": "Si" },
-        "sla": { "label": "SLA garantizado", "starter": "—", "growth": "—", "scale": "Si" },
-        "onboarding": { "label": "Onboarding guiado", "starter": "—", "growth": "Si", "scale": "Si" }
+        "feedback360": {
+          "label": "Feedback 360",
+          "starter": "Si",
+          "growth": "Si",
+          "scale": "Si"
+        },
+        "climate": {
+          "label": "Encuestas de Clima",
+          "starter": "—",
+          "growth": "Si",
+          "scale": "Si"
+        },
+        "people": {
+          "label": "Gestion de Personas",
+          "starter": "Si",
+          "growth": "Si",
+          "scale": "Si"
+        },
+        "org": {
+          "label": "Estructura Organizacional",
+          "starter": "Si",
+          "growth": "Si",
+          "scale": "Si"
+        },
+        "users": {
+          "label": "Usuarios",
+          "starter": "Hasta 50",
+          "growth": "Hasta 200",
+          "scale": "Ilimitados"
+        },
+        "admins": {
+          "label": "Administradores",
+          "starter": "1",
+          "growth": "3",
+          "scale": "Ilimitados"
+        },
+        "templates": {
+          "label": "Plantillas de clima",
+          "starter": "—",
+          "growth": "Incluidas",
+          "scale": "Personalizadas"
+        },
+        "csv": {
+          "label": "Exportacion CSV",
+          "starter": "Si",
+          "growth": "Si",
+          "scale": "Si"
+        },
+        "support": {
+          "label": "Soporte",
+          "starter": "Email",
+          "growth": "Prioritario",
+          "scale": "Dedicado"
+        },
+        "sso": {
+          "label": "SSO / SAML",
+          "starter": "—",
+          "growth": "—",
+          "scale": "Si"
+        },
+        "api": {
+          "label": "API de integracion",
+          "starter": "—",
+          "growth": "—",
+          "scale": "Si"
+        },
+        "sla": {
+          "label": "SLA garantizado",
+          "starter": "—",
+          "growth": "—",
+          "scale": "Si"
+        },
+        "onboarding": {
+          "label": "Onboarding guiado",
+          "starter": "—",
+          "growth": "Si",
+          "scale": "Si"
+        }
       }
     }
   },
@@ -1218,5 +1438,517 @@
     "loading": "Cargando...",
     "error": "Error",
     "success": "Exito"
+  },
+  "dashboard": {
+    "common": {
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "edit": "Editar",
+      "create": "Crear",
+      "search": "Buscar",
+      "loading": "Cargando...",
+      "no_results": "Sin resultados",
+      "confirm": "Confirmar",
+      "back": "Volver"
+    },
+    "sidebar": {
+      "overview": "Inicio",
+      "people": "Personas",
+      "surveys": "Encuestas",
+      "reports": "Reportes",
+      "my_reviews": "Mis Evaluaciones",
+      "my_feedback": "Mi Retroalimentación",
+      "my_team": "Mi Equipo",
+      "settings": "Configuración",
+      "analytics": "Analítica"
+    },
+    "settings": {
+      "title": "Configuración",
+      "profile": "Perfil",
+      "company_section": "Empresa",
+      "platform_section": "Plataforma",
+      "general": "General",
+      "members": "Miembros",
+      "roles": "Roles",
+      "departments": "Departamentos",
+      "teams": "Equipos",
+      "competencies": "Competencias",
+      "hubs": "Sedes",
+      "company_domain": "Dominio de la Empresa",
+      "features": "Funcionalidades",
+      "admin_domains": "Dominios de Admin",
+      "platform_health": "Salud de Plataforma",
+      "company_settings": "Configuración de Empresa",
+      "manage_settings_for": "Administrar configuración de",
+      "company_info": "Información de la Empresa",
+      "quick_stats": "Estadísticas Rápidas",
+      "name": "Nombre",
+      "slug": "Slug",
+      "domain": "Dominio",
+      "members_count": "Miembros",
+      "departments_count": "Departamentos",
+      "review_cycles": "Ciclos de Evaluación",
+      "no_departments": "Aún no se han creado departamentos",
+      "language": {
+        "title": "Idioma",
+        "description": "Define el idioma predeterminado para todos los miembros de esta empresa.",
+        "save": "Guardar Idioma",
+        "saving": "Guardando...",
+        "updated": "Idioma actualizado",
+        "error": "Error al actualizar el idioma"
+      }
+    },
+    "header": {
+      "search_placeholder": "Buscar...",
+      "user_fallback": "Usuario",
+      "pages": {
+        "overview": "Inicio",
+        "people": "Personas",
+        "surveys": "Encuestas",
+        "surveys_360": "Evaluaciones 360",
+        "surveys_360_templates": "Plantillas de Evaluación",
+        "surveys_climate": "Clima Organizacional",
+        "surveys_climate_templates": "Plantillas de Clima",
+        "reports": "Reportes",
+        "settings": "Configuración",
+        "my_reviews": "Mis Evaluaciones",
+        "my_feedback": "Mi Retroalimentación",
+        "my_team": "Mi Equipo",
+        "dashboard": "Panel"
+      },
+      "menu": {
+        "profile": "Perfil",
+        "settings": "Configuración",
+        "logout": "Cerrar Sesión"
+      }
+    },
+    "surveys_nav": {
+      "review_360": {
+        "title": "Evaluaciones 360",
+        "cycles": "Ciclos de Evaluación",
+        "templates": "Plantillas"
+      },
+      "climate": {
+        "title": "Clima Organizacional",
+        "surveys": "Encuestas",
+        "templates": "Plantillas"
+      }
+    },
+    "people": {
+      "searchPlaceholder": "Buscar personas...",
+      "allRoles": "Todos los roles",
+      "allDepartments": "Todos los departamentos",
+      "admin": "Admin",
+      "manager": "Manager",
+      "member": "Miembro",
+      "name": "Nombre",
+      "role": "Rol",
+      "title": "Cargo",
+      "department": "Departamento",
+      "hub": "Hub",
+      "managerColumn": "Jefe directo",
+      "noResults": "Sin resultados.",
+      "unnamed": "Sin nombre",
+      "showingRange": "Mostrando {start}–{end} de {total}",
+      "pageOf": "Página {current} de {total}",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    },
+    "employeeForm": {
+      "emailAddress": "Correo electrónico",
+      "emailPlaceholder": "juan@empresa.com",
+      "inviteEmailDesc": "Se enviará una invitación a este correo",
+      "createEmailDesc": "El correo electrónico laboral del empleado",
+      "fullName": "Nombre completo",
+      "namePlaceholder": "Juan Pérez",
+      "jobTitle": "Cargo",
+      "titlePlaceholder": "Ingeniero de Software",
+      "role": "Rol",
+      "selectRole": "Seleccionar un rol",
+      "roleDescription": "Los administradores pueden gestionar toda la configuración, los managers pueden ver reportes de equipo",
+      "department": "Departamento",
+      "selectDepartment": "Seleccionar un departamento",
+      "noDepartment": "Sin departamento",
+      "manager": "Jefe directo",
+      "selectManager": "Seleccionar un jefe directo",
+      "noManager": "Sin jefe directo",
+      "hub": "Hub",
+      "selectHub": "Seleccionar un hub",
+      "noHub": "Sin hub",
+      "cancel": "Cancelar",
+      "sendInvitation": "Enviar invitación",
+      "addEmployee": "Agregar empleado",
+      "invitationSent": "Invitación enviada exitosamente",
+      "employeeAdded": "Empleado agregado exitosamente",
+      "somethingWrong": "Algo salió mal"
+    },
+    "editEmployeeForm": {
+      "emailAddress": "Correo electrónico",
+      "emailCannotChange": "El correo no se puede cambiar",
+      "fullName": "Nombre completo",
+      "namePlaceholder": "Juan Pérez",
+      "jobTitle": "Cargo",
+      "titlePlaceholder": "Ingeniero de Software",
+      "role": "Rol",
+      "selectRole": "Seleccionar un rol",
+      "roleDescription": "Los administradores pueden gestionar toda la configuración, los managers pueden ver reportes de equipo",
+      "department": "Departamento",
+      "selectDepartment": "Seleccionar un departamento",
+      "noDepartment": "Sin departamento",
+      "manager": "Jefe directo",
+      "selectManager": "Seleccionar un jefe directo",
+      "noManager": "Sin jefe directo",
+      "hub": "Hub",
+      "selectHub": "Seleccionar un hub",
+      "noHub": "Sin hub",
+      "activeStatus": "Estado activo",
+      "activeDescription": "Los empleados inactivos no pueden acceder al sistema ni participar en evaluaciones",
+      "deactivateEmployee": "Desactivar empleado",
+      "deactivateDescription": "Esto desactivará la cuenta de {name}. Ya no podrá acceder al sistema ni participar en evaluaciones. Esta acción se puede revertir reactivándolo más tarde.",
+      "cancel": "Cancelar",
+      "deactivate": "Desactivar",
+      "saveChanges": "Guardar cambios",
+      "employeeUpdated": "Empleado actualizado exitosamente",
+      "employeeDeactivated": "Empleado desactivado exitosamente",
+      "somethingWrong": "Algo salió mal"
+    },
+    "competencies": {
+      "addCompetency": "Agregar competencia",
+      "addTitle": "Agregar competencia",
+      "addDescription": "Define una nueva competencia para tu organización.",
+      "name": "Nombre",
+      "namePlaceholder": "ej. Comunicación",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Breve descripción de esta competencia",
+      "category": "Categoría",
+      "selectCategory": "Seleccionar categoría",
+      "noCategory": "Sin categoría",
+      "organizational": "Organizacional",
+      "functional": "Funcional",
+      "leadership": "Liderazgo",
+      "uncategorized": "Sin categoría",
+      "creating": "Creando...",
+      "create": "Crear",
+      "noCompetencies": "No hay competencias definidas aún",
+      "noCompetenciesHint": "Agrega competencias para usar con preguntas calificadas por competencia en plantillas de evaluación.",
+      "editTitle": "Editar competencia",
+      "editDescription": "Actualizar detalles de la competencia.",
+      "briefDescription": "Breve descripción",
+      "saving": "Guardando...",
+      "saveChanges": "Guardar cambios",
+      "deleteTitle": "¿Eliminar competencia?",
+      "deleteDescription": "Esto eliminará permanentemente",
+      "deleteInUse": "Esta competencia es usada por {count} pregunta{plural} de plantilla — elimínala de esas preguntas primero.",
+      "cancel": "Cancelar",
+      "deleting": "Eliminando...",
+      "delete": "Eliminar",
+      "edit": "Editar",
+      "failedCreate": "Error al crear competencia",
+      "failedUpdate": "Error al actualizar competencia",
+      "failedDelete": "Error al eliminar competencia",
+      "questionsCount": "{count} pregunta{plural}"
+    },
+    "departments": {
+      "createDepartment": "Crear departamento",
+      "createTitle": "Crear departamento",
+      "createDescription": "Agrega un nuevo departamento a la empresa.",
+      "name": "Nombre",
+      "namePlaceholder": "ej. Ingeniería",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Descripción opcional",
+      "parentDepartment": "Departamento padre",
+      "noneTopLevel": "Ninguno (nivel superior)",
+      "creating": "Creando...",
+      "create": "Crear",
+      "noDepartments": "No hay departamentos creados aún",
+      "noDepartmentsHint": "Crea tu primer departamento para organizar a los miembros del equipo.",
+      "parent": "Padre",
+      "memberCount": "{count} miembro{plural}",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "editTitle": "Editar departamento",
+      "editDescription": "Actualizar detalles del departamento.",
+      "saving": "Guardando...",
+      "saveChanges": "Guardar cambios",
+      "deleteTitle": "¿Eliminar departamento?",
+      "deleteDescription": "Esto eliminará permanentemente",
+      "deleteHasMembers": "Este departamento tiene {count} miembro{plural} — deben ser reasignados primero.",
+      "cancel": "Cancelar",
+      "deleting": "Eliminando...",
+      "failedCreate": "Error al crear departamento",
+      "failedUpdate": "Error al actualizar departamento",
+      "failedDelete": "Error al eliminar departamento"
+    },
+    "teams": {
+      "title": "Equipos",
+      "subtitle": "Gestionar grupos de trabajo y membresías de equipo",
+      "addTeam": "Agregar equipo",
+      "team": "Equipo",
+      "department": "Departamento",
+      "hub": "Hub",
+      "members": "Miembros",
+      "actions": "Acciones",
+      "noTeams": "Aún no hay equipos. Crea tu primer equipo para comenzar.",
+      "manageMembers": "Gestionar miembros",
+      "editTeam": "Editar equipo",
+      "newTeam": "Nuevo equipo",
+      "updateDetails": "Actualizar los detalles del equipo",
+      "createGroup": "Crear un nuevo grupo de trabajo",
+      "name": "Nombre",
+      "namePlaceholder": "ej. Ventas Empresariales",
+      "descriptionOptional": "Descripción (opcional)",
+      "descriptionPlaceholder": "Breve descripción de este equipo...",
+      "primaryDepartment": "Departamento principal (opcional)",
+      "selectDepartment": "Seleccionar departamento",
+      "noDepartment": "Sin departamento",
+      "hubOptional": "Hub (opcional)",
+      "selectHub": "Seleccionar hub",
+      "noHub": "Sin hub",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "create": "Crear",
+      "teamUpdated": "Equipo actualizado",
+      "teamCreated": "Equipo creado",
+      "teamDeleted": "Equipo eliminado",
+      "deleteConfirm": "¿Eliminar \"{name}\"? Esta acción no se puede deshacer.",
+      "membersTitle": "{name} — Miembros",
+      "membersDescription": "Agregar o eliminar miembros del equipo. Los miembros pueden ser de cualquier departamento.",
+      "employee": "Empleado",
+      "selectEmployee": "Seleccionar un empleado...",
+      "selectAnEmployee": "Seleccionar un empleado",
+      "role": "Rol",
+      "memberRole": "Miembro",
+      "leadRole": "Líder",
+      "add": "Agregar",
+      "noMembers": "Aún no hay miembros",
+      "memberAdded": "Miembro agregado",
+      "memberRemoved": "Miembro eliminado",
+      "failedLoadMembers": "Error al cargar miembros"
+    },
+    "hubs": {
+      "title": "Hubs",
+      "subtitle": "Gestionar las ubicaciones y sucursales de tu empresa",
+      "addHub": "Agregar hub",
+      "name": "Nombre",
+      "address": "Dirección",
+      "employees": "Empleados",
+      "teams": "Equipos",
+      "actions": "Acciones",
+      "default": "Predeterminado",
+      "noHubs": "Aún no hay hubs. Crea tu primer hub para comenzar.",
+      "editHub": "Editar hub",
+      "newHub": "Nuevo hub",
+      "updateDetails": "Actualizar los detalles del hub",
+      "addLocation": "Agregar una nueva ubicación o sucursal",
+      "namePlaceholder": "ej. Oficina Bogotá",
+      "descriptionOptional": "Descripción (opcional)",
+      "descriptionPlaceholder": "Breve descripción de este hub...",
+      "addressOptional": "Dirección (opcional)",
+      "addressPlaceholder": "ej. Calle 100 #19-61, Bogotá",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "create": "Crear",
+      "hubUpdated": "Hub actualizado",
+      "hubCreated": "Hub creado",
+      "hubDeleted": "Hub eliminado",
+      "deleteConfirm": "¿Eliminar \"{name}\"? Esta acción no se puede deshacer."
+    },
+    "membersTable": {
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "invited": "Invitado",
+      "searchByEmail": "Buscar por correo...",
+      "searchMembers": "Buscar miembros...",
+      "allRoles": "Todos los roles",
+      "admin": "Admin",
+      "manager": "Manager",
+      "member": "Miembro",
+      "inviteMember": "Invitar miembro",
+      "inviteTitle": "Invitar miembro",
+      "inviteDescription": "Enviar una invitación por correo para unirse a la empresa.",
+      "email": "Correo electrónico",
+      "emailPlaceholder": "colega@empresa.com",
+      "role": "Rol",
+      "sending": "Enviando...",
+      "sendInvitation": "Enviar invitación",
+      "memberHeader": "Miembro",
+      "roleHeader": "Rol",
+      "titleHeader": "Cargo",
+      "departmentHeader": "Departamento",
+      "statusHeader": "Estado",
+      "noName": "Sin nombre",
+      "you": "(tú)",
+      "activeStatus": "Activo",
+      "inactiveStatus": "Inactivo",
+      "noMatchFilters": "Ningún miembro coincide con los filtros",
+      "noInactiveMembers": "No hay miembros inactivos",
+      "noMembersYet": "Aún no hay miembros",
+      "noInvitationsMatch": "Ninguna invitación coincide con los filtros",
+      "noPendingInvitations": "No hay invitaciones pendientes",
+      "emailHeader": "Correo",
+      "sentHeader": "Enviado",
+      "expiresHeader": "Expira",
+      "expired": "Expirado",
+      "resendInvitation": "Reenviar invitación",
+      "cancelInvitation": "Cancelar invitación",
+      "pendingInvitations": "{count} invitación{plural} pendiente{plural}",
+      "memberCount": "{count} de {total} miembros {tab}",
+      "actionsLabel": "Acciones",
+      "makeAdmin": "Hacer Admin",
+      "makeManager": "Hacer Manager",
+      "makeMember": "Hacer Miembro",
+      "deactivate": "Desactivar",
+      "activate": "Activar",
+      "remove": "Eliminar",
+      "changeRoleTitle": "¿Cambiar rol?",
+      "changeRoleDescription": "¿Cambiar a {name} de {currentRole} a {newRole}?",
+      "changeRole": "Cambiar rol",
+      "cancel": "Cancelar",
+      "removeMemberTitle": "¿Eliminar miembro?",
+      "deactivateMemberTitle": "¿Desactivar miembro?",
+      "activateMemberTitle": "¿Activar miembro?",
+      "removeDescription": "Esto eliminará permanentemente a {name} de la empresa. Esta acción no se puede deshacer.",
+      "deactivateDescription": "{name} perderá acceso a la empresa pero sus datos se conservarán. Puedes reactivarlo más tarde.",
+      "activateDescription": "¿Reactivar a {name}? Recuperará acceso a la empresa.",
+      "failedInvitation": "Error al enviar invitación",
+      "failedUpdateRole": "Error al actualizar rol",
+      "failedUpdateStatus": "Error al actualizar estado",
+      "failedRemove": "Error al eliminar miembro",
+      "failedCancel": "Error al cancelar invitación",
+      "failedResend": "Error al reenviar invitación",
+      "invitationSentTo": "Invitación enviada a {email}"
+    },
+    "overview": {
+      "welcome": "Bienvenido, {name}",
+      "subtitle": "Esto es lo que pasa con tu equipo",
+      "total_employees": "Empleados Totales",
+      "active_cycles": "Ciclos Activos",
+      "pending_reviews": "Evaluaciones Pendientes",
+      "completion_rate": "Tasa de Completación",
+      "active_team_members": "Miembros activos del equipo",
+      "currently_running": "En ejecución",
+      "awaiting_completion": "Esperando completar",
+      "completed": "{count} completados",
+      "quick_actions": "Acciones Rápidas",
+      "quick_actions_desc": "Tareas comunes para administrar tus ciclos de evaluación 360°",
+      "manage_people": "Administrar Personas",
+      "add_or_import": "Agregar o importar empleados",
+      "review_templates": "Plantillas de Evaluación",
+      "create_or_edit_forms": "Crear o editar formularios",
+      "new_cycle": "Nuevo Ciclo",
+      "start_collecting": "Comenzar a recopilar retroalimentación",
+      "recent_cycles": "Ciclos Recientes",
+      "latest_cycles": "Tus ciclos de evaluación más recientes",
+      "view_all": "Ver Todo",
+      "participants": "participantes",
+      "ends": "Termina {date}",
+      "employee_pending_reviews": "Evaluaciones Pendientes",
+      "need_your_feedback": "Necesitan tu retroalimentación",
+      "employee_completed": "Completadas",
+      "reviews_submitted": "Evaluaciones enviadas",
+      "reports_available": "Reportes Disponibles",
+      "feedback_reports": "Reportes de retroalimentación",
+      "nominations_due": "Nominaciones Pendientes",
+      "peer_selections": "Selecciones de pares",
+      "reviews_waiting": "Evaluaciones esperando tu retroalimentación",
+      "all_caught_up": "¡Todo al día!",
+      "no_pending_reviews": "No tienes evaluaciones pendientes en este momento.",
+      "self_review": "Autoevaluación",
+      "overdue": "Vencido",
+      "days_left": "{days}d restantes",
+      "your_feedback_reports": "Tus Reportes de Retroalimentación",
+      "reports_released_to_you": "Reportes liberados para ti",
+      "no_reports_yet": "Aún no hay reportes",
+      "reports_will_appear": "Tus reportes de retroalimentación aparecerán aquí una vez liberados.",
+      "released": "Liberado {date}",
+      "peer_nominations_open": "Nominaciones de Pares Abiertas",
+      "select_colleagues": "Selecciona colegas para evaluar tu desempeño",
+      "nominate_peers": "Nominar Pares"
+    },
+    "people_page": {
+      "title": "Personas",
+      "description": "Administra los miembros de tu equipo y la estructura organizacional",
+      "import_csv": "Importar CSV",
+      "add_employee": "Agregar Empleado",
+      "no_employees_yet": "Aún no hay empleados",
+      "add_first_member": "Agrega tu primer miembro del equipo para comenzar con la retroalimentación 360°."
+    },
+    "cycles": {
+      "title": "Ciclos de Evaluación",
+      "description": "Crea y administra ciclos de retroalimentación 360°",
+      "create_cycle": "Crear Ciclo",
+      "no_cycles_yet": "Aún no hay ciclos de evaluación",
+      "no_cycles_desc": "Crea tu primer ciclo de evaluación 360° para comenzar a recopilar retroalimentación.",
+      "participants": "participantes",
+      "completion": "Completación",
+      "reviews": "evaluaciones",
+      "overdue": "Vencido",
+      "days_left": "{days} día{plural} restante{plural}",
+      "day_left": "{days} día restante",
+      "days_left_plural": "{days} días restantes"
+    },
+    "climate": {
+      "title": "Clima Laboral",
+      "description": "Crea y administra encuestas de clima, pulsos y eNPS",
+      "create_survey": "Crear Encuesta",
+      "no_surveys_yet": "Aún no hay encuestas",
+      "no_surveys_desc": "Crea tu primera encuesta de clima laboral para comenzar a medir el compromiso de los empleados.",
+      "questions": "preguntas",
+      "responses": "respuestas",
+      "no_description": "Sin descripción",
+      "duplicate": "Duplicar",
+      "archive": "Archivar"
+    },
+    "reports_page": {
+      "title": "Reportes",
+      "description": "Administra y libera reportes de retroalimentación para ciclos de evaluación",
+      "no_reports": "No hay reportes disponibles",
+      "no_reports_desc": "Los reportes aparecerán aquí una vez que los ciclos de evaluación estén en progreso o completados.",
+      "view_cycles": "Ver Ciclos",
+      "participants": "Participantes",
+      "reviews_completed": "Evaluaciones Completadas",
+      "reports_released": "Reportes Liberados",
+      "manage_reports": "Administrar Reportes",
+      "ended": "Terminó {date}"
+    },
+    "settings_pages": {
+      "competencies_title": "Competencias",
+      "competencies_description": "Administra los marcos de competencias para evaluaciones 360°",
+      "departments_title": "Departamentos",
+      "departments_description": "Administra los departamentos de la organización",
+      "domain_title": "Dominio de la Empresa",
+      "domain_description": "Dominio de email para {companyName}. Los usuarios con este dominio pueden unirse automáticamente.",
+      "features_title": "Funcionalidades",
+      "features_description": "Activa o desactiva funcionalidades de la plataforma",
+      "hubs_title": "Sedes",
+      "hubs_description": "Administra las sedes y ubicaciones de la empresa",
+      "members_title": "Miembros",
+      "members_description": "Administra los miembros del equipo e invitaciones",
+      "roles_title": "Roles",
+      "roles_description": "Administra roles y permisos de la empresa",
+      "teams_title": "Equipos",
+      "teams_description": "Administra equipos transversales",
+      "profile_title": "Perfil",
+      "profile_description": "Administra tu configuración personal",
+      "companies_title": "Empresas",
+      "companies_description": "Administra las empresas de la plataforma",
+      "admin_domains_title": "Dominios de Admin",
+      "admin_domains_description": "Administra los dominios de super administrador",
+      "health_title": "Salud de Plataforma",
+      "health_description": "Estado de los servicios de la plataforma",
+      "health_companies": "Empresas",
+      "health_users": "Usuarios",
+      "health_active_cycles": "Ciclos Activos",
+      "health_completed_reviews": "Evaluaciones Completadas",
+      "health_cycle_distribution": "Distribución de Estado de Ciclos",
+      "health_no_cycles": "Aún no hay ciclos",
+      "health_top_companies": "Empresas Más Grandes",
+      "health_no_companies": "Aún no hay empresas",
+      "health_user": "usuario",
+      "health_users_plural": "usuarios",
+      "users_title": "Usuarios",
+      "users_description": "Administra los usuarios de la plataforma"
+    }
   }
 }

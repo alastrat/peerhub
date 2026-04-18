@@ -30,7 +30,7 @@ import { StatCard } from "@/components/design-system/stat-card";
 import { ReleaseControls } from "@/components/reports/release-controls";
 import { getInitials } from "@/lib/utils/formatting";
 import { formatDate } from "@/lib/utils/dates";
-import { CYCLE_STATUS_LABELS, CYCLE_STATUS_COLORS } from "@/lib/constants/cycle-status";
+import { getCycleStatusLabel, CYCLE_STATUS_COLORS } from "@/lib/constants/cycle-status";
 
 interface PageProps {
   params: Promise<{ cycleId: string }>;
@@ -80,7 +80,7 @@ async function CycleReportContent({ cycleId }: { cycleId: string }) {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold">{summary.cycleName}</h1>
             <Badge className={CYCLE_STATUS_COLORS[summary.status]}>
-              {CYCLE_STATUS_LABELS[summary.status]}
+              {getCycleStatusLabel(summary.status)}
             </Badge>
           </div>
           <p className="text-muted-foreground">

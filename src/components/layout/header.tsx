@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Bell, LogOut, User, Settings, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,49 +18,50 @@ import {
 import { getInitials } from "@/lib/utils/formatting";
 import { CompanySwitcher } from "@/components/layout/company-switcher";
 
-const PAGE_TITLES: Record<string, string> = {
-  "/overview": "Overview",
-  "/people": "People",
-  "/surveys": "Surveys",
-  "/surveys/360": "360 Reviews",
-  "/surveys/360/templates": "Review Templates",
-  "/surveys/climate": "Org Climate",
-  "/surveys/climate/templates": "Climate Templates",
-  "/reports": "Reports",
-  "/settings/profile": "Settings",
-  "/settings/company": "Settings",
-  "/settings/platform/companies": "Settings",
-  "/settings/platform/users": "Settings",
-  "/settings/platform/domains": "Settings",
-  "/settings/platform/health": "Settings",
-  "/settings": "Settings",
-  "/my-reviews": "My Reviews",
-  "/my-feedback": "My Feedback",
-  "/team": "My Team",
+const PAGE_TITLE_KEYS: Record<string, string> = {
+  "/overview": "pages.overview",
+  "/people": "pages.people",
+  "/surveys": "pages.surveys",
+  "/surveys/360": "pages.surveys_360",
+  "/surveys/360/templates": "pages.surveys_360_templates",
+  "/surveys/climate": "pages.surveys_climate",
+  "/surveys/climate/templates": "pages.surveys_climate_templates",
+  "/reports": "pages.reports",
+  "/settings/profile": "pages.settings",
+  "/settings/company": "pages.settings",
+  "/settings/platform/companies": "pages.settings",
+  "/settings/platform/users": "pages.settings",
+  "/settings/platform/domains": "pages.settings",
+  "/settings/platform/health": "pages.settings",
+  "/settings": "pages.settings",
+  "/my-reviews": "pages.my_reviews",
+  "/my-feedback": "pages.my_feedback",
+  "/team": "pages.my_team",
 };
 
-function getPageTitle(pathname: string): string {
-  for (const [path, title] of Object.entries(PAGE_TITLES)) {
+function getPageTitleKey(pathname: string): string {
+  for (const [path, key] of Object.entries(PAGE_TITLE_KEYS)) {
     if (pathname === path || pathname.startsWith(`${path}/`)) {
-      return title;
+      return key;
     }
   }
-  return "Dashboard";
+  return "pages.dashboard";
 }
 
 export function Header() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const t = useTranslations("dashboard.header");
   const user = session?.user;
   const companyUser = session?.companyUser;
-  const pageTitle = getPageTitle(pathname);
+  const pageTitleKey = getPageTitleKey(pathname);
 
   return (
     <header className="flex h-14 items-center gap-4 bg-muted px-6 sticky top-0 z-30">
       {/* Left: Company Switcher + Page title */}
       <div className="flex items-center gap-3">
         <CompanySwitcher />
-        <span className="text-sm font-medium text-foreground">{pageTitle}</span>
+        <span className="text-sm font-medium text-foreground">{t(pageTitleKey)}</span>
       </div>
 
       {/* Center: Search */}
@@ -67,7 +69,7 @@ export function Header() {
         <div className="relative w-full max-w-md">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search..."
+            placeholder={t("search_placeholder")}
             className="h-9 bg-background/60 ps-10 border-transparent focus-visible:border-input focus-visible:bg-background"
           />
         </div>
@@ -96,7 +98,7 @@ export function Header() {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user?.name || "User"}</p>
+                <p className="text-sm font-medium leading-none">{user?.name || t("user_fallback")}</p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {user?.email}
                 </p>
@@ -111,13 +113,13 @@ export function Header() {
             <DropdownMenuItem asChild>
               <a href="/settings" className="flex items-center">
                 <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
+                <span>{t("menu.profile")}</span>
               </a>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <a href="/settings/company" className="flex items-center">
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
+                <span>{t("menu.settings")}</span>
               </a>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -126,7 +128,7 @@ export function Header() {
               onClick={() => signOut({ callbackUrl: "/" })}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
+              <span>{t("menu.logout")}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

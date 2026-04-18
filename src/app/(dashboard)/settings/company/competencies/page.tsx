@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
-import { PageHeader } from "@/components/design-system/page-header";
+import { TranslatedPageHeader } from "@/components/dashboard/translated-page-header";
 import { CompetenciesManager } from "@/components/settings/competencies-manager";
 
 export default async function CompetenciesPage() {
@@ -25,9 +25,9 @@ export default async function CompetenciesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Competencies"
-        description="Define organizational competencies for use in review templates"
+      <TranslatedPageHeader
+        titleKey="competencies_title"
+        descriptionKey="competencies_description"
       />
       <CompetenciesManager
         competencies={competencies.map((c) => ({

@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
 import { redirect } from "next/navigation";
 import { HubsManager } from "@/components/settings/hubs-manager";
+import { TranslatedPageHeader } from "@/components/dashboard/translated-page-header";
 
 export default async function HubsSettingsPage() {
   const session = await auth();
@@ -25,5 +26,13 @@ export default async function HubsSettingsPage() {
     orderBy: [{ isDefault: "desc" }, { name: "asc" }],
   });
 
-  return <HubsManager hubs={hubs} />;
+  return (
+    <div className="space-y-6">
+      <TranslatedPageHeader
+        titleKey="hubs_title"
+        descriptionKey="hubs_description"
+      />
+      <HubsManager hubs={hubs} />
+    </div>
+  );
 }

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -58,6 +58,7 @@ export function DepartmentsManager({
 }: {
   departments: DepartmentData[];
 }) {
+  const t = useTranslations("dashboard.departments");
   const [departments, setDepartments] = useState(initial);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +94,7 @@ export function DepartmentsManager({
         setCreateOpen(false);
         window.location.reload();
       } else {
-        setError(result.error || "Failed to create department");
+        setError(result.error || t("failedCreate"));
       }
     });
   };
@@ -113,7 +114,7 @@ export function DepartmentsManager({
         setEditDept(null);
         window.location.reload();
       } else {
-        setError(result.error || "Failed to update department");
+        setError(result.error || t("failedUpdate"));
       }
     });
   };
@@ -127,7 +128,7 @@ export function DepartmentsManager({
         setDepartments((prev) => prev.filter((d) => d.id !== deleteDept.id));
         setDeleteDept(null);
       } else {
-        setError(result.error || "Failed to delete department");
+        setError(result.error || t("failedDelete"));
         setDeleteDept(null);
       }
     });
@@ -148,42 +149,42 @@ export function DepartmentsManager({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-1.5 h-4 w-4" />
-              Create Department
+              {t("createDepartment")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <form onSubmit={handleCreate}>
               <DialogHeader>
-                <DialogTitle>Create Department</DialogTitle>
+                <DialogTitle>{t("createTitle")}</DialogTitle>
                 <DialogDescription>
-                  Add a new department to the company.
+                  {t("createDescription")}
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Name</label>
+                  <label className="text-sm font-medium">{t("name")}</label>
                   <Input
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    placeholder="e.g. Engineering"
+                    placeholder={t("namePlaceholder")}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Description</label>
+                  <label className="text-sm font-medium">{t("description")}</label>
                   <Input
                     value={newDesc}
                     onChange={(e) => setNewDesc(e.target.value)}
-                    placeholder="Optional description"
+                    placeholder={t("descriptionPlaceholder")}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Parent Department</label>
+                  <label className="text-sm font-medium">{t("parentDepartment")}</label>
                   <Select value={newParent} onValueChange={setNewParent}>
                     <SelectTrigger>
                       <SelectValue placeholder="None" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">None (top-level)</SelectItem>
+                      <SelectItem value="none">{t("noneTopLevel")}</SelectItem>
                       {departments.map((d) => (
                         <SelectItem key={d.id} value={d.id}>
                           {d.name}
@@ -198,7 +199,7 @@ export function DepartmentsManager({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isPending || !newName.trim()}>
-                  {isPending ? "Creating..." : "Create"}
+                  {isPending ? t("creating") : t("create")}
                 </Button>
               </DialogFooter>
             </form>
@@ -215,10 +216,10 @@ export function DepartmentsManager({
           <CardContent className="py-12 text-center">
             <Layers className="mx-auto h-10 w-10 text-muted-foreground/40" />
             <p className="mt-3 text-sm text-muted-foreground">
-              No departments created yet
+              {t("noDepartments")}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Create your first department to organize team members.
+              {t("noDepartmentsHint")}
             </p>
           </CardContent>
         </Card>
@@ -240,12 +241,12 @@ export function DepartmentsManager({
                     )}
                     {d.parentName && (
                       <p className="mt-1 text-xs text-muted-foreground ml-6">
-                        Parent: {d.parentName}
+                        {t("parent")}: {d.parentName}
                       </p>
                     )}
                     <div className="mt-2 ml-6 flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Users className="h-3.5 w-3.5" />
-                      {d.membersCount} {d.membersCount === 1 ? "member" : "members"}
+                      {t("memberCount", { count: d.membersCount, plural: d.membersCount === 1 ? "" : "s" })}
                     </div>
                   </div>
                   <DropdownMenu>
@@ -257,14 +258,14 @@ export function DepartmentsManager({
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => openEdit(d)}>
                         <Pencil className="mr-2 h-4 w-4" />
-                        Edit
+                        {t("edit")}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
                         onClick={() => setDeleteDept(d)}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
+                        {t("delete")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -280,35 +281,35 @@ export function DepartmentsManager({
         <DialogContent>
           <form onSubmit={handleEdit}>
             <DialogHeader>
-              <DialogTitle>Edit Department</DialogTitle>
+              <DialogTitle>{t("editTitle")}</DialogTitle>
               <DialogDescription>
-                Update department details.
+                {t("editDescription")}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Name</label>
+                <label className="text-sm font-medium">{t("name")}</label>
                 <Input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Description</label>
+                <label className="text-sm font-medium">{t("description")}</label>
                 <Input
                   value={editDesc}
                   onChange={(e) => setEditDesc(e.target.value)}
-                  placeholder="Optional description"
+                  placeholder={t("descriptionPlaceholder")}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Parent Department</label>
+                <label className="text-sm font-medium">{t("parentDepartment")}</label>
                 <Select value={editParent} onValueChange={setEditParent}>
                   <SelectTrigger>
                     <SelectValue placeholder="None" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">None (top-level)</SelectItem>
+                    <SelectItem value="none">{t("noneTopLevel")}</SelectItem>
                     {departments
                       .filter((d) => d.id !== editDept?.id)
                       .map((d) => (
@@ -325,7 +326,7 @@ export function DepartmentsManager({
             </div>
             <DialogFooter>
               <Button type="submit" disabled={isPending || !editName.trim()}>
-                {isPending ? "Saving..." : "Save Changes"}
+                {isPending ? t("saving") : t("saveChanges")}
               </Button>
             </DialogFooter>
           </form>
@@ -336,22 +337,22 @@ export function DepartmentsManager({
       <AlertDialog open={!!deleteDept} onOpenChange={(open) => !open && setDeleteDept(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete department?</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete <strong>{deleteDept?.name}</strong>.
+              {t("deleteDescription")} <strong>{deleteDept?.name}</strong>.
               {deleteDept && deleteDept.membersCount > 0 && (
-                <> This department has {deleteDept.membersCount} member{deleteDept.membersCount !== 1 ? "s" : ""} — they must be reassigned first.</>
+                <> {t("deleteHasMembers", { count: deleteDept.membersCount, plural: deleteDept.membersCount !== 1 ? "s" : "" })}</>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isPending ? "Deleting..." : "Delete"}
+              {isPending ? t("deleting") : t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

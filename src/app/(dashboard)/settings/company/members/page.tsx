@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
-import { PageHeader } from "@/components/design-system/page-header";
+import { TranslatedPageHeader } from "@/components/dashboard/translated-page-header";
 import { MembersTable } from "@/components/settings/members-table";
 
 export default async function MembersPage() {
@@ -37,9 +37,9 @@ export default async function MembersPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Members"
-        description="Manage company members and their roles"
+      <TranslatedPageHeader
+        titleKey="members_title"
+        descriptionKey="members_description"
       />
       <MembersTable
         companyId={companyId}

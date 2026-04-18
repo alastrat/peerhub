@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
-import { PageHeader } from "@/components/design-system/page-header";
+import { TranslatedPageHeader } from "@/components/dashboard/translated-page-header";
 import { DepartmentsManager } from "@/components/settings/departments-manager";
 
 export default async function DepartmentsPage() {
@@ -26,9 +26,9 @@ export default async function DepartmentsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Departments"
-        description="Manage company departments and team structure"
+      <TranslatedPageHeader
+        titleKey="departments_title"
+        descriptionKey="departments_description"
       />
       <DepartmentsManager
         departments={departments.map((d) => ({

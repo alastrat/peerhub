@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
-import { PageHeader } from "@/components/design-system/page-header";
+import { TranslatedPageHeader } from "@/components/dashboard/translated-page-header";
 import { FeaturesManager } from "@/components/settings/features-manager";
 
 export default async function FeaturesPage() {
@@ -26,9 +26,9 @@ export default async function FeaturesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Features"
-        description="Enable or disable modules for this company"
+      <TranslatedPageHeader
+        titleKey="features_title"
+        descriptionKey="features_description"
       />
       <FeaturesManager
         companyId={company.id}

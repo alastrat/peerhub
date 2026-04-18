@@ -11,27 +11,27 @@ import {
 
 describe("roles constants", () => {
   describe("ROLE_LABELS", () => {
-    it("has all company roles", () => {
-      expect(ROLE_LABELS.ADMIN).toBe("Admin");
-      expect(ROLE_LABELS.MANAGER).toBe("Manager");
-      expect(ROLE_LABELS.MEMBER).toBe("Member");
+    it("has all company roles (Spanish default)", () => {
+      expect(ROLE_LABELS.ADMIN).toBe("Administrador");
+      expect(ROLE_LABELS.MANAGER).toBe("Gerente");
+      expect(ROLE_LABELS.MEMBER).toBe("Miembro");
     });
   });
 
   describe("GLOBAL_ROLE_LABELS", () => {
-    it("has all global roles", () => {
+    it("has all global roles (Spanish default)", () => {
       expect(GLOBAL_ROLE_LABELS.SUPER_ADMIN).toBe("Super Admin");
-      expect(GLOBAL_ROLE_LABELS.USER).toBe("User");
+      expect(GLOBAL_ROLE_LABELS.USER).toBe("Usuario");
     });
   });
 
   describe("REVIEWER_TYPE_LABELS", () => {
-    it("has all reviewer types", () => {
-      expect(REVIEWER_TYPE_LABELS.SELF).toBe("Self");
-      expect(REVIEWER_TYPE_LABELS.MANAGER).toBe("Manager");
-      expect(REVIEWER_TYPE_LABELS.PEER).toBe("Peer");
-      expect(REVIEWER_TYPE_LABELS.DIRECT_REPORT).toBe("Direct Report");
-      expect(REVIEWER_TYPE_LABELS.EXTERNAL).toBe("External");
+    it("has all reviewer types (Spanish default)", () => {
+      expect(REVIEWER_TYPE_LABELS.SELF).toBe("Autoevaluación");
+      expect(REVIEWER_TYPE_LABELS.MANAGER).toBe("Gerente");
+      expect(REVIEWER_TYPE_LABELS.PEER).toBe("Par");
+      expect(REVIEWER_TYPE_LABELS.DIRECT_REPORT).toBe("Reporte Directo");
+      expect(REVIEWER_TYPE_LABELS.EXTERNAL).toBe("Externo");
     });
   });
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,12 +51,6 @@ const COMPETENCY_CATEGORIES = [
   "leadership",
 ] as const;
 
-const CATEGORY_LABELS: Record<string, string> = {
-  organizational: "Organizational",
-  functional: "Functional",
-  leadership: "Leadership",
-};
-
 interface CompetencyData {
   id: string;
   name: string;
@@ -69,6 +64,7 @@ export function CompetenciesManager({
 }: {
   competencies: CompetencyData[];
 }) {
+  const t = useTranslations("dashboard.competencies");
   const [competencies, setCompetencies] = useState(initial);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +84,13 @@ export function CompetenciesManager({
   // Delete confirm
   const [deleteComp, setDeleteComp] = useState<CompetencyData | null>(null);
 
+  const categoryLabels: Record<string, string> = {
+    organizational: t("organizational"),
+    functional: t("functional"),
+    leadership: t("leadership"),
+    uncategorized: t("uncategorized"),
+  };
+
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -104,7 +107,7 @@ export function CompetenciesManager({
         setCreateOpen(false);
         window.location.reload();
       } else {
-        setError(result.error || "Failed to create competency");
+        setError(result.error || t("failedCreate"));
       }
     });
   };
@@ -124,7 +127,7 @@ export function CompetenciesManager({
         setEditComp(null);
         window.location.reload();
       } else {
-        setError(result.error || "Failed to update competency");
+        setError(result.error || t("failedUpdate"));
       }
     });
   };
@@ -138,7 +141,7 @@ export function CompetenciesManager({
         setCompetencies((prev) => prev.filter((c) => c.id !== deleteComp.id));
         setDeleteComp(null);
       } else {
-        setError(result.error || "Failed to delete competency");
+        setError(result.error || t("failedDelete"));
         setDeleteComp(null);
       }
     });
@@ -175,45 +178,45 @@ export function CompetenciesManager({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-1.5 h-4 w-4" />
-              Add Competency
+              {t("addCompetency")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <form onSubmit={handleCreate}>
               <DialogHeader>
-                <DialogTitle>Add Competency</DialogTitle>
+                <DialogTitle>{t("addTitle")}</DialogTitle>
                 <DialogDescription>
-                  Define a new competency for your organization.
+                  {t("addDescription")}
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Name</label>
+                  <label className="text-sm font-medium">{t("name")}</label>
                   <Input
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    placeholder="e.g. Communication"
+                    placeholder={t("namePlaceholder")}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Description</label>
+                  <label className="text-sm font-medium">{t("description")}</label>
                   <Input
                     value={newDesc}
                     onChange={(e) => setNewDesc(e.target.value)}
-                    placeholder="Brief description of this competency"
+                    placeholder={t("descriptionPlaceholder")}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Category</label>
+                  <label className="text-sm font-medium">{t("category")}</label>
                   <Select value={newCategory} onValueChange={setNewCategory}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder={t("selectCategory")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">No category</SelectItem>
+                      <SelectItem value="none">{t("noCategory")}</SelectItem>
                       {COMPETENCY_CATEGORIES.map((cat) => (
                         <SelectItem key={cat} value={cat}>
-                          {CATEGORY_LABELS[cat]}
+                          {categoryLabels[cat]}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -225,7 +228,7 @@ export function CompetenciesManager({
               </div>
               <DialogFooter>
                 <Button type="submit" disabled={isPending || !newName.trim()}>
-                  {isPending ? "Creating..." : "Create"}
+                  {isPending ? t("creating") : t("create")}
                 </Button>
               </DialogFooter>
             </form>
@@ -242,10 +245,10 @@ export function CompetenciesManager({
           <CardContent className="py-12 text-center">
             <Target className="mx-auto h-10 w-10 text-muted-foreground/40" />
             <p className="mt-3 text-sm text-muted-foreground">
-              No competencies defined yet
+              {t("noCompetencies")}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Add competencies to use with competency-rated questions in review templates.
+              {t("noCompetenciesHint")}
             </p>
           </CardContent>
         </Card>
@@ -254,7 +257,7 @@ export function CompetenciesManager({
           {sortedCategories.map((category) => (
             <div key={category}>
               <h3 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                {CATEGORY_LABELS[category] || "Uncategorized"}
+                {categoryLabels[category] || t("uncategorized")}
               </h3>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {grouped[category].map((c) => (
@@ -274,12 +277,12 @@ export function CompetenciesManager({
                           <div className="mt-2 ml-6 flex items-center gap-2">
                             {c.category && (
                               <Badge variant="secondary" className="text-xs">
-                                {CATEGORY_LABELS[c.category] || c.category}
+                                {categoryLabels[c.category] || c.category}
                               </Badge>
                             )}
                             {c.questionsCount > 0 && (
                               <span className="text-xs text-muted-foreground">
-                                {c.questionsCount} question{c.questionsCount !== 1 ? "s" : ""}
+                                {t("questionsCount", { count: c.questionsCount, plural: c.questionsCount !== 1 ? "s" : "" })}
                               </span>
                             )}
                           </div>
@@ -293,14 +296,14 @@ export function CompetenciesManager({
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => openEdit(c)}>
                               <Pencil className="mr-2 h-4 w-4" />
-                              Edit
+                              {t("edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
                               onClick={() => setDeleteComp(c)}
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
+                              {t("delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -319,38 +322,38 @@ export function CompetenciesManager({
         <DialogContent>
           <form onSubmit={handleEdit}>
             <DialogHeader>
-              <DialogTitle>Edit Competency</DialogTitle>
+              <DialogTitle>{t("editTitle")}</DialogTitle>
               <DialogDescription>
-                Update competency details.
+                {t("editDescription")}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Name</label>
+                <label className="text-sm font-medium">{t("name")}</label>
                 <Input
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Description</label>
+                <label className="text-sm font-medium">{t("description")}</label>
                 <Input
                   value={editDesc}
                   onChange={(e) => setEditDesc(e.target.value)}
-                  placeholder="Brief description"
+                  placeholder={t("briefDescription")}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Category</label>
+                <label className="text-sm font-medium">{t("category")}</label>
                 <Select value={editCategory} onValueChange={setEditCategory}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue placeholder={t("selectCategory")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No category</SelectItem>
+                    <SelectItem value="none">{t("noCategory")}</SelectItem>
                     {COMPETENCY_CATEGORIES.map((cat) => (
                       <SelectItem key={cat} value={cat}>
-                        {CATEGORY_LABELS[cat]}
+                        {categoryLabels[cat]}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -362,7 +365,7 @@ export function CompetenciesManager({
             </div>
             <DialogFooter>
               <Button type="submit" disabled={isPending || !editName.trim()}>
-                {isPending ? "Saving..." : "Save Changes"}
+                {isPending ? t("saving") : t("saveChanges")}
               </Button>
             </DialogFooter>
           </form>
@@ -373,22 +376,22 @@ export function CompetenciesManager({
       <AlertDialog open={!!deleteComp} onOpenChange={(open) => !open && setDeleteComp(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete competency?</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete <strong>{deleteComp?.name}</strong>.
+              {t("deleteDescription")} <strong>{deleteComp?.name}</strong>.
               {deleteComp && deleteComp.questionsCount > 0 && (
-                <> This competency is used by {deleteComp.questionsCount} template question{deleteComp.questionsCount !== 1 ? "s" : ""} — remove it from those questions first.</>
+                <> {t("deleteInUse", { count: deleteComp.questionsCount, plural: deleteComp.questionsCount !== 1 ? "s" : "" })}</>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isPending ? "Deleting..." : "Delete"}
+              {isPending ? t("deleting") : t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

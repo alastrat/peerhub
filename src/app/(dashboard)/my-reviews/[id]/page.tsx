@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { getInitials } from "@/lib/utils/formatting";
 import { formatDate, daysUntil, isDateInPast } from "@/lib/utils/dates";
-import { REVIEWER_TYPE_LABELS } from "@/lib/constants/roles";
+import { getReviewerTypeLabel } from "@/lib/constants/roles";
 import type { ReviewerType } from "@prisma/client";
 
 interface PageProps {
@@ -109,7 +109,7 @@ export default async function ReviewDetailPage({ params }: PageProps) {
             </p>
             <div className="flex items-center gap-3 mt-2">
               <Badge variant="outline">
-                {REVIEWER_TYPE_LABELS[assignment.reviewerType as ReviewerType]}
+                {getReviewerTypeLabel(assignment.reviewerType as ReviewerType)}
               </Badge>
               <span className="text-sm text-muted-foreground">
                 Due {formatDate(assignment.cycle.reviewEndDate)}

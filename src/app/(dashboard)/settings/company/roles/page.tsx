@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
-import { PageHeader } from "@/components/design-system/page-header";
+import { TranslatedPageHeader } from "@/components/dashboard/translated-page-header";
 import { getCompanyRoles } from "@/lib/actions/roles";
 import { RolesList } from "@/components/settings/roles-list";
 
@@ -19,9 +19,9 @@ export default async function RolesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Roles"
-        description="Company roles and their permissions"
+      <TranslatedPageHeader
+        titleKey="roles_title"
+        descriptionKey="roles_description"
       />
       <RolesList
         isSuperAdmin={isSuperAdmin}

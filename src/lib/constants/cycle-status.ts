@@ -1,19 +1,20 @@
 import { CycleStatus, ReviewAssignmentStatus } from "@prisma/client";
 
+// Flat maps — default to Spanish (platform default locale)
 export const CYCLE_STATUS_LABELS: Record<CycleStatus, string> = {
-  DRAFT: "Draft",
-  NOMINATION: "Nominations Open",
-  IN_PROGRESS: "In Progress",
-  CLOSED: "Closed",
-  ARCHIVED: "Archived",
+  DRAFT: "Borrador",
+  NOMINATION: "Nominaciones Abiertas",
+  IN_PROGRESS: "En Progreso",
+  CLOSED: "Cerrado",
+  ARCHIVED: "Archivado",
 };
 
 export const CYCLE_STATUS_DESCRIPTIONS: Record<CycleStatus, string> = {
-  DRAFT: "Cycle is being configured and not visible to participants",
-  NOMINATION: "Participants can nominate peer reviewers",
-  IN_PROGRESS: "Reviews are being collected",
-  CLOSED: "All reviews completed, reports available",
-  ARCHIVED: "Cycle has been archived",
+  DRAFT: "El ciclo está siendo configurado y no es visible para los participantes",
+  NOMINATION: "Los participantes pueden nominar evaluadores pares",
+  IN_PROGRESS: "Las evaluaciones están siendo recopiladas",
+  CLOSED: "Todas las evaluaciones completadas, reportes disponibles",
+  ARCHIVED: "El ciclo ha sido archivado",
 };
 
 export const CYCLE_STATUS_COLORS: Record<CycleStatus, string> = {
@@ -25,10 +26,10 @@ export const CYCLE_STATUS_COLORS: Record<CycleStatus, string> = {
 };
 
 export const ASSIGNMENT_STATUS_LABELS: Record<ReviewAssignmentStatus, string> = {
-  PENDING: "Not Started",
-  IN_PROGRESS: "In Progress",
-  COMPLETED: "Completed",
-  DECLINED: "Declined",
+  PENDING: "Sin Iniciar",
+  IN_PROGRESS: "En Progreso",
+  COMPLETED: "Completado",
+  DECLINED: "Rechazado",
 };
 
 export const ASSIGNMENT_STATUS_COLORS: Record<ReviewAssignmentStatus, string> = {
@@ -37,6 +38,40 @@ export const ASSIGNMENT_STATUS_COLORS: Record<ReviewAssignmentStatus, string> = 
   COMPLETED: "bg-green-100 text-green-700",
   DECLINED: "bg-red-100 text-red-700",
 };
+
+// Locale-aware getters
+const CYCLE_STATUS_LABELS_I18N: Record<string, Record<CycleStatus, string>> = {
+  es: CYCLE_STATUS_LABELS,
+  en: { DRAFT: "Draft", NOMINATION: "Nominations Open", IN_PROGRESS: "In Progress", CLOSED: "Closed", ARCHIVED: "Archived" },
+};
+
+const CYCLE_STATUS_DESCRIPTIONS_I18N: Record<string, Record<CycleStatus, string>> = {
+  es: CYCLE_STATUS_DESCRIPTIONS,
+  en: {
+    DRAFT: "Cycle is being configured and not visible to participants",
+    NOMINATION: "Participants can nominate peer reviewers",
+    IN_PROGRESS: "Reviews are being collected",
+    CLOSED: "All reviews completed, reports available",
+    ARCHIVED: "Cycle has been archived",
+  },
+};
+
+const ASSIGNMENT_STATUS_LABELS_I18N: Record<string, Record<ReviewAssignmentStatus, string>> = {
+  es: ASSIGNMENT_STATUS_LABELS,
+  en: { PENDING: "Not Started", IN_PROGRESS: "In Progress", COMPLETED: "Completed", DECLINED: "Declined" },
+};
+
+export function getCycleStatusLabel(status: CycleStatus, locale = "es"): string {
+  return CYCLE_STATUS_LABELS_I18N[locale]?.[status] ?? CYCLE_STATUS_LABELS[status] ?? status;
+}
+
+export function getCycleStatusDescription(status: CycleStatus, locale = "es"): string {
+  return CYCLE_STATUS_DESCRIPTIONS_I18N[locale]?.[status] ?? CYCLE_STATUS_DESCRIPTIONS[status] ?? status;
+}
+
+export function getAssignmentStatusLabel(status: ReviewAssignmentStatus, locale = "es"): string {
+  return ASSIGNMENT_STATUS_LABELS_I18N[locale]?.[status] ?? ASSIGNMENT_STATUS_LABELS[status] ?? status;
+}
 
 export const CYCLE_STATUS_ORDER: CycleStatus[] = [
   "DRAFT",

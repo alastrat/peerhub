@@ -31,8 +31,8 @@ async function main() {
   console.log("Creating demo company...");
   const company = await prisma.company.create({
     data: {
-      name: "Acme Corporation",
-      slug: "acme-corp",
+      name: "Kultiva Demo",
+      slug: "kultiva-demo",
     },
   });
 
@@ -40,19 +40,19 @@ async function main() {
   console.log("Creating departments...");
   const departments = await Promise.all([
     prisma.department.create({
-      data: { name: "Engineering", companyId: company.id },
+      data: { name: "Ingeniería", companyId: company.id },
     }),
     prisma.department.create({
-      data: { name: "Product", companyId: company.id },
+      data: { name: "Producto", companyId: company.id },
     }),
     prisma.department.create({
-      data: { name: "Design", companyId: company.id },
+      data: { name: "Diseño", companyId: company.id },
     }),
     prisma.department.create({
-      data: { name: "Marketing", companyId: company.id },
+      data: { name: "Mercadeo", companyId: company.id },
     }),
     prisma.department.create({
-      data: { name: "Sales", companyId: company.id },
+      data: { name: "Ventas", companyId: company.id },
     }),
   ]);
 
@@ -104,8 +104,8 @@ async function main() {
   // Admin user
   const admin = await createPerson({
     email: "admin@acme.com",
-    name: "Alex Admin",
-    title: "HR Director",
+    name: "Alejandro Restrepo",
+    title: "Director de Talento Humano",
     companyRole: "ADMIN",
     departmentId: engineering.id,
   });
@@ -113,8 +113,8 @@ async function main() {
   // Engineering team
   const engManager = await createPerson({
     email: "sarah.eng@acme.com",
-    name: "Sarah Chen",
-    title: "Engineering Manager",
+    name: "Sara Martínez",
+    title: "Gerente de Ingeniería",
     companyRole: "MANAGER",
     departmentId: engineering.id,
   });
@@ -123,23 +123,23 @@ async function main() {
     [
       {
         email: "james.dev@acme.com",
-        name: "James Wilson",
-        title: "Senior Software Engineer",
+        name: "Santiago Gómez",
+        title: "Ingeniero de Software Senior",
       },
       {
         email: "maria.dev@acme.com",
-        name: "Maria Garcia",
-        title: "Software Engineer",
+        name: "María López",
+        title: "Ingeniera de Software",
       },
       {
         email: "kevin.dev@acme.com",
-        name: "Kevin Park",
-        title: "Software Engineer",
+        name: "Andrés Herrera",
+        title: "Ingeniero de Software",
       },
       {
         email: "emily.dev@acme.com",
-        name: "Emily Johnson",
-        title: "Junior Software Engineer",
+        name: "Valentina Díaz",
+        title: "Ingeniera de Software Junior",
       },
     ].map((eng) =>
       createPerson({
@@ -154,8 +154,8 @@ async function main() {
   // Product team
   const productMgr = await createPerson({
     email: "mike.product@acme.com",
-    name: "Mike Thompson",
-    title: "Product Manager",
+    name: "Miguel Rodríguez",
+    title: "Gerente de Producto",
     companyRole: "MANAGER",
     departmentId: product.id,
   });
@@ -164,13 +164,13 @@ async function main() {
     [
       {
         email: "lisa.pm@acme.com",
-        name: "Lisa Brown",
-        title: "Associate Product Manager",
+        name: "Luisa Moreno",
+        title: "Analista de Producto",
       },
       {
         email: "david.pm@acme.com",
-        name: "David Lee",
-        title: "Product Analyst",
+        name: "David Castaño",
+        title: "Analista de Producto",
       },
     ].map((pm) =>
       createPerson({
@@ -185,8 +185,8 @@ async function main() {
   // Design team
   const designMgr = await createPerson({
     email: "anna.design@acme.com",
-    name: "Anna Martinez",
-    title: "Design Lead",
+    name: "Ana Ruiz",
+    title: "Líder de Diseño",
     companyRole: "MANAGER",
     departmentId: design.id,
   });
@@ -195,13 +195,13 @@ async function main() {
     [
       {
         email: "tom.design@acme.com",
-        name: "Tom Anderson",
-        title: "Senior UX Designer",
+        name: "Tomás Vargas",
+        title: "Diseñador UX Senior",
       },
       {
         email: "rachel.design@acme.com",
-        name: "Rachel Kim",
-        title: "UI Designer",
+        name: "Raquel Arias",
+        title: "Diseñadora UI",
       },
     ].map((designer) =>
       createPerson({
@@ -218,36 +218,36 @@ async function main() {
   const competencies = await Promise.all([
     prisma.competency.create({
       data: {
-        name: "Communication",
-        description: "Ability to communicate effectively with team members and stakeholders",
+        name: "Comunicación",
+        description: "Capacidad de comunicarse eficazmente con el equipo y las partes interesadas",
         companyId: company.id,
       },
     }),
     prisma.competency.create({
       data: {
-        name: "Problem Solving",
-        description: "Ability to analyze problems and develop effective solutions",
+        name: "Resolución de Problemas",
+        description: "Capacidad de analizar problemas y desarrollar soluciones efectivas",
         companyId: company.id,
       },
     }),
     prisma.competency.create({
       data: {
-        name: "Collaboration",
-        description: "Ability to work effectively with others to achieve common goals",
+        name: "Trabajo en Equipo",
+        description: "Capacidad de trabajar eficazmente con otros para alcanzar objetivos comunes",
         companyId: company.id,
       },
     }),
     prisma.competency.create({
       data: {
-        name: "Technical Skills",
-        description: "Proficiency in role-specific technical competencies",
+        name: "Habilidades Técnicas",
+        description: "Dominio de competencias técnicas específicas del rol",
         companyId: company.id,
       },
     }),
     prisma.competency.create({
       data: {
-        name: "Leadership",
-        description: "Ability to guide and inspire others",
+        name: "Liderazgo",
+        description: "Capacidad de guiar e inspirar a otros",
         companyId: company.id,
       },
     }),
@@ -259,40 +259,40 @@ async function main() {
   // Standard 360 Review Template
   const standardTemplate = await prisma.template.create({
     data: {
-      name: "Standard 360° Review",
-      description: "Comprehensive 360-degree feedback template covering key performance areas",
+      name: "Evaluación 360° Estándar",
+      description: "Plantilla integral de retroalimentación 360° que cubre las principales áreas de desempeño",
       companyId: company.id,
       isDefault: true,
       sections: {
         create: [
           {
-            title: "Job Performance",
-            description: "Evaluate overall job performance and work quality",
+            title: "Desempeño Laboral",
+            description: "Evaluar el desempeño general y la calidad del trabajo",
             order: 0,
             reviewerTypes: ["SELF", "MANAGER", "PEER", "DIRECT_REPORT"] as ReviewerType[],
             questions: {
               create: [
                 {
-                  text: "How would you rate the quality of their work?",
-                  description: "Consider accuracy, thoroughness, and attention to detail",
+                  text: "¿Cómo calificarías la calidad de su trabajo?",
+                  description: "Considera la precisión, la rigurosidad y la atención al detalle",
                   type: "RATING" as QuestionType,
                   isRequired: true,
                   order: 0,
                 },
                 {
-                  text: "How effectively do they meet deadlines and manage their time?",
+                  text: "¿Qué tan efectivamente cumple con los plazos y gestiona su tiempo?",
                   type: "RATING" as QuestionType,
                   isRequired: true,
                   order: 1,
                 },
                 {
-                  text: "What are their key strengths in their role?",
+                  text: "¿Cuáles son sus principales fortalezas en su rol?",
                   type: "TEXT" as QuestionType,
                   isRequired: true,
                   order: 2,
                 },
                 {
-                  text: "What areas could they improve in?",
+                  text: "¿En qué áreas podría mejorar?",
                   type: "TEXT" as QuestionType,
                   isRequired: true,
                   order: 3,
@@ -301,32 +301,32 @@ async function main() {
             },
           },
           {
-            title: "Communication & Collaboration",
-            description: "Assess communication skills and teamwork",
+            title: "Comunicación y Colaboración",
+            description: "Evaluar habilidades de comunicación y trabajo en equipo",
             order: 1,
             reviewerTypes: ["SELF", "MANAGER", "PEER", "DIRECT_REPORT"] as ReviewerType[],
             questions: {
               create: [
                 {
-                  text: "How effectively do they communicate with team members?",
+                  text: "¿Qué tan efectivamente se comunica con los miembros del equipo?",
                   type: "RATING" as QuestionType,
                   isRequired: true,
                   order: 0,
                 },
                 {
-                  text: "How well do they collaborate with others on projects?",
+                  text: "¿Qué tan bien colabora con otros en los proyectos?",
                   type: "RATING" as QuestionType,
                   isRequired: true,
                   order: 1,
                 },
                 {
-                  text: "How receptive are they to feedback?",
+                  text: "¿Qué tan receptivo/a es a la retroalimentación?",
                   type: "RATING" as QuestionType,
                   isRequired: true,
                   order: 2,
                 },
                 {
-                  text: "Describe their communication style and its impact on the team",
+                  text: "Describe su estilo de comunicación y su impacto en el equipo",
                   type: "TEXT" as QuestionType,
                   isRequired: false,
                   order: 3,
@@ -335,26 +335,26 @@ async function main() {
             },
           },
           {
-            title: "Leadership & Initiative",
-            description: "Evaluate leadership qualities and proactive behavior",
+            title: "Liderazgo e Iniciativa",
+            description: "Evaluar cualidades de liderazgo y comportamiento proactivo",
             order: 2,
             reviewerTypes: ["MANAGER", "PEER", "DIRECT_REPORT"] as ReviewerType[],
             questions: {
               create: [
                 {
-                  text: "How well do they take initiative on projects?",
+                  text: "¿Qué tan bien toma la iniciativa en los proyectos?",
                   type: "RATING" as QuestionType,
                   isRequired: true,
                   order: 0,
                 },
                 {
-                  text: "How effectively do they mentor or support others?",
+                  text: "¿Qué tan efectivamente orienta o apoya a otros?",
                   type: "RATING" as QuestionType,
                   isRequired: false,
                   order: 1,
                 },
                 {
-                  text: "Describe a time when they demonstrated leadership",
+                  text: "Describe una ocasión en la que demostró liderazgo",
                   type: "TEXT" as QuestionType,
                   isRequired: false,
                   order: 2,
@@ -363,26 +363,26 @@ async function main() {
             },
           },
           {
-            title: "Self Reflection",
-            description: "Personal reflection on performance and growth",
+            title: "Autorreflexión",
+            description: "Reflexión personal sobre el desempeño y el crecimiento",
             order: 3,
             reviewerTypes: ["SELF"] as ReviewerType[],
             questions: {
               create: [
                 {
-                  text: "What accomplishments are you most proud of this period?",
+                  text: "¿De qué logros te sientes más orgulloso/a en este período?",
                   type: "TEXT" as QuestionType,
                   isRequired: true,
                   order: 0,
                 },
                 {
-                  text: "What challenges did you face and how did you address them?",
+                  text: "¿Qué desafíos enfrentaste y cómo los abordaste?",
                   type: "TEXT" as QuestionType,
                   isRequired: true,
                   order: 1,
                 },
                 {
-                  text: "What are your goals for the next review period?",
+                  text: "¿Cuáles son tus metas para el próximo período de evaluación?",
                   type: "TEXT" as QuestionType,
                   isRequired: true,
                   order: 2,
@@ -398,31 +398,31 @@ async function main() {
   // Quick Check-in Template
   const quickTemplate = await prisma.template.create({
     data: {
-      name: "Quick Check-in",
-      description: "Short feedback template for regular check-ins",
+      name: "Revisión Rápida",
+      description: "Plantilla corta de retroalimentación para seguimientos regulares",
       companyId: company.id,
       sections: {
         create: [
           {
-            title: "Performance Snapshot",
+            title: "Resumen de Desempeño",
             order: 0,
             reviewerTypes: ["SELF", "MANAGER"] as ReviewerType[],
             questions: {
               create: [
                 {
-                  text: "Overall performance rating",
+                  text: "Calificación general de desempeño",
                   type: "RATING" as QuestionType,
                   isRequired: true,
                   order: 0,
                 },
                 {
-                  text: "What went well this period?",
+                  text: "¿Qué salió bien en este período?",
                   type: "TEXT" as QuestionType,
                   isRequired: true,
                   order: 1,
                 },
                 {
-                  text: "What could be improved?",
+                  text: "¿Qué se podría mejorar?",
                   type: "TEXT" as QuestionType,
                   isRequired: true,
                   order: 2,
@@ -439,8 +439,8 @@ async function main() {
   console.log("Creating review cycle...");
   const cycle = await prisma.cycle.create({
     data: {
-      name: "Q1 2025 Performance Review",
-      description: "First quarter performance review for all team members",
+      name: "Evaluación de Desempeño T1 2025",
+      description: "Evaluación de desempeño del primer trimestre para todos los miembros del equipo",
       companyId: company.id,
       templateId: standardTemplate.id,
       status: "IN_PROGRESS" as CycleStatus,
@@ -531,8 +531,8 @@ async function main() {
   console.log("");
   console.log("Demo accounts created:");
   console.log("  Admin: admin@acme.com");
-  console.log("  Manager: sarah.eng@acme.com");
-  console.log("  Employee: james.dev@acme.com");
+  console.log("  Gerente: sarah.eng@acme.com");
+  console.log("  Empleado: james.dev@acme.com");
   console.log("");
   console.log("Use magic link authentication to log in.");
 }

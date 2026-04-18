@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ParticipationChart } from "@/components/analytics/participation-chart";
 import { CompletionBreakdown } from "@/components/analytics/completion-breakdown";
 import { formatDate } from "@/lib/utils/dates";
-import { CYCLE_STATUS_LABELS, CYCLE_STATUS_COLORS } from "@/lib/constants/cycle-status";
+import { getCycleStatusLabel, CYCLE_STATUS_COLORS } from "@/lib/constants/cycle-status";
 import { Badge } from "@/components/ui/badge";
 
 function AnalyticsLoading() {
@@ -95,7 +95,7 @@ async function AnalyticsContent() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium">{cycle.name}</span>
                     <Badge className={CYCLE_STATUS_COLORS[cycle.status]}>
-                      {CYCLE_STATUS_LABELS[cycle.status]}
+                      {getCycleStatusLabel(cycle.status)}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">

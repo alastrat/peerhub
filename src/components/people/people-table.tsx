@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { ArrowUpDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   Table,
   TableBody,
@@ -48,6 +49,7 @@ type SortDir = "asc" | "desc";
 const PAGE_SIZE = 10;
 
 export function PeopleTable({ data, featureHubs = false }: { data: PersonRow[]; featureHubs?: boolean }) {
+  const t = useTranslations("dashboard.people");
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [deptFilter, setDeptFilter] = useState<string>("all");
@@ -153,7 +155,7 @@ export function PeopleTable({ data, featureHubs = false }: { data: PersonRow[]; 
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search people..."
+            placeholder={t("searchPlaceholder")}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -164,21 +166,21 @@ export function PeopleTable({ data, featureHubs = false }: { data: PersonRow[]; 
         </div>
         <Select value={roleFilter} onValueChange={handleFilterChange(setRoleFilter)}>
           <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="All Roles" />
+            <SelectValue placeholder={t("allRoles")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Roles</SelectItem>
-            <SelectItem value="ADMIN">Admin</SelectItem>
-            <SelectItem value="MANAGER">Manager</SelectItem>
-            <SelectItem value="MEMBER">Member</SelectItem>
+            <SelectItem value="all">{t("allRoles")}</SelectItem>
+            <SelectItem value="ADMIN">{t("admin")}</SelectItem>
+            <SelectItem value="MANAGER">{t("manager")}</SelectItem>
+            <SelectItem value="MEMBER">{t("member")}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={deptFilter} onValueChange={handleFilterChange(setDeptFilter)}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="All Departments" />
+            <SelectValue placeholder={t("allDepartments")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Departments</SelectItem>
+            <SelectItem value="all">{t("allDepartments")}</SelectItem>
             {departments.map((d) => (
               <SelectItem key={d} value={d}>
                 {d}
@@ -193,19 +195,19 @@ export function PeopleTable({ data, featureHubs = false }: { data: PersonRow[]; 
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
-              <TableHead><SortButton field="name">Name</SortButton></TableHead>
-              <TableHead><SortButton field="role">Role</SortButton></TableHead>
-              <TableHead><SortButton field="title">Title</SortButton></TableHead>
-              <TableHead><SortButton field="department">Department</SortButton></TableHead>
-              {featureHubs && <TableHead><SortButton field="hub">Hub</SortButton></TableHead>}
-              <TableHead><SortButton field="manager">Manager</SortButton></TableHead>
+              <TableHead><SortButton field="name">{t("name")}</SortButton></TableHead>
+              <TableHead><SortButton field="role">{t("role")}</SortButton></TableHead>
+              <TableHead><SortButton field="title">{t("title")}</SortButton></TableHead>
+              <TableHead><SortButton field="department">{t("department")}</SortButton></TableHead>
+              {featureHubs && <TableHead><SortButton field="hub">{t("hub")}</SortButton></TableHead>}
+              <TableHead><SortButton field="manager">{t("managerColumn")}</SortButton></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paged.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={featureHubs ? 6 : 5} className="h-24 text-center text-muted-foreground">
-                  No results found.
+                  {t("noResults")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -218,7 +220,7 @@ export function PeopleTable({ data, featureHubs = false }: { data: PersonRow[]; 
                           {person.name ? getInitials(person.name) : "?"}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="font-medium">{person.name || "Unnamed"}</span>
+                      <span className="font-medium">{person.name || t("unnamed")}</span>
                     </Link>
                   </TableCell>
                   <TableCell>
@@ -254,7 +256,7 @@ export function PeopleTable({ data, featureHubs = false }: { data: PersonRow[]; 
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Showing {sorted.length === 0 ? 0 : safePage * PAGE_SIZE + 1}–{Math.min((safePage + 1) * PAGE_SIZE, sorted.length)} of {sorted.length}
+          {t("showingRange", { start: sorted.length === 0 ? 0 : safePage * PAGE_SIZE + 1, end: Math.min((safePage + 1) * PAGE_SIZE, sorted.length), total: sorted.length })}
         </p>
         <div className="flex items-center gap-2">
           <Button
@@ -264,10 +266,10 @@ export function PeopleTable({ data, featureHubs = false }: { data: PersonRow[]; 
             disabled={safePage === 0}
           >
             <ChevronLeft className="h-4 w-4" />
-            Previous
+            {t("previous")}
           </Button>
           <span className="text-sm text-muted-foreground">
-            Page {safePage + 1} of {totalPages}
+            {t("pageOf", { current: safePage + 1, total: totalPages })}
           </span>
           <Button
             variant="outline"
@@ -275,7 +277,7 @@ export function PeopleTable({ data, featureHubs = false }: { data: PersonRow[]; 
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             disabled={safePage >= totalPages - 1}
           >
-            Next
+            {t("next")}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>

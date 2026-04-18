@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   Plus,
   Pencil,
@@ -107,6 +108,7 @@ export function TeamsManager({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("dashboard.teams");
 
   // Create/edit dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -156,7 +158,7 @@ export function TeamsManager({
         setTeamMembers(data.members || []);
       }
     } catch {
-      toast.error("Failed to load members");
+      toast.error(t("failedLoadMembers"));
     } finally {
       setLoadingMembers(false);
     }
@@ -180,7 +182,7 @@ export function TeamsManager({
           });
 
       if (result.success) {
-        toast.success(editingTeam ? "Team updated" : "Team created");
+        toast.success(editingTeam ? t("teamUpdated") : t("teamCreated"));
         setDialogOpen(false);
         router.refresh();
       } else {
@@ -190,11 +192,11 @@ export function TeamsManager({
   }
 
   function handleDelete(team: TeamRow) {
-    if (!confirm(`Delete "${team.name}"? This cannot be undone.`)) return;
+    if (!confirm(t("deleteConfirm", { name: team.name }))) return;
     startTransition(async () => {
       const result = await deleteTeam(team.id);
       if (result.success) {
-        toast.success("Team deleted");
+        toast.success(t("teamDeleted"));
         router.refresh();
       } else {
         toast.error(result.error);
@@ -207,7 +209,7 @@ export function TeamsManager({
     startTransition(async () => {
       const result = await addTeamMember(selectedTeam.id, addEmployeeId, addRole);
       if (result.success) {
-        toast.success("Member added");
+        toast.success(t("memberAdded"));
         setAddEmployeeId("");
         setAddRole("MEMBER");
         // Refresh members
@@ -224,7 +226,7 @@ export function TeamsManager({
     startTransition(async () => {
       const result = await removeTeamMember(selectedTeam.id, employeeId);
       if (result.success) {
-        toast.success("Member removed");
+        toast.success(t("memberRemoved"));
         setTeamMembers((prev) => prev.filter((m) => m.employeeId !== employeeId));
         router.refresh();
       } else {
@@ -254,14 +256,14 @@ export function TeamsManager({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-medium">Teams</h3>
+          <h3 className="text-lg font-medium">{t("title")}</h3>
           <p className="text-sm text-muted-foreground">
-            Manage working groups and team memberships
+            {t("subtitle")}
           </p>
         </div>
         <Button onClick={openCreate} size="sm">
           <Plus className="mr-2 h-4 w-4" />
-          Add Team
+          {t("addTeam")}
         </Button>
       </div>
 
@@ -269,11 +271,11 @@ export function TeamsManager({
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
-              <TableHead>Team</TableHead>
-              <TableHead>Department</TableHead>
-              {featureHubs && <TableHead>Hub</TableHead>}
-              <TableHead>Members</TableHead>
-              <TableHead className="w-[140px]">Actions</TableHead>
+              <TableHead>{t("team")}</TableHead>
+              <TableHead>{t("department")}</TableHead>
+              {featureHubs && <TableHead>{t("hub")}</TableHead>}
+              <TableHead>{t("members")}</TableHead>
+              <TableHead className="w-[140px]">{t("actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -283,7 +285,7 @@ export function TeamsManager({
                   colSpan={featureHubs ? 5 : 4}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  No teams yet. Create your first team to get started.
+                  {t("noTeams")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -313,7 +315,7 @@ export function TeamsManager({
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => openMembers(team)}
-                        title="Manage members"
+                        title={t("manageMembers")}
                       >
                         <Users className="h-3.5 w-3.5" />
                       </Button>
@@ -347,37 +349,37 @@ export function TeamsManager({
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingTeam ? "Edit Team" : "New Team"}</DialogTitle>
+            <DialogTitle>{editingTeam ? t("editTeam") : t("newTeam")}</DialogTitle>
             <DialogDescription>
-              {editingTeam ? "Update the team details" : "Create a new working group"}
+              {editingTeam ? t("updateDetails") : t("createGroup")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>Name</Label>
+              <Label>{t("name")}</Label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Enterprise Sales"
+                placeholder={t("namePlaceholder")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Description (optional)</Label>
+              <Label>{t("descriptionOptional")}</Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Brief description of this team..."
+                placeholder={t("descriptionPlaceholder")}
                 rows={2}
               />
             </div>
             <div className="space-y-2">
-              <Label>Primary Department (optional)</Label>
+              <Label>{t("primaryDepartment")}</Label>
               <Select value={departmentId || "none"} onValueChange={(v) => setDepartmentId(v === "none" ? "" : v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select department" />
+                  <SelectValue placeholder={t("selectDepartment")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">No department</SelectItem>
+                  <SelectItem value="none">{t("noDepartment")}</SelectItem>
                   {departments.map((d) => (
                     <SelectItem key={d.id} value={d.id}>
                       {d.name}
@@ -388,13 +390,13 @@ export function TeamsManager({
             </div>
             {featureHubs && (
               <div className="space-y-2">
-                <Label>Hub (optional)</Label>
+                <Label>{t("hubOptional")}</Label>
                 <Select value={hubId || "none"} onValueChange={(v) => setHubId(v === "none" ? "" : v)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select hub" />
+                    <SelectValue placeholder={t("selectHub")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No hub</SelectItem>
+                    <SelectItem value="none">{t("noHub")}</SelectItem>
                     {hubs.map((h) => (
                       <SelectItem key={h.id} value={h.id}>
                         {h.name}
@@ -407,11 +409,11 @@ export function TeamsManager({
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={isPending}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button onClick={handleSave} disabled={isPending || !name.trim()}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {editingTeam ? "Save" : "Create"}
+              {editingTeam ? t("save") : t("create")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -422,23 +424,23 @@ export function TeamsManager({
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              {selectedTeam?.name} — Members
+              {t("membersTitle", { name: selectedTeam?.name || "" })}
             </DialogTitle>
             <DialogDescription>
-              Add or remove team members. Members can be from any department.
+              {t("membersDescription")}
             </DialogDescription>
           </DialogHeader>
 
           {/* Add member */}
           <div className="flex items-end gap-2 pt-2">
             <div className="flex-1 space-y-1">
-              <Label className="text-xs">Employee</Label>
+              <Label className="text-xs">{t("employee")}</Label>
               <Select value={addEmployeeId || "none"} onValueChange={(v) => setAddEmployeeId(v === "none" ? "" : v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select an employee..." />
+                  <SelectValue placeholder={t("selectEmployee")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Select an employee</SelectItem>
+                  <SelectItem value="none">{t("selectAnEmployee")}</SelectItem>
                   {availableEmployees.map((e) => (
                     <SelectItem key={e.id} value={e.id}>
                       {e.name}{" "}
@@ -453,14 +455,14 @@ export function TeamsManager({
               </Select>
             </div>
             <div className="w-[120px] space-y-1">
-              <Label className="text-xs">Role</Label>
+              <Label className="text-xs">{t("role")}</Label>
               <Select value={addRole} onValueChange={(v) => setAddRole(v as "LEAD" | "MEMBER")}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="MEMBER">Member</SelectItem>
-                  <SelectItem value="LEAD">Lead</SelectItem>
+                  <SelectItem value="MEMBER">{t("memberRole")}</SelectItem>
+                  <SelectItem value="LEAD">{t("leadRole")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -470,7 +472,7 @@ export function TeamsManager({
               disabled={isPending || !addEmployeeId}
             >
               <UserPlus className="mr-1 h-4 w-4" />
-              Add
+              {t("add")}
             </Button>
           </div>
 
@@ -482,7 +484,7 @@ export function TeamsManager({
               </div>
             ) : teamMembers.length === 0 ? (
               <p className="text-center text-sm text-muted-foreground py-8">
-                No members yet
+                {t("noMembers")}
               </p>
             ) : (
               <div className="space-y-2">
@@ -520,8 +522,8 @@ export function TeamsManager({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="MEMBER">Member</SelectItem>
-                        <SelectItem value="LEAD">Lead</SelectItem>
+                        <SelectItem value="MEMBER">{t("memberRole")}</SelectItem>
+                        <SelectItem value="LEAD">{t("leadRole")}</SelectItem>
                       </SelectContent>
                     </Select>
                     <Button

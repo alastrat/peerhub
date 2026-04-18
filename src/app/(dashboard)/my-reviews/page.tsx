@@ -17,8 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, daysUntil, isDateInPast } from "@/lib/utils/dates";
-import { REVIEWER_TYPE_LABELS } from "@/lib/constants/roles";
-import { ASSIGNMENT_STATUS_LABELS, ASSIGNMENT_STATUS_COLORS } from "@/lib/constants/cycle-status";
+import { getReviewerTypeLabel } from "@/lib/constants/roles";
+import { getAssignmentStatusLabel, ASSIGNMENT_STATUS_COLORS } from "@/lib/constants/cycle-status";
 import { getInitials } from "@/lib/utils/formatting";
 import { redirect } from "next/navigation";
 
@@ -99,7 +99,7 @@ async function ReviewsList() {
                         : `Review for ${assignment.reviewee.name}`}
                     </p>
                     <Badge variant="outline">
-                      {REVIEWER_TYPE_LABELS[assignment.reviewerType]}
+                      {getReviewerTypeLabel(assignment.reviewerType)}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -109,7 +109,7 @@ async function ReviewsList() {
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <Badge className={ASSIGNMENT_STATUS_COLORS[assignment.status]}>
-                      {ASSIGNMENT_STATUS_LABELS[assignment.status]}
+                      {getAssignmentStatusLabel(assignment.status)}
                     </Badge>
                     <p className={`text-xs mt-1 ${isOverdue ? "text-destructive" : "text-muted-foreground"}`}>
                       {isOverdue ? (

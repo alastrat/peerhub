@@ -12,6 +12,7 @@ import {
   UsersRound,
   ClipboardCheck,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils/cn";
 import { Logo } from "@/components/design-system/logo";
 import {
@@ -21,21 +22,23 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const adminNavItems = [
-  { href: "/overview", icon: LayoutDashboard, label: "Overview" },
-  { href: "/people", icon: Users, label: "People" },
-  { href: "/surveys", icon: ClipboardCheck, label: "Surveys" },
-  { href: "/reports", icon: BarChart3, label: "Reports" },
+type NavItemDef = { href: string; icon: React.ComponentType<{ className?: string }>; labelKey: string };
+
+const adminNavItems: NavItemDef[] = [
+  { href: "/overview", icon: LayoutDashboard, labelKey: "overview" },
+  { href: "/people", icon: Users, labelKey: "people" },
+  { href: "/surveys", icon: ClipboardCheck, labelKey: "surveys" },
+  { href: "/reports", icon: BarChart3, labelKey: "reports" },
 ];
 
-const employeeNavItems = [
-  { href: "/overview", icon: LayoutDashboard, label: "Overview" },
-  { href: "/my-reviews", icon: ClipboardList, label: "My Reviews" },
-  { href: "/my-feedback", icon: BarChart3, label: "My Feedback" },
+const employeeNavItems: NavItemDef[] = [
+  { href: "/overview", icon: LayoutDashboard, labelKey: "overview" },
+  { href: "/my-reviews", icon: ClipboardList, labelKey: "my_reviews" },
+  { href: "/my-feedback", icon: BarChart3, labelKey: "my_feedback" },
 ];
 
-const managerNavItems = [
-  { href: "/team", icon: UsersRound, label: "My Team" },
+const managerNavItems: NavItemDef[] = [
+  { href: "/team", icon: UsersRound, labelKey: "my_team" },
 ];
 
 function NavItem({
@@ -74,6 +77,7 @@ function NavItem({
 export function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const t = useTranslations("dashboard.sidebar");
   const role = session?.companyUser?.role || "MEMBER";
 
   const isAdmin = role === "ADMIN";
@@ -95,7 +99,7 @@ export function Sidebar() {
             const isActive =
               pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
-              <NavItem key={item.href} {...item} isActive={isActive} />
+              <NavItem key={item.href} href={item.href} icon={item.icon} label={t(item.labelKey)} isActive={isActive} />
             );
           })}
 
@@ -108,7 +112,7 @@ export function Sidebar() {
                   pathname === item.href ||
                   pathname.startsWith(`${item.href}/`);
                 return (
-                  <NavItem key={item.href} {...item} isActive={isActive} />
+                  <NavItem key={item.href} href={item.href} icon={item.icon} label={t(item.labelKey)} isActive={isActive} />
                 );
               })}
             </>
@@ -120,7 +124,7 @@ export function Sidebar() {
           <NavItem
             href="/settings"
             icon={Settings}
-            label="Settings"
+            label={t("settings")}
             isActive={pathname.startsWith("/settings")}
           />
         </div>

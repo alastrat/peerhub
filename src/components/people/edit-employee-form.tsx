@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -64,6 +65,7 @@ export function EditEmployeeForm({
 }: EditEmployeeFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("dashboard.editEmployeeForm");
 
   const form = useForm<UpdateUserInput>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,11 +94,11 @@ export function EditEmployeeForm({
       const result = await updateUser(employee.id, cleanedData);
 
       if (result.success) {
-        toast.success("Employee updated successfully");
+        toast.success(t("employeeUpdated"));
         router.push(`/people/${employee.id}`);
         router.refresh();
       } else {
-        toast.error(result.error || "Something went wrong");
+        toast.error(result.error || t("somethingWrong"));
       }
     });
   }
@@ -106,11 +108,11 @@ export function EditEmployeeForm({
       const result = await deleteUser(employee.id);
 
       if (result.success) {
-        toast.success("Employee deactivated successfully");
+        toast.success(t("employeeDeactivated"));
         router.push("/people");
         router.refresh();
       } else {
-        toast.error(result.error || "Something went wrong");
+        toast.error(result.error || t("somethingWrong"));
       }
     });
   }
@@ -120,10 +122,10 @@ export function EditEmployeeForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Email address</label>
+            <label className="text-sm font-medium">{t("emailAddress")}</label>
             <Input value={employee.email || ""} disabled />
             <p className="text-sm text-muted-foreground">
-              Email cannot be changed
+              {t("emailCannotChange")}
             </p>
           </div>
 
@@ -132,9 +134,9 @@ export function EditEmployeeForm({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full name</FormLabel>
+                <FormLabel>{t("fullName")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="John Doe" {...field} value={field.value || ""} />
+                  <Input placeholder={t("namePlaceholder")} {...field} value={field.value || ""} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -146,10 +148,10 @@ export function EditEmployeeForm({
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Job title</FormLabel>
+                <FormLabel>{t("jobTitle")}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Software Engineer"
+                    placeholder={t("titlePlaceholder")}
                     {...field}
                     value={field.value || ""}
                   />
@@ -164,14 +166,14 @@ export function EditEmployeeForm({
             name="role"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Role</FormLabel>
+                <FormLabel>{t("role")}</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a role" />
+                      <SelectValue placeholder={t("selectRole")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -183,7 +185,7 @@ export function EditEmployeeForm({
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  Admins can manage all settings, Managers can view team reports
+                  {t("roleDescription")}
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -195,18 +197,18 @@ export function EditEmployeeForm({
             name="departmentId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Department</FormLabel>
+                <FormLabel>{t("department")}</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value || "none"}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a department" />
+                      <SelectValue placeholder={t("selectDepartment")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="none">No department</SelectItem>
+                    <SelectItem value="none">{t("noDepartment")}</SelectItem>
                     {departments.map((dept) => (
                       <SelectItem key={dept.id} value={dept.id}>
                         {dept.name}
@@ -224,18 +226,18 @@ export function EditEmployeeForm({
             name="managerId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Manager</FormLabel>
+                <FormLabel>{t("manager")}</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value || "none"}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a manager" />
+                      <SelectValue placeholder={t("selectManager")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="none">No manager</SelectItem>
+                    <SelectItem value="none">{t("noManager")}</SelectItem>
                     {managers.map((manager) => (
                       <SelectItem key={manager.id} value={manager.id}>
                         {manager.name || manager.email}
@@ -254,18 +256,18 @@ export function EditEmployeeForm({
               name="hubId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Hub</FormLabel>
+                  <FormLabel>{t("hub")}</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value || "none"}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a hub" />
+                        <SelectValue placeholder={t("selectHub")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="none">No hub</SelectItem>
+                      <SelectItem value="none">{t("noHub")}</SelectItem>
                       {hubs.map((hub) => (
                         <SelectItem key={hub.id} value={hub.id}>
                           {hub.name}
@@ -286,9 +288,9 @@ export function EditEmployeeForm({
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
-                <FormLabel className="text-base">Active Status</FormLabel>
+                <FormLabel className="text-base">{t("activeStatus")}</FormLabel>
                 <FormDescription>
-                  Inactive employees cannot access the system or participate in reviews
+                  {t("activeDescription")}
                 </FormDescription>
               </div>
               <FormControl>
@@ -305,22 +307,20 @@ export function EditEmployeeForm({
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button type="button" variant="destructive" disabled={isPending}>
-                Deactivate Employee
+                {t("deactivateEmployee")}
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Deactivate Employee</AlertDialogTitle>
+                <AlertDialogTitle>{t("deactivateEmployee")}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This will deactivate {employee.name || "this employee"}'s account. They
-                  will no longer be able to access the system or participate in reviews.
-                  This action can be reversed by reactivating them later.
+                  {t("deactivateDescription", { name: employee.name || "this employee" })}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                 <AlertDialogAction onClick={handleDeactivate}>
-                  Deactivate
+                  {t("deactivate")}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -333,11 +333,11 @@ export function EditEmployeeForm({
               onClick={() => router.back()}
               disabled={isPending}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
+              {t("saveChanges")}
             </Button>
           </div>
         </div>

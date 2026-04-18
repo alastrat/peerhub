@@ -619,6 +619,36 @@ export async function toggleCompanyFeature(input: {
 }
 
 // ============================================
+// COMPANY LOCALE
+// ============================================
+
+export async function updateCompanyLocale(
+  locale: string
+): Promise<ActionResult> {
+  try {
+    const { companyId } = await requireCompanyAdmin();
+
+    const { SUPPORTED_LOCALES } = await import("@/i18n/routing");
+    if (!SUPPORTED_LOCALES.includes(locale as any)) {
+      return { success: false, error: "Unsupported locale" };
+    }
+
+    await prisma.company.update({
+      where: { id: companyId },
+      data: { locale },
+    });
+
+    revalidatePath("/settings/company");
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update locale",
+    };
+  }
+}
+
+// ============================================
 // PROFILE
 // ============================================
 
