@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
 import { redirect } from "next/navigation";
 import { TeamsManager } from "@/components/settings/teams-manager";
+import { TranslatedPageHeader } from "@/components/dashboard/translated-page-header";
 
 export default async function TeamsSettingsPage() {
   const session = await auth();
@@ -47,12 +48,18 @@ export default async function TeamsSettingsPage() {
   ]);
 
   return (
-    <TeamsManager
-      teams={teams}
-      departments={departments}
-      hubs={hubs}
-      employees={employees}
-      featureHubs={company?.featureHubs ?? false}
-    />
+    <div className="space-y-6">
+      <TranslatedPageHeader
+        titleKey="teams_title"
+        descriptionKey="teams_description"
+      />
+      <TeamsManager
+        teams={teams}
+        departments={departments}
+        hubs={hubs}
+        employees={employees}
+        featureHubs={company?.featureHubs ?? false}
+      />
+    </div>
   );
 }

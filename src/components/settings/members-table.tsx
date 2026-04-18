@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -113,6 +114,7 @@ export function MembersTable({
   currentUserId: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("dashboard.membersTable");
   const [members, setMembers] = useState(initialMembers);
   const [invitations, setInvitations] = useState(initialInvitations);
   const [tab, setTab] = useState<Tab>("active");
@@ -182,7 +184,7 @@ export function MembersTable({
         companyId,
       });
       if (result.success) {
-        setInviteSuccess(`Invitation sent to ${inviteEmail}`);
+        setInviteSuccess(t("invitationSentTo", { email: inviteEmail }));
         setInvitations((prev) => [
           {
             id: Date.now().toString(),
@@ -198,7 +200,7 @@ export function MembersTable({
         setInviteEmail("");
         setInviteRole("MEMBER");
       } else {
-        setError(result.error || "Failed to send invitation");
+        setError(result.error || t("failedInvitation"));
       }
     });
   };
@@ -221,7 +223,7 @@ export function MembersTable({
           )
         );
       } else {
-        setError(result.error || "Failed to update role");
+        setError(result.error || t("failedUpdateRole"));
       }
       setRoleChange(null);
     });
@@ -245,7 +247,7 @@ export function MembersTable({
           )
         );
       } else {
-        setError(result.error || "Failed to update status");
+        setError(result.error || t("failedUpdateStatus"));
       }
       setConfirmAction(null);
     });
@@ -261,7 +263,7 @@ export function MembersTable({
       if (result.success) {
         setMembers((prev) => prev.filter((m) => m.id !== memberId));
       } else {
-        setError(result.error || "Failed to remove member");
+        setError(result.error || t("failedRemove"));
       }
       setConfirmAction(null);
     });
@@ -274,7 +276,7 @@ export function MembersTable({
       if (result.success) {
         setInvitations((prev) => prev.filter((i) => i.id !== invId));
       } else {
-        setError(result.error || "Failed to cancel invitation");
+        setError(result.error || t("failedCancel"));
       }
     });
   };
@@ -284,7 +286,7 @@ export function MembersTable({
     startTransition(async () => {
       const result = await resendInvitation(invId);
       if (!result.success) {
-        setError(result.error || "Failed to resend invitation");
+        setError(result.error || t("failedResend"));
       }
     });
   };
@@ -295,33 +297,33 @@ export function MembersTable({
       <div className="flex items-center gap-1 border-b">
         {(
           [
-            { key: "active", label: "Active", count: activeCount },
-            { key: "inactive", label: "Inactive", count: inactiveCount },
-            { key: "invited", label: "Invited", count: invitedCount },
+            { key: "active", label: t("active"), count: activeCount },
+            { key: "inactive", label: t("inactive"), count: inactiveCount },
+            { key: "invited", label: t("invited"), count: invitedCount },
           ] as const
-        ).map((t) => (
+        ).map((tabItem) => (
           <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
+            key={tabItem.key}
+            onClick={() => setTab(tabItem.key)}
             className={`relative px-4 py-2.5 text-sm font-medium transition-colors ${
-              tab === t.key
+              tab === tabItem.key
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {t.label}
-            {t.count > 0 && (
+            {tabItem.label}
+            {tabItem.count > 0 && (
               <span
                 className={`ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs ${
-                  tab === t.key
+                  tab === tabItem.key
                     ? "bg-primary/10 text-primary"
                     : "bg-muted text-muted-foreground"
                 }`}
               >
-                {t.count}
+                {tabItem.count}
               </span>
             )}
-            {tab === t.key && (
+            {tab === tabItem.key && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
             )}
           </button>
@@ -336,8 +338,8 @@ export function MembersTable({
             <Input
               placeholder={
                 tab === "invited"
-                  ? "Search by email..."
-                  : "Search members..."
+                  ? t("searchByEmail")
+                  : t("searchMembers")
               }
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -346,13 +348,13 @@ export function MembersTable({
           </div>
           <Select value={roleFilter} onValueChange={setRoleFilter}>
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="All roles" />
+              <SelectValue placeholder={t("allRoles")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Roles</SelectItem>
-              <SelectItem value="ADMIN">Admin</SelectItem>
-              <SelectItem value="MANAGER">Manager</SelectItem>
-              <SelectItem value="MEMBER">Member</SelectItem>
+              <SelectItem value="all">{t("allRoles")}</SelectItem>
+              <SelectItem value="ADMIN">{t("admin")}</SelectItem>
+              <SelectItem value="MANAGER">{t("manager")}</SelectItem>
+              <SelectItem value="MEMBER">{t("member")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -370,33 +372,33 @@ export function MembersTable({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-1.5 h-4 w-4" />
-              Invite Member
+              {t("inviteMember")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <form onSubmit={handleInvite}>
               <DialogHeader>
-                <DialogTitle>Invite Member</DialogTitle>
+                <DialogTitle>{t("inviteTitle")}</DialogTitle>
                 <DialogDescription>
-                  Send an email invitation to join the company.
+                  {t("inviteDescription")}
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Email</label>
+                  <label className="text-sm font-medium">{t("email")}</label>
                   <div className="relative">
                     <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       type="email"
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
-                      placeholder="colleague@company.com"
+                      placeholder={t("emailPlaceholder")}
                       className="ps-10"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Role</label>
+                  <label className="text-sm font-medium">{t("role")}</label>
                   <Select
                     value={inviteRole}
                     onValueChange={(v) =>
@@ -407,9 +409,9 @@ export function MembersTable({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="MEMBER">Member</SelectItem>
-                      <SelectItem value="MANAGER">Manager</SelectItem>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
+                      <SelectItem value="MEMBER">{t("member")}</SelectItem>
+                      <SelectItem value="MANAGER">{t("manager")}</SelectItem>
+                      <SelectItem value="ADMIN">{t("admin")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -425,7 +427,7 @@ export function MembersTable({
                   type="submit"
                   disabled={isPending || !inviteEmail.trim()}
                 >
-                  {isPending ? "Sending..." : "Send Invitation"}
+                  {isPending ? t("sending") : t("sendInvitation")}
                 </Button>
               </DialogFooter>
             </form>
@@ -443,11 +445,11 @@ export function MembersTable({
           <Table>
             <TableHeader>
               <TableRow className="!bg-muted/50">
-                <TableHead>Member</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{t("memberHeader")}</TableHead>
+                <TableHead>{t("roleHeader")}</TableHead>
+                <TableHead>{t("titleHeader")}</TableHead>
+                <TableHead>{t("departmentHeader")}</TableHead>
+                <TableHead>{t("statusHeader")}</TableHead>
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
@@ -458,10 +460,10 @@ export function MembersTable({
                     <Users className="mx-auto h-8 w-8 text-muted-foreground" />
                     <p className="mt-2 text-sm text-muted-foreground">
                       {search || roleFilter !== "all"
-                        ? "No members match your filters"
+                        ? t("noMatchFilters")
                         : tab === "inactive"
-                          ? "No inactive members"
-                          : "No members yet"}
+                          ? t("noInactiveMembers")
+                          : t("noMembersYet")}
                     </p>
                   </TableCell>
                 </TableRow>
@@ -484,10 +486,10 @@ export function MembersTable({
                           </Avatar>
                           <div>
                             <p className="font-medium">
-                              {m.name || "No name"}
+                              {m.name || t("noName")}
                               {isSelf && (
                                 <span className="ml-1.5 text-xs text-muted-foreground">
-                                  (you)
+                                  {t("you")}
                                 </span>
                               )}
                             </p>
@@ -526,7 +528,7 @@ export function MembersTable({
                               : "bg-gray-100 text-gray-500"
                           }
                         >
-                          {m.isActive ? "Active" : "Inactive"}
+                          {m.isActive ? t("activeStatus") : t("inactiveStatus")}
                         </Badge>
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
@@ -543,7 +545,7 @@ export function MembersTable({
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuLabel>{t("actionsLabel")}</DropdownMenuLabel>
                               <DropdownMenuSeparator />
                               {m.role !== "ADMIN" && (
                                 <DropdownMenuItem
@@ -555,7 +557,7 @@ export function MembersTable({
                                   }
                                 >
                                   <Shield className="mr-2 h-4 w-4" />
-                                  Make Admin
+                                  {t("makeAdmin")}
                                 </DropdownMenuItem>
                               )}
                               {m.role !== "MANAGER" && (
@@ -568,7 +570,7 @@ export function MembersTable({
                                   }
                                 >
                                   <Shield className="mr-2 h-4 w-4" />
-                                  Make Manager
+                                  {t("makeManager")}
                                 </DropdownMenuItem>
                               )}
                               {m.role !== "MEMBER" && (
@@ -581,7 +583,7 @@ export function MembersTable({
                                   }
                                 >
                                   <Shield className="mr-2 h-4 w-4" />
-                                  Make Member
+                                  {t("makeMember")}
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuSeparator />
@@ -595,7 +597,7 @@ export function MembersTable({
                                   }
                                 >
                                   <UserX className="mr-2 h-4 w-4" />
-                                  Deactivate
+                                  {t("deactivate")}
                                 </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem
@@ -607,7 +609,7 @@ export function MembersTable({
                                   }
                                 >
                                   <UserCheck className="mr-2 h-4 w-4" />
-                                  Activate
+                                  {t("activate")}
                                 </DropdownMenuItem>
                               )}
                               <DropdownMenuItem
@@ -620,7 +622,7 @@ export function MembersTable({
                                 }
                               >
                                 <UserMinus className="mr-2 h-4 w-4" />
-                                Remove
+                                {t("remove")}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -641,10 +643,10 @@ export function MembersTable({
           <Table>
             <TableHeader>
               <TableRow className="!bg-muted/50">
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Sent</TableHead>
-                <TableHead>Expires</TableHead>
+                <TableHead>{t("emailHeader")}</TableHead>
+                <TableHead>{t("roleHeader")}</TableHead>
+                <TableHead>{t("sentHeader")}</TableHead>
+                <TableHead>{t("expiresHeader")}</TableHead>
                 <TableHead className="w-24" />
               </TableRow>
             </TableHeader>
@@ -655,8 +657,8 @@ export function MembersTable({
                     <Mail className="mx-auto h-8 w-8 text-muted-foreground" />
                     <p className="mt-2 text-sm text-muted-foreground">
                       {search || roleFilter !== "all"
-                        ? "No invitations match your filters"
-                        : "No pending invitations"}
+                        ? t("noInvitationsMatch")
+                        : t("noPendingInvitations")}
                     </p>
                   </TableCell>
                 </TableRow>
@@ -693,7 +695,7 @@ export function MembersTable({
                         {isExpired ? (
                           <Badge className="bg-red-100 text-red-700 border-red-200">
                             <Clock className="mr-1 h-3 w-3" />
-                            Expired
+                            {t("expired")}
                           </Badge>
                         ) : (
                           <span className="text-sm text-muted-foreground">
@@ -709,7 +711,7 @@ export function MembersTable({
                             className="h-8 w-8 text-muted-foreground hover:text-foreground"
                             onClick={() => handleResendInvite(inv.id)}
                             disabled={isPending}
-                            title="Resend invitation"
+                            title={t("resendInvitation")}
                           >
                             <RefreshCw className="h-4 w-4" />
                           </Button>
@@ -719,7 +721,7 @@ export function MembersTable({
                             className="h-8 w-8 text-muted-foreground hover:text-destructive"
                             onClick={() => handleCancelInvite(inv.id)}
                             disabled={isPending}
-                            title="Cancel invitation"
+                            title={t("cancelInvitation")}
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -736,8 +738,8 @@ export function MembersTable({
 
       <p className="text-xs text-muted-foreground">
         {tab === "invited"
-          ? `${filteredInvitations.length} pending invitation${filteredInvitations.length !== 1 ? "s" : ""}`
-          : `${filtered.length} of ${tab === "active" ? activeCount : inactiveCount} ${tab} members`}
+          ? t("pendingInvitations", { count: filteredInvitations.length, plural: filteredInvitations.length !== 1 ? "s" : "" })
+          : t("memberCount", { count: filtered.length, total: tab === "active" ? activeCount : inactiveCount, tab })}
       </p>
 
       {/* Role change confirm */}
@@ -747,20 +749,19 @@ export function MembersTable({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Change role?</AlertDialogTitle>
+            <AlertDialogTitle>{t("changeRoleTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Change{" "}
-              <strong>
-                {roleChange?.member.name || roleChange?.member.email}
-              </strong>{" "}
-              from {roleChange?.member.role} to{" "}
-              <strong>{roleChange?.newRole}</strong>?
+              {t("changeRoleDescription", {
+                name: roleChange?.member.name || roleChange?.member.email || "",
+                currentRole: roleChange?.member.role || "",
+                newRole: roleChange?.newRole || "",
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleRoleChange}>
-              Change Role
+              {t("changeRole")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -775,41 +776,21 @@ export function MembersTable({
           <AlertDialogHeader>
             <AlertDialogTitle>
               {confirmAction?.type === "remove"
-                ? "Remove member?"
+                ? t("removeMemberTitle")
                 : confirmAction?.type === "deactivate"
-                  ? "Deactivate member?"
-                  : "Activate member?"}
+                  ? t("deactivateMemberTitle")
+                  : t("activateMemberTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {confirmAction?.type === "remove" ? (
-                <>
-                  This will permanently remove{" "}
-                  <strong>
-                    {confirmAction.member.name || confirmAction.member.email}
-                  </strong>{" "}
-                  from the company. This cannot be undone.
-                </>
-              ) : confirmAction?.type === "deactivate" ? (
-                <>
-                  <strong>
-                    {confirmAction.member.name || confirmAction.member.email}
-                  </strong>{" "}
-                  will lose access to the company but their data will be
-                  preserved. You can reactivate them later.
-                </>
-              ) : (
-                <>
-                  Reactivate{" "}
-                  <strong>
-                    {confirmAction?.member.name || confirmAction?.member.email}
-                  </strong>
-                  ? They will regain access to the company.
-                </>
-              )}
+              {confirmAction?.type === "remove"
+                ? t("removeDescription", { name: confirmAction.member.name || confirmAction.member.email })
+                : confirmAction?.type === "deactivate"
+                  ? t("deactivateDescription", { name: confirmAction.member.name || confirmAction.member.email })
+                  : t("activateDescription", { name: confirmAction?.member.name || confirmAction?.member.email || "" })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={
                 confirmAction?.type === "remove"
@@ -823,10 +804,10 @@ export function MembersTable({
               }
             >
               {confirmAction?.type === "remove"
-                ? "Remove"
+                ? t("remove")
                 : confirmAction?.type === "deactivate"
-                  ? "Deactivate"
-                  : "Activate"}
+                  ? t("deactivate")
+                  : t("activate")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

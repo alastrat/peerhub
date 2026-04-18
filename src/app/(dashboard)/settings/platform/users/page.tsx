@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import { getPlatformUsers } from "@/lib/queries/platform";
-import { PageHeader } from "@/components/design-system/page-header";
+import { TranslatedPageHeader } from "@/components/dashboard/translated-page-header";
 import { UsersTable } from "@/components/settings/users-table";
 
 export default async function UsersPage() {
@@ -12,9 +12,9 @@ export default async function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Users"
-        description="Manage all users across the platform"
+      <TranslatedPageHeader
+        titleKey="users_title"
+        descriptionKey="users_description"
       />
       <UsersTable
         currentUserId={session.user.id}

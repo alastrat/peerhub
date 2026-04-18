@@ -1,11 +1,7 @@
 import { Suspense } from "react";
-import Link from "next/link";
-import { Plus, Upload, Users } from "lucide-react";
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
-import { PageHeader } from "@/components/design-system/page-header";
-import { EmptyState } from "@/components/design-system/empty-state";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -15,8 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { redirect } from "next/navigation";
-import { PeopleTable } from "@/components/people/people-table";
+import { PeopleContent } from "@/components/dashboard/people-content";
 
 async function getPeople(companyId: string) {
   return prisma.employee.findMany({
@@ -34,13 +29,11 @@ async function getPeople(companyId: string) {
 function PeopleLoading() {
   return (
     <div className="space-y-4">
-      {/* Filter skeletons */}
       <div className="flex flex-wrap items-center gap-3">
         <Skeleton className="h-10 flex-1 min-w-[200px] max-w-sm rounded-lg" />
         <Skeleton className="h-10 w-[140px] rounded-lg" />
         <Skeleton className="h-10 w-[180px] rounded-lg" />
       </div>
-      {/* Table skeleton */}
       <div className="rounded-lg border overflow-hidden">
         <Table>
           <TableHeader>
@@ -74,32 +67,11 @@ function PeopleLoading() {
   );
 }
 
-async function PeopleList() {
-  const session = await auth();
-  if (!session?.companyUser) {
-    redirect("/login");
-  }
-
-  const companyId = session.companyUser.companyId;
+async function PeopleLoader({ companyId }: { companyId: string }) {
   const [people, company] = await Promise.all([
     getPeople(companyId),
     prisma.company.findUnique({ where: { id: companyId }, select: { featureHubs: true } }),
   ]);
-
-  if (people.length === 0) {
-    return (
-      <EmptyState
-        icon={<Users className="h-8 w-8 text-muted-foreground" />}
-        title="No employees yet"
-        description="Add your first team member to get started with 360° feedback."
-        action={
-          <Link href="/people/new">
-            <Button>Add Employee</Button>
-          </Link>
-        }
-      />
-    );
-  }
 
   const rows = people.map((p) => ({
     id: p.id,
@@ -111,7 +83,7 @@ async function PeopleList() {
     hub: p.hub ? { name: p.hub.name } : null,
   }));
 
-  return <PeopleTable data={rows} featureHubs={company?.featureHubs ?? false} />;
+  return <PeopleContent people={rows} featureHubs={company?.featureHubs ?? false} />;
 }
 
 export default async function PeoplePage() {
@@ -121,30 +93,8 @@ export default async function PeoplePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="People"
-        description="Manage your team members and organizational structure"
-      >
-        <div className="flex gap-2">
-          <Link href="/people/import">
-            <Button variant="outline">
-              <Upload className="mr-2 h-4 w-4" />
-              Import CSV
-            </Button>
-          </Link>
-          <Link href="/people/new">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Employee
-            </Button>
-          </Link>
-        </div>
-      </PageHeader>
-
-      <Suspense fallback={<PeopleLoading />}>
-        <PeopleList />
-      </Suspense>
-    </div>
+    <Suspense fallback={<PeopleLoading />}>
+      <PeopleLoader companyId={session.companyUser.companyId} />
+    </Suspense>
   );
 }

@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
-import { PageHeader } from "@/components/design-system/page-header";
+import { TranslatedPageHeader } from "@/components/dashboard/translated-page-header";
 import { ProfileForm } from "@/components/settings/profile-form";
 
 export default async function ProfilePage() {
@@ -17,9 +17,9 @@ export default async function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Profile"
-        description="Manage your personal information"
+      <TranslatedPageHeader
+        titleKey="profile_title"
+        descriptionKey="profile_description"
       />
       <ProfileForm user={user} />
     </div>

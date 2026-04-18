@@ -1,12 +1,18 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { updateCompanyLocale } from "@/lib/actions/platform";
-import { Globe, Check } from "lucide-react";
+import { Globe } from "lucide-react";
 
 const LANGUAGES = [
   { value: "es", label: "Español", flag: "🇪🇸" },
@@ -18,23 +24,20 @@ interface LanguageSettingsProps {
 }
 
 export function LanguageSettings({ currentLocale }: LanguageSettingsProps) {
-  const [selected, setSelected] = useState(currentLocale);
+  const t = useTranslations("dashboard.settings.language");
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
 
-  const hasChanged = selected !== currentLocale;
+  function handleChange(locale: string) {
+    if (locale === currentLocale) return;
 
-  function handleSave() {
     startTransition(async () => {
-      const result = await updateCompanyLocale(selected);
+      const result = await updateCompanyLocale(locale);
 
       if (result.success) {
-        toast.success(
-          `Idioma actualizado a ${LANGUAGES.find((l) => l.value === selected)?.label}`
-        );
-        router.refresh();
+        toast.success(t("updated"));
+        window.location.reload();
       } else {
-        toast.error(result.error || "Error al actualizar el idioma");
+        toast.error(result.error || t("error"));
       }
     });
   }
@@ -44,52 +47,32 @@ export function LanguageSettings({ currentLocale }: LanguageSettingsProps) {
       <CardHeader>
         <div className="flex items-center gap-2">
           <Globe className="h-4 w-4 text-muted-foreground" />
-          <CardTitle className="text-base">Idioma</CardTitle>
+          <CardTitle className="text-base">{t("title")}</CardTitle>
         </div>
         <CardDescription>
-          Define el idioma predeterminado para todos los miembros de esta empresa.
+          {t("description")}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          {LANGUAGES.map((lang) => (
-            <button
-              key={lang.value}
-              type="button"
-              onClick={() => setSelected(lang.value)}
-              className={`flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
-                selected === lang.value
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-muted-foreground/30"
-              }`}
-            >
-              <div
-                className={`flex h-4 w-4 items-center justify-center rounded-full border-2 ${
-                  selected === lang.value
-                    ? "border-primary"
-                    : "border-muted-foreground/30"
-                }`}
-              >
-                {selected === lang.value && (
-                  <div className="h-2 w-2 rounded-full bg-primary" />
-                )}
-              </div>
-              <span className="text-lg">{lang.flag}</span>
-              <span className="flex-1 text-sm font-medium">{lang.label}</span>
-              {currentLocale === lang.value && !hasChanged && (
-                <Check className="h-4 w-4 text-primary" />
-              )}
-            </button>
-          ))}
-        </div>
-
-        <Button
-          onClick={handleSave}
-          disabled={!hasChanged || isPending}
-          className="w-full"
-        >
-          {isPending ? "Guardando..." : "Guardar Idioma"}
-        </Button>
+      <CardContent>
+        <Select value={currentLocale} onValueChange={handleChange} disabled={isPending}>
+          <SelectTrigger className="w-full">
+            <SelectValue>
+              {isPending
+                ? t("saving")
+                : `${LANGUAGES.find((l) => l.value === currentLocale)?.flag} ${LANGUAGES.find((l) => l.value === currentLocale)?.label}`}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {LANGUAGES.map((lang) => (
+              <SelectItem key={lang.value} value={lang.value}>
+                <span className="flex items-center gap-2">
+                  <span>{lang.flag}</span>
+                  <span>{lang.label}</span>
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </CardContent>
     </Card>
   );

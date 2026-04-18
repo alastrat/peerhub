@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import Link from "next/link";
 import {
   Card,
@@ -87,13 +88,7 @@ const CYCLE_STATUS_STYLES: Record<string, string> = {
   ARCHIVED: "bg-gray-100 text-gray-500",
 };
 
-const CYCLE_STATUS_LABELS: Record<string, string> = {
-  DRAFT: "Draft",
-  NOMINATION: "Nomination",
-  IN_PROGRESS: "In Progress",
-  CLOSED: "Closed",
-  ARCHIVED: "Archived",
-};
+import { getCycleStatusLabel } from "@/lib/constants/cycle-status";
 
 interface MemberData {
   id: string;
@@ -162,6 +157,7 @@ export function MemberDetail({
   // Edit mode
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(member.title || "");
+  const locale = useLocale();
   const [editEmployeeId, setEditEmployeeId] = useState(member.employeeId || "");
   const [editDepartmentId, setEditDepartmentId] = useState(member.departmentId || "none");
   const [editManagerId, setEditManagerId] = useState(member.managerId || "none");
@@ -609,7 +605,7 @@ export function MemberDetail({
                             CYCLE_STATUS_STYLES[cp.cycleStatus] || "bg-gray-100 text-gray-600"
                           }
                         >
-                          {CYCLE_STATUS_LABELS[cp.cycleStatus] || cp.cycleStatus}
+                          {getCycleStatusLabel(cp.cycleStatus as import("@prisma/client").CycleStatus, locale)}
                         </Badge>
                       </div>
                     ))}

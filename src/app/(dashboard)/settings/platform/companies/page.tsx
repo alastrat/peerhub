@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import { getPlatformCompanies } from "@/lib/queries/platform";
-import { PageHeader } from "@/components/design-system/page-header";
+import { TranslatedPageHeader } from "@/components/dashboard/translated-page-header";
 import { CompaniesTable } from "@/components/settings/companies-table";
 
 export default async function CompaniesPage() {
@@ -12,9 +12,9 @@ export default async function CompaniesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Companies"
-        description="Manage all companies on the platform"
+      <TranslatedPageHeader
+        titleKey="companies_title"
+        descriptionKey="companies_description"
       />
       <CompaniesTable
         companies={companies.map((c) => ({

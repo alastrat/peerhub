@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils/cn";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -13,39 +14,40 @@ import {
 
 interface NavItem {
   href: string;
-  label: string;
+  labelKey: string;
   icon: LucideIcon;
 }
 
 interface NavSection {
-  title: string;
+  titleKey: string;
   items: NavItem[];
 }
 
 const REVIEW_360_ITEMS: NavItem[] = [
-  { href: "/surveys/360", label: "Review Cycles", icon: RotateCcw },
-  { href: "/surveys/360/templates", label: "Templates", icon: FileText },
+  { href: "/surveys/360", labelKey: "review_360.cycles", icon: RotateCcw },
+  { href: "/surveys/360/templates", labelKey: "review_360.templates", icon: FileText },
 ];
 
 const CLIMATE_ITEMS: NavItem[] = [
-  { href: "/surveys/climate", label: "Surveys", icon: Thermometer },
-  { href: "/surveys/climate/templates", label: "Templates", icon: ClipboardList },
+  { href: "/surveys/climate", labelKey: "climate.surveys", icon: Thermometer },
+  { href: "/surveys/climate/templates", labelKey: "climate.templates", icon: ClipboardList },
 ];
 
 const SECTIONS: NavSection[] = [
-  { title: "360 Reviews", items: REVIEW_360_ITEMS },
-  { title: "Org Climate", items: CLIMATE_ITEMS },
+  { titleKey: "review_360.title", items: REVIEW_360_ITEMS },
+  { titleKey: "climate.title", items: CLIMATE_ITEMS },
 ];
 
 export function SurveysNav() {
   const pathname = usePathname();
+  const t = useTranslations("dashboard.surveys_nav");
 
   return (
     <nav className="w-48 shrink-0 space-y-6 sticky top-6 self-start">
       {SECTIONS.map((section) => (
-        <div key={section.title}>
+        <div key={section.titleKey}>
           <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {section.title}
+            {t(section.titleKey)}
           </p>
           <div className="space-y-1">
             {section.items.map((item) => {
@@ -64,7 +66,7 @@ export function SurveysNav() {
                   )}
                 >
                   <item.icon className="h-4 w-4 shrink-0" />
-                  {item.label}
+                  {t(item.labelKey)}
                 </Link>
               );
             })}

@@ -33,12 +33,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatDate, daysUntil, isDateInPast } from "@/lib/utils/dates";
 import { getInitials } from "@/lib/utils/formatting";
 import {
-  CYCLE_STATUS_LABELS,
+  getCycleStatusLabel,
   CYCLE_STATUS_COLORS,
-  ASSIGNMENT_STATUS_LABELS,
+  getAssignmentStatusLabel,
   ASSIGNMENT_STATUS_COLORS,
 } from "@/lib/constants/cycle-status";
-import { REVIEWER_TYPE_LABELS } from "@/lib/constants/roles";
+import { getReviewerTypeLabel } from "@/lib/constants/roles";
 import { CycleActions } from "@/components/cycles/cycle-actions";
 import { AddExternalRaterDialog } from "@/components/cycles/add-external-rater-dialog";
 
@@ -174,7 +174,7 @@ export default async function CycleDetailPage({ params }: PageProps) {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold">{cycle.name}</h1>
             <Badge className={CYCLE_STATUS_COLORS[cycle.status]}>
-              {CYCLE_STATUS_LABELS[cycle.status]}
+              {getCycleStatusLabel(cycle.status)}
             </Badge>
           </div>
           <p className="text-muted-foreground">
@@ -270,7 +270,7 @@ export default async function CycleDetailPage({ params }: PageProps) {
               {Object.entries(statsByType).map(([type, stats]) => (
                 <div key={type} className="text-center">
                   <p className="text-sm font-medium">
-                    {REVIEWER_TYPE_LABELS[type as keyof typeof REVIEWER_TYPE_LABELS]}
+                    {getReviewerTypeLabel(type as any)}
                   </p>
                   <p className="text-lg font-bold">
                     {stats.completed}/{stats.total}
@@ -601,10 +601,10 @@ export default async function CycleDetailPage({ params }: PageProps) {
                           )}
                         </div>
                         <Badge variant="outline" className="text-xs">
-                          {REVIEWER_TYPE_LABELS[assignment.reviewerType]}
+                          {getReviewerTypeLabel(assignment.reviewerType)}
                         </Badge>
                         <Badge className={ASSIGNMENT_STATUS_COLORS[assignment.status]}>
-                          {ASSIGNMENT_STATUS_LABELS[assignment.status]}
+                          {getAssignmentStatusLabel(assignment.status)}
                         </Badge>
                       </div>
                     );
