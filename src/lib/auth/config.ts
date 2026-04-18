@@ -115,6 +115,7 @@ export const authOptions: NextAuthOptions = {
                   id: true,
                   name: true,
                   slug: true,
+                  locale: true,
                 },
               },
             },
@@ -128,6 +129,7 @@ export const authOptions: NextAuthOptions = {
               companySlug: companyUser.company.slug,
               role: companyUser.role,
               employeeId: companyUser.employeeId,
+              locale: companyUser.company.locale ?? "es",
             };
           }
         } else {
@@ -143,6 +145,7 @@ export const authOptions: NextAuthOptions = {
                   id: true,
                   name: true,
                   slug: true,
+                  locale: true,
                 },
               },
             },
@@ -158,6 +161,7 @@ export const authOptions: NextAuthOptions = {
               companySlug: cu.company.slug,
               role: cu.role,
               employeeId: cu.employeeId,
+              locale: cu.company.locale ?? "es",
             };
           }
         }
@@ -218,6 +222,7 @@ declare module "next-auth" {
       companySlug: string;
       role: "ADMIN" | "MANAGER" | "MEMBER";
       employeeId: string | null;
+      locale: string;
     };
   }
 

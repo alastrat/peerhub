@@ -112,6 +112,7 @@ export interface SessionCompanyUser {
   companySlug: string;
   role: CompanyRole;
   employeeId: string | null;
+  locale: string;
 }
 
 export interface ExtendedSession {

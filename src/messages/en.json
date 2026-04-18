@@ -38,19 +38,49 @@
       "subtitle": "Platform capabilities",
       "title": "Everything you need to manage talent",
       "description": "Four integrated modules with cross-cutting capabilities that adapt to your organization.",
-      "performance": { "title": "Review cycles", "description": "Configure feedback cycles with multiple reviewer types, dates, and custom competencies." },
-      "feedback360": { "title": "360 Feedback", "description": "Self, manager, peer, direct report and external. Anonymity threshold and report release controls." },
-      "engagement": { "title": "Climate Surveys", "description": "CLIMATE, PULSE and eNPS with templates, custom dimensions and segmentation by hub or team." },
-      "growth": { "title": "People Management", "description": "Centralized directory, bulk CSV import, manager hierarchies and complete profiles." },
-      "culture": { "title": "Org Structure", "description": "Model hubs, departments and cross-functional teams. Define survey scope with precision." },
-      "managers": { "title": "Reports & Analytics", "description": "Real-time dashboards, CSV export and granular control over report release." }
+      "performance": {
+        "title": "Review cycles",
+        "description": "Configure feedback cycles with multiple reviewer types, dates, and custom competencies."
+      },
+      "feedback360": {
+        "title": "360 Feedback",
+        "description": "Self, manager, peer, direct report and external. Anonymity threshold and report release controls."
+      },
+      "engagement": {
+        "title": "Climate Surveys",
+        "description": "CLIMATE, PULSE and eNPS with templates, custom dimensions and segmentation by hub or team."
+      },
+      "growth": {
+        "title": "People Management",
+        "description": "Centralized directory, bulk CSV import, manager hierarchies and complete profiles."
+      },
+      "culture": {
+        "title": "Org Structure",
+        "description": "Model hubs, departments and cross-functional teams. Define survey scope with precision."
+      },
+      "managers": {
+        "title": "Reports & Analytics",
+        "description": "Real-time dashboards, CSV export and granular control over report release."
+      }
     },
     "how_it_works": {
       "subtitle": "Simple process",
       "title": "Three steps to get started",
-      "step1": { "number": "1", "title": "Configure", "description": "Create your account, upload your team via CSV and define your org structure. In minutes, not weeks." },
-      "step2": { "number": "2", "title": "Launch", "description": "Activate 360 feedback cycles, climate or pulse surveys with ready-made or custom templates." },
-      "step3": { "number": "3", "title": "Act", "description": "Get clear reports by person, team or dimension. Make decisions with evidence, not intuition." },
+      "step1": {
+        "number": "1",
+        "title": "Configure",
+        "description": "Create your account, upload your team via CSV and define your org structure. In minutes, not weeks."
+      },
+      "step2": {
+        "number": "2",
+        "title": "Launch",
+        "description": "Activate 360 feedback cycles, climate or pulse surveys with ready-made or custom templates."
+      },
+      "step3": {
+        "number": "3",
+        "title": "Act",
+        "description": "Get clear reports by person, team or dimension. Make decisions with evidence, not intuition."
+      },
       "cta": "Request Free Demo"
     },
     "modules_carousel": {
@@ -104,10 +134,42 @@
       "subtitle": "Real stories",
       "title": "Results that speak for themselves",
       "stories": {
-        "1": { "metric": "92%", "metric_label": "feedback participation", "quote": "With Kultiva we got 92% of our team to participate in the 360 review. Before we couldn't pass 60%.", "name": "Maria Claudia Buendia", "role": "HR Manager", "company": "BIS", "employees": "+200 employees" },
-        "2": { "metric": "+35%", "metric_label": "engagement improvement", "quote": "Climate surveys gave us visibility on issues we didn't know about. We acted fast and the impact was immediate.", "name": "Narly Herrera", "role": "Head of HR", "company": "Habitat de los Andes", "employees": "+150 employees" },
-        "3": { "metric": "-70%", "metric_label": "report prep time", "quote": "We went from manually building reports for weeks to having dashboards ready in minutes. Time freed for what matters.", "name": "Denesi Becerra", "role": "Director of HR", "company": "Fintra SAS", "employees": "+300 employees" },
-        "4": { "metric": "3x", "metric_label": "more cycles per year", "quote": "Before we ran one feedback cycle a year with great effort. Now we run three cycles and two pulses without overloading the team.", "name": "Talent Team", "role": "People Direction", "company": "Marymount", "employees": "+100 employees" }
+        "1": {
+          "metric": "92%",
+          "metric_label": "feedback participation",
+          "quote": "With Kultiva we got 92% of our team to participate in the 360 review. Before we couldn't pass 60%.",
+          "name": "Maria Claudia Buendia",
+          "role": "HR Manager",
+          "company": "BIS",
+          "employees": "+200 employees"
+        },
+        "2": {
+          "metric": "+35%",
+          "metric_label": "engagement improvement",
+          "quote": "Climate surveys gave us visibility on issues we didn't know about. We acted fast and the impact was immediate.",
+          "name": "Narly Herrera",
+          "role": "Head of HR",
+          "company": "Habitat de los Andes",
+          "employees": "+150 employees"
+        },
+        "3": {
+          "metric": "-70%",
+          "metric_label": "report prep time",
+          "quote": "We went from manually building reports for weeks to having dashboards ready in minutes. Time freed for what matters.",
+          "name": "Denesi Becerra",
+          "role": "Director of HR",
+          "company": "Fintra SAS",
+          "employees": "+300 employees"
+        },
+        "4": {
+          "metric": "3x",
+          "metric_label": "more cycles per year",
+          "quote": "Before we ran one feedback cycle a year with great effort. Now we run three cycles and two pulses without overloading the team.",
+          "name": "Talent Team",
+          "role": "People Direction",
+          "company": "Marymount",
+          "employees": "+100 employees"
+        }
       }
     },
     "cta_banner": {
@@ -125,9 +187,46 @@
       "cta": "Get Started",
       "cta_contact": "Contact Sales",
       "tiers": {
-        "starter": { "name": "Starter", "description": "For small teams that want to professionalize their feedback process.", "price": "3", "features": { "1": "Full 360 Feedback", "2": "People Management", "3": "Org Structure", "4": "Up to 50 users", "5": "Email support" } },
-        "growth": { "name": "Business", "description": "For growing companies that need to measure climate and give continuous feedback.", "price": "5", "features": { "1": "Everything in Starter", "2": "Climate Surveys (CLIMATE, PULSE, eNPS)", "3": "Up to 200 users", "4": "3 administrators", "5": "Climate templates included", "6": "Guided onboarding", "7": "Priority support" } },
-        "scale": { "name": "Enterprise", "description": "For organizations with multiple sites needing integrations and dedicated support.", "price": "Custom", "features": { "1": "Everything in Business", "2": "Unlimited users", "3": "SSO and SAML", "4": "Integration API", "5": "Guaranteed SLA", "6": "Custom templates", "7": "Dedicated account manager" } }
+        "starter": {
+          "name": "Starter",
+          "description": "For small teams that want to professionalize their feedback process.",
+          "price": "3",
+          "features": {
+            "1": "Full 360 Feedback",
+            "2": "People Management",
+            "3": "Org Structure",
+            "4": "Up to 50 users",
+            "5": "Email support"
+          }
+        },
+        "growth": {
+          "name": "Business",
+          "description": "For growing companies that need to measure climate and give continuous feedback.",
+          "price": "5",
+          "features": {
+            "1": "Everything in Starter",
+            "2": "Climate Surveys (CLIMATE, PULSE, eNPS)",
+            "3": "Up to 200 users",
+            "4": "3 administrators",
+            "5": "Climate templates included",
+            "6": "Guided onboarding",
+            "7": "Priority support"
+          }
+        },
+        "scale": {
+          "name": "Enterprise",
+          "description": "For organizations with multiple sites needing integrations and dedicated support.",
+          "price": "Custom",
+          "features": {
+            "1": "Everything in Business",
+            "2": "Unlimited users",
+            "3": "SSO and SAML",
+            "4": "Integration API",
+            "5": "Guaranteed SLA",
+            "6": "Custom templates",
+            "7": "Dedicated account manager"
+          }
+        }
       }
     },
     "services": {
@@ -269,7 +368,10 @@
     "subtitle": "What We Do",
     "title": "Consulting services that transform organizations",
     "description": "Each service is designed to address your organization's specific challenges, with proven methodologies and a people-centered approach.",
-    "cta": "Learn More",
+    "cta": {
+      "title": "Ready to transform your organization?",
+      "description": "Contact us for a free consultation and discover how we can help you achieve your goals."
+    },
     "list": {
       "subtitle": "Consulting Services",
       "title": "Comprehensive solutions for your organization",
@@ -300,10 +402,6 @@
     "faq": {
       "title": "Get all your answers here",
       "see_all": "See All FAQ"
-    },
-    "cta": {
-      "title": "Ready to transform your organization?",
-      "description": "Contact us for a free consultation and discover how we can help you achieve your goals."
     },
     "cultura": {
       "title": "Organizational Culture",
@@ -656,224 +754,630 @@
     }
   },
   "plataforma": {
-    "metadata": { "title": "Platform | Kultiva", "description": "Four integrated modules to manage 360 feedback, climate surveys, people and org structure." },
-    "hero": { "title": "Get to know Kultiva inside", "breadcrumb": "Platform" },
+    "metadata": {
+      "title": "Platform | Kultiva",
+      "description": "Four integrated modules to manage 360 feedback, climate surveys, people and org structure."
+    },
+    "hero": {
+      "title": "Get to know Kultiva inside",
+      "breadcrumb": "Platform"
+    },
     "modules": {
       "badge": "Module",
       "cta_detail": "View detail",
       "feedback360": {
         "title": "360 Feedback",
         "description": "Launch evaluation cycles where every employee receives feedback from manager, peers, direct reports and external evaluators. Configure competencies, anonymity and report release.",
-        "features": { "f1": "Multiple reviewer types (self, manager, peer, report, external)", "f2": "Configurable competencies and questions", "f3": "Anonymity threshold to protect feedback honesty", "f4": "Granular control over individual report release" }
+        "features": {
+          "f1": "Multiple reviewer types (self, manager, peer, report, external)",
+          "f2": "Configurable competencies and questions",
+          "f3": "Anonymity threshold to protect feedback honesty",
+          "f4": "Granular control over individual report release"
+        }
       },
       "climate": {
         "title": "Climate Surveys",
         "description": "Measure your team's perception with three survey types: full Climate, quick Pulse and eNPS. Use ready templates or create yours with custom dimensions.",
-        "features": { "f1": "Three types: CLIMATE (full), PULSE (quick), eNPS (loyalty)", "f2": "Configurable dimensions and questions per template", "f3": "Segmentation: company, hub, department, team or custom", "f4": "Templates included with regional best practices" }
+        "features": {
+          "f1": "Three types: CLIMATE (full), PULSE (quick), eNPS (loyalty)",
+          "f2": "Configurable dimensions and questions per template",
+          "f3": "Segmentation: company, hub, department, team or custom",
+          "f4": "Templates included with regional best practices"
+        }
       },
       "people": {
         "title": "People Management",
         "description": "Centralize your team's information in complete profiles. Import everyone at once with bulk CSV upload and keep your directory updated without spreadsheets.",
-        "features": { "f1": "Full CRUD of employees with rich profiles", "f2": "Bulk CSV import", "f3": "Manager hierarchy assignment", "f4": "Contact info, role, department and location" }
+        "features": {
+          "f1": "Full CRUD of employees with rich profiles",
+          "f2": "Bulk CSV import",
+          "f3": "Manager hierarchy assignment",
+          "f4": "Contact info, role, department and location"
+        }
       },
       "org": {
         "title": "Org Structure",
         "description": "Define how your company is organized: locations (hubs), departments and cross-functional teams. This structure feeds survey segmentation and feedback cycle scope.",
-        "features": { "f1": "Hubs to model locations or geographic offices", "f2": "Departments inside each hub", "f3": "Cross-functional teams that span departments", "f4": "Precise scope for every survey or evaluation cycle" }
+        "features": {
+          "f1": "Hubs to model locations or geographic offices",
+          "f2": "Departments inside each hub",
+          "f3": "Cross-functional teams that span departments",
+          "f4": "Precise scope for every survey or evaluation cycle"
+        }
       }
     },
     "capabilities": {
       "subtitle": "Solid foundations",
       "title": "Built for serious teams",
-      "security": { "title": "Data security", "description": "Encryption in transit and at rest. Cloud infrastructure with automatic backups." },
-      "multitenant": { "title": "Multi-tenant", "description": "Each company operates in its own isolated space. Your data is never mixed." },
-      "roles": { "title": "Roles and permissions", "description": "Granular control: Admin, Manager, Employee and custom roles per company." },
-      "export": { "title": "CSV export", "description": "Download reports and lists as CSV to process in your favorite tool." }
+      "security": {
+        "title": "Data security",
+        "description": "Encryption in transit and at rest. Cloud infrastructure with automatic backups."
+      },
+      "multitenant": {
+        "title": "Multi-tenant",
+        "description": "Each company operates in its own isolated space. Your data is never mixed."
+      },
+      "roles": {
+        "title": "Roles and permissions",
+        "description": "Granular control: Admin, Manager, Employee and custom roles per company."
+      },
+      "export": {
+        "title": "CSV export",
+        "description": "Download reports and lists as CSV to process in your favorite tool."
+      }
     }
   },
   "modulos": {
     "feedback360": {
-      "metadata": { "title": "360 Feedback | Kultiva", "description": "360 evaluation cycles with multiple reviewers, configurable competencies and individual reports." },
+      "metadata": {
+        "title": "360 Feedback | Kultiva",
+        "description": "360 evaluation cycles with multiple reviewers, configurable competencies and individual reports."
+      },
       "badge": "Feedback Module",
-      "hero": { "title": "360 Feedback that really transforms", "description": "Launch evaluation cycles where each person gets honest feedback from multiple perspectives. Configure everything: competencies, reviewers, anonymity and report release.", "cta_primary": "Request Demo", "cta_secondary": "View capabilities" },
-      "problem": { "title": "Feedback without structure doesn't work", "description": "Collecting 360 evaluations with Google Forms or Excel takes weeks. Data arrives incomplete, reports are built by hand and by the time they're ready they've lost relevance. Your people deserve timely, useful feedback." },
+      "hero": {
+        "title": "360 Feedback that really transforms",
+        "description": "Launch evaluation cycles where each person gets honest feedback from multiple perspectives. Configure everything: competencies, reviewers, anonymity and report release.",
+        "cta_primary": "Request Demo",
+        "cta_secondary": "View capabilities"
+      },
+      "problem": {
+        "title": "Feedback without structure doesn't work",
+        "description": "Collecting 360 evaluations with Google Forms or Excel takes weeks. Data arrives incomplete, reports are built by hand and by the time they're ready they've lost relevance. Your people deserve timely, useful feedback."
+      },
       "capabilities": {
         "title": "Everything you need in a feedback cycle",
-        "evaluators": { "title": "Reviewer types", "description": "Self, manager, peers, direct reports and external. You define which apply." },
-        "competencies": { "title": "Configurable competencies", "description": "Create your own competencies and scales, or use the included starting set." },
-        "anonymity": { "title": "Smart anonymity", "description": "Set a minimum threshold per reviewer type. If not reached, responses are aggregated." },
-        "nominations": { "title": "Flexible nominations", "description": "Let peers nominate their reviewers or assign directly from the panel." },
-        "release": { "title": "Report control", "description": "Decide when each individual report is released, to whom and which sections are visible." },
-        "reports": { "title": "Individual reports", "description": "Each person gets strengths, areas to improve, and self vs others comparison." }
+        "evaluators": {
+          "title": "Reviewer types",
+          "description": "Self, manager, peers, direct reports and external. You define which apply."
+        },
+        "competencies": {
+          "title": "Configurable competencies",
+          "description": "Create your own competencies and scales, or use the included starting set."
+        },
+        "anonymity": {
+          "title": "Smart anonymity",
+          "description": "Set a minimum threshold per reviewer type. If not reached, responses are aggregated."
+        },
+        "nominations": {
+          "title": "Flexible nominations",
+          "description": "Let peers nominate their reviewers or assign directly from the panel."
+        },
+        "release": {
+          "title": "Report control",
+          "description": "Decide when each individual report is released, to whom and which sections are visible."
+        },
+        "reports": {
+          "title": "Individual reports",
+          "description": "Each person gets strengths, areas to improve, and self vs others comparison."
+        }
       },
       "process": {
         "title": "How a cycle works",
-        "create": { "title": "Create cycle", "description": "Name, dates, competencies and reviewer types." },
-        "nominate": { "title": "Nominate reviewers", "description": "Peers nominate or your team assigns directly." },
-        "evaluate": { "title": "Online evaluation", "description": "Reviewers respond and you monitor progress." },
-        "review": { "title": "Review the data", "description": "Aggregated results before releasing." },
-        "release": { "title": "Release reports", "description": "Individual delivery with feedback session." }
+        "create": {
+          "title": "Create cycle",
+          "description": "Name, dates, competencies and reviewer types."
+        },
+        "nominate": {
+          "title": "Nominate reviewers",
+          "description": "Peers nominate or your team assigns directly."
+        },
+        "evaluate": {
+          "title": "Online evaluation",
+          "description": "Reviewers respond and you monitor progress."
+        },
+        "review": {
+          "title": "Review the data",
+          "description": "Aggregated results before releasing."
+        },
+        "release": {
+          "title": "Release reports",
+          "description": "Individual delivery with feedback session."
+        }
       },
       "faq": {
         "title": "Frequently asked questions about 360 Feedback",
-        "q1": { "q": "How many reviewers can a person have?", "a": "No fixed limit. You configure minimums and maximums per reviewer type per cycle." },
-        "q2": { "q": "Can self-evaluation be excluded?", "a": "Yes. Each reviewer type is optional and can be turned on/off per cycle." },
-        "q3": { "q": "How does the anonymity threshold work?", "a": "If you set threshold 3 for peers and only 2 evaluations exist, those responses get aggregated with another group." },
-        "q4": { "q": "Can different competencies be used per role?", "a": "Yes. Each cycle has its own set of competencies. Create cycles for executives, mid-level and individual contributors." },
-        "q5": { "q": "What format are the reports?", "a": "Radar visualizations, bars per competency and self vs others comparison. Exportable to PDF and CSV." }
+        "q1": {
+          "q": "How many reviewers can a person have?",
+          "a": "No fixed limit. You configure minimums and maximums per reviewer type per cycle."
+        },
+        "q2": {
+          "q": "Can self-evaluation be excluded?",
+          "a": "Yes. Each reviewer type is optional and can be turned on/off per cycle."
+        },
+        "q3": {
+          "q": "How does the anonymity threshold work?",
+          "a": "If you set threshold 3 for peers and only 2 evaluations exist, those responses get aggregated with another group."
+        },
+        "q4": {
+          "q": "Can different competencies be used per role?",
+          "a": "Yes. Each cycle has its own set of competencies. Create cycles for executives, mid-level and individual contributors."
+        },
+        "q5": {
+          "q": "What format are the reports?",
+          "a": "Radar visualizations, bars per competency and self vs others comparison. Exportable to PDF and CSV."
+        }
       },
-      "cta": { "title": "See 360 Feedback in action", "description": "Schedule 30 minutes and we'll show a complete cycle with real data.", "button": "Schedule Demo" },
-      "crosslinks": { "climate": "Climate Surveys", "people": "People Management" }
+      "cta": {
+        "title": "See 360 Feedback in action",
+        "description": "Schedule 30 minutes and we'll show a complete cycle with real data.",
+        "button": "Schedule Demo"
+      },
+      "crosslinks": {
+        "climate": "Climate Surveys",
+        "people": "People Management"
+      }
     },
     "encuestasClima": {
-      "metadata": { "title": "Climate Surveys | Kultiva", "description": "Measure climate, pulse and eNPS with ready templates, configurable dimensions and flexible segmentation." },
+      "metadata": {
+        "title": "Climate Surveys | Kultiva",
+        "description": "Measure climate, pulse and eNPS with ready templates, configurable dimensions and flexible segmentation."
+      },
       "badge": "Climate Module",
-      "hero": { "title": "Surveys that really measure climate", "description": "Three survey types for different moments: full Climate, quick Pulse and eNPS. Templates included, configurable dimensions and segmentation by location, department or team.", "cta_primary": "Request Demo", "cta_secondary": "View capabilities" },
-      "problem": { "title": "Climate gets measured or assumed", "description": "An annual climate survey isn't enough anymore. You need to measure continuously, act fast and prove concrete improvements. Excel and Google Forms don't scale at that speed." },
+      "hero": {
+        "title": "Surveys that really measure climate",
+        "description": "Three survey types for different moments: full Climate, quick Pulse and eNPS. Templates included, configurable dimensions and segmentation by location, department or team.",
+        "cta_primary": "Request Demo",
+        "cta_secondary": "View capabilities"
+      },
+      "problem": {
+        "title": "Climate gets measured or assumed",
+        "description": "An annual climate survey isn't enough anymore. You need to measure continuously, act fast and prove concrete improvements. Excel and Google Forms don't scale at that speed."
+      },
       "capabilities": {
         "title": "Three survey types, one platform",
-        "types": { "title": "CLIMATE, PULSE and eNPS", "description": "Full annual survey, quick monthly pulses and continuous eNPS to measure loyalty." },
-        "templates": { "title": "Ready templates", "description": "Start with validated templates or create yours. Reusable across cycles." },
-        "dimensions": { "title": "Configurable dimensions", "description": "Group questions by dimension (leadership, culture, etc.) for clearer reports." },
-        "scope": { "title": "Flexible segmentation", "description": "Launch to the whole company, a hub, department, team or custom selection." },
-        "anonymity": { "title": "Configurable anonymity", "description": "Decide whether responses are anonymous and set minimum thresholds for showing results." },
-        "trends": { "title": "Trends over time", "description": "Compare periods and dimensions. Identify what improves and what needs attention." }
+        "types": {
+          "title": "CLIMATE, PULSE and eNPS",
+          "description": "Full annual survey, quick monthly pulses and continuous eNPS to measure loyalty."
+        },
+        "templates": {
+          "title": "Ready templates",
+          "description": "Start with validated templates or create yours. Reusable across cycles."
+        },
+        "dimensions": {
+          "title": "Configurable dimensions",
+          "description": "Group questions by dimension (leadership, culture, etc.) for clearer reports."
+        },
+        "scope": {
+          "title": "Flexible segmentation",
+          "description": "Launch to the whole company, a hub, department, team or custom selection."
+        },
+        "anonymity": {
+          "title": "Configurable anonymity",
+          "description": "Decide whether responses are anonymous and set minimum thresholds for showing results."
+        },
+        "trends": {
+          "title": "Trends over time",
+          "description": "Compare periods and dimensions. Identify what improves and what needs attention."
+        }
       },
       "process": {
         "title": "Launching a survey is simple",
-        "create": { "title": "Choose type", "description": "CLIMATE, PULSE or eNPS based on need." },
-        "configure": { "title": "Configure questions", "description": "Use template or customize dimensions and questions." },
-        "distribute": { "title": "Define scope", "description": "Whole company, location, department or selection." },
-        "monitor": { "title": "Monitor progress", "description": "Track response rate in real time." },
-        "analyze": { "title": "Analyze results", "description": "Reports by dimension, segment and comparison." }
+        "create": {
+          "title": "Choose type",
+          "description": "CLIMATE, PULSE or eNPS based on need."
+        },
+        "configure": {
+          "title": "Configure questions",
+          "description": "Use template or customize dimensions and questions."
+        },
+        "distribute": {
+          "title": "Define scope",
+          "description": "Whole company, location, department or selection."
+        },
+        "monitor": {
+          "title": "Monitor progress",
+          "description": "Track response rate in real time."
+        },
+        "analyze": {
+          "title": "Analyze results",
+          "description": "Reports by dimension, segment and comparison."
+        }
       },
       "faq": {
         "title": "Frequently asked questions about Climate Surveys",
-        "q1": { "q": "What's the difference between CLIMATE, PULSE and eNPS?", "a": "CLIMATE is full (annual). PULSE is short (monthly or quarterly). eNPS measures loyalty with one key question." },
-        "q2": { "q": "Are responses anonymous?", "a": "If you configure the survey as anonymous, names are not associated with individual responses in reports." },
-        "q3": { "q": "Can I segment results by location or department?", "a": "Yes. Reports break down by hub, department and team. You can also see trends across periods." },
-        "q4": { "q": "How many surveys can I launch per year?", "a": "As many as you need. We recommend one annual CLIMATE + monthly or quarterly PULSE for continuous tracking." },
-        "q5": { "q": "How do we invite employees to respond?", "a": "They get a link by email. You can also generate unique links to distribute manually." }
+        "q1": {
+          "q": "What's the difference between CLIMATE, PULSE and eNPS?",
+          "a": "CLIMATE is full (annual). PULSE is short (monthly or quarterly). eNPS measures loyalty with one key question."
+        },
+        "q2": {
+          "q": "Are responses anonymous?",
+          "a": "If you configure the survey as anonymous, names are not associated with individual responses in reports."
+        },
+        "q3": {
+          "q": "Can I segment results by location or department?",
+          "a": "Yes. Reports break down by hub, department and team. You can also see trends across periods."
+        },
+        "q4": {
+          "q": "How many surveys can I launch per year?",
+          "a": "As many as you need. We recommend one annual CLIMATE + monthly or quarterly PULSE for continuous tracking."
+        },
+        "q5": {
+          "q": "How do we invite employees to respond?",
+          "a": "They get a link by email. You can also generate unique links to distribute manually."
+        }
       },
-      "cta": { "title": "Measure your organization's climate", "description": "Schedule a demo and we'll show you how to set up your first survey in minutes.", "button": "Schedule Demo" },
-      "crosslinks": { "feedback360": "360 Feedback", "people": "People Management" }
+      "cta": {
+        "title": "Measure your organization's climate",
+        "description": "Schedule a demo and we'll show you how to set up your first survey in minutes.",
+        "button": "Schedule Demo"
+      },
+      "crosslinks": {
+        "feedback360": "360 Feedback",
+        "people": "People Management"
+      }
     },
     "gestionPersonas": {
-      "metadata": { "title": "People Management | Kultiva", "description": "Employee directory with bulk CSV import, manager hierarchies and complete profiles." },
+      "metadata": {
+        "title": "People Management | Kultiva",
+        "description": "Employee directory with bulk CSV import, manager hierarchies and complete profiles."
+      },
       "badge": "People Module",
-      "hero": { "title": "Your people directory, no spreadsheets", "description": "Centralize your team's info in complete profiles. Bulk CSV upload, manager hierarchies and always-current data.", "cta_primary": "Request Demo", "cta_secondary": "View capabilities" },
-      "problem": { "title": "Your directory lives in an outdated Excel", "description": "Each area keeps its own version of team data. When you launch a survey or feedback cycle, you have to consolidate everything by hand. Errors, inconsistencies and lost hours." },
+      "hero": {
+        "title": "Your people directory, no spreadsheets",
+        "description": "Centralize your team's info in complete profiles. Bulk CSV upload, manager hierarchies and always-current data.",
+        "cta_primary": "Request Demo",
+        "cta_secondary": "View capabilities"
+      },
+      "problem": {
+        "title": "Your directory lives in an outdated Excel",
+        "description": "Each area keeps its own version of team data. When you launch a survey or feedback cycle, you have to consolidate everything by hand. Errors, inconsistencies and lost hours."
+      },
       "capabilities": {
         "title": "A single source of truth for your team",
-        "directory": { "title": "Centralized directory", "description": "All team info in one place, accessible from anywhere." },
-        "csv": { "title": "Bulk CSV import", "description": "Import hundreds of employees in minutes with a well-structured file." },
-        "hierarchy": { "title": "Manager hierarchy", "description": "Define who reports to whom. The structure feeds feedback cycles." },
-        "profiles": { "title": "Complete profiles", "description": "Contact info, role, department, location, start date and more." },
-        "roles": { "title": "System roles", "description": "Assign roles (Admin, Manager, Employee) to control access." },
-        "deactivation": { "title": "Controlled offboarding", "description": "Deactivate employees without losing their evaluation history." }
+        "directory": {
+          "title": "Centralized directory",
+          "description": "All team info in one place, accessible from anywhere."
+        },
+        "csv": {
+          "title": "Bulk CSV import",
+          "description": "Import hundreds of employees in minutes with a well-structured file."
+        },
+        "hierarchy": {
+          "title": "Manager hierarchy",
+          "description": "Define who reports to whom. The structure feeds feedback cycles."
+        },
+        "profiles": {
+          "title": "Complete profiles",
+          "description": "Contact info, role, department, location, start date and more."
+        },
+        "roles": {
+          "title": "System roles",
+          "description": "Assign roles (Admin, Manager, Employee) to control access."
+        },
+        "deactivation": {
+          "title": "Controlled offboarding",
+          "description": "Deactivate employees without losing their evaluation history."
+        }
       },
       "process": {
         "title": "Set up your directory in simple steps",
-        "import": { "title": "Import", "description": "Upload your CSV with all employees." },
-        "verify": { "title": "Verify", "description": "Review the import and fix errors." },
-        "assign": { "title": "Assign", "description": "Define managers, departments and locations." },
-        "manage": { "title": "Maintain", "description": "Update data as your team changes." },
-        "audit": { "title": "Audit", "description": "Check history and export when needed." }
+        "import": {
+          "title": "Import",
+          "description": "Upload your CSV with all employees."
+        },
+        "verify": {
+          "title": "Verify",
+          "description": "Review the import and fix errors."
+        },
+        "assign": {
+          "title": "Assign",
+          "description": "Define managers, departments and locations."
+        },
+        "manage": {
+          "title": "Maintain",
+          "description": "Update data as your team changes."
+        },
+        "audit": {
+          "title": "Audit",
+          "description": "Check history and export when needed."
+        }
       },
       "faq": {
         "title": "Frequently asked questions about People Management",
-        "q1": { "q": "How many employees can I upload at once?", "a": "No practical limit. We've uploaded files with thousands of employees in one operation." },
-        "q2": { "q": "What happens if someone leaves?", "a": "The profile gets deactivated. Their history is preserved but they don't appear in new surveys." },
-        "q3": { "q": "Can I import from my HRIS?", "a": "Yes. Export a CSV from your HRIS and import it into Kultiva. Native integrations coming soon." },
-        "q4": { "q": "Who can see employee data?", "a": "Only Admins of your company. Managers see their team. Employees see their own profile." },
-        "q5": { "q": "How do you handle personal data and privacy?", "a": "We comply with Colombian habeas data regulations and apply encryption in transit and at rest." }
+        "q1": {
+          "q": "How many employees can I upload at once?",
+          "a": "No practical limit. We've uploaded files with thousands of employees in one operation."
+        },
+        "q2": {
+          "q": "What happens if someone leaves?",
+          "a": "The profile gets deactivated. Their history is preserved but they don't appear in new surveys."
+        },
+        "q3": {
+          "q": "Can I import from my HRIS?",
+          "a": "Yes. Export a CSV from your HRIS and import it into Kultiva. Native integrations coming soon."
+        },
+        "q4": {
+          "q": "Who can see employee data?",
+          "a": "Only Admins of your company. Managers see their team. Employees see their own profile."
+        },
+        "q5": {
+          "q": "How do you handle personal data and privacy?",
+          "a": "We comply with Colombian habeas data regulations and apply encryption in transit and at rest."
+        }
       },
-      "cta": { "title": "Get your directory ready in minutes", "description": "Schedule a demo and we'll show you how to upload your team and configure hierarchy in one session.", "button": "Schedule Demo" },
-      "crosslinks": { "feedback360": "360 Feedback", "org": "Org Structure" }
+      "cta": {
+        "title": "Get your directory ready in minutes",
+        "description": "Schedule a demo and we'll show you how to upload your team and configure hierarchy in one session.",
+        "button": "Schedule Demo"
+      },
+      "crosslinks": {
+        "feedback360": "360 Feedback",
+        "org": "Org Structure"
+      }
     },
     "estructuraOrganizacional": {
-      "metadata": { "title": "Org Structure | Kultiva", "description": "Model hubs (locations), departments and cross-functional teams to define survey scope." },
+      "metadata": {
+        "title": "Org Structure | Kultiva",
+        "description": "Model hubs (locations), departments and cross-functional teams to define survey scope."
+      },
       "badge": "Structure Module",
-      "hero": { "title": "Model your org as it really is", "description": "Multiple locations, departments per location and teams that cross departments. The structure defines survey and feedback cycle scope precisely.", "cta_primary": "Request Demo", "cta_secondary": "View capabilities" },
-      "problem": { "title": "Your organization isn't flat", "description": "You have offices in Bogotá and Medellín, classic departments but also project teams crossing areas. US tools don't get this. Kultiva does." },
+      "hero": {
+        "title": "Model your org as it really is",
+        "description": "Multiple locations, departments per location and teams that cross departments. The structure defines survey and feedback cycle scope precisely.",
+        "cta_primary": "Request Demo",
+        "cta_secondary": "View capabilities"
+      },
+      "problem": {
+        "title": "Your organization isn't flat",
+        "description": "You have offices in Bogotá and Medellín, classic departments but also project teams crossing areas. US tools don't get this. Kultiva does."
+      },
       "capabilities": {
         "title": "A structure that fits your reality",
-        "hubs": { "title": "Hubs (locations)", "description": "Model geographic locations: Bogotá, Medellín, Cali. Each with its own departments." },
-        "departments": { "title": "Departments", "description": "Classic structure by department. HR, Sales, Operations, etc." },
-        "teams": { "title": "Cross-functional teams", "description": "Teams that span departments (projects, committees, squads)." },
-        "scoping": { "title": "Precise scope", "description": "Launch a survey only to one location, department, team or custom selection." },
-        "permissions": { "title": "Structure permissions", "description": "Managers see only their team. Site Admins see only their location." },
-        "reporting": { "title": "Broken-down reports", "description": "Compare results across locations, departments or teams." }
+        "hubs": {
+          "title": "Hubs (locations)",
+          "description": "Model geographic locations: Bogotá, Medellín, Cali. Each with its own departments."
+        },
+        "departments": {
+          "title": "Departments",
+          "description": "Classic structure by department. HR, Sales, Operations, etc."
+        },
+        "teams": {
+          "title": "Cross-functional teams",
+          "description": "Teams that span departments (projects, committees, squads)."
+        },
+        "scoping": {
+          "title": "Precise scope",
+          "description": "Launch a survey only to one location, department, team or custom selection."
+        },
+        "permissions": {
+          "title": "Structure permissions",
+          "description": "Managers see only their team. Site Admins see only their location."
+        },
+        "reporting": {
+          "title": "Broken-down reports",
+          "description": "Compare results across locations, departments or teams."
+        }
       },
       "process": {
         "title": "Configure your structure in five steps",
-        "model": { "title": "Model", "description": "Define hubs, departments and teams." },
-        "assign": { "title": "Assign", "description": "Associate each employee to their location and department." },
-        "validate": { "title": "Validate", "description": "Confirm the structure reflects your org." },
-        "scope": { "title": "Segment", "description": "Use the structure to define survey scope." },
-        "report": { "title": "Report", "description": "Compare results across locations and teams." }
+        "model": {
+          "title": "Model",
+          "description": "Define hubs, departments and teams."
+        },
+        "assign": {
+          "title": "Assign",
+          "description": "Associate each employee to their location and department."
+        },
+        "validate": {
+          "title": "Validate",
+          "description": "Confirm the structure reflects your org."
+        },
+        "scope": {
+          "title": "Segment",
+          "description": "Use the structure to define survey scope."
+        },
+        "report": {
+          "title": "Report",
+          "description": "Compare results across locations and teams."
+        }
       },
       "faq": {
         "title": "Frequently asked questions about Org Structure",
-        "q1": { "q": "What's the difference between department and team?", "a": "Department is the formal structure (HR, Sales). Team is cross-cutting and can have members from multiple departments." },
-        "q2": { "q": "Can a person be in multiple teams?", "a": "Yes. A person belongs to one department but can be in multiple teams." },
-        "q3": { "q": "How do you handle org groups?", "a": "Each company in the group is an independent tenant. For consolidated views contact us for Enterprise." },
-        "q4": { "q": "Can I change the structure once created?", "a": "Yes. The structure is flexible and you can adjust it anytime without losing historical data." },
-        "q5": { "q": "Is there a limit on locations or departments?", "a": "Not on Business and Enterprise plans. On Starter, up to 3 locations and 10 departments." }
+        "q1": {
+          "q": "What's the difference between department and team?",
+          "a": "Department is the formal structure (HR, Sales). Team is cross-cutting and can have members from multiple departments."
+        },
+        "q2": {
+          "q": "Can a person be in multiple teams?",
+          "a": "Yes. A person belongs to one department but can be in multiple teams."
+        },
+        "q3": {
+          "q": "How do you handle org groups?",
+          "a": "Each company in the group is an independent tenant. For consolidated views contact us for Enterprise."
+        },
+        "q4": {
+          "q": "Can I change the structure once created?",
+          "a": "Yes. The structure is flexible and you can adjust it anytime without losing historical data."
+        },
+        "q5": {
+          "q": "Is there a limit on locations or departments?",
+          "a": "Not on Business and Enterprise plans. On Starter, up to 3 locations and 10 departments."
+        }
       },
-      "cta": { "title": "Model your org in Kultiva", "description": "Schedule a demo and we'll configure your structure together in the first session.", "button": "Schedule Demo" },
-      "crosslinks": { "feedback360": "360 Feedback", "climate": "Climate Surveys" }
+      "cta": {
+        "title": "Model your org in Kultiva",
+        "description": "Schedule a demo and we'll configure your structure together in the first session.",
+        "button": "Schedule Demo"
+      },
+      "crosslinks": {
+        "feedback360": "360 Feedback",
+        "climate": "Climate Surveys"
+      }
     }
   },
   "precios": {
-    "metadata": { "title": "Pricing | Kultiva", "description": "Clear pricing per user in USD: Starter, Business and Enterprise. No hidden costs." },
-    "hero": { "title": "Plans that grow with you", "breadcrumb": "Pricing" },
+    "metadata": {
+      "title": "Pricing | Kultiva",
+      "description": "Clear pricing per user in USD: Starter, Business and Enterprise. No hidden costs."
+    },
+    "hero": {
+      "title": "Plans that grow with you",
+      "breadcrumb": "Pricing"
+    },
     "comparison": {
       "title": "Compare plans in detail",
       "subtitle": "All features, side by side.",
       "feature_label": "Feature",
-      "tiers": { "starter": "Starter", "growth": "Business", "scale": "Enterprise" },
+      "tiers": {
+        "starter": "Starter",
+        "growth": "Business",
+        "scale": "Enterprise"
+      },
       "features": {
-        "feedback360": { "label": "360 Feedback", "starter": "Yes", "growth": "Yes", "scale": "Yes" },
-        "climate": { "label": "Climate Surveys", "starter": "—", "growth": "Yes", "scale": "Yes" },
-        "people": { "label": "People Management", "starter": "Yes", "growth": "Yes", "scale": "Yes" },
-        "org": { "label": "Org Structure", "starter": "Yes", "growth": "Yes", "scale": "Yes" },
-        "users": { "label": "Users", "starter": "Up to 50", "growth": "Up to 200", "scale": "Unlimited" },
-        "admins": { "label": "Administrators", "starter": "1", "growth": "3", "scale": "Unlimited" },
-        "templates": { "label": "Climate templates", "starter": "—", "growth": "Included", "scale": "Custom" },
-        "csv": { "label": "CSV export", "starter": "Yes", "growth": "Yes", "scale": "Yes" },
-        "support": { "label": "Support", "starter": "Email", "growth": "Priority", "scale": "Dedicated" },
-        "sso": { "label": "SSO / SAML", "starter": "—", "growth": "—", "scale": "Yes" },
-        "api": { "label": "Integration API", "starter": "—", "growth": "—", "scale": "Yes" },
-        "sla": { "label": "Guaranteed SLA", "starter": "—", "growth": "—", "scale": "Yes" },
-        "onboarding": { "label": "Guided onboarding", "starter": "—", "growth": "Yes", "scale": "Yes" }
+        "feedback360": {
+          "label": "360 Feedback",
+          "starter": "Yes",
+          "growth": "Yes",
+          "scale": "Yes"
+        },
+        "climate": {
+          "label": "Climate Surveys",
+          "starter": "—",
+          "growth": "Yes",
+          "scale": "Yes"
+        },
+        "people": {
+          "label": "People Management",
+          "starter": "Yes",
+          "growth": "Yes",
+          "scale": "Yes"
+        },
+        "org": {
+          "label": "Org Structure",
+          "starter": "Yes",
+          "growth": "Yes",
+          "scale": "Yes"
+        },
+        "users": {
+          "label": "Users",
+          "starter": "Up to 50",
+          "growth": "Up to 200",
+          "scale": "Unlimited"
+        },
+        "admins": {
+          "label": "Administrators",
+          "starter": "1",
+          "growth": "3",
+          "scale": "Unlimited"
+        },
+        "templates": {
+          "label": "Climate templates",
+          "starter": "—",
+          "growth": "Included",
+          "scale": "Custom"
+        },
+        "csv": {
+          "label": "CSV export",
+          "starter": "Yes",
+          "growth": "Yes",
+          "scale": "Yes"
+        },
+        "support": {
+          "label": "Support",
+          "starter": "Email",
+          "growth": "Priority",
+          "scale": "Dedicated"
+        },
+        "sso": {
+          "label": "SSO / SAML",
+          "starter": "—",
+          "growth": "—",
+          "scale": "Yes"
+        },
+        "api": {
+          "label": "Integration API",
+          "starter": "—",
+          "growth": "—",
+          "scale": "Yes"
+        },
+        "sla": {
+          "label": "Guaranteed SLA",
+          "starter": "—",
+          "growth": "—",
+          "scale": "Yes"
+        },
+        "onboarding": {
+          "label": "Guided onboarding",
+          "starter": "—",
+          "growth": "Yes",
+          "scale": "Yes"
+        }
       }
     }
   },
   "demo": {
-    "metadata": { "title": "Request Demo | Kultiva", "description": "Schedule a personalized Kultiva demo. 30 minutes, no commitment, no credit card." },
-    "hero": { "title": "See Kultiva in action", "breadcrumb": "Demo" },
+    "metadata": {
+      "title": "Request Demo | Kultiva",
+      "description": "Schedule a personalized Kultiva demo. 30 minutes, no commitment, no credit card."
+    },
+    "hero": {
+      "title": "See Kultiva in action",
+      "breadcrumb": "Demo"
+    },
     "form": {
       "title": "Request your demo",
-      "name_label": "Full name", "name_placeholder": "Maria Garcia",
-      "email_label": "Work email", "email_placeholder": "you@company.com",
-      "company_label": "Company", "company_placeholder": "Your company name",
-      "role_label": "Role", "role_placeholder": "HR Manager",
-      "employees_label": "Number of employees", "employees_placeholder": "Select a range",
+      "name_label": "Full name",
+      "name_placeholder": "Maria Garcia",
+      "email_label": "Work email",
+      "email_placeholder": "you@company.com",
+      "company_label": "Company",
+      "company_placeholder": "Your company name",
+      "role_label": "Role",
+      "role_placeholder": "HR Manager",
+      "employees_label": "Number of employees",
+      "employees_placeholder": "Select a range",
       "modules_label": "Which modules interest you?",
-      "modules": { "feedback360": "360 Feedback", "climate": "Climate Surveys", "people": "People Management", "org": "Org Structure", "all": "All" },
-      "message_label": "Message (optional)", "message_placeholder": "Tell us what you're looking for...",
-      "submit": "Request Free Demo", "submitting": "Sending...",
+      "modules": {
+        "feedback360": "360 Feedback",
+        "climate": "Climate Surveys",
+        "people": "People Management",
+        "org": "Org Structure",
+        "all": "All"
+      },
+      "message_label": "Message (optional)",
+      "message_placeholder": "Tell us what you're looking for...",
+      "submit": "Request Free Demo",
+      "submitting": "Sending...",
       "disclaimer": "We'll respond in less than 24 business hours.",
-      "success_title": "Request sent!", "success_message": "We'll contact you soon to schedule the demo.",
+      "success_title": "Request sent!",
+      "success_message": "We'll contact you soon to schedule the demo.",
       "error": "We couldn't send the request. Try again or write to info@kultiva.com.co"
     },
     "expect": {
       "title": "What happens next?",
       "steps": {
-        "1": { "title": "Quick confirmation", "description": "We'll contact you in less than 24 business hours to schedule a time that works for you." },
-        "2": { "title": "Live demo (30 min)", "description": "We show you the platform with sample data adapted to your type of company." },
-        "3": { "title": "Next step", "description": "If Kultiva convinces you, we activate a pilot with your real data so you can try with your team." }
+        "1": {
+          "title": "Quick confirmation",
+          "description": "We'll contact you in less than 24 business hours to schedule a time that works for you."
+        },
+        "2": {
+          "title": "Live demo (30 min)",
+          "description": "We show you the platform with sample data adapted to your type of company."
+        },
+        "3": {
+          "title": "Next step",
+          "description": "If Kultiva convinces you, we activate a pilot with your real data so you can try with your team."
+        }
       },
       "trust": "No commitment. No credit card. No aggressive sales calls."
     }
@@ -888,5 +1392,66 @@
     "loading": "Loading...",
     "error": "Error",
     "success": "Success"
+  },
+  "dashboard": {
+    "common": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "create": "Create",
+      "search": "Search",
+      "loading": "Loading...",
+      "no_results": "No results",
+      "confirm": "Confirm",
+      "back": "Back"
+    },
+    "sidebar": {
+      "overview": "Overview",
+      "people": "People",
+      "surveys": "Surveys",
+      "reports": "Reports",
+      "my_reviews": "My Reviews",
+      "my_feedback": "My Feedback",
+      "my_team": "My Team",
+      "settings": "Settings",
+      "analytics": "Analytics"
+    },
+    "settings": {
+      "title": "Settings",
+      "profile": "Profile",
+      "company_section": "Company",
+      "platform_section": "Platform",
+      "general": "General",
+      "members": "Members",
+      "roles": "Roles",
+      "departments": "Departments",
+      "teams": "Teams",
+      "competencies": "Competencies",
+      "hubs": "Hubs",
+      "company_domain": "Company Domain",
+      "features": "Features",
+      "admin_domains": "Admin Domains",
+      "platform_health": "Platform Health",
+      "company_settings": "Company Settings",
+      "manage_settings_for": "Manage settings for",
+      "company_info": "Company Information",
+      "quick_stats": "Quick Stats",
+      "name": "Name",
+      "slug": "Slug",
+      "domain": "Domain",
+      "members_count": "Members",
+      "departments_count": "Departments",
+      "review_cycles": "Review Cycles",
+      "no_departments": "No departments created yet",
+      "language": {
+        "title": "Language",
+        "description": "Sets the default language for all members of this company.",
+        "save": "Save Language",
+        "saving": "Saving...",
+        "updated": "Language updated",
+        "error": "Failed to update language"
+      }
+    }
   }
 }
