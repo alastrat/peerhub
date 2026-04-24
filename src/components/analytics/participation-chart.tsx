@@ -83,10 +83,10 @@ export function ParticipationChart({ data }: ParticipationChartProps) {
                 tickFormatter={(value) => `${value}%`}
               />
               <Tooltip
-                formatter={(value: number | undefined, name: string | undefined) => {
-                  if (value === undefined) return ["-", name ?? ""];
+                formatter={(value, name) => {
+                  if (value === undefined || value === null) return ["-", String(name ?? "")];
                   if (name === "completionRate") return [`${value}%`, "Completion Rate"];
-                  return [value, name ?? ""];
+                  return [String(value), String(name ?? "")];
                 }}
                 labelFormatter={(label) => `Date: ${label}`}
                 contentStyle={{
