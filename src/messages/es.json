@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "title": "Kultiva | Consultoria Organizacional",
-    "description": "Agencia de consultoria organizacional. Transformamos cultura, clima, comunicacion y liderazgo en tu organizacion."
+    "title": "Kultiva | Consultoría Organizacional",
+    "description": "Agencia de consultoría organizacional. Transformamos cultura, clima, comunicación y liderazgo en tu organización."
   },
   "navigation": {
     "home": "Inicio",
@@ -37,29 +37,29 @@
       "cta": "Conoce Mas"
     },
     "process": {
-      "subtitle": "Nuestra Metodologia",
-      "title": "Como trabajamos contigo",
+      "subtitle": "Nuestra Metodología",
+      "title": "Cómo trabajamos contigo",
       "step1": {
-        "title": "Diagnostico",
-        "description": "Analizamos tu organizacion para identificar oportunidades de mejora."
+        "title": "Exploramos",
+        "description": "Analizamos tu organización para identificar oportunidades y entender el contexto."
       },
       "step2": {
-        "title": "Estrategia",
-        "description": "Disenamos un plan de accion personalizado para tus objetivos."
+        "title": "Cocreamos",
+        "description": "Diseñamos junto a ti el plan de acción alineado con tus objetivos."
       },
       "step3": {
-        "title": "Implementacion",
-        "description": "Ejecutamos las iniciativas con acompanamiento continuo."
+        "title": "Avanzamos",
+        "description": "Ejecutamos las iniciativas con acompañamiento continuo."
       },
       "step4": {
-        "title": "Medicion",
-        "description": "Evaluamos resultados y ajustamos para maximizar el impacto."
+        "title": "Construimos",
+        "description": "Evaluamos resultados, ajustamos y sostenemos el cambio en el tiempo."
       }
     },
     "stats": {
-      "years": "Anos de Experiencia",
-      "clients": "Clientes Satisfechos",
-      "projects": "Proyectos Completados",
+      "years": "Años de Experiencia",
+      "clients": "Horas de Formación a Líderes",
+      "projects": "Proyectos Internacionales",
       "team": "Profesionales"
     },
     "testimonials": {
@@ -114,36 +114,39 @@
       "breadcrumb": "Nosotros"
     },
     "subtitle": "Sobre Nosotros",
-    "title": "Mas de 50 clientes confian en nuestros servicios",
-    "description1": "Tu exito es nuestra mision. Como asesores de negocios, ofrecemos orientacion experta, desbloqueando tu potencial de crecimiento y rentabilidad.",
-    "description2": "Nuestra mision es empoderar a las organizaciones de todos los tamanos para prosperar en mercados en constante cambio. Estamos comprometidos a entregar un valor excepcional a traves de estrategias innovadoras. Transformamos tu negocio con nuestras soluciones de consultoria transformadoras.",
+    "title": "¿Por qué confiar en nosotros?",
+    "bullets": {
+      "1": "Empoderamos a las organizaciones a través del liderazgo, lo que garantiza el éxito por adelantado.",
+      "2": "Estamos comprometidos en entregar un valor excepcional a través de estrategias innovadoras.",
+      "3": "Transformamos tu negocio con nuestras soluciones de consultoría transformadoras."
+    },
     "cta": "Solicitar una Consulta",
     "mission": {
-      "title": "Nuestra Mision",
-      "description": "Acompanar a las organizaciones en su proceso de transformacion, cultivando culturas que inspiren y generen resultados sostenibles."
+      "title": "Nuestra Misión",
+      "description": "Acompañar a las organizaciones en su proceso de transformación, cultivando culturas que inspiren y generen resultados sostenibles."
     },
     "vision": {
-      "title": "Nuestra Vision",
-      "description": "Ser la consultoria organizacional de referencia en Colombia, reconocida por el impacto positivo en las personas y los negocios."
+      "title": "Nuestra Visión",
+      "description": "Ser la consultoría organizacional de referencia en Colombia, reconocida por el impacto positivo en las personas y los negocios."
     },
     "values": {
       "subtitle": "Nuestros Valores",
-      "title": "Los principios que nos guian",
-      "integrity": {
-        "title": "Integridad",
-        "description": "Actuamos con honestidad y transparencia en cada interaccion."
+      "title": "Los principios que nos guían",
+      "trust": {
+        "title": "Sembramos confianza",
+        "description": "Construimos relaciones sólidas basadas en la cercanía, la escucha y el respeto."
       },
-      "innovation": {
-        "title": "Innovacion",
-        "description": "Buscamos constantemente nuevas formas de generar valor."
+      "honesty": {
+        "title": "Practicamos la honestidad",
+        "description": "Actuamos con transparencia y autenticidad en cada conversación y decisión."
       },
-      "collaboration": {
-        "title": "Colaboracion",
-        "description": "Trabajamos junto a nuestros clientes como verdaderos socios."
+      "freedom": {
+        "title": "Vivimos la libertad",
+        "description": "Promovemos entornos donde las personas puedan pensar, crear y expresarse sin miedo."
       },
-      "excellence": {
-        "title": "Excelencia",
-        "description": "Nos comprometemos con los mas altos estandares de calidad."
+      "transform": {
+        "title": "Conversamos para transformar",
+        "description": "Creemos en el poder de las conversaciones honestas como motor de cambio real."
       }
     },
     "features": {
@@ -187,25 +190,25 @@
       "breadcrumb": "Servicios"
     },
     "subtitle": "Lo Que Hacemos",
-    "title": "Mas de 50 clientes confian en nosotros",
-    "description": "Cada servicio esta disenado para abordar los desafios especificos de tu organizacion, con metodologias probadas y un enfoque centrado en las personas.",
+    "title": "Sembramos resultados en las organizaciones",
+    "description": "Cuatro servicios diseñados para transformar la cultura, el liderazgo y el desempeño — con metodologías probadas y un enfoque centrado en las personas.",
     "cta": "Solicitar una Consulta",
     "process": {
       "step1": {
-        "title": "Diagnostico",
-        "description": "Analizamos tu organizacion para identificar oportunidades"
+        "title": "Exploramos",
+        "description": "Analizamos tu organización para identificar oportunidades"
       },
       "step2": {
-        "title": "Estrategia",
-        "description": "Disenamos un plan personalizado para tus objetivos"
+        "title": "Cocreamos",
+        "description": "Diseñamos junto a ti el plan alineado con tus objetivos"
       },
       "step3": {
-        "title": "Implementacion",
-        "description": "Ejecutamos con acompanamiento continuo"
+        "title": "Avanzamos",
+        "description": "Ejecutamos las iniciativas con acompañamiento continuo"
       },
       "step4": {
-        "title": "Medicion",
-        "description": "Evaluamos resultados y ajustamos para maximizar impacto"
+        "title": "Construimos",
+        "description": "Medimos, ajustamos y sostenemos el cambio en el tiempo"
       }
     },
     "faq": {
@@ -235,8 +238,8 @@
       }
     },
     "cultura": {
-      "title": "Cultura Organizacional",
-      "short": "Cultura",
+      "title": "Transformación Cultural",
+      "short": "Transformación Cultural",
       "headline": "Construye una cultura que inspire y genere resultados sostenibles",
       "description": "Disenamos e implementamos estrategias para construir culturas organizacionales solidas que impulsen el compromiso, la innovacion y los resultados del negocio.",
       "description2": "Una cultura fuerte es la base del exito organizacional. Trabajamos contigo para definir, comunicar y vivir los valores que hacen unica a tu empresa, creando un ambiente donde las personas dan lo mejor de si.",
@@ -413,6 +416,76 @@
           "answer": "Si, desarrollamos planes de comunicacion de crisis y acompanamos a las organizaciones durante situaciones dificiles, asegurando mensajes claros, oportunos y empaticos."
         }
       }
+    },
+    "liderazgo": {
+      "title": "Desarrollo de Liderazgo Estratégico",
+      "short": "Liderazgo",
+      "headline": "Formamos líderes que inspiran, movilizan y transforman organizaciones",
+      "description": "Diseñamos formación orientada a fortalecer las competencias de liderazgo en las organizaciones, mediante el desarrollo de habilidades clave que impulsan el desempeño del equipo y la coherencia estratégica.",
+      "description2": "El liderazgo estratégico no es solo dirigir: es crear contextos donde las personas elijan comprometerse. Nuestros programas combinan diagnóstico, coaching y práctica para que cada líder traduzca la estrategia en acción con claridad, confianza y propósito.",
+      "benefits_title": "Qué incluye este servicio",
+      "benefits": {
+        "1": "Diagnóstico de estilo y competencias de liderazgo",
+        "2": "Diseño de programa de formación a medida",
+        "3": "Sesiones de coaching ejecutivo y grupal",
+        "4": "Herramientas prácticas para conversaciones de alto impacto",
+        "5": "Seguimiento y medición del impacto en el equipo"
+      },
+      "features_title": "Características Clave",
+      "features_description": "Combinamos marcos contemporáneos de liderazgo con prácticas conversacionales y retos reales del negocio. Los programas son vivenciales, no teóricos, y se conectan directamente con los indicadores de desempeño de cada equipo.",
+      "help_section_title": "¿Cómo te podemos ayudar?",
+      "help_cards": {
+        "1": {
+          "title": "Programas de liderazgo a medida",
+          "description": "Diseñamos rutas de formación alineadas al momento de tu organización y al perfil de tus líderes, con una mezcla de talleres, coaching y práctica en el terreno."
+        },
+        "2": {
+          "title": "Coaching ejecutivo y de equipos",
+          "description": "Acompañamos a líderes y equipos en procesos de coaching para ampliar la conciencia, tomar mejores decisiones y sostener el cambio en el día a día."
+        },
+        "3": {
+          "title": "Liderazgo para momentos de cambio",
+          "description": "Preparamos a tus líderes para navegar transiciones críticas: reorganizaciones, fusiones, nuevos modelos operativos o cambios culturales profundos."
+        },
+        "4": {
+          "title": "Conversaciones que transforman",
+          "description": "Fortalecemos las conversaciones difíciles, de feedback y de alineación entre líder y equipo, que son el músculo silencioso del alto desempeño."
+        },
+        "5": {
+          "title": "Evaluaciones y assessments de liderazgo",
+          "description": "Utilizamos herramientas de evaluación validadas para medir estilos, potencial y brechas, generando planes de desarrollo con foco y medición."
+        },
+        "6": {
+          "title": "Comunidades de práctica de líderes",
+          "description": "Creamos espacios entre pares donde los líderes comparten retos, aprenden entre sí y sostienen el cambio más allá del programa formal."
+        }
+      },
+      "help_quote": "Un líder que crece transforma a su equipo. Un equipo que crece transforma la organización.",
+      "topics_title": "Temáticas de Formación",
+      "topics_quote": "Nuestro programa busca desarrollar líderes capaces de inspirar, orientar y potenciar el talento de sus equipos, contribuyendo al fortalecimiento de la cultura organizacional y al logro de los objetivos estratégicos.",
+      "topics": {
+        "1": "Estilos de liderazgo",
+        "2": "Habilidades blandas para líderes",
+        "3": "Gestión de equipos",
+        "4": "Gestión de conflictos",
+        "5": "Comunicación efectiva en el liderazgo",
+        "6": "Retroalimentación constructiva",
+        "7": "Inteligencia emocional aplicada al liderazgo"
+      },
+      "faq": {
+        "1": {
+          "question": "¿Los programas son estándar o a medida?",
+          "answer": "Todos nuestros programas se diseñan a partir de un diagnóstico inicial. Partimos de marcos probados, pero los adaptamos a la realidad, cultura y retos específicos de tu organización."
+        },
+        "2": {
+          "question": "¿Qué duración tiene un programa de liderazgo?",
+          "answer": "Depende del alcance. Un programa intensivo puede durar 2-3 meses; uno de transformación sostenida entre 6 y 12 meses, con módulos presenciales, coaching y prácticas en el terreno."
+        },
+        "3": {
+          "question": "¿Cómo miden el impacto?",
+          "answer": "Definimos indicadores desde el inicio: comportamientos observables, métricas de equipo (clima, desempeño) y percepción de los colaboradores. Medimos antes, durante y después del programa."
+        }
+      }
     }
   },
   "climate": {
@@ -493,8 +566,9 @@
         "value": "Barranquilla, Atlantico, Colombia"
       },
       "phone": {
-        "title": "Telefono",
-        "value": "+57 300 645 5082"
+        "title": "Teléfono",
+        "value": "+57 300 645 5082",
+        "value2": "+57 316 492 8552"
       },
       "email": {
         "title": "Email",

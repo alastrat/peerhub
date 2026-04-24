@@ -26,31 +26,27 @@ export default async function ConferencesPage({
   const topics = [
     {
       icon: "/bizzen/images/innerpage/icon/icon3.svg",
-      title: "Liderazgo en la Era Digital",
+      title: "Entre Códigos y Emociones",
+      subtitle: "La Nueva Cultura del Trabajo",
       description:
-        "Como liderar equipos en un mundo cada vez mas tecnologico sin perder el enfoque humano.",
+        "Esta charla invita a repensar la relación entre tecnología y humanidad, mostrando cómo la verdadera transformación ocurre en la cultura. La audiencia se lleva herramientas para diseñar una mentalidad de crecimiento, aprender del error y construir entornos donde la innovación florece sin miedo.",
       duration: 800,
     },
     {
       icon: "/bizzen/images/innerpage/icon/icon4.svg",
-      title: "Cultura Organizacional",
+      title: "Cultura Beta",
+      subtitle: "Organizaciones que nunca dejan de aprender",
       description:
-        "Estrategias para construir y mantener culturas que impulsen el engagement y los resultados.",
+        "Esta conferencia invita a líderes y organizaciones a repensar el cambio como una oportunidad constante de aprendizaje. A partir del concepto tecnológico de estar \"en versión beta\", la charla muestra cómo las culturas que se atreven a experimentar, aprender del error y mantener una mentalidad de crecimiento logran adaptarse más rápido que el entorno. La audiencia descubre herramientas prácticas para fortalecer la curiosidad, la resiliencia y el aprendizaje colectivo, construyendo organizaciones que no temen evolucionar una y otra vez.",
       duration: 1000,
     },
     {
       icon: "/bizzen/images/innerpage/icon/icon5.svg",
-      title: "Gestion del Cambio",
+      title: "Reinventar-nos",
+      subtitle: "La Nueva Era del Aprendizaje en las Organizaciones",
       description:
-        "Como facilitar transiciones exitosas minimizando la resistencia y maximizando la adopcion.",
+        "Esta charla invita a reflexionar sobre cómo las personas y las organizaciones pueden mantenerse vigentes en un entorno que cambia cada día. Explora el aprendizaje continuo como una actitud cultural, no solo una competencia técnica. La audiencia descubre cómo reinventarse sin perder su esencia, fortaleciendo la curiosidad, la adaptabilidad y la mentalidad de crecimiento. Porque reinventar-nos es aprender a evolucionar juntos.",
       duration: 1200,
-    },
-    {
-      icon: "/bizzen/images/innerpage/icon/icon6.svg",
-      title: "Comunicacion Efectiva",
-      description:
-        "Tecnicas para mejorar la comunicacion interna y fortalecer la conexion entre equipos.",
-      duration: 1400,
     },
   ];
 

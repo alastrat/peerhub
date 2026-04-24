@@ -155,8 +155,8 @@ export default async function ClimateDiagnosticPage({
                 data-aos-duration="1000"
               >
                 <img
-                  src="/bizzen/images/innerpage/gallery/biz-img1.jpg"
-                  alt="Plataforma de Clima"
+                  src="/images/team/cultura-beta-conference.jpg"
+                  alt="Conferencia Cultura Beta - Kultiva"
                 />
               </div>
             </div>

@@ -3,7 +3,6 @@ import {
   HeroSection,
   ServiceSection,
   AboutSection,
-  CounterSection,
   ProcessSection,
   TestimonialSection,
   ContactSection,
@@ -53,7 +52,6 @@ export default async function HomePage({
       <HeroSection />
       <ServiceSection services={services} />
       <AboutSection />
-      <CounterSection />
       <ProcessSection />
       <TestimonialSection testimonials={testimonials} />
       <ContactSection />

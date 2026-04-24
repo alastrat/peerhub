@@ -70,7 +70,7 @@ export function Header() {
                           </Link>
                         </li>
                         <li>
-                          <Link href="/servicios/cultura" style={{ color: "#fff" }}>
+                          <Link href="/servicios/transformacion-cultural" style={{ color: "#fff" }}>
                             {tServices("cultura.title")}
                           </Link>
                         </li>
@@ -80,18 +80,13 @@ export function Header() {
                           </Link>
                         </li>
                         <li>
-                          <Link href="/servicios/cambio" style={{ color: "#fff" }}>
-                            {tServices("cambio.title")}
-                          </Link>
-                        </li>
-                        <li>
-                          <Link href="/servicios/comunicacion-interna" style={{ color: "#fff" }}>
-                            {tServices("comunicacion.title")}
-                          </Link>
-                        </li>
-                        <li>
                           <Link href="/diagnostico-clima" style={{ color: "#fff" }}>
                             {t("climate")}
+                          </Link>
+                        </li>
+                        <li>
+                          <Link href="/servicios/liderazgo" style={{ color: "#fff" }}>
+                            {tServices("liderazgo.title")}
                           </Link>
                         </li>
                       </ul>

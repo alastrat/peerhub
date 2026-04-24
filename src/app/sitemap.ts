@@ -3,18 +3,15 @@ import { MetadataRoute } from "next";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://peerhub-ashen.vercel.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const locales = ["es", "en"];
   const currentDate = new Date().toISOString();
 
-  // Static pages
   const staticPages = [
     "",
     "/nosotros",
     "/servicios",
-    "/servicios/cultura",
+    "/servicios/transformacion-cultural",
     "/servicios/seleccion-especializada",
-    "/servicios/cambio",
-    "/servicios/comunicacion-interna",
+    "/servicios/liderazgo",
     "/diagnostico-clima",
     "/conferencias",
     "/herramientas",
@@ -25,23 +22,39 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const sitemapEntries: MetadataRoute.Sitemap = [];
 
-  // Generate entries for each locale
-  locales.forEach((locale) => {
-    staticPages.forEach((page) => {
-      sitemapEntries.push({
-        url: `${siteUrl}/${locale}${page}`,
-        lastModified: currentDate,
-        changeFrequency: page === "" ? "weekly" : "monthly",
-        priority: page === "" ? 1.0 : page.includes("/servicios") ? 0.9 : 0.8,
-        alternates: {
-          languages: {
-            es: `${siteUrl}/es${page}`,
-            en: `${siteUrl}/en${page}`,
-          },
+  // localePrefix: "as-needed" — Spanish URLs have no prefix, English uses /en.
+  for (const page of staticPages) {
+    const esUrl = `${siteUrl}${page || "/"}`;
+    const enUrl = `${siteUrl}/en${page}`;
+
+    sitemapEntries.push({
+      url: esUrl,
+      lastModified: currentDate,
+      changeFrequency: page === "" ? "weekly" : "monthly",
+      priority: page === "" ? 1.0 : page.includes("/servicios") ? 0.9 : 0.8,
+      alternates: {
+        languages: {
+          "es-CO": esUrl,
+          "en-US": enUrl,
+          "x-default": esUrl,
         },
-      });
+      },
     });
-  });
+
+    sitemapEntries.push({
+      url: enUrl,
+      lastModified: currentDate,
+      changeFrequency: page === "" ? "weekly" : "monthly",
+      priority: page === "" ? 0.9 : page.includes("/servicios") ? 0.8 : 0.7,
+      alternates: {
+        languages: {
+          "es-CO": esUrl,
+          "en-US": enUrl,
+          "x-default": esUrl,
+        },
+      },
+    });
+  }
 
   return sitemapEntries;
 }

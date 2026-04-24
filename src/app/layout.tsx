@@ -117,10 +117,10 @@ const jsonLd = {
       },
       serviceType: [
         "Consultoría Organizacional",
-        "Cultura Organizacional",
-        "Gestión del Cambio",
-        "Selección de Personal",
-        "Comunicación Interna",
+        "Transformación Cultural",
+        "Selección Especializada",
+        "Diagnóstico de Clima",
+        "Desarrollo de Liderazgo Estratégico",
       ],
     },
     {
@@ -148,16 +148,22 @@ export const metadata: Metadata = {
   keywords: [
     "consultoría organizacional",
     "cultura organizacional",
+    "transformación cultural",
+    "diagnóstico de clima",
+    "clima organizacional",
+    "desarrollo de liderazgo",
+    "liderazgo estratégico",
+    "selección especializada",
     "gestión del cambio",
-    "selección de personal",
-    "comunicación interna",
     "desarrollo organizacional",
     "recursos humanos",
+    "talento humano",
+    "consultoría empresarial",
     "Colombia",
     "Barranquilla",
     "LATAM",
-    "HR consulting",
-    "organizational development",
+    "Kultiva",
+    "Iskya Boom",
   ],
   authors: [{ name: "Kultiva", url: siteUrl }],
   creator: "Kultiva",
@@ -170,9 +176,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: siteUrl,
     languages: {
-      "es-CO": `${siteUrl}/es`,
+      // Spanish is served without a locale prefix (localePrefix: "as-needed")
+      "es-CO": siteUrl,
       "en-US": `${siteUrl}/en`,
-      "x-default": `${siteUrl}/es`,
+      "x-default": siteUrl,
     },
   },
   openGraph: {
@@ -226,7 +233,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${kanit.variable} ${plusJakarta.variable} ${quicksand.variable}`} data-theme="brand" suppressHydrationWarning>
+    <html lang="es" className={`${inter.variable} ${kanit.variable} ${plusJakarta.variable} ${quicksand.variable}`} data-theme="brand" suppressHydrationWarning>
       <head>
         {/* FontAwesome - from template */}
         <link

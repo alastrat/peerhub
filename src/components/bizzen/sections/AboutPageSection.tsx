@@ -13,40 +13,32 @@ export function AboutPageSection() {
         <div className="about-wrapper">
           <div className="row">
             <div className="col-lg-5">
-              {/* Bizzen Item List */}
+              {/* Bizzen Item List — 4 values */}
               <div className="bizzen-item-list">
-                <div
-                  className="bizzen-iconic-item style-one"
-                  data-aos="fade-up"
-                  data-aos-duration="800"
-                >
-                  <div className="icon">
-                    <img
-                      src="/bizzen/images/innerpage/icon/icon1.svg"
-                      alt="icon"
-                    />
+                {[
+                  { key: "trust", icon: "icon1" },
+                  { key: "honesty", icon: "icon2" },
+                  { key: "freedom", icon: "icon3" },
+                  { key: "transform", icon: "icon4" },
+                ].map((value, i) => (
+                  <div
+                    key={value.key}
+                    className="bizzen-iconic-item style-one"
+                    data-aos="fade-up"
+                    data-aos-duration={800 + i * 100}
+                  >
+                    <div className="icon">
+                      <img
+                        src={`/bizzen/images/innerpage/icon/${value.icon}.svg`}
+                        alt="icon"
+                      />
+                    </div>
+                    <div className="content">
+                      <h4>{t(`values.${value.key}.title`)}</h4>
+                      <p>{t(`values.${value.key}.description`)}</p>
+                    </div>
                   </div>
-                  <div className="content">
-                    <h4>{t("mission.title")}</h4>
-                    <p>{t("mission.description")}</p>
-                  </div>
-                </div>
-                <div
-                  className="bizzen-iconic-item style-one"
-                  data-aos="fade-up"
-                  data-aos-duration="1000"
-                >
-                  <div className="icon">
-                    <img
-                      src="/bizzen/images/innerpage/icon/icon2.svg"
-                      alt="icon"
-                    />
-                  </div>
-                  <div className="content">
-                    <h4>{t("vision.title")}</h4>
-                    <p>{t("vision.description")}</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
             <div className="col-lg-7">
@@ -62,20 +54,21 @@ export function AboutPageSection() {
                   </span>
                   <h2 className="text-anm">{t("title")}</h2>
                 </div>
-                <p
-                  className="mb-4"
+                <ul
+                  className="list-unstyled mb-4"
                   data-aos="fade-up"
                   data-aos-duration="1000"
                 >
-                  {t("description1")}
-                </p>
-                <p
-                  className="mb-4"
-                  data-aos="fade-up"
-                  data-aos-duration="1200"
-                >
-                  {t("description2")}
-                </p>
+                  {["bullet1", "bullet2", "bullet3"].map((key, i) => (
+                    <li key={key} className="d-flex mb-3" style={{ gap: "0.75rem" }}>
+                      <i
+                        className="far fa-check-circle mt-1"
+                        style={{ color: "#613171", fontSize: "1.1rem", flexShrink: 0 }}
+                      />
+                      <span>{t(`bullets.${i + 1}`)}</span>
+                    </li>
+                  ))}
+                </ul>
                 <div
                   className="bizzen-button"
                   data-aos="fade-up"

@@ -12,7 +12,7 @@ interface PageHeroProps {
 export function PageHero({
   title,
   breadcrumb,
-  backgroundImage = "/images/hero/hero-conference.jpg",
+  backgroundImage = "/images/hero/hero-event-1.jpg",
 }: PageHeroProps) {
   return (
     <section

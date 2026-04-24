@@ -18,7 +18,8 @@ export function TeamSection({ teamMembers = [] }: TeamSectionProps) {
   const team = teamMembers.map((m, index) => ({
     name: m.name || "",
     position: m.role || "",
-    image: m.image ? getImageUrl(m.image, { width: 400, height: 400 }) : fallbackImage,
+    // Portrait aspect (2:3) preserves head + torso instead of center-cropping to a square
+    image: m.image ? getImageUrl(m.image, { width: 400, height: 600, fit: "crop" }) : fallbackImage,
     linkedin: m.socialLinks?.linkedin,
     twitter: m.socialLinks?.twitter,
     email: m.socialLinks?.email,
@@ -52,8 +53,12 @@ export function TeamSection({ teamMembers = [] }: TeamSectionProps) {
                 data-aos="fade-up"
                 data-aos-duration={member.duration}
               >
-                <div className="member-image">
-                  <img src={member.image || ""} alt={member.name} />
+                <div className="member-image" style={{ aspectRatio: "2 / 3", overflow: "hidden" }}>
+                  <img
+                    src={member.image || ""}
+                    alt={member.name}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
+                  />
                   <div className="hover-content">
                     <div className="social-box">
                       {member.linkedin && (

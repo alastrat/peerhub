@@ -40,26 +40,26 @@
       "subtitle": "Our Methodology",
       "title": "How we work with you",
       "step1": {
-        "title": "Diagnosis",
-        "description": "We analyze your organization to identify improvement opportunities."
+        "title": "Explore",
+        "description": "We analyze your organization to surface opportunities and understand the context."
       },
       "step2": {
-        "title": "Strategy",
-        "description": "We design a customized action plan for your objectives."
+        "title": "Co-create",
+        "description": "We design the action plan with you, aligned to your objectives."
       },
       "step3": {
-        "title": "Implementation",
-        "description": "We execute initiatives with continuous support."
+        "title": "Advance",
+        "description": "We execute the initiatives with continuous support."
       },
       "step4": {
-        "title": "Measurement",
-        "description": "We evaluate results and adjust to maximize impact."
+        "title": "Build",
+        "description": "We evaluate results, adjust and sustain change over time."
       }
     },
     "stats": {
       "years": "Years of Experience",
-      "clients": "Satisfied Clients",
-      "projects": "Completed Projects",
+      "clients": "Hours Training Leaders",
+      "projects": "International Projects",
       "team": "Professionals"
     },
     "testimonials": {
@@ -113,6 +113,14 @@
       "title": "Our Philosophy",
       "breadcrumb": "About"
     },
+    "subtitle": "About Us",
+    "title": "Why trust us?",
+    "bullets": {
+      "1": "We empower organizations through leadership, setting them up for success.",
+      "2": "We are committed to delivering exceptional value through innovative strategies.",
+      "3": "We transform your business with our transformative consulting solutions."
+    },
+    "cta": "Request a Consultation",
     "mission": {
       "title": "Our Mission",
       "description": "To accompany organizations in their transformation process, cultivating cultures that inspire and generate sustainable results."
@@ -124,21 +132,21 @@
     "values": {
       "subtitle": "Our Values",
       "title": "The principles that guide us",
-      "integrity": {
-        "title": "Integrity",
-        "description": "We act with honesty and transparency in every interaction."
+      "trust": {
+        "title": "We plant trust",
+        "description": "We build strong relationships based on closeness, listening and respect."
       },
-      "innovation": {
-        "title": "Innovation",
-        "description": "We constantly seek new ways to generate value."
+      "honesty": {
+        "title": "We practice honesty",
+        "description": "We act with transparency and authenticity in every conversation and decision."
       },
-      "collaboration": {
-        "title": "Collaboration",
-        "description": "We work alongside our clients as true partners."
+      "freedom": {
+        "title": "We live freedom",
+        "description": "We promote environments where people can think, create and express themselves without fear."
       },
-      "excellence": {
-        "title": "Excellence",
-        "description": "We commit to the highest quality standards."
+      "transform": {
+        "title": "We talk to transform",
+        "description": "We believe in the power of honest conversations as the engine of real change."
       }
     },
     "founder": {
@@ -162,25 +170,25 @@
       "breadcrumb": "Services"
     },
     "subtitle": "What We Do",
-    "title": "Consulting services that transform organizations",
-    "description": "Each service is designed to address your organization's specific challenges, with proven methodologies and a people-centered approach.",
+    "title": "We plant results inside organizations",
+    "description": "Four services designed to transform culture, leadership and performance — with proven methodologies and a people-first approach.",
     "cta": "Learn More",
     "process": {
       "step1": {
-        "title": "Diagnosis",
-        "description": "We analyze your organization to identify opportunities"
+        "title": "Explore",
+        "description": "We analyze your organization to surface opportunities"
       },
       "step2": {
-        "title": "Strategy",
-        "description": "We design a customized plan for your objectives"
+        "title": "Co-create",
+        "description": "We design the plan with you, aligned to your goals"
       },
       "step3": {
-        "title": "Implementation",
-        "description": "We execute with continuous support"
+        "title": "Advance",
+        "description": "We execute initiatives with continuous support"
       },
       "step4": {
-        "title": "Measurement",
-        "description": "We evaluate results and adjust to maximize impact"
+        "title": "Build",
+        "description": "We measure, adjust and sustain change over time"
       }
     },
     "faq": {
@@ -192,8 +200,8 @@
       "description": "Contact us for a free consultation and discover how we can help you achieve your goals."
     },
     "cultura": {
-      "title": "Organizational Culture",
-      "short": "Culture",
+      "title": "Cultural Transformation",
+      "short": "Cultural Transformation",
       "headline": "Build a culture that inspires and generates sustainable results",
       "description": "We design and implement strategies to build solid organizational cultures that drive engagement, innovation, and business results.",
       "description2": "A strong culture is the foundation of organizational success. We work with you to define, communicate, and live the values that make your company unique, creating an environment where people give their best.",
@@ -370,6 +378,76 @@
           "answer": "Yes, we develop crisis communication plans and accompany organizations during difficult situations, ensuring clear, timely, and empathetic messages."
         }
       }
+    },
+    "liderazgo": {
+      "title": "Strategic Leadership Development",
+      "short": "Leadership",
+      "headline": "We build leaders who inspire, mobilize and transform organizations",
+      "description": "We design training programs that strengthen leadership competencies across the organization, developing the key skills that drive team performance and strategic alignment.",
+      "description2": "Strategic leadership is not just about directing — it's about creating contexts where people choose to commit. Our programs combine diagnosis, coaching and practice so each leader translates strategy into action with clarity, confidence and purpose.",
+      "benefits_title": "What this service includes",
+      "benefits": {
+        "1": "Leadership style and competency diagnostic",
+        "2": "Tailor-made training program design",
+        "3": "Executive and group coaching sessions",
+        "4": "Practical tools for high-impact conversations",
+        "5": "Impact measurement and team follow-up"
+      },
+      "features_title": "Key Features",
+      "features_description": "We combine contemporary leadership frameworks with conversational practices and real business challenges. Programs are experiential, not theoretical, and are tied directly to each team's performance indicators.",
+      "help_section_title": "How we can help you",
+      "help_cards": {
+        "1": {
+          "title": "Tailored leadership programs",
+          "description": "We design learning journeys aligned with your organization's moment and your leaders' profile, blending workshops, coaching and on-the-ground practice."
+        },
+        "2": {
+          "title": "Executive and team coaching",
+          "description": "We accompany leaders and teams through coaching processes to expand awareness, make better decisions and sustain change day to day."
+        },
+        "3": {
+          "title": "Leadership for moments of change",
+          "description": "We prepare your leaders to navigate critical transitions: reorganizations, mergers, new operating models or deep cultural change."
+        },
+        "4": {
+          "title": "Conversations that transform",
+          "description": "We strengthen the difficult, feedback and alignment conversations between leaders and teams — the silent muscle of high performance."
+        },
+        "5": {
+          "title": "Leadership evaluations and assessments",
+          "description": "We use validated assessment tools to measure styles, potential and gaps, generating focused, measurable development plans."
+        },
+        "6": {
+          "title": "Leader communities of practice",
+          "description": "We create peer spaces where leaders share challenges, learn from each other and sustain change beyond the formal program."
+        }
+      },
+      "help_quote": "A leader who grows transforms their team. A team that grows transforms the organization.",
+      "topics_title": "Training Topics",
+      "topics_quote": "Our program develops leaders capable of inspiring, guiding and amplifying the talent of their teams, strengthening organizational culture and driving the achievement of strategic goals.",
+      "topics": {
+        "1": "Leadership styles",
+        "2": "Soft skills for leaders",
+        "3": "Team management",
+        "4": "Conflict management",
+        "5": "Effective leadership communication",
+        "6": "Constructive feedback",
+        "7": "Emotional intelligence in leadership"
+      },
+      "faq": {
+        "1": {
+          "question": "Are the programs standard or tailor-made?",
+          "answer": "All our programs start with an initial diagnostic. We use proven frameworks but adapt them to the reality, culture and specific challenges of your organization."
+        },
+        "2": {
+          "question": "How long is a leadership program?",
+          "answer": "It depends on the scope. An intensive program can last 2-3 months; a sustained transformation runs 6 to 12 months, with in-person modules, coaching and field practice."
+        },
+        "3": {
+          "question": "How do you measure impact?",
+          "answer": "We set indicators from the start: observable behaviors, team metrics (climate, performance) and perception from direct reports. We measure before, during and after the program."
+        }
+      }
     }
   },
   "climate": {
@@ -451,7 +529,8 @@
       },
       "phone": {
         "title": "Phone",
-        "value": "+57 300 645 5082"
+        "value": "+57 300 645 5082",
+        "value2": "+57 316 492 8552"
       },
       "email": {
         "title": "Email",

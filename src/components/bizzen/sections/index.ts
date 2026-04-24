@@ -20,3 +20,4 @@ export { BlogGridSection } from "./BlogGridSection";
 export { FAQSection } from "./FAQSection";
 export { ServiceFAQ } from "./ServiceFAQ";
 export { ServiceHelpCards } from "./ServiceHelpCards";
+export { ServiceTopics } from "./ServiceTopics";

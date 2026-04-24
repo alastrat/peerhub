@@ -4,6 +4,7 @@ import {
   ServicesPageSection,
   ServiceSection,
 } from "@/components/bizzen";
+import { getServices, type Locale } from "@/lib/sanity";
 
 export async function generateMetadata({
   params,
@@ -25,12 +26,13 @@ export default async function ServicesPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "services" });
+  const services = await getServices(locale as Locale);
 
   return (
     <>
       <PageHero title={t("hero.title")} breadcrumb={t("hero.breadcrumb")} />
       <ServicesPageSection />
-      <ServiceSection />
+      <ServiceSection services={services} />
     </>
   );
 }

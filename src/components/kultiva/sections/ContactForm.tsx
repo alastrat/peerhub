@@ -41,6 +41,13 @@ export function ContactForm() {
       href: "tel:+573006455082",
     },
     {
+      icon: Phone,
+      titleKey: "phone",
+      valueKey: "phone",
+      valueField: "value2" as const,
+      href: "tel:+573164928552",
+    },
+    {
       icon: Mail,
       titleKey: "email",
       valueKey: "email",
@@ -65,30 +72,34 @@ export function ContactForm() {
               <p className="kultiva-lead mb-8">{t("description")}</p>
 
               <div className="space-y-6">
-                {contactInfo.map((item) => (
-                  <div key={item.titleKey} className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-kultiva-primary/10 flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-5 h-5 text-kultiva-primary" />
+                {contactInfo.map((item, idx) => {
+                  const valueField =
+                    ("valueField" in item && item.valueField) || "value";
+                  return (
+                    <div key={`${item.titleKey}-${idx}`} className="flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-kultiva-primary/10 flex items-center justify-center flex-shrink-0">
+                        <item.icon className="w-5 h-5 text-kultiva-primary" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-kultiva-ink mb-1">
+                          {t(`info.${item.titleKey}.title`)}
+                        </h4>
+                        {item.href ? (
+                          <a
+                            href={item.href}
+                            className="text-kultiva-charcoal/70 hover:text-kultiva-primary transition-colors"
+                          >
+                            {t(`info.${item.valueKey}.${valueField}`)}
+                          </a>
+                        ) : (
+                          <p className="text-kultiva-charcoal/70">
+                            {t(`info.${item.valueKey}.${valueField}`)}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-kultiva-ink mb-1">
-                        {t(`info.${item.titleKey}.title`)}
-                      </h4>
-                      {item.href ? (
-                        <a
-                          href={item.href}
-                          className="text-kultiva-charcoal/70 hover:text-kultiva-primary transition-colors"
-                        >
-                          {t(`info.${item.valueKey}.value`)}
-                        </a>
-                      ) : (
-                        <p className="text-kultiva-charcoal/70">
-                          {t(`info.${item.valueKey}.value`)}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </AnimatedElement>
           </div>

@@ -71,7 +71,7 @@ export function CounterSection() {
             >
               <div className="number">
                 <h2>
-                  <span className="counter">200</span>+
+                  <span className="counter">100</span>+
                 </h2>
               </div>
               <div className="content">

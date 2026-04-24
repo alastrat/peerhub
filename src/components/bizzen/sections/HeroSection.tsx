@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 const HERO_IMAGES = [
-  "/images/hero/hero-conference.jpg",
   "/images/hero/hero-event-1.jpg",
   "/images/team/team-workshop.jpg",
   "/images/team/gallery-3.jpg",

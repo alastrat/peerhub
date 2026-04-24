@@ -4,6 +4,7 @@ import { PageHero } from "@/components/bizzen/PageHero";
 import { Link } from "@/i18n/navigation";
 import { ServiceFAQ } from "@/components/bizzen/sections/ServiceFAQ";
 import { ServiceHelpCards } from "@/components/bizzen/sections/ServiceHelpCards";
+import { ServiceTopics } from "@/components/bizzen/sections/ServiceTopics";
 
 const serviceData: Record<
   string,
@@ -13,7 +14,7 @@ const serviceData: Record<
     secondaryImage: string;
   }
 > = {
-  cultura: {
+  "transformacion-cultural": {
     key: "cultura",
     image: "/images/team/team-workshop.jpg",
     secondaryImage: "/images/team/conference-1.jpg",
@@ -23,15 +24,13 @@ const serviceData: Record<
     image: "/images/team/conference-1.jpg",
     secondaryImage: "/images/team/gallery-1.jpg",
   },
-  cambio: {
-    key: "cambio",
-    image: "/images/team/team-event.jpg",
-    secondaryImage: "/images/team/iskya-speaking.jpg",
-  },
-  "comunicacion-interna": {
-    key: "comunicacion",
-    image: "/images/team/amcham-event.jpg",
-    secondaryImage: "/images/team/gallery-3.jpg",
+  // NOTE: "diagnostico-clima" is NOT listed here on purpose.
+  // /servicios/diagnostico-clima redirects to /diagnostico-clima (the platform landing)
+  // via next.config.ts so there's a single source of truth for that content.
+  liderazgo: {
+    key: "liderazgo",
+    image: "/images/team/iskya-speaking.jpg",
+    secondaryImage: "/images/team/conference-1.jpg",
   },
 };
 
@@ -121,6 +120,9 @@ export default async function ServiceDetailPage({
 
             {/* How Can We Help You — card grid */}
             <ServiceHelpCards serviceKey={service.key} />
+
+            {/* Training topics (liderazgo only — component no-ops for other services) */}
+            {service.key === "liderazgo" && <ServiceTopics serviceKey={service.key} />}
 
             {/* Process Wrapper */}
             <div className="process-wrapper">

@@ -7,7 +7,6 @@ import { AnimatedElement } from "../ui/AnimatedElement";
 import { ArrowRight, Play } from "lucide-react";
 
 const HERO_IMAGES = [
-  "/images/hero/hero-conference.jpg",
   "/images/hero/hero-event-1.jpg",
   "/images/team/team-workshop.jpg",
   "/images/team/gallery-3.jpg",

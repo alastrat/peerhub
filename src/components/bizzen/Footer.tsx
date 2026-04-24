@@ -82,6 +82,11 @@ export function Footer() {
                                 {tContact("info.phone.value")}
                               </a>
                             </li>
+                            <li>
+                              <a href="tel:+573164928552">
+                                {tContact("info.phone.value2")}
+                              </a>
+                            </li>
                           </ul>
                         </div>
                       </div>

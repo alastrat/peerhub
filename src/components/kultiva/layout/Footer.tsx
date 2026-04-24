@@ -146,6 +146,15 @@ export function Footer() {
                 </a>
               </li>
               <li className="flex items-center gap-3">
+                <Phone className="w-5 h-5 text-kultiva-accent flex-shrink-0" />
+                <a
+                  href="tel:+573164928552"
+                  className="text-white/70 hover:text-kultiva-accent transition-colors text-sm"
+                >
+                  {tContact("info.phone.value2")}
+                </a>
+              </li>
+              <li className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-kultiva-accent flex-shrink-0" />
                 <a
                   href="mailto:info@kultiva.com.co"
