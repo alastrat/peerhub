@@ -5,7 +5,6 @@ import { PageHero } from "@/components/bizzen/PageHero";
 import { Link } from "@/i18n/navigation";
 import {
   getPostBySlug,
-  getPostSlugs,
   getRecentPosts,
   getImageUrl,
   type Locale,
@@ -30,15 +29,6 @@ const portableComponents: PortableTextComponents = {
     ),
   },
 };
-
-export async function generateStaticParams() {
-  try {
-    const slugs = await getPostSlugs();
-    return slugs.map((slug) => ({ slug }));
-  } catch {
-    return [];
-  }
-}
 
 export async function generateMetadata({
   params,
