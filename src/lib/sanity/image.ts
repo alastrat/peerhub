@@ -15,6 +15,14 @@ export function getImageUrl(
     height?: number;
     quality?: number;
     fit?: "clip" | "crop" | "fill" | "fillmax" | "max" | "scale" | "min";
+    crop?:
+      | "top"
+      | "bottom"
+      | "left"
+      | "right"
+      | "center"
+      | "focalpoint"
+      | "entropy";
   }
 ): string | null {
   if (!source) return null;
@@ -32,6 +40,9 @@ export function getImageUrl(
   }
   if (options?.fit) {
     imageBuilder = imageBuilder.fit(options.fit);
+  }
+  if (options?.crop) {
+    imageBuilder = imageBuilder.crop(options.crop);
   }
 
   return imageBuilder.auto("format").url();

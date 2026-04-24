@@ -197,6 +197,7 @@ export interface ResolvedPost {
   body?: SanityBlock[];
   mainImage?: SanityImageSource;
   publishedAt: string;
+  externalUrl?: string;
   author?: {
     name: string;
     image?: SanityImageSource;

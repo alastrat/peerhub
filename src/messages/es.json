@@ -59,7 +59,7 @@
     "stats": {
       "years": "Años de Experiencia",
       "clients": "Horas de Formación a Líderes",
-      "projects": "Proyectos Internacionales",
+      "projects": "Proyectos",
       "team": "Profesionales"
     },
     "testimonials": {
@@ -549,7 +549,8 @@
     "popular_tags": "Tags Populares",
     "search_placeholder": "Buscar articulos...",
     "back_to_blog": "Volver al Blog",
-    "no_results": "No se encontraron articulos"
+    "no_results": "No se encontraron articulos",
+    "read_original": "Leer articulo original"
   },
   "contact": {
     "hero": {

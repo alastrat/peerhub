@@ -66,6 +66,14 @@ export const post = defineType({
       type: "datetime",
       initialValue: () => new Date().toISOString(),
     }),
+    defineField({
+      name: "externalUrl",
+      title: "URL del artículo original / Original article URL",
+      type: "url",
+      description:
+        "Si el artículo se publicó originalmente en otro sitio (LinkedIn, Spotify, etc.), agrega el enlace aquí. Se mostrará un botón para leerlo.",
+      validation: (Rule) => Rule.uri({ scheme: ["http", "https"] }),
+    }),
   ],
   preview: {
     select: {

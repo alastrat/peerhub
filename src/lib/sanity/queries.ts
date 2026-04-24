@@ -30,6 +30,7 @@ export const postBySlugQuery = `
     "body": body[$locale],
     publishedAt,
     mainImage,
+    externalUrl,
     "author": author->{
       "name": name[$locale],
       image,

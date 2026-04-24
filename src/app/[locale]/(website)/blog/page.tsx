@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { PageHero, BlogGridSection } from "@/components/bizzen";
+import { getPosts, type Locale } from "@/lib/sanity";
 
 export async function generateMetadata({
   params,
@@ -21,11 +22,12 @@ export default async function BlogPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "blog" });
+  const posts = await getPosts(locale as Locale);
 
   return (
     <>
       <PageHero title={t("hero.title")} breadcrumb={t("hero.breadcrumb")} />
-      <BlogGridSection />
+      <BlogGridSection posts={posts} locale={locale} />
     </>
   );
 }

@@ -33,7 +33,11 @@ export function BlogSection({ posts: sanityPosts = [] }: BlogSectionProps) {
   // Map Sanity posts to component format
   const posts = sanityPosts.map((p, index) => ({
     image: p.mainImage
-      ? getImageUrl(p.mainImage, { width: 400, height: 400 })
+      ? getImageUrl(p.mainImage, {
+          width: 400,
+          height: 400,
+          fit: "crop",
+        })
       : fallbackImages[index % fallbackImages.length],
     category: p.categories?.[0]?.name || "Blog",
     date: p.publishedAt ? formatDate(p.publishedAt) : "",
