@@ -34,10 +34,6 @@ const serviceData: Record<
   },
 };
 
-export async function generateStaticParams() {
-  return Object.keys(serviceData).map((slug) => ({ slug }));
-}
-
 export async function generateMetadata({
   params,
 }: {
