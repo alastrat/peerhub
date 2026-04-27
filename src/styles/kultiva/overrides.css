@@ -511,3 +511,33 @@
   background-color: hsl(var(--primary)) !important;
   border-color: hsl(var(--primary)) !important;
 }
+
+/* ==========================================================================
+   CONTENT IMAGE ROUNDED CORNERS
+   ==========================================================================
+   Rounds content/photo images across hero, blog, services, team, and
+   generic bizzen sections. Container is rounded with overflow: hidden so
+   crops/aspect-ratio wrappers inherit the radius; the inner <img> also
+   gets the radius for cases without a clipping wrapper.
+   ========================================================================== */
+
+.hero-image,
+.post-thumbnail,
+.bizzen-image,
+.bizzen-image-box,
+.service-thumbnail,
+.member-image {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.hero-image img,
+.post-thumbnail img,
+.bizzen-image img,
+.bizzen-image-box img,
+.service-thumbnail img,
+.member-image img,
+.blog-post-item .post-thumbnail img,
+.bizzen-blog-post-item .post-thumbnail img {
+  border-radius: 12px;
+}

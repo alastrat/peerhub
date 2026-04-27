@@ -1,16 +1,43 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { submitContactForm } from "@/lib/actions/contact";
+
+type Status = "idle" | "submitting" | "success" | "error";
 
 export function ContactFormSection() {
   const t = useTranslations("contact.form");
+  const [status, setStatus] = useState<Status>("idle");
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (status === "submitting") return;
+
+    const form = event.currentTarget;
+    const data = new FormData(form);
+
+    setStatus("submitting");
+    const result = await submitContactForm({
+      name: String(data.get("name") || ""),
+      email: String(data.get("email") || ""),
+      phone: String(data.get("phone") || ""),
+      message: String(data.get("message") || ""),
+    });
+
+    if (result.success) {
+      setStatus("success");
+      form.reset();
+    } else {
+      setStatus("error");
+    }
+  }
 
   return (
     <section className="bizzen-contact_two pt-80 pb-120">
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-xl-6 col-lg-10">
-            {/* Map Box */}
             <div
               className="map-box mb-5 mb-xl-0"
               data-aos="fade-up"
@@ -24,14 +51,18 @@ export function ContactFormSection() {
             </div>
           </div>
           <div className="col-xl-6 col-lg-10">
-            {/* Contact Wrapper */}
             <div
               className="contact-wrapper"
               data-aos="fade-left"
               data-aos-duration="1400"
             >
               <h2>{t("title")}</h2>
-              <form id="contact-form" className="contact-form">
+              <form
+                id="contact-form"
+                className="contact-form"
+                onSubmit={onSubmit}
+                noValidate
+              >
                 <div className="row">
                   <div className="col-lg-12">
                     <div className="form-group">
@@ -41,6 +72,7 @@ export function ContactFormSection() {
                         placeholder={t("name_placeholder")}
                         name="name"
                         required
+                        disabled={status === "submitting"}
                       />
                     </div>
                   </div>
@@ -52,17 +84,18 @@ export function ContactFormSection() {
                         placeholder={t("email_placeholder")}
                         name="email"
                         required
+                        disabled={status === "submitting"}
                       />
                     </div>
                   </div>
                   <div className="col-lg-12">
                     <div className="form-group">
                       <input
-                        type="text"
+                        type="tel"
                         className="form_control"
                         placeholder={t("phone_placeholder")}
                         name="phone"
-                        required
+                        disabled={status === "submitting"}
                       />
                     </div>
                   </div>
@@ -73,16 +106,54 @@ export function ContactFormSection() {
                         placeholder={t("message_placeholder")}
                         name="message"
                         rows={5}
+                        disabled={status === "submitting"}
                       />
                     </div>
                   </div>
                   <div className="col-lg-12">
                     <div className="form-group">
-                      <button className="theme-btn style-one">
-                        {t("submit")} <i className="far fa-arrow-right" />
+                      <button
+                        type="submit"
+                        className="theme-btn style-one"
+                        disabled={status === "submitting"}
+                      >
+                        {status === "submitting" ? "..." : t("submit")}{" "}
+                        <i className="far fa-arrow-right" />
                       </button>
                     </div>
                   </div>
+                  {status === "success" && (
+                    <div className="col-lg-12">
+                      <p
+                        role="status"
+                        style={{
+                          color: "#1f7a44",
+                          background: "#e8f7ee",
+                          padding: "12px 16px",
+                          borderRadius: "8px",
+                          margin: 0,
+                        }}
+                      >
+                        {t("success")}
+                      </p>
+                    </div>
+                  )}
+                  {status === "error" && (
+                    <div className="col-lg-12">
+                      <p
+                        role="alert"
+                        style={{
+                          color: "#a4262c",
+                          background: "#fdecea",
+                          padding: "12px 16px",
+                          borderRadius: "8px",
+                          margin: 0,
+                        }}
+                      >
+                        {t("error")}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </form>
             </div>

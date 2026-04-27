@@ -69,23 +69,6 @@ export function HeroSection() {
           overflow: "hidden",
         }}
       >
-        {/* Background image carousel */}
-        {HERO_IMAGES.map((src, i) => (
-          <div
-            key={src}
-            style={{
-              position: "absolute",
-              inset: 0,
-              backgroundImage: `url('${src}')`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              opacity: i === bgIndex ? 0.15 : 0,
-              transition: "opacity 1.2s ease-in-out",
-              zIndex: 0,
-            }}
-          />
-        ))}
-
         <div className="hero-bg-shape" />
         <div className="container-fluid" style={{ position: "relative", zIndex: 1 }}>
           <div className="row">
