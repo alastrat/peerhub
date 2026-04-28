@@ -5,32 +5,35 @@ import { Link } from "@/i18n/navigation";
 import { ServiceFAQ } from "@/components/bizzen/sections/ServiceFAQ";
 import { ServiceHelpCards } from "@/components/bizzen/sections/ServiceHelpCards";
 import { ServiceTopics } from "@/components/bizzen/sections/ServiceTopics";
+import { getServiceBySlug, getImageUrl, type Locale } from "@/lib/sanity";
 
+// Maps slug → i18n namespace key + fallback image paths used when the
+// matching Sanity service document has no image set yet.
 const serviceData: Record<
   string,
   {
     key: string;
-    image: string;
-    secondaryImage: string;
+    fallbackImage: string;
+    fallbackSecondaryImage: string;
   }
 > = {
   "transformacion-cultural": {
     key: "cultura",
-    image: "/images/team/team-workshop.jpg",
-    secondaryImage: "/images/team/conference-1.jpg",
+    fallbackImage: "/images/team/team-workshop.jpg",
+    fallbackSecondaryImage: "/images/team/conference-1.jpg",
   },
   "seleccion-especializada": {
     key: "seleccion",
-    image: "/images/others/personas-seleccion.webp",
-    secondaryImage: "/images/others/seleccion2.jpg",
+    fallbackImage: "/images/others/personas-seleccion.webp",
+    fallbackSecondaryImage: "/images/others/seleccion2.jpg",
   },
   // NOTE: "diagnostico-clima" is NOT listed here on purpose.
   // /servicios/diagnostico-clima redirects to /diagnostico-clima (the platform landing)
   // via next.config.ts so there's a single source of truth for that content.
   liderazgo: {
     key: "liderazgo",
-    image: "/images/others/iskya-liderazgo.jpeg",
-    secondaryImage: "/images/team/conference-1.jpg",
+    fallbackImage: "/images/others/iskya-liderazgo.jpeg",
+    fallbackSecondaryImage: "/images/team/conference-1.jpg",
   },
 };
 
@@ -54,12 +57,32 @@ export default async function ServiceDetailPage({
 }: {
   params: Promise<{ locale: string; slug: string }>;
 }) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const service = serviceData[slug];
 
   if (!service) {
     notFound();
   }
+
+  const sanityService = await getServiceBySlug(slug, locale as Locale);
+
+  const heroImage =
+    (sanityService?.image
+      ? getImageUrl(sanityService.image, {
+          width: 1200,
+          height: 600,
+          fit: "crop",
+        })
+      : null) || service.fallbackImage;
+
+  const secondaryImage =
+    (sanityService?.secondaryImage
+      ? getImageUrl(sanityService.secondaryImage, {
+          width: 600,
+          height: 600,
+          fit: "crop",
+        })
+      : null) || service.fallbackSecondaryImage;
 
   const t = await getTranslations("services");
   const tNav = await getTranslations("navigation");
@@ -90,7 +113,7 @@ export default async function ServiceDetailPage({
             {/* Service Main */}
             <div className="service-item-main mb-60">
               <div className="service-thumbnail mb-30" data-aos="fade-up" data-aos-duration="800">
-                <img src={service.image} alt={t(`${service.key}.title`)} />
+                <img src={heroImage} alt={t(`${service.key}.title`)} />
               </div>
               <div className="service-content" data-aos="fade-up" data-aos-duration="800">
                 <h4 className="title">{t(`${service.key}.headline`)}</h4>
@@ -107,7 +130,7 @@ export default async function ServiceDetailPage({
                   </div>
                   <div className="col-lg-6">
                     <div className="bizzen-image mb-40">
-                      <img src={service.secondaryImage} alt={t(`${service.key}.title`)} />
+                      <img src={secondaryImage} alt={t(`${service.key}.title`)} />
                     </div>
                   </div>
                 </div>
