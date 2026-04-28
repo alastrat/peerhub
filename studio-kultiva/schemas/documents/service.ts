@@ -43,7 +43,26 @@ export const service = defineType({
     }),
     defineField({
       name: "image",
-      title: "Imagen / Image",
+      title: "Imagen Principal / Main Image",
+      description:
+        "Foto grande que aparece en la parte superior de la página del servicio.",
+      type: "image",
+      options: {
+        hotspot: true,
+      },
+      fields: [
+        {
+          name: "alt",
+          type: "string",
+          title: "Alternative text",
+        },
+      ],
+    }),
+    defineField({
+      name: "secondaryImage",
+      title: "Imagen Secundaria / Secondary Image",
+      description:
+        "Foto pequeña que aparece junto a la lista de beneficios.",
       type: "image",
       options: {
         hotspot: true,

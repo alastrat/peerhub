@@ -124,6 +124,7 @@ export const serviceBySlugQuery = `
     "shortDescription": shortDescription[$locale],
     "fullDescription": fullDescription[$locale],
     image,
+    secondaryImage,
     "benefits": benefits[]{
       _key,
       "title": title[$locale],

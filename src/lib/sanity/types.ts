@@ -246,6 +246,7 @@ export interface ResolvedService {
   shortDescription: string;
   fullDescription?: SanityBlock[];
   image?: SanityImageSource;
+  secondaryImage?: SanityImageSource;
   benefits?: {
     _key: string;
     title: string;
