@@ -110,7 +110,7 @@ export function HeroSection() {
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                 <img
                   src="/images/hero/hero-main.png"
-                  alt="Consultoria organizacional"
+                  alt="Consultoría organizacional"
                   className="w-full aspect-[4/3] object-cover"
                 />
                 {/* Play button overlay for video */}

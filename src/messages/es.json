@@ -8,7 +8,7 @@
     "about": "Nosotros",
     "services": "Servicios",
     "services_all": "Todos los Servicios",
-    "climate": "Diagnostico de Clima",
+    "climate": "Diagnóstico de Clima",
     "resources": "Recursos",
     "conferences": "Conferencias",
     "tools": "Herramientas",
@@ -19,22 +19,22 @@
   },
   "home": {
     "hero": {
-      "subtitle": "Agencia de Consultoria Organizacional",
-      "title": "Transformamos cultura, clima, comunicacion y liderazgo",
-      "description": "Transformamos organizaciones a traves de estrategias innovadoras en cultura, cambio, seleccion y comunicacion interna.",
+      "subtitle": "Agencia de Consultoría Organizacional",
+      "title": "Transformamos cultura, clima, comunicación y liderazgo",
+      "description": "Transformamos organizaciones a través de estrategias innovadoras en cultura, cambio, selección y comunicación interna.",
       "cta_primary": "Conoce Nuestros Servicios",
       "cta_secondary": "Agenda una Consulta"
     },
     "services": {
       "subtitle": "Nuestros Servicios",
-      "title": "Soluciones integrales para el crecimiento de tu organizacion",
-      "description": "Ofrecemos servicios especializados en consultoria organizacional para potenciar el talento y la cultura de tu empresa."
+      "title": "Soluciones integrales para el crecimiento de tu organización",
+      "description": "Ofrecemos servicios especializados en consultoría organizacional para potenciar el talento y la cultura de tu empresa."
     },
     "about": {
       "subtitle": "Sobre Kultiva",
-      "title": "Cultivamos el potencial de tu organizacion",
-      "description": "Con anos de experiencia en consultoria organizacional, ayudamos a las empresas a desarrollar culturas solidas, gestionar el cambio efectivamente y atraer el mejor talento.",
-      "cta": "Conoce Mas"
+      "title": "Cultivamos el potencial de tu organización",
+      "description": "Con años de experiencia en consultoría organizacional, ayudamos a las empresas a desarrollar culturas sólidas, gestionar el cambio efectivamente y atraer el mejor talento.",
+      "cta": "Conoce Más"
     },
     "process": {
       "subtitle": "Nuestra Metodología",
@@ -59,7 +59,7 @@
     "stats": {
       "years": "Años de Experiencia",
       "clients": "Horas de Formación a Líderes",
-      "projects": "Proyectos",
+      "projects": "Horas de conferencias",
       "team": "Profesionales"
     },
     "testimonials": {
@@ -70,35 +70,35 @@
           "name": "Maria Claudia Buendia",
           "role": "Gerente de Recursos Humanos",
           "company": "Business Integrity Services (BIS)",
-          "quote": "Recomiendo con total confianza a Iskya y a su empresa. Los resultados han generado beneficios significativos para nuestra organizacion."
+          "quote": "Recomiendo con total confianza a Iskya y a su empresa. Los resultados han generado beneficios significativos para nuestra organización."
         },
         "2": {
           "name": "Narly Herrera",
-          "role": "Jefe de Gestion Humana",
+          "role": "Jefe de Gestión Humana",
           "company": "Constructora Habitat De Los Andes",
-          "quote": "La energia de Iskya es verdaderamente inspiradora. Nos ayudo a reconectar con un liderazgo basado en la confianza."
+          "quote": "La energía de Iskya es verdaderamente inspiradora. Nos ayudó a reconectar con un liderazgo basado en la confianza."
         },
         "3": {
           "name": "Denesi Becerra",
           "role": "Director de Talento Humano",
           "company": "Fintra SAS",
-          "quote": "El enfoque excepcional de Iskya en formacion y hunting ha sido fundamental para nuestro crecimiento."
+          "quote": "El enfoque excepcional de Iskya en formación y hunting ha sido fundamental para nuestro crecimiento."
         }
       }
     },
     "cta": {
-      "title": "Descubre nuestra Plataforma de Diagnostico de Clima",
-      "description": "Una herramienta digital que mide la percepcion de tus colaboradores y transforma el feedback en inteligencia de negocio.",
-      "button": "Conocer Mas"
+      "title": "Descubre nuestra Plataforma de Diagnóstico de Clima",
+      "description": "Una herramienta digital que mide la percepción de tus colaboradores y transforma el feedback en inteligencia de negocio.",
+      "button": "Conocer Más"
     },
     "blog": {
       "subtitle": "Nuestro Blog",
-      "title": "Articulos y recursos para tu organizacion",
-      "cta": "Ver Todos los Articulos"
+      "title": "Artículos y recursos para tu organización",
+      "cta": "Ver Todos los Artículos"
     },
     "clients": {
       "subtitle": "Nuestros Clientes",
-      "title": "Empresas que confian en nosotros",
+      "title": "Empresas que confían en nosotros",
       "list": {
         "1": "Business Integrity Services",
         "2": "Constructora Habitat De Los Andes",
@@ -110,7 +110,7 @@
   },
   "about": {
     "hero": {
-      "title": "Nuestra Filosofia",
+      "title": "Nuestra Filosofía",
       "breadcrumb": "Nosotros"
     },
     "subtitle": "Sobre Nosotros",
@@ -150,18 +150,18 @@
       }
     },
     "features": {
-      "subtitle": "Nuestras Caracteristicas",
-      "title": "Transformando organizaciones con innovacion inteligente",
+      "subtitle": "Nuestras Características",
+      "title": "Transformando organizaciones con innovación inteligente",
       "quick_solutions": {
-        "title": "Soluciones Rapidas",
-        "description": "Nuestra consultoria sobresale en proporcionar soluciones rapidas adaptadas a los desafios de tu negocio."
+        "title": "Soluciones Rápidas",
+        "description": "Nuestra consultoría sobresale en proporcionar soluciones rápidas adaptadas a los desafíos de tu negocio."
       },
       "strategic_planning": {
-        "title": "Planificacion Estrategica",
-        "description": "Desarrollamos planes estrategicos que alinean tu vision con acciones concretas y medibles."
+        "title": "Planificación Estratégica",
+        "description": "Desarrollamos planes estratégicos que alinean tu visión con acciones concretas y medibles."
       },
       "expert_advice": {
-        "title": "Asesoria Experta",
+        "title": "Asesoría Experta",
         "description": "Contamos con profesionales especializados que aportan conocimiento de vanguardia."
       },
       "efficient_operations": {
@@ -175,8 +175,8 @@
       "role": "CEO & Fundadora",
       "highlight": "Top 15 HR Influencer en Colombia",
       "quote": "Las ideas inspiran, pero las conversaciones transforman.",
-      "description": "En la era de la inteligencia artificial, la mayor responsabilidad del liderazgo no es solo adoptar tecnologia, sino disenar y gestionar culturas que pongan a las personas en el centro.",
-      "bio": "Con mas de 15 anos de experiencia en desarrollo organizacional, Iskya se especializa en liderazgo, cultura organizacional, gestion del cambio y desarrollo de talento. Ha liderado transformaciones culturales en empresas de diversos sectores en Colombia y Latinoamerica.",
+      "description": "En la era de la inteligencia artificial, la mayor responsabilidad del liderazgo no es solo adoptar tecnología, sino diseñar y gestionar culturas que pongan a las personas en el centro.",
+      "bio": "Con más de 15 años de experiencia en desarrollo organizacional, Iskya se especializa en liderazgo, cultura organizacional, gestión del cambio y desarrollo de talento. Ha liderado transformaciones culturales en empresas de diversos sectores en Colombia y Latinoamérica.",
       "linkedin": "https://www.linkedin.com/in/iskyaboom/"
     },
     "team": {
@@ -192,7 +192,10 @@
     "subtitle": "Lo Que Hacemos",
     "title": "Sembramos resultados en las organizaciones",
     "description": "Cuatro servicios diseñados para transformar la cultura, el liderazgo y el desempeño — con metodologías probadas y un enfoque centrado en las personas.",
-    "cta": "Solicitar una Consulta",
+    "cta": {
+      "title": "Listo para transformar tu organización?",
+      "description": "Contáctanos para una consulta gratuita y descubre como podemos ayudarte a alcanzar tus objetivos."
+    },
     "process": {
       "step1": {
         "title": "Exploramos",
@@ -215,10 +218,6 @@
       "title": "Obtén todas las respuestas aquí",
       "see_all": "Ver Todas las FAQ"
     },
-    "cta": {
-      "title": "Listo para transformar tu organizacion?",
-      "description": "Contactanos para una consulta gratuita y descubre como podemos ayudarte a alcanzar tus objetivos."
-    },
     "features": {
       "expert": {
         "title": "Asesores Expertos",
@@ -226,7 +225,7 @@
       },
       "support": {
         "title": "Soporte Efectivo",
-        "description": "Acompanamiento continuo durante todo el proceso de consultoria."
+        "description": "Acompañamiento continuo durante todo el proceso de consultoría."
       },
       "results": {
         "title": "Resultados Medibles",
@@ -234,25 +233,25 @@
       },
       "custom": {
         "title": "Soluciones a Medida",
-        "description": "Adaptamos nuestras metodologias a las necesidades de cada cliente."
+        "description": "Adaptamos nuestras metodologías a las necesidades de cada cliente."
       }
     },
     "cultura": {
       "title": "Transformación Cultural",
       "short": "Transformación Cultural",
       "headline": "Construye una cultura que inspire y genere resultados sostenibles",
-      "description": "Disenamos e implementamos estrategias para construir culturas organizacionales solidas que impulsen el compromiso, la innovacion y los resultados del negocio.",
-      "description2": "Una cultura fuerte es la base del exito organizacional. Trabajamos contigo para definir, comunicar y vivir los valores que hacen unica a tu empresa, creando un ambiente donde las personas dan lo mejor de si.",
-      "benefits_title": "Que incluye este servicio",
+      "description": "Diseñamos e implementamos estrategias para construir culturas organizacionales sólidas que impulsen el compromiso, la innovación y los resultados del negocio.",
+      "description2": "Una cultura fuerte es la base del éxito organizacional. Trabajamos contigo para definir, comunicar y vivir los valores que hacen única a tu empresa, creando un ambiente donde las personas dan lo mejor de si.",
+      "benefits_title": "Qué incluye este servicio",
       "benefits": {
-        "1": "Diagnostico de cultura actual",
+        "1": "Diagnóstico de cultura actual",
         "2": "Definicion de cultura deseada",
-        "3": "Plan de transformacion cultural",
-        "4": "Formacion de lideres como agentes de cambio",
+        "3": "Plan de transformación cultural",
+        "4": "Formación de líderes como agentes de cambio",
         "5": "Medicion de avances y ajustes"
       },
-      "features_title": "Caracteristicas Clave",
-      "features_description": "Nuestro enfoque de cultura organizacional combina diagnosticos profundos con intervenciones practicas. Trabajamos con todos los niveles de la organizacion para asegurar que los valores se vivan en el dia a dia, no solo se escriban en documentos.",
+      "features_title": "Características Clave",
+      "features_description": "Nuestro enfoque de cultura organizacional combina diagnósticos profundos con intervenciones prácticas. Trabajamos con todos los niveles de la organización para asegurar que los valores se vivan en el día a día, no solo se escriban en documentos.",
       "help_section_title": "¿Cómo te podemos ayudar?",
       "help_cards": {
         "1": {
@@ -283,35 +282,35 @@
       "help_quote": "Acompañamos a líderes y equipos a enfrentar sus mayores retos y aprovechar sus mejores oportunidades. Juntos, transformamos la cultura y generamos resultados que perduran en el tiempo.",
       "faq": {
         "1": {
-          "question": "Cuanto tiempo toma una transformacion cultural?",
-          "answer": "Una transformacion cultural tipica toma entre 6 y 12 meses, dependiendo del tamano de la organizacion y la profundidad del cambio deseado. Trabajamos en fases para asegurar resultados sostenibles."
+          "question": "Cuánto tiempo toma una transformación cultural?",
+          "answer": "Una transformación cultural típica toma entre 6 y 12 meses, dependiendo del tamaño de la organización y la profundidad del cambio deseado. Trabajamos en fases para asegurar resultados sostenibles."
         },
         "2": {
-          "question": "Como se involucra a los lideres en el proceso?",
-          "answer": "Los lideres son fundamentales en cualquier transformacion cultural. Comenzamos con sesiones de alineacion ejecutiva y luego los capacitamos como embajadores del cambio para que modelen los comportamientos deseados."
+          "question": "Cómo se involucra a los líderes en el proceso?",
+          "answer": "Los líderes son fundamentales en cualquier transformación cultural. Comenzamos con sesiones de alineación ejecutiva y luego los capacitamos como embajadores del cambio para que modelen los comportamientos deseados."
         },
         "3": {
-          "question": "Como se mide el impacto de la transformacion?",
+          "question": "Cómo se mide el impacto de la transformación?",
           "answer": "Utilizamos encuestas de clima, indicadores de engagement, rotacion de personal y metricas de negocio para medir el impacto. Establecemos una linea base al inicio y medimos el progreso periodicamente."
         }
       }
     },
     "seleccion": {
-      "title": "Seleccion Especializada",
-      "short": "Seleccion",
-      "headline": "Encuentra el talento ideal que impulse tu organizacion",
-      "description": "Encontramos el talento ideal para tu organizacion a traves de procesos de seleccion rigurosos que evaluan competencias tecnicas, culturales y de liderazgo.",
-      "description2": "El talento adecuado marca la diferencia. Nuestro proceso de seleccion va mas alla del curriculum, evaluando el fit cultural y el potencial de crecimiento para asegurar contrataciones exitosas a largo plazo.",
-      "benefits_title": "Que incluye este servicio",
+      "title": "Selección Especializada",
+      "short": "Selección",
+      "headline": "Encuentra el talento ideal que impulse tu organización",
+      "description": "Encontramos el talento ideal para tu organización a través de procesos de selección rigurosos que evaluan competencias técnicas, culturales y de liderazgo.",
+      "description2": "El talento adecuado marca la diferencia. Nuestro proceso de selección va más allá del currículum, evaluando el fit cultural y el potencial de crecimiento para asegurar contrataciones exitosas a largo plazo.",
+      "benefits_title": "Qué incluye este servicio",
       "benefits": {
         "1": "Levantamiento de perfil integral",
         "2": "Busqueda activa de candidatos",
-        "3": "Evaluacion por competencias",
+        "3": "Evaluación por competencias",
         "4": "Assessment center",
-        "5": "Acompanamiento en onboarding"
+        "5": "Acompañamiento en onboarding"
       },
-      "features_title": "Caracteristicas Clave",
-      "features_description": "Combinamos metodologias tradicionales con herramientas modernas de evaluacion. Nuestro enfoque se centra no solo en las habilidades tecnicas, sino tambien en el potencial de desarrollo y la alineacion con la cultura organizacional.",
+      "features_title": "Características Clave",
+      "features_description": "Combinamos metodologías tradicionales con herramientas modernas de evaluación. Nuestro enfoque se centra no solo en las habilidades técnicas, sino también en el potencial de desarrollo y la alineación con la cultura organizacional.",
       "help_section_title": "¿Cómo te podemos ayudar?",
       "help_cards": {
         "1": {
@@ -328,7 +327,7 @@
         },
         "4": {
           "title": "Procesos de selección con garantía de reposición",
-          "description": "Acompañamos procesos de selección con garantía de reposición, respaldados por evaluaciones estructuradas y criterios de ajuste al rol y a la cultura. En caso de que la persona seleccionada no continúe durante el periodo acordado, realizamos la reposición sin costo adicional, brindando a la organización seguridad, continuidad y confianza en la decisión tomada."
+          "description": "Acompañamos procesos de selección con garantía de reposición, respaldados por evaluaciones estructuradas y criterios de ajuste al rol y a la cultura. En caso de que la persona seleccionada no continúe durante el período acordado, realizamos la reposición sin costo adicional, brindando a la organización seguridad, continuidad y confianza en la decisión tomada."
         },
         "5": {
           "title": "Acompañamiento en la decisión final",
@@ -346,74 +345,74 @@
           "answer": "El tiempo varia segun la complejidad del perfil. Para posiciones operativas, el proceso toma entre 2-4 semanas. Para posiciones gerenciales o ejecutivas, puede extenderse de 4 a 8 semanas."
         },
         "2": {
-          "question": "Que garantia ofrecen en sus procesos de seleccion?",
-          "answer": "Ofrecemos una garantia de reposicion de 90 dias. Si el candidato seleccionado no cumple las expectativas durante este periodo, realizamos un nuevo proceso sin costo adicional."
+          "question": "Qué garantía ofrecen en sus procesos de selección?",
+          "answer": "Ofrecemos una garantía de reposición de 90 días. Si el candidato seleccionado no cumple las expectativas durante este período, realizamos un nuevo proceso sin costo adicional."
         },
         "3": {
-          "question": "Como evaluan el fit cultural de los candidatos?",
-          "answer": "Utilizamos entrevistas conductuales estructuradas, assessments de valores y dinamicas grupales disenadas especificamente para evaluar la alineacion con la cultura de tu organizacion."
+          "question": "Cómo evaluan el fit cultural de los candidatos?",
+          "answer": "Utilizamos entrevistas conductuales estructuradas, assessments de valores y dinámicas grupales diseñadas específicamente para evaluar la alineación con la cultura de tu organización."
         }
       }
     },
     "cambio": {
-      "title": "Gestion del Cambio",
+      "title": "Gestión del Cambio",
       "short": "Cambio",
       "headline": "Navega el cambio con confianza y minimiza la resistencia",
-      "description": "Facilitamos procesos de cambio organizacional minimizando la resistencia y maximizando la adopcion, asegurando transiciones exitosas.",
-      "description2": "El cambio es inevitable, pero el fracaso no lo es. Te acompanamos en cada etapa del proceso de cambio, asegurando que las personas entiendan, acepten y adopten las nuevas formas de trabajo.",
-      "benefits_title": "Que incluye este servicio",
+      "description": "Facilitamos procesos de cambio organizacional minimizando la resistencia y maximizando la adopción, asegurando transiciones exitosas.",
+      "description2": "El cambio es inevitable, pero el fracaso no lo es. Te acompañamos en cada etapa del proceso de cambio, asegurando que las personas entiendan, acepten y adopten las nuevas formas de trabajo.",
+      "benefits_title": "Qué incluye este servicio",
       "benefits": {
-        "1": "Evaluacion de impacto del cambio",
-        "2": "Estrategia de comunicacion",
-        "3": "Formacion y capacitacion",
-        "4": "Gestion de stakeholders",
-        "5": "Medicion de adopcion"
+        "1": "Evaluación de impacto del cambio",
+        "2": "Estrategia de comunicación",
+        "3": "Formación y capacitacion",
+        "4": "Gestión de stakeholders",
+        "5": "Medicion de adopción"
       },
-      "features_title": "Caracteristicas Clave",
-      "features_description": "Aplicamos metodologias probadas de gestion del cambio adaptadas a la realidad de cada organizacion. Nos enfocamos en el lado humano del cambio, trabajando la resistencia y construyendo compromiso genuino.",
+      "features_title": "Características Clave",
+      "features_description": "Aplicamos metodologías probadas de gestión del cambio adaptadas a la realidad de cada organización. Nos enfocamos en el lado humano del cambio, trabajando la resistencia y construyendo compromiso genuino.",
       "faq": {
         "1": {
           "question": "En que tipo de cambios pueden ayudarnos?",
           "answer": "Apoyamos todo tipo de cambios organizacionales: transformaciones digitales, reestructuraciones, fusiones y adquisiciones, cambios de liderazgo, implementacion de nuevos sistemas, y cambios culturales."
         },
         "2": {
-          "question": "Como manejan la resistencia al cambio?",
-          "answer": "La resistencia es natural y la abordamos de manera proactiva. Identificamos los grupos de interes, entendemos sus preocupaciones, y disenamos estrategias especificas de comunicacion y participacion para cada grupo."
+          "question": "Cómo manejan la resistencia al cambio?",
+          "answer": "La resistencia es natural y la abordamos de manera proactiva. Identificamos los grupos de interés, entendemos sus preocupaciones, y diseñamos estrategias específicas de comunicación y participación para cada grupo."
         },
         "3": {
-          "question": "Cuando debemos iniciar el proceso de gestion del cambio?",
-          "answer": "Lo ideal es comenzar antes de que el cambio se anuncie oficialmente. Esto nos permite planificar la comunicacion, preparar a los lideres y establecer los mecanismos de soporte necesarios desde el inicio."
+          "question": "Cuándo debemos iniciar el proceso de gestión del cambio?",
+          "answer": "Lo ideal es comenzar antes de que el cambio se anuncie oficialmente. Esto nos permite planificar la comunicación, preparar a los líderes y establecer los mecanismos de soporte necesarios desde el inicio."
         }
       }
     },
     "comunicacion": {
-      "title": "Comunicacion Interna",
-      "short": "Comunicacion",
-      "headline": "Conecta a tu equipo con mensajes que inspiran accion",
-      "description": "Desarrollamos estrategias de comunicacion interna que fortalecen la conexion entre colaboradores, alinean equipos y refuerzan la cultura organizacional.",
-      "description2": "Una comunicacion efectiva es el sistema nervioso de tu organizacion. Disenamos estrategias y canales que aseguran que los mensajes correctos lleguen a las personas indicadas en el momento oportuno.",
-      "benefits_title": "Que incluye este servicio",
+      "title": "Comunicación Interna",
+      "short": "Comunicación",
+      "headline": "Conecta a tu equipo con mensajes que inspiran acción",
+      "description": "Desarrollamos estrategias de comunicación interna que fortalecen la conexion entre colaboradores, alinean equipos y refuerzan la cultura organizacional.",
+      "description2": "Una comunicación efectiva es el sistema nervioso de tu organización. Diseñamos estrategias y canales que aseguran que los mensajes correctos lleguen a las personas indicadas en el momento oportuno.",
+      "benefits_title": "Qué incluye este servicio",
       "benefits": {
-        "1": "Diagnostico de comunicacion",
+        "1": "Diagnóstico de comunicación",
         "2": "Estrategia de canales",
         "3": "Plan de contenidos",
         "4": "Campanas internas",
         "5": "Medicion de efectividad"
       },
-      "features_title": "Caracteristicas Clave",
-      "features_description": "Combinamos el analisis de la comunicacion actual con las mejores practicas del mercado para disenar una estrategia integral. Trabajamos tanto los mensajes como los canales para maximizar el impacto.",
+      "features_title": "Características Clave",
+      "features_description": "Combinamos el análisis de la comunicación actual con las mejores prácticas del mercado para diseñar una estrategia integral. Trabajamos tanto los mensajes como los canales para maximizar el impacto.",
       "faq": {
         "1": {
-          "question": "Que canales de comunicacion recomiendan?",
-          "answer": "La seleccion de canales depende de tu organizacion. Evaluamos la cultura, las herramientas disponibles y las preferencias de los colaboradores para recomendar una mezcla optima de canales digitales y presenciales."
+          "question": "Qué canales de comunicación recomiendan?",
+          "answer": "La selección de canales depende de tu organización. Evaluamos la cultura, las herramientas disponibles y las preferencias de los colaboradores para recomendar una mezcla optima de canales digitales y presenciales."
         },
         "2": {
-          "question": "Como medimos la efectividad de la comunicacion interna?",
-          "answer": "Utilizamos metricas cuantitativas (tasas de apertura, engagement) y cualitativas (encuestas de comprension, focus groups) para evaluar si los mensajes llegan y generan el impacto deseado."
+          "question": "Cómo medimos la efectividad de la comunicación interna?",
+          "answer": "Utilizamos metricas cuantitativas (tasas de apertura, engagement) y cualitativas (encuestas de comprensión, focus groups) para evaluar si los mensajes llegan y generan el impacto deseado."
         },
         "3": {
-          "question": "Pueden ayudarnos con comunicacion de crisis?",
-          "answer": "Si, desarrollamos planes de comunicacion de crisis y acompanamos a las organizaciones durante situaciones dificiles, asegurando mensajes claros, oportunos y empaticos."
+          "question": "Pueden ayudarnos con comunicación de crisis?",
+          "answer": "Sí, desarrollamos planes de comunicación de crisis y acompañamos a las organizaciones durante situaciones difíciles, asegurando mensajes claros, oportunos y empáticos."
         }
       }
     },
@@ -490,19 +489,19 @@
   },
   "climate": {
     "hero": {
-      "title": "Diagnostico de Clima",
-      "breadcrumb": "Diagnostico de Clima"
+      "title": "Diagnóstico de Clima",
+      "breadcrumb": "Diagnóstico de Clima"
     },
     "subtitle": "Plataforma Digital",
-    "title": "Mide, analiza y transforma el clima de tu organizacion",
-    "description": "Una herramienta digital que mide la percepcion de tus colaboradores sobre el ambiente laboral, el liderazgo y la cultura organizacional, transformando el feedback en inteligencia de negocio accionable.",
+    "title": "Mide, analiza y transforma el clima de tu organización",
+    "description": "Una herramienta digital que mide la percepción de tus colaboradores sobre el ambiente laboral, el liderazgo y la cultura organizacional, transformando el feedback en inteligencia de negocio accionable.",
     "features": {
       "1": {
         "title": "Encuestas Personalizadas",
-        "description": "Crea encuestas adaptadas a las necesidades especificas de tu organizacion."
+        "description": "Crea encuestas adaptadas a las necesidades específicas de tu organización."
       },
       "2": {
-        "title": "Analisis en Tiempo Real",
+        "title": "Análisis en Tiempo Real",
         "description": "Visualiza resultados y tendencias al instante con dashboards interactivos."
       },
       "3": {
@@ -510,7 +509,7 @@
         "description": "Genera informes completos por area, equipo o dimension evaluada."
       },
       "4": {
-        "title": "Planes de Accion",
+        "title": "Planes de Acción",
         "description": "Recibe recomendaciones basadas en datos para mejorar el clima."
       }
     },
@@ -521,9 +520,9 @@
       "title": "Conferencias",
       "breadcrumb": "Conferencias"
     },
-    "subtitle": "Formacion y Desarrollo",
+    "subtitle": "Formación y Desarrollo",
     "title": "Conferencias y talleres que inspiran el cambio",
-    "description": "Iskya Boom ofrece conferencias inspiradoras y practicas sobre liderazgo, cultura organizacional y transformacion digital para eventos corporativos y congresos."
+    "description": "Iskya Boom ofrece conferencias inspiradoras y prácticas sobre liderazgo, cultura organizacional y transformación digital para eventos corporativos y congresos."
   },
   "tools": {
     "hero": {
@@ -531,25 +530,25 @@
       "breadcrumb": "Herramientas"
     },
     "subtitle": "Recursos",
-    "title": "Herramientas para potenciar tu organizacion",
-    "description": "Descarga plantillas, guias y recursos gratuitos para comenzar a transformar tu organizacion."
+    "title": "Herramientas para potenciar tu organización",
+    "description": "Descarga plantillas, guías y recursos gratuitos para comenzar a transformar tu organización."
   },
   "blog": {
     "hero": {
       "title": "Blog",
       "breadcrumb": "Blog"
     },
-    "subtitle": "Articulos y Recursos",
-    "title": "Insights para lideres y organizaciones",
+    "subtitle": "Artículos y Recursos",
+    "title": "Insights para líderes y organizaciones",
     "by": "Por",
     "comments": "Comentarios",
-    "read_more": "Leer Mas",
+    "read_more": "Leer Más",
     "categories": "Categorias",
-    "recent_posts": "Articulos Recientes",
+    "recent_posts": "Artículos Recientes",
     "popular_tags": "Tags Populares",
-    "search_placeholder": "Buscar articulos...",
+    "search_placeholder": "Buscar artículos...",
     "back_to_blog": "Volver al Blog",
-    "no_results": "No se encontraron articulos",
+    "no_results": "No se encontraron artículos",
     "read_original": "Leer articulo original"
   },
   "contact": {
@@ -559,11 +558,11 @@
     },
     "subtitle": "Hablemos",
     "title": "Estamos listos para ayudarte",
-    "description": "Cuentanos sobre tu organizacion y los desafios que enfrentas. Agendaremos una consulta para explorar como podemos ayudarte.",
+    "description": "Cuéntanos sobre tu organización y los desafíos que enfrentas. Agendaremos una consulta para explorar como podemos ayudarte.",
     "info": {
-      "title": "Nuestra Informacion de Contacto",
+      "title": "Nuestra Información de Contacto",
       "address": {
-        "title": "Nuestra Direccion",
+        "title": "Nuestra Dirección",
         "value": "Barranquilla, Atlantico, Colombia"
       },
       "phone": {
@@ -576,7 +575,7 @@
         "value": "comercial@kultiva.com.co"
       },
       "hours": {
-        "title": "Horario de Atencion",
+        "title": "Horario de Atención",
         "value": "Lunes - Viernes: 8:00 - 18:00"
       }
     },
@@ -586,13 +585,13 @@
       "name_placeholder": "Tu Nombre",
       "email": "Correo Electronico",
       "email_placeholder": "nombre@email.com",
-      "phone": "Telefono",
+      "phone": "Teléfono",
       "phone_placeholder": "+57 300 123 4567",
       "company": "Empresa",
       "message": "Mensaje",
-      "message_placeholder": "Cuentanos sobre tu organizacion y como podemos ayudarte...",
+      "message_placeholder": "Cuéntanos sobre tu organización y como podemos ayudarte...",
       "submit": "Enviar Mensaje",
-      "success": "Mensaje enviado con exito. Te contactaremos pronto.",
+      "success": "Mensaje enviado con éxito. Te contactaremos pronto.",
       "error": "Hubo un error al enviar el mensaje. Por favor intenta de nuevo."
     }
   },
@@ -603,41 +602,41 @@
     },
     "subtitle": "FAQ",
     "title": "Obtén todas las respuestas aquí",
-    "description": "Nuestra mision es empoderar a las organizaciones de todos los tamanos para prosperar en mercados en constante cambio. En el entorno empresarial dinamico de hoy, la clave del exito radica en un valor excepcional a traves de estrategias innovadoras.",
+    "description": "Nuestra misión es empoderar a las organizaciones de todos los tamaños para prosperar en mercados en constante cambio. En el entorno empresarial dinámico de hoy, la clave del éxito radica en un valor excepcional a través de estrategias innovadoras.",
     "questions": {
       "services": {
-        "question": "Que tipo de empresas pueden beneficiarse de sus servicios?",
-        "answer": "Trabajamos principalmente con pequenas y medianas empresas (PYMES) en Colombia y Latinoamerica, aunque tambien hemos apoyado a organizaciones mas grandes. Nuestros servicios se adaptan a las necesidades especificas de cada cliente."
+        "question": "Qué tipo de empresas pueden beneficiarse de sus servicios?",
+        "answer": "Trabajamos principalmente con pequeñas y medianas empresas (PYMES) en Colombia y Latinoamérica, aunque también hemos apoyado a organizaciones más grandes. Nuestros servicios se adaptan a las necesidades específicas de cada cliente."
       },
       "pricing": {
-        "question": "Como determinan el precio de sus servicios?",
-        "answer": "El precio depende del alcance del proyecto, la duracion y los recursos necesarios. Ofrecemos propuestas personalizadas despues de una consulta inicial para entender tus necesidades especificas."
+        "question": "Cómo determinan el precio de sus servicios?",
+        "answer": "El precio depende del alcance del proyecto, la duración y los recursos necesarios. Ofrecemos propuestas personalizadas después de una consulta inicial para entender tus necesidades específicas."
       },
       "timeline": {
-        "question": "Cuanto tiempo dura un proyecto tipico de consultoria?",
-        "answer": "La duracion varia segun el alcance y la complejidad. Un diagnostico de clima puede tomar 4-6 semanas, mientras que una transformacion cultural puede extenderse de 6 a 12 meses."
+        "question": "Cuánto tiempo dura un proyecto típico de consultoría?",
+        "answer": "La duración varia segun el alcance y la complejidad. Un diagnóstico de clima puede tomar 4-6 semanas, mientras que una transformación cultural puede extenderse de 6 a 12 meses."
       },
       "results": {
-        "question": "Como se mide el exito de un proyecto?",
-        "answer": "Definimos indicadores de exito (KPIs) al inicio de cada proyecto en colaboracion con el cliente. Estos pueden incluir mejoras en encuestas de clima, indices de rotacion, niveles de engagement, entre otros."
+        "question": "Cómo se mide el éxito de un proyecto?",
+        "answer": "Definimos indicadores de éxito (KPIs) al inicio de cada proyecto en colaboracion con el cliente. Estos pueden incluir mejoras en encuestas de clima, indices de rotacion, niveles de engagement, entre otros."
       },
       "team": {
         "question": "Trabajan de forma presencial o remota?",
         "answer": "Ofrecemos ambas modalidades. Muchos de nuestros servicios pueden realizarse de forma remota, aunque para ciertos talleres y sesiones de trabajo preferimos la interaccion presencial cuando es posible."
       },
       "contact": {
-        "question": "Como puedo agendar una consulta inicial?",
-        "answer": "Puedes contactarnos a traves del formulario en nuestra pagina de contacto, llamarnos directamente, o enviarnos un correo electronico. Te responderemos en menos de 24 horas habiles."
+        "question": "Cómo puedo agendar una consulta inicial?",
+        "answer": "Puedes contactarnos a través del formulario en nuestra página de contacto, llamarnos directamente, o enviarnos un correo electronico. Te responderemos en menos de 24 horas habiles."
       }
     },
     "cta": {
-      "title": "Tienes mas preguntas?",
-      "description": "Estamos aqui para ayudarte. Contactanos y resolveremos todas tus dudas.",
-      "button": "Contactanos"
+      "title": "Tienes más preguntas?",
+      "description": "Estamos aquí para ayudarte. Contáctanos y resolveremos todas tus dudas.",
+      "button": "Contáctanos"
     }
   },
   "footer": {
-    "description": "Agencia de consultoria organizacional. Sembrando ideas para recoger grandes resultados.",
+    "description": "Agencia de consultoría organizacional. Sembrando ideas para recoger grandes resultados.",
     "newsletter": "Suscribete a nuestro boletin semanal para recibir las ultimas actualizaciones",
     "newsletter_placeholder": "Ingresa tu correo electronico",
     "cta": "Hablemos de Negocios?",
@@ -650,14 +649,14 @@
     "terms": "Terminos y Condiciones"
   },
   "common": {
-    "learn_more": "Conoce Mas",
-    "read_more": "Leer Mas",
-    "contact_us": "Contactanos",
+    "learn_more": "Conoce Más",
+    "read_more": "Leer Más",
+    "contact_us": "Contáctanos",
     "get_started": "Comenzar",
     "view_all": "Ver Todo",
     "back": "Volver",
     "loading": "Cargando...",
     "error": "Error",
-    "success": "Exito"
+    "success": "Éxito"
   }
 }

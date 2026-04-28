@@ -21,15 +21,15 @@ const serviceData: Record<
   },
   "seleccion-especializada": {
     key: "seleccion",
-    image: "/images/team/conference-1.jpg",
-    secondaryImage: "/images/team/gallery-1.jpg",
+    image: "/images/others/personas-seleccion.webp",
+    secondaryImage: "/images/others/seleccion2.jpg",
   },
   // NOTE: "diagnostico-clima" is NOT listed here on purpose.
   // /servicios/diagnostico-clima redirects to /diagnostico-clima (the platform landing)
   // via next.config.ts so there's a single source of truth for that content.
   liderazgo: {
     key: "liderazgo",
-    image: "/images/team/iskya-speaking.jpg",
+    image: "/images/others/iskya-liderazgo.jpeg",
     secondaryImage: "/images/team/conference-1.jpg",
   },
 };

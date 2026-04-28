@@ -46,7 +46,7 @@ export function ContactFormSection() {
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d125221.51098779548!2d-74.87478169999999!3d10.96389565!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8ef42d4ec6d0a8ef%3A0x1fbb1b0ccbb57d31!2sBarranquilla%2C%20Atlantico%2C%20Colombia!5e0!3m2!1sen!2sus!4v1640000000000!5m2!1sen!2sus"
                 loading="lazy"
-                title="Ubicacion de Kultiva"
+                title="Ubicación de Kultiva"
               />
             </div>
           </div>

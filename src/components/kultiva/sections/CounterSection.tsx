@@ -7,7 +7,7 @@ import { AnimatedElement } from "../ui/AnimatedElement";
 const stats = [
   { key: "years", value: 15, suffix: "+" },
   { key: "clients", value: 200, suffix: "+" },
-  { key: "projects", value: 500, suffix: "+" },
+  { key: "projects", value: 100, suffix: "+" },
   { key: "team", value: 25, suffix: "+" },
 ];
 

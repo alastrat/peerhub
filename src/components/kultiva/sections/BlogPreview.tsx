@@ -13,7 +13,7 @@ const posts = [
     id: 1,
     image: "/images/team/team-workshop.jpg",
     category: "Cultura",
-    title: "5 claves para construir una cultura organizacional solida",
+    title: "5 claves para construir una cultura organizacional sólida",
     excerpt:
       "Descubre las estrategias fundamentales para desarrollar una cultura que impulse el compromiso y los resultados.",
     date: "15 Ene 2026",
@@ -23,19 +23,19 @@ const posts = [
     id: 2,
     image: "/images/team/conference-1.jpg",
     category: "Liderazgo",
-    title: "El rol del lider en la transformacion digital",
+    title: "El rol del líder en la transformación digital",
     excerpt:
-      "Como los lideres pueden guiar a sus equipos a traves del cambio tecnologico manteniendo el enfoque en las personas.",
+      "Cómo los líderes pueden guiar a sus equipos a través del cambio tecnológico manteniendo el enfoque en las personas.",
     date: "10 Ene 2026",
     slug: "lider-transformacion-digital",
   },
   {
     id: 3,
     image: "/images/team/amcham-event.jpg",
-    category: "Comunicacion",
-    title: "Comunicacion interna efectiva en equipos remotos",
+    category: "Comunicación",
+    title: "Comunicación interna efectiva en equipos remotos",
     excerpt:
-      "Estrategias practicas para mantener conectados y alineados a los equipos que trabajan de forma remota.",
+      "Estrategias prácticas para mantener conectados y alineados a los equipos que trabajan de forma remota.",
     date: "5 Ene 2026",
     slug: "comunicacion-equipos-remotos",
   },

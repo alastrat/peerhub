@@ -17,9 +17,9 @@ export async function generateMetadata({
 
 const tools = [
   {
-    title: "Guia de Diagnostico Cultural",
+    title: "Guía de Diagnóstico Cultural",
     description:
-      "Una guia paso a paso para evaluar la cultura actual de tu organizacion.",
+      "Una guía paso a paso para evaluar la cultura actual de tu organización.",
     icon: "/bizzen/images/innerpage/icon/icon1.svg",
     type: "PDF",
     duration: 800,
@@ -27,15 +27,15 @@ const tools = [
   {
     title: "Checklist de Onboarding",
     description:
-      "Lista de verificacion para asegurar una incorporacion exitosa de nuevos colaboradores.",
+      "Lista de verificación para asegurar una incorporación exitosa de nuevos colaboradores.",
     icon: "/bizzen/images/innerpage/icon/icon2.svg",
     type: "PDF",
     duration: 1000,
   },
   {
-    title: "Plantilla de Plan de Comunicacion",
+    title: "Plantilla de Plan de Comunicación",
     description:
-      "Template editable para planificar tu estrategia de comunicacion interna.",
+      "Plantilla editable para planificar tu estrategia de comunicación interna.",
     icon: "/bizzen/images/innerpage/icon/icon3.svg",
     type: "DOCX",
     duration: 1200,

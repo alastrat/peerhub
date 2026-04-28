@@ -20,10 +20,10 @@ const heroSlides = [
       "Empresas de todos los tamaños confían en nosotros para transformar su cultura organizacional y potenciar su talento.",
   },
   {
-    stat: "500+",
+    stat: "100+",
     statKey: "projects",
     description:
-      "Proyectos exitosos en selección, cambio organizacional y comunicación interna que generan resultados medibles.",
+      "Horas de conferencias y formación en liderazgo, cultura y desarrollo organizacional impartidas a equipos en Colombia y Latinoamérica.",
   },
   {
     stat: "15+",

@@ -46,7 +46,7 @@ export function CTASection() {
             <div className="relative">
               <img
                 src="/images/platform/platform-mockup.png"
-                alt="Plataforma de Diagnostico de Clima"
+                alt="Plataforma de Diagnóstico de Clima"
                 className="rounded-2xl shadow-2xl w-full"
               />
               {/* Floating elements */}
