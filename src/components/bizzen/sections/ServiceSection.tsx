@@ -14,11 +14,25 @@ const fallbackIcons = [
 
 interface ServiceSectionProps {
   services?: ResolvedService[];
+  /** Optional overrides from Sanity. When provided, used in place of the
+   *  matching translation key. */
+  subtitle?: string;
+  title?: string;
+  description?: string;
 }
 
-export function ServiceSection({ services: sanityServices = [] }: ServiceSectionProps) {
+export function ServiceSection({
+  services: sanityServices = [],
+  subtitle,
+  title,
+  description,
+}: ServiceSectionProps) {
   const t = useTranslations("home.services");
   const tCommon = useTranslations("common");
+
+  const subtitleText = subtitle || t("subtitle");
+  const titleText = title || t("title");
+  const descriptionText = description || t("description");
 
   // Map Sanity services to component format
   const services = sanityServices.length > 0
@@ -48,9 +62,9 @@ export function ServiceSection({ services: sanityServices = [] }: ServiceSection
                 data-aos="fade-up"
                 data-aos-duration="1000"
               >
-                {t("subtitle")}
+                {subtitleText}
               </span>
-              <h2 className="text-anm">{t("title")}</h2>
+              <h2 className="text-anm">{titleText}</h2>
             </div>
           </div>
         </div>
@@ -95,7 +109,7 @@ export function ServiceSection({ services: sanityServices = [] }: ServiceSection
               data-aos-duration="1800"
             >
               <p>
-                {t("description")}{" "}
+                {descriptionText}{" "}
                 <Link href="/servicios">
                   Ver todos los servicios <i className="far fa-arrow-right" />
                 </Link>

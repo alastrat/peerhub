@@ -23,8 +23,11 @@ export {
   getFAQs,
   getFAQsByCategory,
   getHeroSlides,
+  getHomePage,
   getSiteSettings,
 } from "./fetch";
+
+export type { ResolvedHomePage } from "./fetch";
 
 // Types
 export type {
