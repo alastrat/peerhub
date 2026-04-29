@@ -26,7 +26,7 @@ export default function SignupPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await signIn("resend", { email, callbackUrl: "/onboarding" });
+      await signIn("email", { email, callbackUrl: "/onboarding" });
     } catch {
       setIsLoading(false);
     }
