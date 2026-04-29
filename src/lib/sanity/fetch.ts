@@ -12,6 +12,7 @@ import {
   faqsQuery,
   faqsByCategoryQuery,
   heroSlidesQuery,
+  homePageQuery,
   siteSettingsQuery,
   postSlugsQuery,
   serviceSlugsQuery,
@@ -195,6 +196,26 @@ export async function getHeroSlides(
   const client = getClient(options?.preview);
   return client.fetch(
     heroSlidesQuery,
+    { locale },
+    { next: { revalidate: options?.revalidate ?? DEFAULT_REVALIDATE } }
+  );
+}
+
+// Home Page (singleton)
+export interface ResolvedHomePage {
+  _id: string;
+  servicesSubtitle?: string;
+  servicesTitle?: string;
+  servicesDescription?: string;
+}
+
+export async function getHomePage(
+  locale: Locale,
+  options?: FetchOptions
+): Promise<ResolvedHomePage | null> {
+  const client = getClient(options?.preview);
+  return client.fetch(
+    homePageQuery,
     { locale },
     { next: { revalidate: options?.revalidate ?? DEFAULT_REVALIDATE } }
   );

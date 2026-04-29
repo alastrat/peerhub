@@ -15,6 +15,7 @@ import { service } from "./documents/service";
 import { faq } from "./documents/faq";
 import { heroSlide } from "./documents/heroSlide";
 import { siteSettings } from "./documents/siteSettings";
+import { homePage } from "./documents/homePage";
 
 export const schemaTypes = [
   // Objects (must be defined before documents that use them)
@@ -34,4 +35,5 @@ export const schemaTypes = [
   faq,
   heroSlide,
   siteSettings,
+  homePage,
 ];

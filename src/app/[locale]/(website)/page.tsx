@@ -14,6 +14,7 @@ import {
   getClients,
   getServices,
   getRecentPosts,
+  getHomePage,
   type Locale,
 } from "@/lib/sanity";
 
@@ -40,17 +41,24 @@ export default async function HomePage({
   const sanityLocale = locale as Locale;
 
   // Fetch data from Sanity in parallel
-  const [testimonials, clients, services, recentPosts] = await Promise.all([
-    getTestimonials(sanityLocale),
-    getClients(sanityLocale),
-    getServices(sanityLocale),
-    getRecentPosts(sanityLocale, 3),
-  ]);
+  const [testimonials, clients, services, recentPosts, homePage] =
+    await Promise.all([
+      getTestimonials(sanityLocale),
+      getClients(sanityLocale),
+      getServices(sanityLocale),
+      getRecentPosts(sanityLocale, 3),
+      getHomePage(sanityLocale),
+    ]);
 
   return (
     <>
       <HeroSection />
-      <ServiceSection services={services} />
+      <ServiceSection
+        services={services}
+        subtitle={homePage?.servicesSubtitle}
+        title={homePage?.servicesTitle}
+        description={homePage?.servicesDescription}
+      />
       <AboutSection />
       <ProcessSection />
       <TestimonialSection testimonials={testimonials} />

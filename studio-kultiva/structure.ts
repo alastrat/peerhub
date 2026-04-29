@@ -53,6 +53,15 @@ export const structure = (S: StructureBuilder) =>
           S.list()
             .title("Contenido de la Página Principal")
             .items([
+              S.listItem()
+                .title("Textos de la Home / Home Texts")
+                .icon(() => "📝")
+                .child(
+                  S.document()
+                    .schemaType("homePage")
+                    .documentId("homePage")
+                    .title("Textos de la Página Principal")
+                ),
               S.documentTypeListItem("heroSlide")
                 .title("Slides del Hero / Hero Slides"),
               S.documentTypeListItem("testimonial")

@@ -169,6 +169,16 @@ export const heroSlidesQuery = `
   }
 `;
 
+// Home Page (singleton — editable copy on the public home page)
+export const homePageQuery = `
+  *[_type == "homePage"][0] {
+    _id,
+    "servicesSubtitle": servicesSubtitle[$locale],
+    "servicesTitle": servicesTitle[$locale],
+    "servicesDescription": servicesDescription[$locale]
+  }
+`;
+
 // Site Settings (singleton)
 export const siteSettingsQuery = `
   *[_type == "siteSettings"][0] {
