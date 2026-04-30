@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth/config";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/types";
 import type { Company, CompanyUser } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 interface CreateCompanyInput {
   name: string;
@@ -24,6 +25,21 @@ export async function createCompany(
     const session = await auth();
     if (!session?.user?.id) {
       return { success: false, error: "Unauthorized" };
+    }
+
+    // Verify the User row actually exists. Magic-link sign-in can leave a
+    // valid JWT after a DB reset; the FK on CompanyUser.userId would then
+    // fail with an opaque P2003 inside the transaction below.
+    const userExists = await prisma.user.findUnique({
+      where: { id: input.userId },
+      select: { id: true },
+    });
+
+    if (!userExists) {
+      return {
+        success: false,
+        error: "Your session is out of sync — please sign out and sign in again.",
+      };
     }
 
     // Check if slug is already taken
@@ -59,7 +75,25 @@ export async function createCompany(
     return { success: true, data: result };
   } catch (error) {
     console.error("Failed to create company:", error);
-    return { success: false, error: "Failed to create company" };
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      // Friendly mapping for the most likely codes so the toast surfaces
+      // something actionable instead of a generic failure.
+      if (error.code === "P2002") {
+        return { success: false, error: "This URL is already taken" };
+      }
+      if (error.code === "P2003") {
+        return {
+          success: false,
+          error: "Your account is not set up correctly. Please sign out and sign in again.",
+        };
+      }
+      return { success: false, error: `Database error: ${error.code}` };
+    }
+
+    const message =
+      error instanceof Error ? error.message : "Failed to create company";
+    return { success: false, error: message };
   }
 }
 
