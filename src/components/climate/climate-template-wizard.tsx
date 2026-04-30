@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,7 +52,7 @@ interface InitialData {
   }[];
 }
 
-const STEPS = ["Basics", "Questions", "Review"];
+const STEP_KEYS = ["basics", "questions", "review"] as const;
 
 const DEFAULT_ENPS_QUESTIONS: QuestionRow[] = [
   {
@@ -78,6 +79,8 @@ export function ClimateTemplateWizard({
   mode?: "create" | "edit";
 }) {
   const router = useRouter();
+  const t = useTranslations("dashboard.climate.wizard");
+  const STEPS = STEP_KEYS.map((k) => t(`steps.${k}`));
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(0);
@@ -189,28 +192,28 @@ export function ClimateTemplateWizard({
       {step === 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Template Details</CardTitle>
+            <CardTitle>{t("basics.template_details")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Template Name</Label>
+              <Label>{t("basics.template_name")}</Label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Quarterly Climate Assessment"
+                placeholder={t("placeholders.template_name")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Description (optional)</Label>
+              <Label>{t("basics.description_optional")}</Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe the purpose of this template..."
+                placeholder={t("placeholders.template_description")}
                 rows={3}
               />
             </div>
             <div className="space-y-2">
-              <Label>Survey Type</Label>
+              <Label>{t("basics.survey_type")}</Label>
               <Select value={surveyType} onValueChange={(v) => handleTypeChange(v as "CLIMATE" | "PULSE" | "ENPS")}>
                 <SelectTrigger>
                   <SelectValue />
@@ -380,16 +383,20 @@ export function ClimateTemplateWizard({
           onClick={() => (step === 0 ? router.push("/surveys/climate/templates") : setStep(step - 1))}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          {step === 0 ? "Cancel" : "Back"}
+          {step === 0 ? t("actions.cancel") : t("actions.previous")}
         </Button>
         {step < STEPS.length - 1 ? (
           <Button onClick={() => setStep(step + 1)} disabled={!canProceed()}>
-            Next
+            {t("actions.next")}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
           <Button onClick={handleSubmit} disabled={isPending || !canProceed()}>
-            {isPending ? "Saving..." : mode === "edit" ? "Save Changes" : "Create Template"}
+            {isPending
+              ? t("actions.saving")
+              : mode === "edit"
+                ? t("actions.save_changes")
+                : t("actions.create_template")}
           </Button>
         )}
       </div>

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/design-system/page-header";
 import { ClimateTemplateWizard } from "@/components/climate/climate-template-wizard";
 
@@ -9,6 +10,8 @@ export default async function NewClimateTemplatePage() {
   if (!session?.companyUser || session.companyUser.role !== "ADMIN") {
     redirect("/overview");
   }
+
+  const t = await getTranslations("dashboard.climate.create_template_page");
 
   const companyId = session.companyUser.companyId;
 
@@ -22,10 +25,7 @@ export default async function NewClimateTemplatePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Create Template"
-        description="Build a reusable climate survey template"
-      />
+      <PageHeader title={t("title")} description={t("description")} />
       <ClimateTemplateWizard dimensions={dimensions} />
     </div>
   );

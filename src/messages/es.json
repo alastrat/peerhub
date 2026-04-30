@@ -1898,7 +1898,53 @@
       "responses": "respuestas",
       "no_description": "Sin descripción",
       "duplicate": "Duplicar",
-      "archive": "Archivar"
+      "archive": "Archivar",
+      "create_survey_page": {
+        "title": "Crear Encuesta",
+        "description": "Construye una nueva encuesta de clima laboral"
+      },
+      "create_template_page": {
+        "title": "Crear Plantilla",
+        "description": "Construye una plantilla reutilizable de encuesta de clima"
+      },
+      "wizard": {
+        "steps": {
+          "basics": "Datos básicos",
+          "questions": "Preguntas",
+          "preview": "Vista previa",
+          "review": "Revisar"
+        },
+        "actions": {
+          "cancel": "Cancelar",
+          "next": "Siguiente",
+          "previous": "Anterior",
+          "create_survey": "Crear Encuesta",
+          "save_changes": "Guardar cambios",
+          "create_template": "Crear Plantilla",
+          "saving": "Guardando..."
+        },
+        "basics": {
+          "survey_details": "Detalles de la encuesta",
+          "template_details": "Detalles de la plantilla",
+          "survey_name": "Nombre de la encuesta",
+          "template_name": "Nombre de la plantilla",
+          "description_optional": "Descripción (opcional)",
+          "survey_type": "Tipo de encuesta",
+          "frequency": "Frecuencia",
+          "anonymous": "Anónima",
+          "start_from_template": "Comenzar desde una plantilla (opcional)",
+          "start_blank": "Comenzar en blanco",
+          "template_hint": "Pre-llena el nombre, descripción, tipo y preguntas. Aún puedes editar todo después.",
+          "questions_count_one": "{count} pregunta",
+          "questions_count_other": "{count} preguntas"
+        },
+        "placeholders": {
+          "survey_name": "ej. Encuesta Clima Q1 2026",
+          "template_name": "ej. Evaluación Trimestral de Clima",
+          "survey_description": "Describe el propósito de esta encuesta...",
+          "template_description": "Describe el propósito de esta plantilla..."
+        }
+      }
     },
     "reports_page": {
       "title": "Reportes",
