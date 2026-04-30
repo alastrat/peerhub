@@ -70,6 +70,10 @@ describe("company actions", () => {
     vi.clearAllMocks();
     mockPrisma = createMockPrisma();
     mockSession = createAdminSession();
+    // Pre-#9 the action skipped this lookup; now it pre-checks the user
+    // exists before opening the transaction. Default to "user exists" so the
+    // existing tests focus on transaction / slug behavior.
+    mockPrisma.user.findUnique.mockResolvedValue({ id: "admin-user" });
   });
 
   // =========================================================================
@@ -150,6 +154,51 @@ describe("company actions", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Unauthorized");
+    });
+
+    it("returns stale-session error when the User row is missing", async () => {
+      // JWT is valid but underlying user was deleted (e.g. after a DB reset).
+      mockPrisma.user.findUnique.mockResolvedValue(null);
+
+      const result = await createCompany({
+        name: "Acme Corp",
+        slug: "acme-corp",
+        userId: "admin-user",
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toMatch(/session is out of sync/i);
+      expect(mockPrisma.company.findUnique).not.toHaveBeenCalled();
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it("uses the authenticated session user id, ignoring input.userId", async () => {
+      // Caller-supplied input.userId must be ignored — the action derives the
+      // id from session.user.id to prevent membership injection.
+      mockPrisma.company.findUnique.mockResolvedValue(null);
+
+      let capturedTxClient: MockPrismaClient | null = null;
+      mockPrisma.$transaction.mockImplementation(
+        async (fn: (tx: MockPrismaClient) => Promise<unknown>) => {
+          capturedTxClient = createMockPrisma();
+          capturedTxClient.company.create.mockResolvedValue(sampleCompany);
+          capturedTxClient.companyUser.create.mockResolvedValue(
+            sampleCompanyUser
+          );
+          return fn(capturedTxClient);
+        }
+      );
+
+      await createCompany({
+        name: "Acme Corp",
+        slug: "acme-corp",
+        userId: "attacker-user", // attempt to point at someone else
+      });
+
+      // Should still use admin-user (from session), not attacker-user
+      expect(capturedTxClient!.companyUser.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({ userId: "admin-user" }),
+      });
     });
 
     it("handles transaction errors gracefully", async () => {

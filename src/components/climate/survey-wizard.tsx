@@ -20,6 +20,8 @@ import { Plus, Trash2, ArrowLeft, ArrowRight, Check, Eye, FileText, ShieldCheck,
 import { cn } from "@/lib/utils";
 import { createClimateSurvey, updateClimateSurvey } from "@/lib/actions/climate-surveys";
 import { WallpaperPicker } from "@/components/climate/wallpaper-picker";
+import { ImportQuestionsDialog } from "@/components/climate/import-questions-dialog";
+import type { ParsedQuestionRow } from "@/lib/utils/climate-questions-csv";
 import type { WallpaperConfig, ColorConfig } from "@/lib/utils/wallpaper";
 import { getWallpaperCSS, parseWallpaperConfig, parseColorConfig, resolveColors, DEFAULT_COLORS } from "@/lib/utils/wallpaper";
 import {
@@ -519,7 +521,7 @@ export function SurveyWizard({
                 </div>
               );
             })}
-            <div className="flex justify-center pt-2">
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -531,6 +533,20 @@ export function SurveyWizard({
               >
                 <Plus className="h-5 w-5" />
               </Button>
+              <ImportQuestionsDialog
+                dimensions={dimensions}
+                onImport={(rows: ParsedQuestionRow[], mode) => {
+                  const next =
+                    mode === "replace"
+                      ? rows.map((r) => ({ ...r }))
+                      : [
+                          ...questions.filter((q) => q.text.trim() !== ""),
+                          ...rows.map((r) => ({ ...r })),
+                        ];
+                  setQuestions(next);
+                  setFocusedQuestion(0);
+                }}
+              />
             </div>
           </div>
         </div>

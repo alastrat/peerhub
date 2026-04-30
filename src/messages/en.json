@@ -1852,7 +1852,40 @@
       "responses": "responses",
       "no_description": "No description",
       "duplicate": "Duplicate",
-      "archive": "Archive"
+      "archive": "Archive",
+      "wizard": {
+        "import": {
+          "trigger": "Import from CSV",
+          "download_template": "Download template",
+          "title": "Import questions from CSV",
+          "description": "Upload a .csv file with the columns: text, type, dimension, required.",
+          "choose_file": "Choose file",
+          "no_file": "No file selected yet.",
+          "preview_title": "Preview",
+          "summary": "{total} rows detected — {valid} valid, {invalid} with errors",
+          "actions": {
+            "replace": "Replace all",
+            "append": "Append",
+            "cancel": "Cancel"
+          },
+          "table": {
+            "row": "Row",
+            "text": "Text",
+            "type": "Type",
+            "dimension": "Dimension",
+            "required": "Required",
+            "status": "Status",
+            "ok": "OK"
+          },
+          "errors": {
+            "empty_text": "Question text is required.",
+            "invalid_type": "Invalid type. Use LIKERT, TEXT, NPS or RATING.",
+            "invalid_required": "'required' must be true/false (or yes/no, 1/0).",
+            "unknown_dimension": "The dimension doesn't match any existing one.",
+            "parse_failed": "Couldn't read the file. Make sure it's a valid CSV."
+          }
+        }
+      }
     },
     "reports_page": {
       "title": "Reports",

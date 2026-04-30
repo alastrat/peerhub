@@ -1898,7 +1898,40 @@
       "responses": "respuestas",
       "no_description": "Sin descripción",
       "duplicate": "Duplicar",
-      "archive": "Archivar"
+      "archive": "Archivar",
+      "wizard": {
+        "import": {
+          "trigger": "Importar desde CSV",
+          "download_template": "Descargar plantilla",
+          "title": "Importar preguntas desde CSV",
+          "description": "Sube un archivo .csv con las columnas: text, type, dimension, required.",
+          "choose_file": "Elegir archivo",
+          "no_file": "Aún no has elegido un archivo.",
+          "preview_title": "Vista previa",
+          "summary": "{total} filas detectadas — {valid} válidas, {invalid} con errores",
+          "actions": {
+            "replace": "Reemplazar todas",
+            "append": "Agregar al final",
+            "cancel": "Cancelar"
+          },
+          "table": {
+            "row": "Fila",
+            "text": "Texto",
+            "type": "Tipo",
+            "dimension": "Dimensión",
+            "required": "Obligatoria",
+            "status": "Estado",
+            "ok": "OK"
+          },
+          "errors": {
+            "empty_text": "El texto de la pregunta es obligatorio.",
+            "invalid_type": "Tipo no válido. Usa LIKERT, TEXT, NPS o RATING.",
+            "invalid_required": "El valor de 'required' debe ser true/false (o sí/no, 1/0).",
+            "unknown_dimension": "La dimensión no coincide con ninguna existente.",
+            "parse_failed": "No se pudo leer el archivo. Verifica que sea un CSV válido."
+          }
+        }
+      }
     },
     "reports_page": {
       "title": "Reportes",

@@ -1,0 +1,6 @@
+text,type,dimension,required
+"Mi líder me da retroalimentación oportuna",LIKERT,Liderazgo,true
+"Conozco las metas estratégicas de la organización",LIKERT,Comunicación,true
+"¿Qué te motivaría a quedarte un año más en la empresa?",TEXT,,false
+"En general, ¿qué tan probable es que recomiendes esta empresa como un buen lugar para trabajar?",NPS,,true
+"Califica la calidad de las herramientas de trabajo (1-5)",RATING,,true
