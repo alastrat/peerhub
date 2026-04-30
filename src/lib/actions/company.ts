@@ -27,11 +27,15 @@ export async function createCompany(
       return { success: false, error: "Unauthorized" };
     }
 
+    // Always use the authenticated session user id — never trust caller-supplied
+    // input.userId for the CompanyUser membership.
+    const userId = session.user.id;
+
     // Verify the User row actually exists. Magic-link sign-in can leave a
     // valid JWT after a DB reset; the FK on CompanyUser.userId would then
     // fail with an opaque P2003 inside the transaction below.
     const userExists = await prisma.user.findUnique({
-      where: { id: input.userId },
+      where: { id: userId },
       select: { id: true },
     });
 
@@ -62,7 +66,7 @@ export async function createCompany(
 
       const companyUser = await tx.companyUser.create({
         data: {
-          userId: input.userId,
+          userId,
           companyId: company.id,
           role: "ADMIN",
         },
@@ -74,11 +78,11 @@ export async function createCompany(
     revalidatePath("/");
     return { success: true, data: result };
   } catch (error) {
+    // Log full detail server-side; user-facing message stays generic so we
+    // don't leak internal errors into the toast.
     console.error("Failed to create company:", error);
 
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      // Friendly mapping for the most likely codes so the toast surfaces
-      // something actionable instead of a generic failure.
       if (error.code === "P2002") {
         return { success: false, error: "This URL is already taken" };
       }
@@ -88,12 +92,9 @@ export async function createCompany(
           error: "Your account is not set up correctly. Please sign out and sign in again.",
         };
       }
-      return { success: false, error: `Database error: ${error.code}` };
     }
 
-    const message =
-      error instanceof Error ? error.message : "Failed to create company";
-    return { success: false, error: message };
+    return { success: false, error: "Failed to create company" };
   }
 }
 
