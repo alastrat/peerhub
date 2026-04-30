@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth/config";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/types";
 import type { Company, CompanyUser } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 interface CreateCompanyInput {
   name: string;
@@ -24,6 +25,25 @@ export async function createCompany(
     const session = await auth();
     if (!session?.user?.id) {
       return { success: false, error: "Unauthorized" };
+    }
+
+    // Always use the authenticated session user id — never trust caller-supplied
+    // input.userId for the CompanyUser membership.
+    const userId = session.user.id;
+
+    // Verify the User row actually exists. Magic-link sign-in can leave a
+    // valid JWT after a DB reset; the FK on CompanyUser.userId would then
+    // fail with an opaque P2003 inside the transaction below.
+    const userExists = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+
+    if (!userExists) {
+      return {
+        success: false,
+        error: "Your session is out of sync — please sign out and sign in again.",
+      };
     }
 
     // Check if slug is already taken
@@ -46,7 +66,7 @@ export async function createCompany(
 
       const companyUser = await tx.companyUser.create({
         data: {
-          userId: input.userId,
+          userId,
           companyId: company.id,
           role: "ADMIN",
         },
@@ -58,7 +78,22 @@ export async function createCompany(
     revalidatePath("/");
     return { success: true, data: result };
   } catch (error) {
+    // Log full detail server-side; user-facing message stays generic so we
+    // don't leak internal errors into the toast.
     console.error("Failed to create company:", error);
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        return { success: false, error: "This URL is already taken" };
+      }
+      if (error.code === "P2003") {
+        return {
+          success: false,
+          error: "Your account is not set up correctly. Please sign out and sign in again.",
+        };
+      }
+    }
+
     return { success: false, error: "Failed to create company" };
   }
 }
