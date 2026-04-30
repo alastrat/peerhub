@@ -157,4 +157,24 @@ describe("parseQuestionsCsv", () => {
     expect(result.valid).toHaveLength(1);
     expect(result.valid[0].dimensionId).toBe("dim-leadership");
   });
+
+  it("maps papaparse errors to the parse_failed translation key", () => {
+    // Unterminated quoted field — papaparse emits a structured error.
+    const csv = ['text', '"unterminated quote that never closes'].join("\n");
+    const result = parseQuestionsCsv(csv, DIMENSIONS);
+
+    // Every non-validation error must map to a known translation key, never
+    // raw papaparse text.
+    const knownKeys = new Set([
+      "empty_text",
+      "invalid_type",
+      "invalid_required",
+      "unknown_dimension",
+      "parse_failed",
+    ]);
+    for (const err of result.errors) {
+      expect(knownKeys.has(err.message)).toBe(true);
+    }
+    expect(result.errors.some((e) => e.message === "parse_failed")).toBe(true);
+  });
 });

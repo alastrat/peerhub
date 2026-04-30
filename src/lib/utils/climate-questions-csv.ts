@@ -89,10 +89,12 @@ export function parseQuestionsCsv(
 
   if (result.errors && result.errors.length > 0) {
     for (const err of result.errors) {
-      // Papaparse row index is 0-based for data rows; +2 to make it 1-based with header offset.
+      // Papaparse's raw messages aren't translation keys; surface them under
+      // the defined `parse_failed` bucket so the UI gets a localized string.
+      // Row index is 0-based for data rows; +2 to make it 1-based with header offset.
       errors.push({
         row: typeof err.row === "number" ? err.row + 2 : 0,
-        message: err.message,
+        message: "parse_failed",
       });
     }
   }

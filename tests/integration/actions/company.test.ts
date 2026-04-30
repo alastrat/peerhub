@@ -214,7 +214,9 @@ describe("company actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Failed to create company");
+      // Generic-Error fallback (PR #10): tagged 'unexpected error' to
+      // distinguish from the Prisma-class branches.
+      expect(result.error).toMatch(/^Failed to create company/);
     });
 
     it("handles database errors on slug check gracefully", async () => {
@@ -229,7 +231,7 @@ describe("company actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Failed to create company");
+      expect(result.error).toMatch(/^Failed to create company/);
     });
   });
 

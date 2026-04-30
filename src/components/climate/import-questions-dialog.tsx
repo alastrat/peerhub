@@ -1,11 +1,9 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Upload, Download, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -51,7 +49,6 @@ export function ImportQuestionsDialog({
   const [fileName, setFileName] = useState<string | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
   const [result, setResult] = useState<ParseResult | null>(null);
-  const inputId = useId();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   function reset() {
@@ -107,19 +104,21 @@ export function ImportQuestionsDialog({
 
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-2">
-            <Label htmlFor={inputId} className="cursor-pointer">
-              <Button asChild variant="secondary" size="sm">
-                <span>
-                  {t("choose_file")}
-                </span>
-              </Button>
-            </Label>
-            <Input
-              id={inputId}
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {t("choose_file")}
+            </Button>
+            <input
               ref={fileInputRef}
               type="file"
               accept=".csv,text/csv"
-              className="hidden"
+              className="sr-only"
+              tabIndex={-1}
+              aria-hidden="true"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) handleFile(file);

@@ -78,8 +78,9 @@ export async function createCompany(
     revalidatePath("/");
     return { success: true, data: result };
   } catch (error) {
-    // Log full detail server-side; user-facing message stays generic so we
-    // don't leak internal errors into the toast.
+    // Log full detail server-side; user-facing message stays generic / tagged
+    // by error class so we don't leak internals into the toast but still narrow
+    // the failure mode without a dashboard round-trip.
     console.error("Failed to create company:", error);
 
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -92,9 +93,31 @@ export async function createCompany(
           error: "Your account is not set up correctly. Please sign out and sign in again.",
         };
       }
+      return {
+        success: false,
+        error: `Database error (${error.code}). Please try again.`,
+      };
     }
 
-    return { success: false, error: "Failed to create company" };
+    if (error instanceof Prisma.PrismaClientInitializationError) {
+      return {
+        success: false,
+        error: "Couldn't connect to the database. Please try again in a moment.",
+      };
+    }
+
+    if (error instanceof Prisma.PrismaClientValidationError) {
+      return { success: false, error: "Invalid company data — please review your input." };
+    }
+
+    if (error instanceof Prisma.PrismaClientUnknownRequestError) {
+      return {
+        success: false,
+        error: "Database is busy. Please try again in a moment.",
+      };
+    }
+
+    return { success: false, error: "Failed to create company (unexpected error)." };
   }
 }
 
