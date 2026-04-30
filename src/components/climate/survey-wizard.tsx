@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -81,7 +82,7 @@ interface SurveyWizardProps {
   initialData?: SurveyWizardInitialData;
 }
 
-const STEPS = ["Basics", "Questions", "Preview"];
+const STEP_KEYS = ["basics", "questions", "preview"] as const;
 
 const DEFAULT_CTA_TEXT = "Comenzar encuesta";
 const DEFAULT_THEME_COLOR = "#613171";
@@ -104,6 +105,8 @@ export function SurveyWizard({
   initialData,
 }: SurveyWizardProps) {
   const router = useRouter();
+  const t = useTranslations("dashboard.climate.wizard");
+  const STEPS = STEP_KEYS.map((k) => t(`steps.${k}`));
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(0);
@@ -282,22 +285,20 @@ export function SurveyWizard({
         onClick={() => (step === 0 ? router.push("/surveys/climate") : setStep(step - 1))}
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
-        {step === 0 ? "Cancel" : "Back"}
+        {step === 0 ? t("actions.cancel") : t("actions.previous")}
       </Button>
       {step < STEPS.length - 1 ? (
         <Button size="sm" onClick={() => setStep(step + 1)} disabled={!canProceed()}>
-          Next
+          {t("actions.next")}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       ) : (
         <Button size="sm" onClick={handleSubmit} disabled={isPending || !canProceed()}>
           {isPending
-            ? mode === "edit"
-              ? "Saving..."
-              : "Creating..."
+            ? t("actions.saving")
             : mode === "edit"
-              ? "Save changes"
-              : "Create Survey"}
+              ? t("actions.save_changes")
+              : t("actions.create_survey")}
         </Button>
       )}
     </div>
@@ -335,29 +336,29 @@ export function SurveyWizard({
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Survey Details</CardTitle>
+              <CardTitle>{t("basics.survey_details")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Survey Name</Label>
+                <Label>{t("basics.survey_name")}</Label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Q1 2026 Climate Survey"
+                  placeholder={t("placeholders.survey_name")}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Description (optional)</Label>
+                <Label>{t("basics.description_optional")}</Label>
                 <Textarea
                   value={description ?? ""}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Describe the purpose of this survey..."
+                  placeholder={t("placeholders.survey_description")}
                   rows={3}
                 />
               </div>
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
-                  <Label>Survey Type</Label>
+                  <Label>{t("basics.survey_type")}</Label>
                   <Select value={surveyType} onValueChange={(v) => handleTypeChange(v as "CLIMATE" | "PULSE" | "ENPS")}>
                     <SelectTrigger>
                       <SelectValue />
@@ -372,7 +373,7 @@ export function SurveyWizard({
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Frequency</Label>
+                  <Label>{t("basics.frequency")}</Label>
                   <Select value={frequency} onValueChange={setFrequency}>
                     <SelectTrigger>
                       <SelectValue />
@@ -388,7 +389,7 @@ export function SurveyWizard({
                 </div>
                 <div className="flex items-end space-x-2 pb-1">
                   <Switch id="anonymous" checked={isAnonymous} onCheckedChange={setIsAnonymous} />
-                  <Label htmlFor="anonymous">Anonymous</Label>
+                  <Label htmlFor="anonymous">{t("basics.anonymous")}</Label>
                 </div>
               </div>
 
@@ -396,26 +397,33 @@ export function SurveyWizard({
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-muted-foreground" />
-                    Start from a template (optional)
+                    {t("basics.start_from_template")}
                   </Label>
                   <Select
                     value={selectedTemplateId || "blank"}
                     onValueChange={(v) => applyTemplate(v === "blank" ? "" : v)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Start blank" />
+                      <SelectValue placeholder={t("basics.start_blank")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="blank">Start blank</SelectItem>
-                      {templates.map((t) => (
-                        <SelectItem key={t.id} value={t.id}>
-                          {t.name} ({t.questionCount} question{t.questionCount !== 1 ? "s" : ""})
+                      <SelectItem value="blank">{t("basics.start_blank")}</SelectItem>
+                      {templates.map((tpl) => (
+                        <SelectItem key={tpl.id} value={tpl.id}>
+                          {tpl.name} (
+                          {t(
+                            tpl.questionCount === 1
+                              ? "basics.questions_count_one"
+                              : "basics.questions_count_other",
+                            { count: tpl.questionCount },
+                          )}
+                          )
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    Pre-fills the name, description, type, and questions. You can still edit everything after.
+                    {t("basics.template_hint")}
                   </p>
                 </div>
               )}

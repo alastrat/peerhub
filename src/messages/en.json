@@ -1852,7 +1852,53 @@
       "responses": "responses",
       "no_description": "No description",
       "duplicate": "Duplicate",
-      "archive": "Archive"
+      "archive": "Archive",
+      "create_survey_page": {
+        "title": "Create Survey",
+        "description": "Build a new work environment survey"
+      },
+      "create_template_page": {
+        "title": "Create Template",
+        "description": "Build a reusable climate survey template"
+      },
+      "wizard": {
+        "steps": {
+          "basics": "Basics",
+          "questions": "Questions",
+          "preview": "Preview",
+          "review": "Review"
+        },
+        "actions": {
+          "cancel": "Cancel",
+          "next": "Next",
+          "previous": "Previous",
+          "create_survey": "Create Survey",
+          "save_changes": "Save changes",
+          "create_template": "Create Template",
+          "saving": "Saving..."
+        },
+        "basics": {
+          "survey_details": "Survey Details",
+          "template_details": "Template Details",
+          "survey_name": "Survey Name",
+          "template_name": "Template Name",
+          "description_optional": "Description (optional)",
+          "survey_type": "Survey Type",
+          "frequency": "Frequency",
+          "anonymous": "Anonymous",
+          "start_from_template": "Start from a template (optional)",
+          "start_blank": "Start blank",
+          "template_hint": "Pre-fills the name, description, type, and questions. You can still edit everything after.",
+          "questions_count_one": "{count} question",
+          "questions_count_other": "{count} questions"
+        },
+        "placeholders": {
+          "survey_name": "e.g. Q1 2026 Climate Survey",
+          "template_name": "e.g. Quarterly Climate Assessment",
+          "survey_description": "Describe the purpose of this survey...",
+          "template_description": "Describe the purpose of this template..."
+        }
+      }
     },
     "reports_page": {
       "title": "Reports",
