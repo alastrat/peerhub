@@ -18,6 +18,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { ImportQuestionsDialog } from "@/components/climate/import-questions-dialog";
+import type { ParsedQuestionRow } from "@/lib/utils/climate-questions-csv";
 import {
   createClimateSurveyTemplate,
   updateClimateSurveyTemplate,
@@ -312,10 +314,25 @@ export function ClimateTemplateWizard({
               </CardContent>
             </Card>
           ))}
-          <Button variant="outline" onClick={addQuestion}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Question
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="outline" onClick={addQuestion}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Question
+            </Button>
+            <ImportQuestionsDialog
+              dimensions={dimensions}
+              onImport={(rows: ParsedQuestionRow[], mode) => {
+                const next =
+                  mode === "replace"
+                    ? rows.map((r) => ({ ...r }))
+                    : [
+                        ...questions.filter((q) => q.text.trim() !== ""),
+                        ...rows.map((r) => ({ ...r })),
+                      ];
+                setQuestions(next);
+              }}
+            />
+          </div>
         </div>
       )}
 
