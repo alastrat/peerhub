@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
+import { getTranslations } from "next-intl/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import {
@@ -88,6 +89,7 @@ export default async function SurveyDetailPage({ params }: PageProps) {
   if (!session?.companyUser || session.companyUser.role !== "ADMIN") {
     redirect("/overview");
   }
+  const t = await getTranslations("dashboard.climate.detail");
 
   const companyId = session.companyUser.companyId;
   const survey = await getSurvey(companyId, id);
@@ -214,9 +216,14 @@ export default async function SurveyDetailPage({ params }: PageProps) {
             </Badge>
           </div>
           <p className="text-muted-foreground">
-            {survey.description || "No description"} ·{" "}
-            {survey.isAnonymous ? "Anonymous" : "Non-anonymous"} ·{" "}
-            {survey.questions.length} questions
+            {survey.description || t("no_description")} ·{" "}
+            {survey.isAnonymous ? t("anonymous") : t("non_anonymous")} ·{" "}
+            {t(
+              survey.questions.length === 1
+                ? "questions_count_one"
+                : "questions_count_other",
+              { count: survey.questions.length },
+            )}
           </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
@@ -232,7 +239,7 @@ export default async function SurveyDetailPage({ params }: PageProps) {
               trigger={
                 <Button>
                   <Send className="mr-2 h-4 w-4" />
-                  Send survey
+                  {t("send_survey")}
                 </Button>
               }
             />
@@ -251,13 +258,13 @@ export default async function SurveyDetailPage({ params }: PageProps) {
             <div className="text-2xl font-bold">
               {survey.questions.length}
             </div>
-            <p className="text-sm text-muted-foreground">Questions</p>
+            <p className="text-sm text-muted-foreground">{t("stats.questions")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{totalResponses}</div>
-            <p className="text-sm text-muted-foreground">Respondents</p>
+            <p className="text-sm text-muted-foreground">{t("stats.respondents")}</p>
           </CardContent>
         </Card>
         <Card>
@@ -265,7 +272,7 @@ export default async function SurveyDetailPage({ params }: PageProps) {
             <div className="text-2xl font-bold">
               {completedResponses}/{totalResponses}
             </div>
-            <p className="text-sm text-muted-foreground">Completed</p>
+            <p className="text-sm text-muted-foreground">{t("stats.completed")}</p>
           </CardContent>
         </Card>
         <Card>
@@ -273,7 +280,7 @@ export default async function SurveyDetailPage({ params }: PageProps) {
             <div className="text-2xl font-bold">
               {SURVEY_FREQUENCY_LABELS[survey.frequency]}
             </div>
-            <p className="text-sm text-muted-foreground">Frequency</p>
+            <p className="text-sm text-muted-foreground">{t("stats.frequency")}</p>
           </CardContent>
         </Card>
       </div>
@@ -283,19 +290,19 @@ export default async function SurveyDetailPage({ params }: PageProps) {
         <TabsList>
           <TabsTrigger value="answers" className="gap-1.5">
             <MessageSquare className="h-4 w-4" />
-            Answers
+            {t("tabs.answers")}
           </TabsTrigger>
           <TabsTrigger value="questions" className="gap-1.5">
             <FileText className="h-4 w-4" />
-            Questions
+            {t("tabs.questions")}
           </TabsTrigger>
           <TabsTrigger value="settings" className="gap-1.5">
             <Settings className="h-4 w-4" />
-            Settings
+            {t("tabs.settings")}
           </TabsTrigger>
           <TabsTrigger value="insights" className="gap-1.5">
             <BarChart3 className="h-4 w-4" />
-            Insights
+            {t("tabs.insights")}
           </TabsTrigger>
         </TabsList>
 
@@ -318,10 +325,18 @@ export default async function SurveyDetailPage({ params }: PageProps) {
         <TabsContent value="questions">
           <Card>
             <CardHeader>
-              <CardTitle>Questions</CardTitle>
+              <CardTitle>{t("questions_tab.title")}</CardTitle>
               <CardDescription>
-                {survey.isAnonymous ? "Anonymous survey" : "Non-anonymous survey"}{" "}
-                · {survey.questions.length} questions
+                {survey.isAnonymous
+                  ? t("questions_tab.anonymous_survey")
+                  : t("questions_tab.non_anonymous_survey")}{" "}
+                ·{" "}
+                {t(
+                  survey.questions.length === 1
+                    ? "questions_count_one"
+                    : "questions_count_other",
+                  { count: survey.questions.length },
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -347,7 +362,7 @@ export default async function SurveyDetailPage({ params }: PageProps) {
                         )}
                         {q.isRequired && (
                           <Badge variant="secondary" className="text-xs">
-                            Required
+                            {t("questions_tab.required_badge")}
                           </Badge>
                         )}
                       </div>
@@ -399,10 +414,9 @@ export default async function SurveyDetailPage({ params }: PageProps) {
             <Card>
               <CardContent className="py-12 text-center">
                 <BarChart3 className="mx-auto h-12 w-12 text-muted-foreground/40" />
-                <h3 className="mt-4 font-semibold">No insights available</h3>
+                <h3 className="mt-4 font-semibold">{t("insights_tab.no_insights")}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Insights will appear once the survey has been sent and
-                  responses are collected.
+                  {t("insights_tab.no_insights_hint")}
                 </p>
               </CardContent>
             </Card>

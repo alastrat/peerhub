@@ -127,7 +127,7 @@ model Company {
   // Feature flags
   featureAts        Boolean @default(false)
   featureOnboarding Boolean @default(false)
-  featureWorkEnv    Boolean @default(false)
+  featureWorkEnv    Boolean @default(true)
   featureHubs       Boolean @default(false)
 
   users        CompanyUser[]

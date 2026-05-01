@@ -47,6 +47,7 @@
     "@react-email/components": "^1.0.6",
     "@sanity/client": "^7.14.1",
     "@sanity/image-url": "^2.0.3",
+    "@sentry/nextjs": "^10.51.0",
     "@types/react-slick": "^0.23.13",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

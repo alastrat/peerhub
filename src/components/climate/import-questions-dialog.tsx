@@ -96,7 +96,7 @@ export function ImportQuestionsDialog({
           {t("trigger")}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="w-[95vw] max-w-5xl">
         <DialogHeader>
           <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>{t("description")}</DialogDescription>
@@ -156,15 +156,15 @@ export function ImportQuestionsDialog({
               </div>
 
               <div className="max-h-80 overflow-auto rounded-md border">
-                <Table>
+                <Table className="table-fixed">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-12">{t("table.row")}</TableHead>
-                      <TableHead>{t("table.text")}</TableHead>
-                      <TableHead>{t("table.type")}</TableHead>
-                      <TableHead>{t("table.dimension")}</TableHead>
-                      <TableHead>{t("table.required")}</TableHead>
-                      <TableHead>{t("table.status")}</TableHead>
+                      <TableHead className="w-[40%]">{t("table.text")}</TableHead>
+                      <TableHead className="w-24">{t("table.type")}</TableHead>
+                      <TableHead className="w-32">{t("table.dimension")}</TableHead>
+                      <TableHead className="w-24">{t("table.required")}</TableHead>
+                      <TableHead className="w-40">{t("table.status")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -220,14 +220,16 @@ function ValidRows({
       {rows.map((r, i) => (
         <TableRow key={`v-${i}`}>
           <TableCell>—</TableCell>
-          <TableCell className="max-w-md truncate">{r.text}</TableCell>
-          <TableCell>{r.type}</TableCell>
-          <TableCell>{r.dimensionId ? dimMap.get(r.dimensionId) || "—" : "—"}</TableCell>
+          <TableCell className="truncate" title={r.text}>{r.text}</TableCell>
+          <TableCell className="truncate">{r.type}</TableCell>
+          <TableCell className="truncate">
+            {r.dimensionId ? dimMap.get(r.dimensionId) || "—" : "—"}
+          </TableCell>
           <TableCell>{r.isRequired ? "✓" : "—"}</TableCell>
-          <TableCell>
+          <TableCell className="truncate">
             <span className="inline-flex items-center gap-1 text-emerald-600">
-              <CheckCircle2 className="h-4 w-4" />
-              {okLabel}
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <span className="truncate">{okLabel}</span>
             </span>
           </TableCell>
         </TableRow>
@@ -248,14 +250,16 @@ function ErrorRows({
       {errors.map((e, i) => (
         <TableRow key={`e-${i}`} className="bg-destructive/5">
           <TableCell>{e.row}</TableCell>
-          <TableCell className="max-w-md truncate">{e.raw?.text ?? "—"}</TableCell>
-          <TableCell>{e.raw?.type ?? "—"}</TableCell>
-          <TableCell>{e.raw?.dimension ?? "—"}</TableCell>
+          <TableCell className="truncate" title={e.raw?.text}>
+            {e.raw?.text ?? "—"}
+          </TableCell>
+          <TableCell className="truncate">{e.raw?.type ?? "—"}</TableCell>
+          <TableCell className="truncate">{e.raw?.dimension ?? "—"}</TableCell>
           <TableCell>{e.raw?.required ?? "—"}</TableCell>
-          <TableCell>
+          <TableCell className="truncate">
             <span className="inline-flex items-center gap-1 text-destructive">
-              <AlertCircle className="h-4 w-4" />
-              {tFn(e.message)}
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span className="truncate">{tFn(e.message)}</span>
             </span>
           </TableCell>
         </TableRow>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Search, Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -106,6 +107,7 @@ export function SurveyAnswersTab({
   questionAverages = {},
   isAnonymous = false,
 }: SurveyAnswersTabProps) {
+  const t = useTranslations("dashboard.climate.detail.answers_tab");
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -152,9 +154,9 @@ export function SurveyAnswersTab({
       <Card>
         <CardContent className="py-12 text-center">
           <Send className="mx-auto h-12 w-12 text-muted-foreground/40" />
-          <h3 className="mt-4 font-semibold">No responses yet</h3>
+          <h3 className="mt-4 font-semibold">{t("no_responses")}</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Send the survey to start collecting responses.
+            {t("send_to_collect")}
           </p>
         </CardContent>
       </Card>
@@ -171,21 +173,21 @@ export function SurveyAnswersTab({
             size="sm"
             onClick={() => setFilter("all")}
           >
-            All ({totalCount})
+            {t("filter_all", { count: totalCount })}
           </Button>
           <Button
             variant={filter === "pending" ? "default" : "outline"}
             size="sm"
             onClick={() => setFilter("pending")}
           >
-            Pending ({pendingCount})
+            {t("filter_pending", { count: pendingCount })}
           </Button>
           <Button
             variant={filter === "completed" ? "default" : "outline"}
             size="sm"
             onClick={() => setFilter("completed")}
           >
-            Completed ({completedCount})
+            {t("filter_completed", { count: completedCount })}
           </Button>
         </div>
       </div>
@@ -195,7 +197,7 @@ export function SurveyAnswersTab({
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by name or email..."
+            placeholder={t("search_placeholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -209,10 +211,10 @@ export function SurveyAnswersTab({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Respondent</TableHead>
-                <TableHead>Last Activity</TableHead>
-                <TableHead>Progress</TableHead>
-                <TableHead className="text-right">Time</TableHead>
+                <TableHead>{t("table_respondent")}</TableHead>
+                <TableHead>{t("table_last_activity")}</TableHead>
+                <TableHead>{t("table_progress")}</TableHead>
+                <TableHead className="text-right">{t("table_time")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -222,9 +224,7 @@ export function SurveyAnswersTab({
                     colSpan={4}
                     className="h-24 text-center text-muted-foreground"
                   >
-                    {search
-                      ? "No respondents match your search."
-                      : "No respondents found."}
+                    {search ? t("no_match") : t("no_respondents")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -245,7 +245,7 @@ export function SurveyAnswersTab({
                         <div>
                           <p className="font-medium">
                             {isAnonymous
-                              ? `Respondent ${filtered.indexOf(r) + 1}`
+                              ? t("respondent_n", { n: filtered.indexOf(r) + 1 })
                               : r.employeeName}
                           </p>
                           {!isAnonymous && (
@@ -269,7 +269,7 @@ export function SurveyAnswersTab({
                               variant="outline"
                               className="border-green-200 bg-green-50 text-green-700"
                             >
-                              Completed
+                              {t("completed_badge")}
                             </Badge>
                           ) : (
                             <span className="text-xs text-muted-foreground">
