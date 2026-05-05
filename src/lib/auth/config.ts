@@ -88,8 +88,22 @@ export const authOptions: NextAuthOptions = {
       }
 
       // Handle session updates
-      if (trigger === "update" && session?.companyId) {
-        token.currentCompanyId = session.companyId;
+      if (trigger === "update") {
+        if (session?.companyId) {
+          token.currentCompanyId = session.companyId;
+        }
+        // Refresh display fields (name + image) from DB after profile edits.
+        // The client opts in by calling update({ refreshProfile: true }).
+        if (session?.refreshProfile && token.id) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { name: true, image: true },
+          });
+          if (dbUser) {
+            token.name = dbUser.name ?? null;
+            token.picture = dbUser.image ?? null;
+          }
+        }
       }
 
       return token;

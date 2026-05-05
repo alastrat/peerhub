@@ -3,6 +3,8 @@ import {
   domainSchema,
   updateGlobalRoleSchema,
   createPlatformCompanySchema,
+  createPlatformCompanyWithAdminSchema,
+  personalInfoSchema,
 } from "@/lib/validations/platform";
 
 describe("domainSchema", () => {
@@ -175,5 +177,131 @@ describe("createPlatformCompanySchema", () => {
     expect(
       createPlatformCompanySchema.safeParse({ slug: "acme" }).success
     ).toBe(false);
+  });
+});
+
+describe("createPlatformCompanyWithAdminSchema", () => {
+  it("validates a valid input", () => {
+    const result = createPlatformCompanyWithAdminSchema.safeParse({
+      name: "Acme Corp",
+      slug: "acme-corp",
+      adminEmail: "admin@acme.com",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an invalid admin email", () => {
+    const result = createPlatformCompanyWithAdminSchema.safeParse({
+      name: "Acme",
+      slug: "acme",
+      adminEmail: "not-an-email",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects missing adminEmail", () => {
+    const result = createPlatformCompanyWithAdminSchema.safeParse({
+      name: "Acme",
+      slug: "acme",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("inherits name + slug validation from createPlatformCompanySchema", () => {
+    expect(
+      createPlatformCompanyWithAdminSchema.safeParse({
+        name: "A",
+        slug: "acme",
+        adminEmail: "x@y.com",
+      }).success
+    ).toBe(false);
+    expect(
+      createPlatformCompanyWithAdminSchema.safeParse({
+        name: "Acme",
+        slug: "Acme",
+        adminEmail: "x@y.com",
+      }).success
+    ).toBe(false);
+  });
+});
+
+describe("personalInfoSchema", () => {
+  it("validates a complete input", () => {
+    const result = personalInfoSchema.safeParse({
+      firstName: "Jane",
+      lastName: "Doe",
+      phone: "+573001234567",
+      jobTitle: "People Operations Lead",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts an empty phone", () => {
+    const result = personalInfoSchema.safeParse({
+      firstName: "Jane",
+      lastName: "Doe",
+      phone: "",
+      jobTitle: "",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts an undefined phone", () => {
+    const result = personalInfoSchema.safeParse({
+      firstName: "Jane",
+      lastName: "Doe",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a phone without country code", () => {
+    const result = personalInfoSchema.safeParse({
+      firstName: "Jane",
+      lastName: "Doe",
+      phone: "3001234567",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a phone with letters", () => {
+    const result = personalInfoSchema.safeParse({
+      firstName: "Jane",
+      lastName: "Doe",
+      phone: "+57abc1234567",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects empty firstName", () => {
+    const result = personalInfoSchema.safeParse({
+      firstName: "",
+      lastName: "Doe",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects empty lastName", () => {
+    const result = personalInfoSchema.safeParse({
+      firstName: "Jane",
+      lastName: "",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects firstName longer than 50 chars", () => {
+    const result = personalInfoSchema.safeParse({
+      firstName: "x".repeat(51),
+      lastName: "Doe",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects jobTitle longer than 100 chars", () => {
+    const result = personalInfoSchema.safeParse({
+      firstName: "Jane",
+      lastName: "Doe",
+      jobTitle: "x".repeat(101),
+    });
+    expect(result.success).toBe(false);
   });
 });
