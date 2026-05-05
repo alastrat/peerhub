@@ -27,6 +27,12 @@ export default withSentryConfig(withNextIntl(nextConfig), {
   // Only upload source maps when an auth token is available (CI / Vercel).
   sourcemaps: { disable: !process.env.SENTRY_AUTH_TOKEN },
   errorHandler: (err) => {
+    // Fail the build in CI so a broken source-map upload doesn't ship a
+    // release where stack traces are unreadable. Warn locally so dev builds
+    // without an auth token still succeed.
+    if (process.env.CI) {
+      throw err;
+    }
     console.warn("[sentry] build plugin warning:", err.message);
   },
 });

@@ -8,8 +8,10 @@ Sentry.init({
 
   tracesSampleRate: process.env.NODE_ENV === "development" ? 1.0 : 0.1,
 
-  // Attach local variable values to stack frames for easier debugging.
-  includeLocalVariables: true,
+  // Local variables in server stack frames can contain employee PII or raw
+  // survey responses. Keep it on in dev for debugging, off in prod to honour
+  // the platform's anonymity guarantees (matches sendDefaultPii: false above).
+  includeLocalVariables: process.env.NODE_ENV === "development",
 
   enableLogs: true,
 });
