@@ -3,8 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // DIRECT_URL is used by `prisma migrate` and `prisma db push` so they bypass
+  // PgBouncer (which doesn't support some migration statements). At runtime,
+  // Prisma uses DATABASE_URL — point that at the Supabase transaction pooler
+  // (port 6543) with ?pgbouncer=true&connection_limit=1.
+  directUrl = env("DIRECT_URL")
 }
 
 // ============================================
