@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,18 +14,18 @@ import {
   getWallpaperCSS,
 } from "@/lib/utils/wallpaper";
 
-const STYLE_OPTIONS: { key: WallpaperStyle; label: string }[] = [
-  { key: "fill", label: "Fill" },
-  { key: "gradient", label: "Gradient" },
-  { key: "blur", label: "Blur" },
-  { key: "pattern", label: "Pattern" },
-  { key: "image", label: "Image" },
+const STYLE_KEYS: { key: WallpaperStyle; tKey: string }[] = [
+  { key: "fill", tKey: "style_fill" },
+  { key: "gradient", tKey: "style_gradient" },
+  { key: "blur", tKey: "style_blur" },
+  { key: "pattern", tKey: "style_pattern" },
+  { key: "image", tKey: "style_image" },
 ];
 
-const DIRECTION_OPTIONS = [
-  { key: "linear-up" as const, label: "↑ Up" },
-  { key: "linear-down" as const, label: "↓ Down" },
-  { key: "radial" as const, label: "◎ Radial" },
+const DIRECTION_KEYS = [
+  { key: "linear-up" as const, tKey: "direction_up" },
+  { key: "linear-down" as const, tKey: "direction_down" },
+  { key: "radial" as const, tKey: "direction_radial" },
 ];
 
 interface WallpaperPickerProps {
@@ -38,6 +39,7 @@ export function WallpaperPicker({
   onChange,
   defaultColor = "#613171",
 }: WallpaperPickerProps) {
+  const t = useTranslations("dashboard.climate.wizard.wallpaper");
   const currentStyle: WallpaperStyle = value?.style ?? "fill";
   const currentColor =
     (value && "color" in value ? value.color : null) ?? defaultColor;
@@ -75,10 +77,10 @@ export function WallpaperPicker({
       {/* Style selector — row of thumbnails */}
       <div>
         <Label className="text-xs text-muted-foreground mb-2 block">
-          Wallpaper style
+          {t("style_label")}
         </Label>
         <div className="grid grid-cols-5 gap-2">
-          {STYLE_OPTIONS.map((opt) => {
+          {STYLE_KEYS.map((opt) => {
             const previewConfig: WallpaperConfig =
               opt.key === "fill"
                 ? { style: "fill", color: currentColor }
@@ -113,7 +115,7 @@ export function WallpaperPicker({
                   {isImage && "🖼"}
                 </div>
                 <span className="text-[10px] font-medium text-muted-foreground">
-                  {opt.label}
+                  {t(opt.tKey as never)}
                 </span>
               </button>
             );
@@ -124,7 +126,7 @@ export function WallpaperPicker({
       {/* Sub-options based on selected style */}
       {currentStyle === "fill" && value?.style === "fill" && (
         <ColorInput
-          label="Background color"
+          label={t("background_color")}
           value={value.color}
           onChange={(color) => onChange({ ...value, color })}
         />
@@ -135,7 +137,7 @@ export function WallpaperPicker({
           {/* Custom vs Pre-made toggle */}
           <div>
             <Label className="text-xs text-muted-foreground mb-2 block">
-              Gradient style
+              {t("gradient_style")}
             </Label>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -150,7 +152,7 @@ export function WallpaperPicker({
                     : "border-border hover:bg-muted",
                 )}
               >
-                Custom
+                {t("gradient_custom")}
               </button>
               <button
                 type="button"
@@ -164,7 +166,7 @@ export function WallpaperPicker({
                     : "border-border hover:bg-muted",
                 )}
               >
-                Pre-made
+                {t("gradient_premade")}
               </button>
             </div>
           </div>
@@ -172,7 +174,7 @@ export function WallpaperPicker({
           {value.preset ? (
             <div>
               <Label className="text-xs text-muted-foreground mb-2 block">
-                Gradient
+                {t("gradient")}
               </Label>
               <div className="grid grid-cols-4 gap-2">
                 {Object.entries(GRADIENT_PRESETS).map(([key, preset]) => (
@@ -195,21 +197,21 @@ export function WallpaperPicker({
           ) : (
             <>
               <ColorInput
-                label="Color 1"
+                label={t("color_1")}
                 value={value.color}
                 onChange={(color) => onChange({ ...value, color })}
               />
               <ColorInput
-                label="Color 2"
+                label={t("color_2")}
                 value={value.color2}
                 onChange={(color2) => onChange({ ...value, color2 })}
               />
               <div>
                 <Label className="text-xs text-muted-foreground mb-2 block">
-                  Direction
+                  {t("direction")}
                 </Label>
                 <div className="grid grid-cols-3 gap-2">
-                  {DIRECTION_OPTIONS.map((d) => (
+                  {DIRECTION_KEYS.map((d) => (
                     <button
                       key={d.key}
                       type="button"
@@ -221,7 +223,7 @@ export function WallpaperPicker({
                           : "border-border hover:bg-muted",
                       )}
                     >
-                      {d.label}
+                      {t(d.tKey as never)}
                     </button>
                   ))}
                 </div>
@@ -233,7 +235,7 @@ export function WallpaperPicker({
 
       {currentStyle === "blur" && value?.style === "blur" && (
         <ColorInput
-          label="Background color"
+          label={t("background_color")}
           value={value.color}
           onChange={(color) => onChange({ ...value, color })}
         />
@@ -242,13 +244,13 @@ export function WallpaperPicker({
       {currentStyle === "pattern" && value?.style === "pattern" && (
         <div className="space-y-3">
           <ColorInput
-            label="Background color"
+            label={t("background_color")}
             value={value.color}
             onChange={(color) => onChange({ ...value, color })}
           />
           <div>
             <Label className="text-xs text-muted-foreground mb-2 block">
-              Pattern
+              {t("pattern")}
             </Label>
             <div className="grid grid-cols-4 gap-2">
               {PATTERN_OPTIONS.map((p) => {
@@ -286,14 +288,14 @@ export function WallpaperPicker({
 
       {currentStyle === "image" && value?.style === "image" && (
         <div className="space-y-2">
-          <Label>Image URL</Label>
+          <Label>{t("image_url")}</Label>
           <Input
             value={value.url}
             onChange={(e) => onChange({ ...value, url: e.target.value })}
-            placeholder="https://example.com/banner.jpg"
+            placeholder={t("image_url_placeholder")}
           />
           <p className="text-xs text-muted-foreground">
-            Paste any public image URL. Recommended aspect ratio: 3:1.
+            {t("image_url_hint")}
           </p>
         </div>
       )}

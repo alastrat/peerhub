@@ -577,20 +577,28 @@ export function SurveyWizard({
           const canGoPrev = showQuestionArrows && safePageIndex > 0;
           const canGoNext = showQuestionArrows && safePageIndex < totalPages - 1;
           const slideLabel = isWelcome
-            ? "Welcome page"
+            ? t("preview.section_welcome")
             : isThankYou
-              ? "Thank-you page"
+              ? t("preview.section_thankyou")
               : questions.length === 0
-                ? "No questions yet"
+                ? t("preview.slide_no_questions")
                 : !isPaginated
-                  ? `All ${questions.length} questions`
-                  : `Page ${safePageIndex + 1} of ${totalPages}`;
+                  ? t(
+                      questions.length === 1
+                        ? "preview.slide_all_questions_one"
+                        : "preview.slide_all_questions_other",
+                      { count: questions.length },
+                    )
+                  : t("preview.slide_page_of", {
+                      current: safePageIndex + 1,
+                      total: totalPages,
+                    });
 
           return (
             <div className="space-y-4">
               {/* Section selector — controls both panels */}
               <div className="flex flex-wrap items-center gap-2">
-                <Label className="text-sm text-muted-foreground">Editing:</Label>
+                <Label className="text-sm text-muted-foreground">{t("preview.editing_label")}</Label>
                 <Select
                   value={previewSection}
                   onValueChange={(v) => {
@@ -602,9 +610,9 @@ export function SurveyWizard({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="welcome">Welcome page</SelectItem>
-                    <SelectItem value="questions">Question pages</SelectItem>
-                    <SelectItem value="thankyou">Thank-you page</SelectItem>
+                    <SelectItem value="welcome">{t("preview.section_welcome")}</SelectItem>
+                    <SelectItem value="questions">{t("preview.section_questions")}</SelectItem>
+                    <SelectItem value="thankyou">{t("preview.section_thankyou")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -614,35 +622,35 @@ export function SurveyWizard({
                 {isWelcome && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Welcome page</CardTitle>
+                      <CardTitle>{t("preview.welcome_card_title")}</CardTitle>
                       <CardDescription>
-                        What respondents see before they start the survey.
+                        {t("preview.welcome_card_description")}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       {/* Content — always visible */}
                       <div className="space-y-2">
-                        <Label>Welcome title (optional)</Label>
+                        <Label>{t("preview.welcome_title_label")}</Label>
                         <Input
                           value={welcomeTitle}
                           onChange={(e) => setWelcomeTitle(e.target.value)}
-                          placeholder={name || "Defaults to survey name"}
+                          placeholder={name || t("preview.defaults_to_survey_name")}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Body text</Label>
+                        <Label>{t("preview.body_text_label")}</Label>
                         <Textarea
                           value={welcomeBody}
                           onChange={(e) => setWelcomeBody(e.target.value)}
-                          placeholder={"Write the welcome message...\n\nLine breaks are preserved.\nYou can use emojis: ✅ 🟢 💡"}
+                          placeholder={t("preview.welcome_body_placeholder")}
                           rows={8}
                         />
                         <p className="text-xs text-muted-foreground">
-                          Plain text with preserved line breaks. Emojis work out of the box.
+                          {t("preview.welcome_body_hint")}
                         </p>
                       </div>
                       <div className="space-y-2">
-                        <Label>CTA button text</Label>
+                        <Label>{t("preview.cta_text_label")}</Label>
                         <Input
                           value={welcomeCtaText}
                           onChange={(e) => setWelcomeCtaText(e.target.value)}
@@ -658,7 +666,7 @@ export function SurveyWizard({
                             onCheckedChange={setShowCustomization}
                           />
                           <span className="text-sm font-medium">
-                            Customize appearance
+                            {t("preview.customize_appearance")}
                           </span>
                         </label>
                       </div>
@@ -675,14 +683,14 @@ export function SurveyWizard({
                           {/* Colors */}
                           <div className="pt-2 border-t">
                             <Label className="text-xs text-muted-foreground mb-3 block">
-                              Colors
+                              {t("preview.colors_section")}
                             </Label>
                             <div className="grid gap-3 sm:grid-cols-2">
                               {([
-                                ["buttons", "Buttons", colors.buttons],
-                                ["buttonText", "Button text", colors.buttonText],
-                                ["pageText", "Page text", colors.pageText],
-                                ["titleText", "Title text", colors.titleText],
+                                ["buttons", t("preview.color_buttons"), colors.buttons],
+                                ["buttonText", t("preview.color_button_text"), colors.buttonText],
+                                ["pageText", t("preview.color_page_text"), colors.pageText],
+                                ["titleText", t("preview.color_title_text"), colors.titleText],
                               ] as const).map(([key, label, val]) => (
                                 <div key={key} className="flex items-center gap-2">
                                   <input
@@ -725,24 +733,23 @@ export function SurveyWizard({
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <ClipboardCheck className="h-4 w-4 text-muted-foreground" />
-                        Thank-you page
+                        {t("preview.thankyou_card_title")}
                       </CardTitle>
                       <CardDescription>
-                        What respondents see after submitting. Blank fields fall back
-                        to sensible defaults.
+                        {t("preview.thankyou_card_description")}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
-                        <Label>Thank-you title (optional)</Label>
+                        <Label>{t("preview.thankyou_title_label")}</Label>
                         <Input
                           value={thankYouTitle}
                           onChange={(e) => setThankYouTitle(e.target.value)}
-                          placeholder={name || "Defaults to survey name"}
+                          placeholder={name || t("preview.defaults_to_survey_name")}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Body text</Label>
+                        <Label>{t("preview.body_text_label")}</Label>
                         <Textarea
                           value={thankYouBody}
                           onChange={(e) => setThankYouBody(e.target.value)}
@@ -751,7 +758,7 @@ export function SurveyWizard({
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>CTA button text</Label>
+                        <Label>{t("preview.cta_text_label")}</Label>
                         <Input
                           value={thankYouCtaText}
                           onChange={(e) => setThankYouCtaText(e.target.value)}
@@ -765,14 +772,14 @@ export function SurveyWizard({
                 {isQuestions && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Question pages</CardTitle>
+                      <CardTitle>{t("preview.questions_card_title")}</CardTitle>
                       <CardDescription>
-                        How respondents navigate through the questions.
+                        {t("preview.questions_card_description")}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
-                        <Label>Questions per page</Label>
+                        <Label>{t("preview.questions_per_page_label")}</Label>
                         <Select
                           value={String(questionsPerPage)}
                           onValueChange={(v) => {
@@ -784,27 +791,40 @@ export function SurveyWizard({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="0">All on one page</SelectItem>
+                            <SelectItem value="0">{t("preview.all_on_one_page")}</SelectItem>
                             {Array.from(
                               { length: Math.max(questions.length, 1) },
                               (_, i) => i + 1,
                             ).map((n) => (
                               <SelectItem key={n} value={String(n)}>
-                                {n} per page
+                                {t("preview.n_per_page", { n })}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground">
-                          Controls how respondents navigate through the survey.
+                          {t("preview.questions_per_page_hint")}
                         </p>
                       </div>
                       <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
-                        {questions.length === 0
-                          ? "You don't have any questions yet. Go back to the Questions step to add some."
-                          : questionsPerPage > 0
-                            ? `${questions.length} questions across ${Math.ceil(questions.length / questionsPerPage)} page${Math.ceil(questions.length / questionsPerPage) !== 1 ? "s" : ""}.`
-                            : `${questions.length} question${questions.length !== 1 ? "s" : ""} on a single page.`}
+                        {(() => {
+                          if (questions.length === 0) return t("preview.no_questions_yet");
+                          if (questionsPerPage > 0) {
+                            const pages = Math.ceil(questions.length / questionsPerPage);
+                            return t(
+                              questions.length === 1
+                                ? "preview.summary_paginated_one"
+                                : "preview.summary_paginated_other",
+                              { count: questions.length, pages },
+                            );
+                          }
+                          return t(
+                            questions.length === 1
+                              ? "preview.summary_single_page_one"
+                              : "preview.summary_single_page_other",
+                            { count: questions.length },
+                          );
+                        })()}
                       </div>
                     </CardContent>
                   </Card>
@@ -816,12 +836,12 @@ export function SurveyWizard({
                   <div className="flex items-center justify-between border-b bg-muted/50 px-4 py-2">
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                       <Eye className="h-4 w-4" />
-                      Live preview
+                      {t("preview.live_preview")}
                     </div>
                     {isAnonymous && (
                       <Badge variant="secondary" className="gap-1">
                         <ShieldCheck className="h-3 w-3" />
-                        100% confidencial
+                        {t("preview.confidential_badge")}
                       </Badge>
                     )}
                   </div>
@@ -849,7 +869,7 @@ export function SurveyWizard({
                             </p>
                           ) : (
                             <p className="text-xs italic text-muted-foreground">
-                              Body text will appear here.
+                              {t("preview.body_placeholder_preview")}
                             </p>
                           )}
                           <Button
@@ -907,7 +927,7 @@ export function SurveyWizard({
                       // Question preview — handles both display modes
                       questions.length === 0 ? (
                         <div className="p-6 text-center text-sm italic text-muted-foreground">
-                          Add questions in the previous step to preview them here.
+                          {t("preview.add_questions_hint")}
                         </div>
                       ) : !isPaginated ? (
                         <div className="max-h-[560px] space-y-3 overflow-y-auto p-4">
@@ -919,11 +939,11 @@ export function SurveyWizard({
                               <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0 flex-1">
                                   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                    Question {i + 1}
+                                    {t("preview.question_label", { n: i + 1 })}
                                   </p>
                                   <h3 className="mt-1 text-sm font-medium leading-snug">
                                     {q.text || (
-                                      <em className="text-muted-foreground">(empty question)</em>
+                                      <em className="text-muted-foreground">{t("preview.empty_question")}</em>
                                     )}
                                     {q.isRequired && (
                                       <span className="text-destructive ml-1">*</span>
@@ -997,10 +1017,10 @@ export function SurveyWizard({
                                   <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0 flex-1">
                                       <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                                        Question {globalIdx + 1}
+                                        {t("preview.question_label", { n: globalIdx + 1 })}
                                       </p>
                                       <h3 className="mt-1 text-sm font-medium leading-snug">
-                                        {q.text || <em className="text-muted-foreground">(empty question)</em>}
+                                        {q.text || <em className="text-muted-foreground">{t("preview.empty_question")}</em>}
                                         {q.isRequired && <span className="text-destructive ml-1">*</span>}
                                       </h3>
                                     </div>
@@ -1053,7 +1073,7 @@ export function SurveyWizard({
                       size="icon"
                       onClick={() => setQuestionIndex(Math.max(0, safePageIndex - 1))}
                       disabled={!canGoPrev}
-                      aria-label="Previous question"
+                      aria-label={t("preview.previous_question_aria")}
                       className={cn(!showQuestionArrows && "invisible")}
                     >
                       <ArrowLeft className="h-4 w-4" />
@@ -1067,7 +1087,7 @@ export function SurveyWizard({
                       size="icon"
                       onClick={() => setQuestionIndex(Math.min(totalPages - 1, safePageIndex + 1))}
                       disabled={!canGoNext}
-                      aria-label="Next question"
+                      aria-label={t("preview.next_question_aria")}
                       className={cn(!showQuestionArrows && "invisible")}
                     >
                       <ArrowRight className="h-4 w-4" />
