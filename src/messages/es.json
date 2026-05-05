@@ -1439,6 +1439,34 @@
     "error": "Error",
     "success": "Exito"
   },
+  "onboarding": {
+    "profile_title": "Cuéntanos sobre ti",
+    "profile_description": "Algunos datos para personalizar tu cuenta",
+    "first_name": "Nombre",
+    "last_name": "Apellido",
+    "first_name_placeholder": "Juana",
+    "last_name_placeholder": "Pérez",
+    "phone_label": "Teléfono (opcional)",
+    "job_title_label": "Cargo (opcional)",
+    "job_title_placeholder": "Líder de Talento Humano",
+    "continue": "Continuar",
+    "back": "Atrás",
+    "company_title": "Configura tu empresa",
+    "company_description": "Crea tu organización para comenzar con retroalimentación 360°",
+    "company_name": "Nombre de la empresa",
+    "company_name_placeholder": "Acme S.A.",
+    "company_url": "URL de la empresa",
+    "company_url_placeholder": "acme",
+    "company_url_help": "Este será el identificador único de tu empresa",
+    "create_company": "Crear empresa",
+    "errors": {
+      "save_personal_info": "No pudimos guardar tu información. Inténtalo de nuevo.",
+      "create_company": "No pudimos crear la empresa. Inténtalo de nuevo.",
+      "generic": "Algo salió mal. Inténtalo de nuevo.",
+      "company_created": "¡Empresa creada con éxito!",
+      "sign_in_first": "Inicia sesión primero"
+    }
+  },
   "dashboard": {
     "common": {
       "save": "Guardar",

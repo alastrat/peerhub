@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { Building2, Check, Loader2, UserCircle2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -85,10 +86,14 @@ function splitName(name: string | null | undefined): { firstName: string; lastNa
 export default function OnboardingPage() {
   const router = useRouter();
   const { data: session, update } = useSession();
+  const t = useTranslations("onboarding");
   const [step, setStep] = useState<Step>("profile");
   const [checking, setChecking] = useState(true);
   const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
   const [isSubmittingCompany, setIsSubmittingCompany] = useState(false);
+  // Stash jobTitle from step 1 so it can flow into createCompany in step 2
+  // (the Employee row is only created at company-creation time).
+  const [pendingJobTitle, setPendingJobTitle] = useState("");
 
   const profileForm = useForm<PersonalInfoFormValues>({
     resolver: zodResolver(personalInfoSchema),
@@ -128,6 +133,7 @@ export default function OnboardingPage() {
         phone: stored?.phone ?? "",
         jobTitle: stored?.jobTitle ?? "",
       });
+      setPendingJobTitle(stored?.jobTitle ?? "");
 
       if (companies.length > 0) {
         // Returning user with at least one company — bypass everything.
@@ -157,14 +163,17 @@ export default function OnboardingPage() {
     try {
       const result = await updatePersonalInfo(data);
       if (!result.success) {
-        toast.error(result.error || "Failed to save personal info");
+        toast.error(result.error || t("errors.save_personal_info"));
         return;
       }
+      // Hold onto jobTitle so step 2's createCompany can persist it on the
+      // Employee row (no Employee exists yet — only User was updated).
+      setPendingJobTitle(data.jobTitle ?? "");
       // Refresh session so session.user.name reflects the new value.
       await update({ refreshProfile: true });
       setStep("company");
     } catch {
-      toast.error("Something went wrong. Please try again.");
+      toast.error(t("errors.generic"));
     } finally {
       setIsSubmittingProfile(false);
     }
@@ -183,7 +192,7 @@ export default function OnboardingPage() {
 
   const onSubmitCompany = async (data: CompanyFormValues) => {
     if (!session?.user?.id) {
-      toast.error("Please sign in first");
+      toast.error(t("errors.sign_in_first"));
       return;
     }
 
@@ -193,19 +202,20 @@ export default function OnboardingPage() {
         name: data.companyName,
         slug: data.slug,
         userId: session.user.id,
+        jobTitle: pendingJobTitle || undefined,
       });
 
       if (!result.success) {
-        toast.error(result.error || "Failed to create company");
+        toast.error(result.error || t("errors.create_company"));
         return;
       }
 
       await update({ companyId: result.data?.company.id });
 
-      toast.success("Company created successfully!");
+      toast.success(t("errors.company_created"));
       window.location.assign("/overview");
     } catch {
-      toast.error("Something went wrong. Please try again.");
+      toast.error(t("errors.generic"));
     } finally {
       setIsSubmittingCompany(false);
     }
@@ -240,10 +250,10 @@ export default function OnboardingPage() {
                     <UserCircle2 className="h-8 w-8 text-primary" />
                   </motion.div>
                   <CardTitle className="text-2xl font-bold">
-                    Tell us about yourself
+                    {t("profile_title")}
                   </CardTitle>
                   <CardDescription>
-                    A few details to personalize your account
+                    {t("profile_description")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -258,9 +268,12 @@ export default function OnboardingPage() {
                           name="firstName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>First name</FormLabel>
+                              <FormLabel>{t("first_name")}</FormLabel>
                               <FormControl>
-                                <Input placeholder="Jane" {...field} />
+                                <Input
+                                  placeholder={t("first_name_placeholder")}
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -271,9 +284,12 @@ export default function OnboardingPage() {
                           name="lastName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Last name</FormLabel>
+                              <FormLabel>{t("last_name")}</FormLabel>
                               <FormControl>
-                                <Input placeholder="Doe" {...field} />
+                                <Input
+                                  placeholder={t("last_name_placeholder")}
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -286,7 +302,7 @@ export default function OnboardingPage() {
                         name="phone"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Phone (optional)</FormLabel>
+                            <FormLabel>{t("phone_label")}</FormLabel>
                             <FormControl>
                               <PhoneInput
                                 international
@@ -306,10 +322,10 @@ export default function OnboardingPage() {
                         name="jobTitle"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Job title (optional)</FormLabel>
+                            <FormLabel>{t("job_title_label")}</FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="People Operations Lead"
+                                placeholder={t("job_title_placeholder")}
                                 {...field}
                               />
                             </FormControl>
@@ -326,7 +342,7 @@ export default function OnboardingPage() {
                         {isSubmittingProfile ? (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         ) : null}
-                        Continue
+                        {t("continue")}
                       </Button>
                     </form>
                   </Form>
@@ -344,10 +360,10 @@ export default function OnboardingPage() {
                     <Building2 className="h-8 w-8 text-primary" />
                   </motion.div>
                   <CardTitle className="text-2xl font-bold">
-                    Set up your company
+                    {t("company_title")}
                   </CardTitle>
                   <CardDescription>
-                    Create your organization to get started with 360° feedback
+                    {t("company_description")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -361,10 +377,10 @@ export default function OnboardingPage() {
                         name="companyName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Company Name</FormLabel>
+                            <FormLabel>{t("company_name")}</FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="Acme Inc."
+                                placeholder={t("company_name_placeholder")}
                                 {...field}
                                 onChange={(e) =>
                                   handleCompanyNameChange(e.target.value)
@@ -381,7 +397,7 @@ export default function OnboardingPage() {
                         name="slug"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Company URL</FormLabel>
+                            <FormLabel>{t("company_url")}</FormLabel>
                             <FormControl>
                               <div className="flex items-center rounded-lg border border-input bg-background shadow-sm">
                                 <span className="px-3 text-sm text-muted-foreground">
@@ -389,13 +405,13 @@ export default function OnboardingPage() {
                                 </span>
                                 <Input
                                   className="border-0 shadow-none"
-                                  placeholder="acme"
+                                  placeholder={t("company_url_placeholder")}
                                   {...field}
                                 />
                               </div>
                             </FormControl>
                             <FormDescription>
-                              This will be your unique company identifier
+                              {t("company_url_help")}
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
@@ -410,7 +426,7 @@ export default function OnboardingPage() {
                           onClick={() => setStep("profile")}
                           disabled={isSubmittingCompany}
                         >
-                          Back
+                          {t("back")}
                         </Button>
                         <Button
                           type="submit"
@@ -422,7 +438,7 @@ export default function OnboardingPage() {
                           ) : (
                             <Check className="mr-2 h-4 w-4" />
                           )}
-                          Create Company
+                          {t("create_company")}
                         </Button>
                       </div>
                     </form>

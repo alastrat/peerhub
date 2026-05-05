@@ -81,14 +81,28 @@ describe("company actions", () => {
   // =========================================================================
 
   describe("createCompany", () => {
-    it("creates company and admin companyUser in a transaction", async () => {
+    it("creates company, employee, and admin companyUser in a transaction", async () => {
       mockPrisma.company.findUnique.mockResolvedValue(null); // slug not taken
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: "admin-user",
+        email: "admin@example.com",
+        name: "Admin User",
+        firstName: "Admin",
+        lastName: "User",
+      });
 
       let capturedTxClient: MockPrismaClient | null = null;
       mockPrisma.$transaction.mockImplementation(
         async (fn: (tx: MockPrismaClient) => Promise<unknown>) => {
           capturedTxClient = createMockPrisma();
           capturedTxClient.company.create.mockResolvedValue(sampleCompany);
+          capturedTxClient.employee.create.mockResolvedValue({
+            id: "emp-1",
+            companyId: "company-1",
+            email: "admin@example.com",
+            name: "Admin User",
+            title: "People Lead",
+          });
           capturedTxClient.companyUser.create.mockResolvedValue(
             sampleCompanyUser
           );
@@ -100,6 +114,7 @@ describe("company actions", () => {
         name: "Acme Corp",
         slug: "acme-corp",
         userId: "admin-user",
+        jobTitle: "People Lead",
       });
 
       expect(result.success).toBe(true);
@@ -115,9 +130,14 @@ describe("company actions", () => {
 
       // Verify transaction calls
       expect(capturedTxClient!.company.create).toHaveBeenCalledWith({
+        data: { name: "Acme Corp", slug: "acme-corp" },
+      });
+      expect(capturedTxClient!.employee.create).toHaveBeenCalledWith({
         data: {
-          name: "Acme Corp",
-          slug: "acme-corp",
+          companyId: "company-1",
+          email: "admin@example.com",
+          name: "Admin User",
+          title: "People Lead",
         },
       });
       expect(capturedTxClient!.companyUser.create).toHaveBeenCalledWith({
@@ -125,6 +145,7 @@ describe("company actions", () => {
           userId: "admin-user",
           companyId: "company-1",
           role: "ADMIN",
+          employeeId: "emp-1",
         },
       });
     });
@@ -176,12 +197,20 @@ describe("company actions", () => {
       // Caller-supplied input.userId must be ignored — the action derives the
       // id from session.user.id to prevent membership injection.
       mockPrisma.company.findUnique.mockResolvedValue(null);
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: "admin-user",
+        email: "admin@example.com",
+        name: null,
+        firstName: null,
+        lastName: null,
+      });
 
       let capturedTxClient: MockPrismaClient | null = null;
       mockPrisma.$transaction.mockImplementation(
         async (fn: (tx: MockPrismaClient) => Promise<unknown>) => {
           capturedTxClient = createMockPrisma();
           capturedTxClient.company.create.mockResolvedValue(sampleCompany);
+          capturedTxClient.employee.create.mockResolvedValue({ id: "emp-1" });
           capturedTxClient.companyUser.create.mockResolvedValue(
             sampleCompanyUser
           );
