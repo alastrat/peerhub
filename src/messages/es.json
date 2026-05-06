@@ -1480,6 +1480,14 @@
       "confirm": "Confirmar",
       "back": "Volver"
     },
+    "company_switcher": {
+      "select_company": "Seleccionar empresa",
+      "switching": "Cambiando...",
+      "search_placeholder": "Buscar empresas...",
+      "empty": "No se encontraron empresas.",
+      "all_companies": "Todas las empresas",
+      "your_companies": "Tus empresas"
+    },
     "sidebar": {
       "overview": "Inicio",
       "people": "Personas",
