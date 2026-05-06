@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,20 +24,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Plus, Trash2, Search, Building2, Users, RotateCcw } from "lucide-react";
-import {
-  createPlatformCompanyWithAdmin,
-  deletePlatformCompany,
-} from "@/lib/actions/platform";
+import { deletePlatformCompany } from "@/lib/actions/platform";
+import { CreateCompanyDialog } from "@/components/settings/create-company-dialog";
 
 interface PlatformCompany {
   id: string;
@@ -49,21 +39,28 @@ interface PlatformCompany {
   createdAt: string;
 }
 
+const URL_PARAM = "createCompany";
+
 export function CompaniesTable({
   companies: initial,
 }: {
   companies: PlatformCompany[];
 }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [companies, setCompanies] = useState(initial);
   const [search, setSearch] = useState("");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  // Create dialog state
-  const [createOpen, setCreateOpen] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [newSlug, setNewSlug] = useState("");
-  const [newAdminEmail, setNewAdminEmail] = useState("");
+  // Mirror dialog open-state to a URL search param so the company-switcher
+  // in <Header> can deep-link to "open the create dialog" via router.push.
+  const [createOpen, setCreateOpen] = useState(
+    searchParams.get(URL_PARAM) === "1",
+  );
+  useEffect(() => {
+    setCreateOpen(searchParams.get(URL_PARAM) === "1");
+  }, [searchParams]);
 
   const filtered = companies.filter(
     (c) =>
@@ -72,39 +69,20 @@ export function CompaniesTable({
       (c.domain && c.domain.toLowerCase().includes(search.toLowerCase()))
   );
 
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  function handleDialogOpenChange(open: boolean) {
+    setCreateOpen(open);
+    const params = new URLSearchParams(searchParams.toString());
+    if (open) params.set(URL_PARAM, "1");
+    else params.delete(URL_PARAM);
+    const qs = params.toString();
+    router.replace(qs ? `?${qs}` : "?", { scroll: false });
+  }
 
-    startTransition(async () => {
-      const result = await createPlatformCompanyWithAdmin({
-        name: newName.trim(),
-        slug: newSlug.trim().toLowerCase(),
-        adminEmail: newAdminEmail.trim().toLowerCase(),
-      });
-      if (result.success && result.data) {
-        setCompanies((prev) => [
-          {
-            id: result.data!.id,
-            name: newName.trim(),
-            slug: newSlug.trim().toLowerCase(),
-            domain: null,
-            usersCount: 0,
-            totalCycles: 0,
-            activeCycles: 0,
-            createdAt: new Date().toISOString(),
-          },
-          ...prev,
-        ]);
-        setNewName("");
-        setNewSlug("");
-        setNewAdminEmail("");
-        setCreateOpen(false);
-      } else {
-        setError(result.error || "Failed to create company");
-      }
-    });
-  };
+  function handleCreated() {
+    // Server re-fetches the canonical list (with the new company's logo,
+    // domain, etc.) — cheaper than maintaining an optimistic shadow row.
+    router.refresh();
+  }
 
   const handleDelete = (id: string) => {
     startTransition(async () => {
@@ -116,14 +94,6 @@ export function CompaniesTable({
       }
     });
   };
-
-  const autoSlug = (name: string) =>
-    name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .slice(0, 50);
 
   return (
     <div className="space-y-4">
@@ -138,83 +108,19 @@ export function CompaniesTable({
             className="ps-10"
           />
         </div>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-1.5 h-4 w-4" />
-              Add Company
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <form onSubmit={handleCreate}>
-              <DialogHeader>
-                <DialogTitle>Create Company</DialogTitle>
-                <DialogDescription>
-                  Add a new company to the platform.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Company Name</label>
-                  <Input
-                    value={newName}
-                    onChange={(e) => {
-                      setNewName(e.target.value);
-                      setNewSlug(autoSlug(e.target.value));
-                    }}
-                    placeholder="Acme Corp"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Slug</label>
-                  <Input
-                    value={newSlug}
-                    onChange={(e) => setNewSlug(e.target.value)}
-                    placeholder="acme-corp"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Lowercase letters, numbers, and hyphens only
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="admin-email" className="text-sm font-medium">
-                    Admin email
-                  </label>
-                  <Input
-                    id="admin-email"
-                    type="email"
-                    value={newAdminEmail}
-                    onChange={(e) => setNewAdminEmail(e.target.value)}
-                    placeholder="admin@acme-corp.com"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    We&apos;ll send this person an invitation to administer the
-                    new company.
-                  </p>
-                </div>
-                {error && <p className="text-sm text-destructive">{error}</p>}
-              </div>
-              <DialogFooter>
-                <Button
-                  type="submit"
-                  disabled={
-                    isPending ||
-                    !newName.trim() ||
-                    !newSlug.trim() ||
-                    !newAdminEmail.trim()
-                  }
-                >
-                  {isPending ? "Creating..." : "Create & invite admin"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => handleDialogOpenChange(true)}>
+          <Plus className="mr-1.5 h-4 w-4" />
+          Add Company
+        </Button>
       </div>
 
-      {error && !createOpen && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      <CreateCompanyDialog
+        open={createOpen}
+        onOpenChange={handleDialogOpenChange}
+        onCreated={handleCreated}
+      />
+
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
       {/* Table */}
       <div className="rounded-lg border bg-card">

@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Building2, ChevronsUpDown, Check, Shield } from "lucide-react";
+import { Building2, ChevronsUpDown, Check, Shield, Plus } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -60,6 +61,14 @@ export function CompanySwitcher() {
         router.refresh();
       }
     });
+  };
+
+  const handleCreateAccount = () => {
+    setOpen(false);
+    // Deep-link to the platform companies page with the dialog opened. Same
+    // dialog, same state — sourced from the URL search param so the table
+    // page picks it up via useSearchParams.
+    router.push("/settings/platform/companies?createCompany=1");
   };
 
   return (
@@ -132,6 +141,25 @@ export function CompanySwitcher() {
                 </CommandItem>
               ))}
             </CommandGroup>
+
+            {/* SUPER_ADMIN-only entry point to bootstrap a brand-new tenant.
+                Hard-coded value string so it never collides with a real
+                company name in the cmdk filter. */}
+            {isSuperAdmin && (
+              <>
+                <CommandSeparator />
+                <CommandGroup>
+                  <CommandItem
+                    value="__create_account__"
+                    onSelect={handleCreateAccount}
+                    className="gap-2 text-primary"
+                  >
+                    <Plus className="h-4 w-4 shrink-0" />
+                    <span>{t("create_account")}</span>
+                  </CommandItem>
+                </CommandGroup>
+              </>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>
