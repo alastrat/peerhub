@@ -168,7 +168,16 @@ export default async function InvitePage({ params }: PageProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <InviteAcceptForm token={token} email={invitation.email} />
+        <InviteAcceptForm
+          token={token}
+          email={invitation.email}
+          prefilled={{
+            firstName: invitation.inviteeFirstName,
+            lastName: invitation.inviteeLastName,
+            phone: invitation.inviteePhone,
+            jobTitle: invitation.inviteeJobTitle,
+          }}
+        />
       </CardContent>
     </Card>
   );
