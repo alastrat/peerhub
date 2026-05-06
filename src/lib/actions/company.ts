@@ -11,6 +11,9 @@ interface CreateCompanyInput {
   name: string;
   slug: string;
   userId: string;
+  // Optional job title — the onboarding flow collects this in step 1 but
+  // can't persist it until an Employee row exists, which only happens here.
+  jobTitle?: string;
 }
 
 interface CreateCompanyResult {
@@ -34,12 +37,18 @@ export async function createCompany(
     // Verify the User row actually exists. Magic-link sign-in can leave a
     // valid JWT after a DB reset; the FK on CompanyUser.userId would then
     // fail with an opaque P2003 inside the transaction below.
-    const userExists = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        firstName: true,
+        lastName: true,
+      },
     });
 
-    if (!userExists) {
+    if (!user) {
       return {
         success: false,
         error: "Your session is out of sync — please sign out and sign in again.",
@@ -55,7 +64,15 @@ export async function createCompany(
       return { success: false, error: "This URL is already taken" };
     }
 
-    // Create company and admin user in a transaction
+    // Build the Employee.name from whatever profile data we have. Order of
+    // preference: firstName + lastName → user.name → email local-part.
+    const employeeName =
+      [user.firstName, user.lastName].filter(Boolean).join(" ").trim() ||
+      user.name ||
+      user.email.split("@")[0];
+
+    // Create company + employee + admin user in a transaction so the new
+    // CompanyUser is linked to a fully-formed Employee row.
     const result = await prisma.$transaction(async (tx) => {
       const company = await tx.company.create({
         data: {
@@ -64,11 +81,21 @@ export async function createCompany(
         },
       });
 
+      const employee = await tx.employee.create({
+        data: {
+          companyId: company.id,
+          email: user.email,
+          name: employeeName,
+          title: input.jobTitle?.trim() || null,
+        },
+      });
+
       const companyUser = await tx.companyUser.create({
         data: {
           userId,
           companyId: company.id,
           role: "ADMIN",
+          employeeId: employee.id,
         },
       });
 

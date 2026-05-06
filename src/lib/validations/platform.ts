@@ -22,6 +22,28 @@ export const createPlatformCompanySchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers, and hyphens"),
 });
 
+// Same as above plus an admin email — used by the new SUPER_ADMIN flow that
+// creates a company AND sends an invite to its first ADMIN in one step.
+export const createPlatformCompanyWithAdminSchema = createPlatformCompanySchema.extend({
+  adminEmail: z.string().email("Enter a valid email address"),
+});
+
+// Personal info collected on the onboarding step before company creation.
+// Phone is optional; when provided it must be E.164 (validated by the
+// react-phone-number-input library client-side, double-checked here).
+export const personalInfoSchema = z.object({
+  firstName: z.string().min(1, "First name is required").max(50),
+  lastName: z.string().min(1, "Last name is required").max(50),
+  phone: z
+    .string()
+    .regex(/^\+[1-9]\d{6,14}$/, "Enter a valid phone number with country code")
+    .optional()
+    .or(z.literal("")),
+  jobTitle: z.string().max(100).optional().or(z.literal("")),
+});
+
 export type DomainInput = z.infer<typeof domainSchema>;
 export type UpdateGlobalRoleInput = z.infer<typeof updateGlobalRoleSchema>;
 export type CreatePlatformCompanyInput = z.infer<typeof createPlatformCompanySchema>;
+export type CreatePlatformCompanyWithAdminInput = z.infer<typeof createPlatformCompanyWithAdminSchema>;
+export type PersonalInfoInput = z.infer<typeof personalInfoSchema>;

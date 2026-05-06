@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Trash2, Search, Building2, Users, RotateCcw } from "lucide-react";
 import {
-  createPlatformCompany,
+  createPlatformCompanyWithAdmin,
   deletePlatformCompany,
 } from "@/lib/actions/platform";
 
@@ -63,6 +63,7 @@ export function CompaniesTable({
   const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newSlug, setNewSlug] = useState("");
+  const [newAdminEmail, setNewAdminEmail] = useState("");
 
   const filtered = companies.filter(
     (c) =>
@@ -76,9 +77,10 @@ export function CompaniesTable({
     setError(null);
 
     startTransition(async () => {
-      const result = await createPlatformCompany({
+      const result = await createPlatformCompanyWithAdmin({
         name: newName.trim(),
         slug: newSlug.trim().toLowerCase(),
+        adminEmail: newAdminEmail.trim().toLowerCase(),
       });
       if (result.success && result.data) {
         setCompanies((prev) => [
@@ -96,6 +98,7 @@ export function CompaniesTable({
         ]);
         setNewName("");
         setNewSlug("");
+        setNewAdminEmail("");
         setCreateOpen(false);
       } else {
         setError(result.error || "Failed to create company");
@@ -173,14 +176,32 @@ export function CompaniesTable({
                     Lowercase letters, numbers, and hyphens only
                   </p>
                 </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Admin email</label>
+                  <Input
+                    type="email"
+                    value={newAdminEmail}
+                    onChange={(e) => setNewAdminEmail(e.target.value)}
+                    placeholder="admin@acme-corp.com"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    We&apos;ll send this person an invitation to administer the
+                    new company.
+                  </p>
+                </div>
                 {error && <p className="text-sm text-destructive">{error}</p>}
               </div>
               <DialogFooter>
                 <Button
                   type="submit"
-                  disabled={isPending || !newName.trim() || !newSlug.trim()}
+                  disabled={
+                    isPending ||
+                    !newName.trim() ||
+                    !newSlug.trim() ||
+                    !newAdminEmail.trim()
+                  }
                 >
-                  {isPending ? "Creating..." : "Create Company"}
+                  {isPending ? "Creating..." : "Create & invite admin"}
                 </Button>
               </DialogFooter>
             </form>

@@ -8,6 +8,10 @@ import {
   domainSchema,
   updateGlobalRoleSchema,
   createPlatformCompanySchema,
+  createPlatformCompanyWithAdminSchema,
+  personalInfoSchema,
+  type PersonalInfoInput,
+  type CreatePlatformCompanyWithAdminInput,
 } from "@/lib/validations/platform";
 
 async function requireSuperAdmin() {
@@ -155,6 +159,83 @@ export async function createPlatformCompany(
 
     revalidatePath("/settings/platform/companies");
     return { success: true, data: { id: company.id } };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to create company",
+    };
+  }
+}
+
+/**
+ * Create a company AND send an ADMIN invite to the supplied email in one step.
+ *
+ * The existing inviteMember action is gated by requireCompanyAdmin (which needs
+ * an active companyUser session for the target company), so a SUPER_ADMIN cannot
+ * use it for a brand-new company. This action sidesteps that gate by gating on
+ * SUPER_ADMIN directly and creating the Invitation row in the same transaction
+ * as the company.
+ */
+export async function createPlatformCompanyWithAdmin(
+  input: CreatePlatformCompanyWithAdminInput
+): Promise<ActionResult<{ id: string; inviteUrl: string }>> {
+  try {
+    const session = await requireSuperAdmin();
+    const parsed = createPlatformCompanyWithAdminSchema.parse(input);
+    const adminEmail = parsed.adminEmail.trim().toLowerCase();
+
+    const slugCollision = await prisma.company.findUnique({
+      where: { slug: parsed.slug },
+    });
+    if (slugCollision) {
+      return { success: false, error: "Slug is already taken" };
+    }
+
+    const { company, invitation } = await prisma.$transaction(async (tx) => {
+      const company = await tx.company.create({
+        data: { name: parsed.name, slug: parsed.slug },
+      });
+      const invitation = await tx.invitation.create({
+        data: {
+          email: adminEmail,
+          companyId: company.id,
+          role: "ADMIN",
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+      });
+      return { company, invitation };
+    });
+
+    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:4999";
+    const inviteUrl = `${baseUrl}/invite/${invitation.token}`;
+
+    try {
+      const { sendEmail } = await import("@/lib/email/resend");
+      await sendEmail({
+        to: adminEmail,
+        subject: `You're invited to administer ${company.name} on Kultiva`,
+        html: `
+          <h2>You've been invited as an admin</h2>
+          <p><strong>${session.user.name || session.user.email}</strong> has invited you to administer <strong>${company.name}</strong> on Kultiva.</p>
+          <p>Click the link below to accept and set up your account:</p>
+          <p><a href="${inviteUrl}" style="display:inline-block;background:#613171;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;">Accept Invitation</a></p>
+          <p>Or copy this link: ${inviteUrl}</p>
+          <p><em>This invitation expires in 7 days.</em></p>
+        `,
+        text: `You've been invited to administer ${company.name} on Kultiva. Accept here: ${inviteUrl}`,
+      });
+    } catch (emailError) {
+      // Roll back the entire transaction-equivalent (company + invitation) so
+      // the super-admin can retry cleanly without a stranded empty company.
+      await prisma.invitation.delete({ where: { id: invitation.id } }).catch(() => {});
+      await prisma.company.delete({ where: { id: company.id } }).catch(() => {});
+      const msg = emailError instanceof Error ? emailError.message : "Failed to send email";
+      return { success: false, error: msg, code: "EMAIL_DELIVERY_FAILED" };
+    }
+
+    revalidatePath("/settings/platform/companies");
+    return { success: true, data: { id: company.id, inviteUrl } };
   } catch (error) {
     return {
       success: false,
@@ -676,6 +757,106 @@ export async function updateProfile(
       success: false,
       error:
         error instanceof Error ? error.message : "Failed to update profile",
+    };
+  }
+}
+
+/**
+ * Read the current user's personal-info fields. Used by the onboarding step
+ * and the profile form to pre-fill on mount. Returns null when the user has
+ * never filled any of the fields, which the UI treats as "show step 1".
+ */
+export async function getPersonalInfo(): Promise<
+  ActionResult<{
+    firstName: string | null;
+    lastName: string | null;
+    phone: string | null;
+    name: string | null;
+    jobTitle: string | null;
+  }>
+> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { firstName: true, lastName: true, phone: true, name: true },
+    });
+    if (!user) {
+      return { success: false, error: "User not found" };
+    }
+
+    let jobTitle: string | null = null;
+    if (session.companyUser?.employeeId) {
+      const employee = await prisma.employee.findUnique({
+        where: { id: session.companyUser.employeeId },
+        select: { title: true },
+      });
+      jobTitle = employee?.title ?? null;
+    }
+
+    return { success: true, data: { ...user, jobTitle } };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to load personal info",
+    };
+  }
+}
+
+/**
+ * Save the personal-info step of onboarding (or the equivalent profile-form
+ * fields). Writes firstName/lastName/phone to User and keeps the legacy
+ * single-string `name` field synced as "firstName lastName" for the existing
+ * UI surfaces that still read it. If the user already has an Employee row in
+ * their active company, also updates Employee.title with the supplied jobTitle.
+ */
+export async function updatePersonalInfo(
+  input: PersonalInfoInput
+): Promise<ActionResult> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    const parsed = personalInfoSchema.parse(input);
+    const fullName = `${parsed.firstName} ${parsed.lastName}`.trim();
+    const phone = parsed.phone === "" ? null : parsed.phone ?? null;
+    const jobTitle = parsed.jobTitle === "" ? null : parsed.jobTitle ?? null;
+
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        firstName: parsed.firstName,
+        lastName: parsed.lastName,
+        phone,
+        name: fullName,
+      },
+    });
+
+    // If the user already has an Employee row in their current company,
+    // mirror jobTitle onto Employee.title. New users (no companyUser yet)
+    // skip this — the title will be set when the Employee row is created.
+    if (jobTitle && session.companyUser?.employeeId) {
+      await prisma.employee.update({
+        where: { id: session.companyUser.employeeId },
+        data: { title: jobTitle },
+      });
+    }
+
+    revalidatePath("/settings/profile");
+    revalidatePath("/onboarding");
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to save personal info",
     };
   }
 }

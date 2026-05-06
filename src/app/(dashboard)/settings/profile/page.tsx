@@ -10,10 +10,27 @@ export default async function ProfilePage() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, name: true, email: true, image: true },
+    select: {
+      id: true,
+      name: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+      email: true,
+      image: true,
+    },
   });
 
   if (!user) redirect("/login");
+
+  let jobTitle: string | null = null;
+  if (session.companyUser?.employeeId) {
+    const employee = await prisma.employee.findUnique({
+      where: { id: session.companyUser.employeeId },
+      select: { title: true },
+    });
+    jobTitle = employee?.title ?? null;
+  }
 
   return (
     <div className="space-y-6">
@@ -21,7 +38,7 @@ export default async function ProfilePage() {
         titleKey="profile_title"
         descriptionKey="profile_description"
       />
-      <ProfileForm user={user} />
+      <ProfileForm user={{ ...user, jobTitle }} />
     </div>
   );
 }

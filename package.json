@@ -66,6 +66,7 @@
     "react-dom": "19.2.3",
     "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.71.1",
+    "react-phone-number-input": "^3.4.16",
     "react-slick": "^0.31.0",
     "recharts": "^3.6.0",
     "resend": "^6.8.0",

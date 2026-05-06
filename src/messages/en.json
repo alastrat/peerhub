@@ -1393,6 +1393,34 @@
     "error": "Error",
     "success": "Success"
   },
+  "onboarding": {
+    "profile_title": "Tell us about yourself",
+    "profile_description": "A few details to personalize your account",
+    "first_name": "First name",
+    "last_name": "Last name",
+    "first_name_placeholder": "Jane",
+    "last_name_placeholder": "Doe",
+    "phone_label": "Phone (optional)",
+    "job_title_label": "Job title (optional)",
+    "job_title_placeholder": "People Operations Lead",
+    "continue": "Continue",
+    "back": "Back",
+    "company_title": "Set up your company",
+    "company_description": "Create your organization to get started with 360° feedback",
+    "company_name": "Company Name",
+    "company_name_placeholder": "Acme Inc.",
+    "company_url": "Company URL",
+    "company_url_placeholder": "acme",
+    "company_url_help": "This will be your unique company identifier",
+    "create_company": "Create Company",
+    "errors": {
+      "save_personal_info": "We couldn't save your info. Please try again.",
+      "create_company": "Failed to create company. Please try again.",
+      "generic": "Something went wrong. Please try again.",
+      "company_created": "Company created successfully!",
+      "sign_in_first": "Please sign in first"
+    }
+  },
   "dashboard": {
     "common": {
       "save": "Save",
