@@ -179,11 +179,17 @@ export async function createPlatformCompany(
  */
 export async function createPlatformCompanyWithAdmin(
   input: CreatePlatformCompanyWithAdminInput
-): Promise<ActionResult<{ id: string; inviteUrl: string }>> {
+): Promise<
+  ActionResult<{
+    id: string;
+    inviteUrl: string;
+    adminAlreadyExisted: boolean;
+  }>
+> {
   try {
     const session = await requireSuperAdmin();
     const parsed = createPlatformCompanyWithAdminSchema.parse(input);
-    const adminEmail = parsed.adminEmail.trim().toLowerCase();
+    const adminEmail = parsed.admin.email.trim().toLowerCase();
 
     const slugCollision = await prisma.company.findUnique({
       where: { slug: parsed.slug },
@@ -192,9 +198,29 @@ export async function createPlatformCompanyWithAdmin(
       return { success: false, error: "Slug is already taken" };
     }
 
+    // Surface "this email already has a Kultiva account" so the super-admin
+    // knows the invite will attach a *new* company membership to an existing
+    // user (multi-tenant: one User → many CompanyUser rows).
+    const existingUser = await prisma.user.findUnique({
+      where: { email: adminEmail },
+      select: { id: true },
+    });
+    const adminAlreadyExisted = !!existingUser;
+
     const { company, invitation } = await prisma.$transaction(async (tx) => {
       const company = await tx.company.create({
-        data: { name: parsed.name, slug: parsed.slug },
+        data: {
+          name: parsed.name,
+          slug: parsed.slug,
+          logo: parsed.logo || null,
+          domain: parsed.domain || null,
+          primaryColor: parsed.primaryColor || undefined,
+          locale: parsed.locale,
+          featureAts: parsed.featureAts,
+          featureOnboarding: parsed.featureOnboarding,
+          featureWorkEnv: parsed.featureWorkEnv,
+          featureHubs: parsed.featureHubs,
+        },
       });
       const invitation = await tx.invitation.create({
         data: {
@@ -202,6 +228,10 @@ export async function createPlatformCompanyWithAdmin(
           companyId: company.id,
           role: "ADMIN",
           expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          inviteeFirstName: parsed.admin.firstName,
+          inviteeLastName: parsed.admin.lastName,
+          inviteePhone: parsed.admin.phone || null,
+          inviteeJobTitle: parsed.admin.jobTitle || null,
         },
       });
       return { company, invitation };
@@ -212,18 +242,19 @@ export async function createPlatformCompanyWithAdmin(
 
     try {
       const { sendEmail } = await import("@/lib/email/resend");
+      const greetingName = parsed.admin.firstName || adminEmail.split("@")[0];
       await sendEmail({
         to: adminEmail,
         subject: `You're invited to administer ${company.name} on Kultiva`,
         html: `
-          <h2>You've been invited as an admin</h2>
+          <h2>Hi ${greetingName} — you've been invited as an admin</h2>
           <p><strong>${session.user.name || session.user.email}</strong> has invited you to administer <strong>${company.name}</strong> on Kultiva.</p>
           <p>Click the link below to accept and set up your account:</p>
           <p><a href="${inviteUrl}" style="display:inline-block;background:#613171;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;">Accept Invitation</a></p>
           <p>Or copy this link: ${inviteUrl}</p>
           <p><em>This invitation expires in 7 days.</em></p>
         `,
-        text: `You've been invited to administer ${company.name} on Kultiva. Accept here: ${inviteUrl}`,
+        text: `Hi ${greetingName} — you've been invited to administer ${company.name} on Kultiva. Accept here: ${inviteUrl}`,
       });
     } catch (emailError) {
       // Roll back the entire transaction-equivalent (company + invitation) so
@@ -235,12 +266,44 @@ export async function createPlatformCompanyWithAdmin(
     }
 
     revalidatePath("/settings/platform/companies");
-    return { success: true, data: { id: company.id, inviteUrl } };
+    return {
+      success: true,
+      data: { id: company.id, inviteUrl, adminAlreadyExisted },
+    };
   } catch (error) {
     return {
       success: false,
       error:
         error instanceof Error ? error.message : "Failed to create company",
+    };
+  }
+}
+
+/**
+ * Lightweight pre-flight: does this email already correspond to a Kultiva
+ * User? Used by the create-account dialog to surface "this user is already
+ * on the platform — invitation will add a new company membership" before
+ * the super-admin submits the form.
+ */
+export async function checkUserExistsByEmail(
+  email: string
+): Promise<ActionResult<{ exists: boolean }>> {
+  try {
+    await requireSuperAdmin();
+    const cleaned = email.trim().toLowerCase();
+    if (!cleaned || !cleaned.includes("@")) {
+      return { success: true, data: { exists: false } };
+    }
+    const user = await prisma.user.findUnique({
+      where: { email: cleaned },
+      select: { id: true },
+    });
+    return { success: true, data: { exists: !!user } };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to check user",
     };
   }
 }

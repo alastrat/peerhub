@@ -181,11 +181,38 @@ describe("createPlatformCompanySchema", () => {
 });
 
 describe("createPlatformCompanyWithAdminSchema", () => {
-  it("validates a valid input", () => {
+  const validAdmin = {
+    firstName: "Jane",
+    lastName: "Doe",
+    email: "admin@acme.com",
+  };
+
+  it("validates a minimal input (only required fields)", () => {
     const result = createPlatformCompanyWithAdminSchema.safeParse({
       name: "Acme Corp",
       slug: "acme-corp",
-      adminEmail: "admin@acme.com",
+      admin: validAdmin,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a fully populated input", () => {
+    const result = createPlatformCompanyWithAdminSchema.safeParse({
+      name: "Acme Corp",
+      slug: "acme-corp",
+      logo: "https://acme.com/logo.png",
+      domain: "acme.com",
+      primaryColor: "#613171",
+      locale: "en",
+      featureAts: true,
+      featureOnboarding: true,
+      featureWorkEnv: true,
+      featureHubs: true,
+      admin: {
+        ...validAdmin,
+        phone: "+573001234567",
+        jobTitle: "People Lead",
+      },
     });
     expect(result.success).toBe(true);
   });
@@ -194,15 +221,54 @@ describe("createPlatformCompanyWithAdminSchema", () => {
     const result = createPlatformCompanyWithAdminSchema.safeParse({
       name: "Acme",
       slug: "acme",
-      adminEmail: "not-an-email",
+      admin: { ...validAdmin, email: "not-an-email" },
     });
     expect(result.success).toBe(false);
   });
 
-  it("rejects missing adminEmail", () => {
+  it("rejects a missing admin object", () => {
     const result = createPlatformCompanyWithAdminSchema.safeParse({
       name: "Acme",
       slug: "acme",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects an admin missing firstName", () => {
+    const result = createPlatformCompanyWithAdminSchema.safeParse({
+      name: "Acme",
+      slug: "acme",
+      admin: { lastName: "Doe", email: "admin@acme.com" },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects an invalid logo URL", () => {
+    const result = createPlatformCompanyWithAdminSchema.safeParse({
+      name: "Acme",
+      slug: "acme",
+      logo: "not a url",
+      admin: validAdmin,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts an empty logo string (treats as omitted)", () => {
+    const result = createPlatformCompanyWithAdminSchema.safeParse({
+      name: "Acme",
+      slug: "acme",
+      logo: "",
+      admin: validAdmin,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an invalid primary color", () => {
+    const result = createPlatformCompanyWithAdminSchema.safeParse({
+      name: "Acme",
+      slug: "acme",
+      primaryColor: "blue",
+      admin: validAdmin,
     });
     expect(result.success).toBe(false);
   });
@@ -212,14 +278,14 @@ describe("createPlatformCompanyWithAdminSchema", () => {
       createPlatformCompanyWithAdminSchema.safeParse({
         name: "A",
         slug: "acme",
-        adminEmail: "x@y.com",
+        admin: validAdmin,
       }).success
     ).toBe(false);
     expect(
       createPlatformCompanyWithAdminSchema.safeParse({
         name: "Acme",
         slug: "Acme",
-        adminEmail: "x@y.com",
+        admin: validAdmin,
       }).success
     ).toBe(false);
   });
