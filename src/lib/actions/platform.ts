@@ -827,7 +827,12 @@ export async function updatePersonalInfo(
     const parsed = personalInfoSchema.parse(input);
     const fullName = `${parsed.firstName} ${parsed.lastName}`.trim();
     const phone = parsed.phone === "" ? null : parsed.phone ?? null;
-    const jobTitle = parsed.jobTitle === "" ? null : parsed.jobTitle ?? null;
+
+    // Distinguish "field omitted" (preserve existing) from "field present but
+    // empty" (clear it). Truthy-only checks would silently keep stale values
+    // when the user blanks a field in the profile form.
+    const jobTitleProvided = parsed.jobTitle !== undefined;
+    const jobTitle = parsed.jobTitle ? parsed.jobTitle : null;
 
     await prisma.user.update({
       where: { id: session.user.id },
@@ -839,10 +844,10 @@ export async function updatePersonalInfo(
       },
     });
 
-    // If the user already has an Employee row in their current company,
-    // mirror jobTitle onto Employee.title. New users (no companyUser yet)
-    // skip this — the title will be set when the Employee row is created.
-    if (jobTitle && session.companyUser?.employeeId) {
+    // Mirror jobTitle onto Employee.title when the user has an Employee row
+    // in their current company. New users (no companyUser yet) skip this —
+    // the title is set at company creation time instead.
+    if (jobTitleProvided && session.companyUser?.employeeId) {
       await prisma.employee.update({
         where: { id: session.companyUser.employeeId },
         data: { title: jobTitle },

@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
@@ -39,18 +38,11 @@ import {
   getPersonalInfo,
   updatePersonalInfo,
 } from "@/lib/actions/platform";
+import {
+  personalInfoSchema,
+  type PersonalInfoInput,
+} from "@/lib/validations/platform";
 import { toast } from "sonner";
-
-const personalInfoSchema = z.object({
-  firstName: z.string().min(1, "First name is required").max(50),
-  lastName: z.string().min(1, "Last name is required").max(50),
-  phone: z
-    .string()
-    .regex(/^\+[1-9]\d{6,14}$/, "Enter a valid phone number with country code")
-    .optional()
-    .or(z.literal("")),
-  jobTitle: z.string().max(100).optional().or(z.literal("")),
-});
 
 const companySchema = z.object({
   companyName: z
@@ -67,7 +59,7 @@ const companySchema = z.object({
     ),
 });
 
-type PersonalInfoFormValues = z.infer<typeof personalInfoSchema>;
+type PersonalInfoFormValues = PersonalInfoInput;
 type CompanyFormValues = z.infer<typeof companySchema>;
 
 type Step = "profile" | "company";
@@ -84,8 +76,7 @@ function splitName(name: string | null | undefined): { firstName: string; lastNa
 }
 
 export default function OnboardingPage() {
-  const router = useRouter();
-  const { data: session, update } = useSession();
+  const { data: session, status, update } = useSession();
   const t = useTranslations("onboarding");
   const [step, setStep] = useState<Step>("profile");
   const [checking, setChecking] = useState(true);
@@ -94,6 +85,9 @@ export default function OnboardingPage() {
   // Stash jobTitle from step 1 so it can flow into createCompany in step 2
   // (the Employee row is only created at company-creation time).
   const [pendingJobTitle, setPendingJobTitle] = useState("");
+  // Guard so the bootstrap effect only runs once per mount even though
+  // useSession() returns new object references on every refresh.
+  const hasBootstrappedRef = useRef(false);
 
   const profileForm = useForm<PersonalInfoFormValues>({
     resolver: zodResolver(personalInfoSchema),
@@ -106,8 +100,20 @@ export default function OnboardingPage() {
   });
 
   useEffect(() => {
-    if (!session?.user?.id) return;
-    if (session.companyUser) {
+    // Wait for next-auth to settle before deciding anything.
+    if (status === "loading") return;
+
+    // Unauthenticated users have no business here — bounce to login so the
+    // page doesn't render a blank "checking" screen forever.
+    if (status === "unauthenticated") {
+      window.location.assign("/login");
+      return;
+    }
+
+    if (hasBootstrappedRef.current) return;
+    hasBootstrappedRef.current = true;
+
+    if (session?.companyUser) {
       window.location.assign("/overview");
       return;
     }
@@ -122,7 +128,7 @@ export default function OnboardingPage() {
       if (cancelled) return;
 
       const stored = info.success ? info.data : null;
-      const fromGoogle = splitName(session.user?.name ?? null);
+      const fromGoogle = splitName(session?.user?.name ?? null);
 
       const firstName = stored?.firstName ?? fromGoogle.firstName ?? "";
       const lastName = stored?.lastName ?? fromGoogle.lastName ?? "";
@@ -156,7 +162,8 @@ export default function OnboardingPage() {
     return () => {
       cancelled = true;
     };
-  }, [session?.user?.id, session?.companyUser, profileForm, update]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, session?.user?.id]);
 
   const onSubmitProfile = async (data: PersonalInfoFormValues) => {
     setIsSubmittingProfile(true);

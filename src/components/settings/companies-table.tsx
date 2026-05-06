@@ -177,8 +177,11 @@ export function CompaniesTable({
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Admin email</label>
+                  <label htmlFor="admin-email" className="text-sm font-medium">
+                    Admin email
+                  </label>
                   <Input
+                    id="admin-email"
                     type="email"
                     value={newAdminEmail}
                     onChange={(e) => setNewAdminEmail(e.target.value)}
