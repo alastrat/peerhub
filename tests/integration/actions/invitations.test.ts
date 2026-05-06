@@ -86,6 +86,12 @@ describe("invitation actions", () => {
         isExpired: false,
         departmentName: "Engineering",
         hubName: "West Coast",
+        // Pre-fill fields default to null on regular member invites; the
+        // SUPER_ADMIN create-account flow is what populates them.
+        inviteeFirstName: null,
+        inviteeLastName: null,
+        inviteePhone: null,
+        inviteeJobTitle: null,
       });
     });
 
