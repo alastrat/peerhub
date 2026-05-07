@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseQuestionsCsv } from "@/lib/utils/climate-questions-csv";
+import { parseQuestionsCsv } from "@/lib/utils/climate-questions-import";
 
 const DIMENSIONS = [
   { id: "dim-leadership", name: "Liderazgo" },

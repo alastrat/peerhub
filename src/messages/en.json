@@ -2013,10 +2013,10 @@
           "template_description": "Describe the purpose of this template..."
         },
         "import": {
-          "trigger": "Import from CSV",
+          "trigger": "Import from Excel/CSV",
           "download_template": "Download template",
-          "title": "Import questions from CSV",
-          "description": "Upload a .csv file with the columns: text, type, dimension, required.",
+          "title": "Import questions from Excel or CSV",
+          "description": "Upload an .xlsx or .csv file with the columns: text, type, dimension, required.",
           "choose_file": "Choose file",
           "no_file": "No file selected yet.",
           "preview_title": "Preview",

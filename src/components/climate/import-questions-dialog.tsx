@@ -22,11 +22,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  parseQuestionsCsv,
+  parseQuestionsFile,
   type ParsedQuestionRow,
   type ParseResult,
   type RowError,
-} from "@/lib/utils/climate-questions-csv";
+} from "@/lib/utils/climate-questions-import";
 
 interface DimensionOption {
   id: string;
@@ -38,7 +38,7 @@ interface ImportQuestionsDialogProps {
   onImport: (questions: ParsedQuestionRow[], mode: "replace" | "append") => void;
 }
 
-const TEMPLATE_HREF = "/climate-questions-template.csv";
+const TEMPLATE_HREF = "/climate-questions-template.xlsx";
 
 export function ImportQuestionsDialog({
   dimensions,
@@ -67,8 +67,7 @@ export function ImportQuestionsDialog({
 
   async function handleFile(file: File) {
     try {
-      const text = await file.text();
-      const parsed = parseQuestionsCsv(text, dimensions);
+      const parsed = await parseQuestionsFile(file, dimensions);
       setFileName(file.name);
       setResult(parsed);
       setParseError(null);
@@ -115,7 +114,7 @@ export function ImportQuestionsDialog({
             <input
               ref={fileInputRef}
               type="file"
-              accept=".csv,text/csv"
+              accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
               className="sr-only"
               tabIndex={-1}
               aria-hidden="true"
