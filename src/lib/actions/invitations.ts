@@ -20,6 +20,13 @@ export interface InvitationPreview {
   isExpired: boolean;
   departmentName: string | null;
   hubName: string | null;
+  // Pre-filled invitee profile (set by SUPER_ADMIN's create-account flow).
+  // Null for regular member invites. The accept page renders an editable
+  // review form when any of these are populated.
+  inviteeFirstName: string | null;
+  inviteeLastName: string | null;
+  inviteePhone: string | null;
+  inviteeJobTitle: string | null;
 }
 
 export async function getInvitationByToken(
@@ -70,6 +77,10 @@ export async function getInvitationByToken(
         isExpired,
         departmentName: department?.name ?? null,
         hubName: hub?.name ?? null,
+        inviteeFirstName: invitation.inviteeFirstName ?? null,
+        inviteeLastName: invitation.inviteeLastName ?? null,
+        inviteePhone: invitation.inviteePhone ?? null,
+        inviteeJobTitle: invitation.inviteeJobTitle ?? null,
       },
     };
   } catch (error) {
@@ -82,9 +93,17 @@ export async function getInvitationByToken(
 // Accept an invitation — creates User, CompanyUser, Employee
 // ============================================
 
+export interface AcceptInvitationOverrides {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  jobTitle?: string;
+}
+
 export async function acceptInvitation(
   token: string,
   displayName: string,
+  overrides: AcceptInvitationOverrides = {},
 ): Promise<ActionResult<{ email: string; companySlug: string }>> {
   try {
     const invitation = await prisma.invitation.findUnique({
@@ -110,16 +129,26 @@ export async function acceptInvitation(
     }
 
     const email = invitation.email.toLowerCase().trim();
-    // Pre-filled invitee profile (set by SUPER_ADMIN's create-account flow);
-    // null for regular member invites. We use these to seed the new User +
-    // Employee rows when the invitee accepts. The invitee can edit afterwards
-    // from /settings/profile.
-    const inviteeFirstName = invitation.inviteeFirstName?.trim() || null;
-    const inviteeLastName = invitation.inviteeLastName?.trim() || null;
-    const inviteePhone = invitation.inviteePhone?.trim() || null;
-    const inviteeJobTitle = invitation.inviteeJobTitle?.trim() || null;
-    // Prefer the invitee's full name from the invitation, fall back to the
-    // explicit displayName param, then the email local-part.
+    // Pre-filled invitee profile (set by SUPER_ADMIN's create-account flow).
+    // Caller-supplied overrides win — that's how the invite-accept review
+    // form lets the invitee correct values before submitting. Falls back to
+    // the stored Invitation values when overrides are absent.
+    const inviteeFirstName =
+      overrides.firstName?.trim() ||
+      invitation.inviteeFirstName?.trim() ||
+      null;
+    const inviteeLastName =
+      overrides.lastName?.trim() ||
+      invitation.inviteeLastName?.trim() ||
+      null;
+    const inviteePhone =
+      overrides.phone?.trim() || invitation.inviteePhone?.trim() || null;
+    const inviteeJobTitle =
+      overrides.jobTitle?.trim() ||
+      invitation.inviteeJobTitle?.trim() ||
+      null;
+    // Prefer the invitee's full name (overrides → invitation → displayName
+    // param → email local-part).
     const composedFromInvite =
       [inviteeFirstName, inviteeLastName].filter(Boolean).join(" ").trim();
     const name =
