@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { createClimateSurvey, updateClimateSurvey } from "@/lib/actions/climate-surveys";
 import { WallpaperPicker } from "@/components/climate/wallpaper-picker";
 import { ImportQuestionsDialog } from "@/components/climate/import-questions-dialog";
-import type { ParsedQuestionRow } from "@/lib/utils/climate-questions-csv";
+import type { ParsedQuestionRow } from "@/lib/utils/climate-questions-import";
 import type { WallpaperConfig, ColorConfig } from "@/lib/utils/wallpaper";
 import { getWallpaperCSS, parseWallpaperConfig, parseColorConfig, resolveColors, DEFAULT_COLORS } from "@/lib/utils/wallpaper";
 import {

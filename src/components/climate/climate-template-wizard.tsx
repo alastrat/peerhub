@@ -19,7 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { ImportQuestionsDialog } from "@/components/climate/import-questions-dialog";
-import type { ParsedQuestionRow } from "@/lib/utils/climate-questions-csv";
+import type { ParsedQuestionRow } from "@/lib/utils/climate-questions-import";
 import {
   createClimateSurveyTemplate,
   updateClimateSurveyTemplate,
