@@ -1434,6 +1434,14 @@
       "confirm": "Confirm",
       "back": "Back"
     },
+    "company_switcher": {
+      "select_company": "Select company",
+      "switching": "Switching...",
+      "search_placeholder": "Search companies...",
+      "empty": "No companies found.",
+      "all_companies": "All companies",
+      "your_companies": "Your companies"
+    },
     "sidebar": {
       "overview": "Overview",
       "people": "People",
