@@ -86,6 +86,12 @@ describe("invitation actions", () => {
         isExpired: false,
         departmentName: "Engineering",
         hubName: "West Coast",
+        // Pre-fill fields default to null on regular member invites; the
+        // SUPER_ADMIN create-account flow is what populates them.
+        inviteeFirstName: null,
+        inviteeLastName: null,
+        inviteePhone: null,
+        inviteeJobTitle: null,
       });
     });
 
@@ -209,11 +215,18 @@ describe("invitation actions", () => {
       expect(result.success).toBe(true);
       expect(result.data).toEqual({ email: "alice@acme.com", companySlug: "acme-corp" });
 
-      // Verify user created
+      // Verify user created — invitee* fields default to null when the
+      // invitation didn't carry pre-filled profile data (regular member
+      // invites). The acceptInvitation pattern always passes them through
+      // with explicit nulls so the User row reflects the invitation's
+      // origin path.
       expect(capturedTx.user.create).toHaveBeenCalledWith({
         data: {
           email: "alice@acme.com",
           name: "Alice",
+          firstName: null,
+          lastName: null,
+          phone: null,
           globalRole: "USER",
         },
       });

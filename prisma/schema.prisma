@@ -581,6 +581,15 @@ model Invitation {
   acceptedAt   DateTime?
   createdAt    DateTime    @default(now())
 
+  // Pre-filled invitee profile data — populated when a SUPER_ADMIN invites
+  // a new tenant's first ADMIN through the create-account flow. acceptInvitation
+  // seeds these onto the new User + Employee rows; the invitee can edit later
+  // from /settings/profile. Null for regular member invites.
+  inviteeFirstName String?
+  inviteeLastName  String?
+  inviteePhone     String?
+  inviteeJobTitle  String?
+
   company    Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   roleConfig CompanyRoleConfig? @relation(fields: [roleConfigId], references: [id])
 

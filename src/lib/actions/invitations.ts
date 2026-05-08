@@ -20,6 +20,13 @@ export interface InvitationPreview {
   isExpired: boolean;
   departmentName: string | null;
   hubName: string | null;
+  // Pre-filled invitee profile (set by SUPER_ADMIN's create-account flow).
+  // Null for regular member invites. The accept page renders an editable
+  // review form when any of these are populated.
+  inviteeFirstName: string | null;
+  inviteeLastName: string | null;
+  inviteePhone: string | null;
+  inviteeJobTitle: string | null;
 }
 
 export async function getInvitationByToken(
@@ -70,6 +77,10 @@ export async function getInvitationByToken(
         isExpired,
         departmentName: department?.name ?? null,
         hubName: hub?.name ?? null,
+        inviteeFirstName: invitation.inviteeFirstName ?? null,
+        inviteeLastName: invitation.inviteeLastName ?? null,
+        inviteePhone: invitation.inviteePhone ?? null,
+        inviteeJobTitle: invitation.inviteeJobTitle ?? null,
       },
     };
   } catch (error) {
@@ -82,9 +93,17 @@ export async function getInvitationByToken(
 // Accept an invitation — creates User, CompanyUser, Employee
 // ============================================
 
+export interface AcceptInvitationOverrides {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  jobTitle?: string;
+}
+
 export async function acceptInvitation(
   token: string,
   displayName: string,
+  overrides: AcceptInvitationOverrides = {},
 ): Promise<ActionResult<{ email: string; companySlug: string }>> {
   try {
     const invitation = await prisma.invitation.findUnique({
@@ -110,7 +129,30 @@ export async function acceptInvitation(
     }
 
     const email = invitation.email.toLowerCase().trim();
-    const name = displayName.trim() || email.split("@")[0];
+    // Pre-filled invitee profile (set by SUPER_ADMIN's create-account flow).
+    // Caller-supplied overrides win — that's how the invite-accept review
+    // form lets the invitee correct values before submitting. Falls back to
+    // the stored Invitation values when overrides are absent.
+    const inviteeFirstName =
+      overrides.firstName?.trim() ||
+      invitation.inviteeFirstName?.trim() ||
+      null;
+    const inviteeLastName =
+      overrides.lastName?.trim() ||
+      invitation.inviteeLastName?.trim() ||
+      null;
+    const inviteePhone =
+      overrides.phone?.trim() || invitation.inviteePhone?.trim() || null;
+    const inviteeJobTitle =
+      overrides.jobTitle?.trim() ||
+      invitation.inviteeJobTitle?.trim() ||
+      null;
+    // Prefer the invitee's full name (overrides → invitation → displayName
+    // param → email local-part).
+    const composedFromInvite =
+      [inviteeFirstName, inviteeLastName].filter(Boolean).join(" ").trim();
+    const name =
+      composedFromInvite || displayName.trim() || email.split("@")[0];
 
     // Defensively resolve the invitation's FK-like references. Older invites
     // may carry sentinel strings like "none" or ids whose target row has since
@@ -148,16 +190,33 @@ export async function acceptInvitation(
 
     // Use a transaction so we don't leave half-created records if anything fails
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Find or create the User
+      // 1. Find or create the User. New users get their profile pre-filled
+      // from the invitation's invitee* fields (set by SUPER_ADMIN). Existing
+      // users keep their existing profile — they own it. We only fill blanks.
       let user = await tx.user.findUnique({ where: { email } });
       if (!user) {
         user = await tx.user.create({
           data: {
             email,
             name,
+            firstName: inviteeFirstName,
+            lastName: inviteeLastName,
+            phone: inviteePhone,
             globalRole: "USER",
           },
         });
+      } else {
+        const userBlanks: Record<string, unknown> = {};
+        if (!user.firstName && inviteeFirstName) userBlanks.firstName = inviteeFirstName;
+        if (!user.lastName && inviteeLastName) userBlanks.lastName = inviteeLastName;
+        if (!user.phone && inviteePhone) userBlanks.phone = inviteePhone;
+        if (!user.name && composedFromInvite) userBlanks.name = composedFromInvite;
+        if (Object.keys(userBlanks).length > 0) {
+          user = await tx.user.update({
+            where: { id: user.id },
+            data: userBlanks,
+          });
+        }
       }
 
       // 2. Find or create the Employee record (before CompanyUser so we can link)
@@ -174,6 +233,7 @@ export async function acceptInvitation(
         // Fill in any empty fields from the invitation; don't overwrite existing
         const employeeUpdates: Record<string, unknown> = {};
         if (!employee.name && name) employeeUpdates.name = name;
+        if (!employee.title && inviteeJobTitle) employeeUpdates.title = inviteeJobTitle;
         if (resolvedDepartmentId && !employee.departmentId) {
           employeeUpdates.departmentId = resolvedDepartmentId;
         }
@@ -196,6 +256,7 @@ export async function acceptInvitation(
             companyId: invitation.companyId,
             email,
             name,
+            title: inviteeJobTitle,
             departmentId: resolvedDepartmentId,
             managerId: resolvedManagerId,
             hubId: resolvedHubId,

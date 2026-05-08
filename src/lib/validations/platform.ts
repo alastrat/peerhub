@@ -22,12 +22,6 @@ export const createPlatformCompanySchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers, and hyphens"),
 });
 
-// Same as above plus an admin email — used by the new SUPER_ADMIN flow that
-// creates a company AND sends an invite to its first ADMIN in one step.
-export const createPlatformCompanyWithAdminSchema = createPlatformCompanySchema.extend({
-  adminEmail: z.string().email("Enter a valid email address"),
-});
-
 // Personal info collected on the onboarding step before company creation.
 // Phone is optional; when provided it must be E.164 (validated by the
 // react-phone-number-input library client-side, double-checked here).
@@ -40,6 +34,30 @@ export const personalInfoSchema = z.object({
     .optional()
     .or(z.literal("")),
   jobTitle: z.string().max(100).optional().or(z.literal("")),
+});
+
+// Used by the SUPER_ADMIN "Crear cuenta" flow that bootstraps an entire
+// tenant — Company row + Invitation for the first ADMIN — in one transaction.
+// The admin sub-object pre-fills User + Employee fields when the invite is
+// accepted; the invitee can edit them afterwards from /settings/profile.
+export const createPlatformCompanyWithAdminSchema = createPlatformCompanySchema.extend({
+  // Company-level extras (all schema-default-friendly nullable).
+  logo: z.string().url("Enter a valid logo URL").optional().or(z.literal("")),
+  domain: domainSchema.optional().or(z.literal("")),
+  primaryColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Enter a valid hex color (e.g. #613171)")
+    .optional()
+    .or(z.literal("")),
+  locale: z.enum(["es", "en"]).default("es"),
+  featureAts: z.boolean().default(false),
+  featureOnboarding: z.boolean().default(false),
+  featureWorkEnv: z.boolean().default(true),
+  featureHubs: z.boolean().default(false),
+  // Admin profile — composes personalInfoSchema and adds email.
+  admin: personalInfoSchema.extend({
+    email: z.string().email("Enter a valid email address"),
+  }),
 });
 
 export type DomainInput = z.infer<typeof domainSchema>;
