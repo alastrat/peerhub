@@ -123,12 +123,12 @@ export function SurveyQuestionsTab({
                 {canEditAtAll && (
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="icon"
                     aria-label={t("questions_tab.edit_dialog.edit_aria", {
                       n: i + 1,
                     })}
-                    className="h-8 w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="h-8 w-8 shrink-0 border-foreground/20 bg-background text-foreground hover:bg-foreground hover:text-background opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={() => setEditing(q)}
                   >
                     <Pencil className="h-4 w-4" />
