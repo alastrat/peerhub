@@ -482,3 +482,89 @@ export async function updateClimateSurveyQuestion(
     return { success: false, error: msg };
   }
 }
+
+const ALLOWED_LOGO_MIME = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/svg+xml",
+  "image/webp",
+]);
+const MAX_LOGO_BYTES = 2 * 1024 * 1024; // 2MB
+
+/**
+ * Upload a logo for a survey to Supabase Storage. The client passes a File,
+ * we validate MIME + size server-side, then return the public URL the
+ * settings form can paste into its `logoUrl` field.
+ *
+ * Storage layout: `survey-assets/surveys/<surveyId>/logo-<timestamp>.<ext>`.
+ * The bucket is public so the URL works without auth — that's fine for
+ * branding assets, but don't reuse this action for anything sensitive.
+ */
+export async function uploadSurveyLogo(
+  surveyId: string,
+  formData: FormData,
+): Promise<ActionResult<{ url: string }>> {
+  try {
+    const { companyId } = await requireCompanyAdmin();
+
+    const survey = await prisma.climateSurvey.findFirst({
+      where: { id: surveyId, companyId },
+      select: { id: true },
+    });
+    if (!survey) {
+      return { success: false, error: "Survey not found" };
+    }
+
+    const file = formData.get("file");
+    if (!(file instanceof File)) {
+      return { success: false, error: "No file provided" };
+    }
+
+    if (!ALLOWED_LOGO_MIME.has(file.type)) {
+      return {
+        success: false,
+        error: "Unsupported file type. Use PNG, JPEG, SVG or WebP.",
+      };
+    }
+
+    if (file.size > MAX_LOGO_BYTES) {
+      return {
+        success: false,
+        error: "File is too large. Maximum size is 2MB.",
+      };
+    }
+
+    const { createSupabaseStorageClient, SURVEY_ASSETS_BUCKET } = await import(
+      "@/lib/supabase/server"
+    );
+    const supabase = createSupabaseStorageClient();
+
+    const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+    const path = `surveys/${surveyId}/logo-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(SURVEY_ASSETS_BUCKET)
+      .upload(path, file, {
+        contentType: file.type,
+        cacheControl: "31536000",
+        upsert: false,
+      });
+
+    if (uploadError) {
+      return {
+        success: false,
+        error: `Upload failed: ${uploadError.message}`,
+      };
+    }
+
+    const { data: publicUrl } = supabase.storage
+      .from(SURVEY_ASSETS_BUCKET)
+      .getPublicUrl(path);
+
+    return { success: true, data: { url: publicUrl.publicUrl } };
+  } catch (error) {
+    const msg =
+      error instanceof Error ? error.message : "Failed to upload logo";
+    return { success: false, error: msg };
+  }
+}

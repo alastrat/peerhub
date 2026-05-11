@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Loader2, Save, ImagePlus } from "lucide-react";
+import { Loader2, Save, ImagePlus, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,7 +18,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   updateSurveySettings,
+  uploadSurveyLogo,
   type SurveySettingsInput,
 } from "@/lib/actions/climate-surveys";
 import { formatRelativeTime } from "@/lib/utils/dates";
@@ -77,6 +85,12 @@ export function SurveySettingsTab({
     initialValues.questionsPerPage?.toString() ?? "0"
   );
   const [logoUrl, setLogoUrl] = useState(initialValues.logoUrl ?? "");
+  // "upload" = pick a file and hand it to Supabase Storage; "url" = paste a
+  // public URL into the input. Default to URL so the existing data is what
+  // the user sees first.
+  const [logoSource, setLogoSource] = useState<"upload" | "url">("url");
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const logoFileInputRef = useRef<HTMLInputElement | null>(null);
   const [restrictAccess, setRestrictAccess] = useState(
     !!(initialValues.accessStartDate || initialValues.accessEndDate)
   );
@@ -86,6 +100,32 @@ export function SurveySettingsTab({
   const [accessEnd, setAccessEnd] = useState(
     toDatetimeLocal(initialValues.accessEndDate)
   );
+
+  const handleLogoFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    // Reset the input so picking the same file twice re-fires onChange.
+    if (logoFileInputRef.current) logoFileInputRef.current.value = "";
+    if (!file) return;
+
+    setIsUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.set("file", file);
+      const result = await uploadSurveyLogo(surveyId, formData);
+      if (!result.success || !result.data) {
+        toast.error(result.error || t("logo_upload_error"));
+        return;
+      }
+      setLogoUrl(result.data.url);
+      toast.success(t("logo_uploaded"));
+    } catch {
+      toast.error(t("logo_upload_error"));
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
 
   const handleSave = () => {
     startTransition(async () => {
@@ -243,26 +283,81 @@ export function SurveySettingsTab({
           <CardDescription>{t("branding_description")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4">
+          <div className="flex items-start gap-4">
             {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={logoUrl}
                 alt={t("logo_alt")}
-                className="h-14 w-14 rounded-lg border object-contain p-1"
+                className="h-14 w-14 shrink-0 rounded-lg border object-contain p-1"
               />
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
                 <ImagePlus className="h-6 w-6" />
               </div>
             )}
-            <div className="flex-1 space-y-2">
-              <Label htmlFor="logo-url">{t("logo_url_label")}</Label>
-              <Input
-                id="logo-url"
-                value={logoUrl}
-                onChange={(e) => setLogoUrl(e.target.value)}
-                placeholder="https://example.com/logo.png"
-              />
+            <div className="flex-1 space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="logo-source">{t("logo_source_label")}</Label>
+                <Select
+                  value={logoSource}
+                  onValueChange={(v) => setLogoSource(v as "upload" | "url")}
+                >
+                  <SelectTrigger id="logo-source">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="upload">
+                      {t("logo_source_upload")}
+                    </SelectItem>
+                    <SelectItem value="url">
+                      {t("logo_source_url")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {logoSource === "upload" ? (
+                <div className="space-y-1.5">
+                  <input
+                    ref={logoFileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                    className="sr-only"
+                    aria-hidden="true"
+                    tabIndex={-1}
+                    onChange={handleLogoFileChange}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => logoFileInputRef.current?.click()}
+                    disabled={isUploadingLogo}
+                  >
+                    {isUploadingLogo ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="mr-2 h-4 w-4" />
+                    )}
+                    {isUploadingLogo
+                      ? t("logo_uploading")
+                      : t("logo_pick_file")}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    {t("logo_upload_hint")}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <Label htmlFor="logo-url">{t("logo_url_label")}</Label>
+                  <Input
+                    id="logo-url"
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    placeholder="https://example.com/logo.png"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

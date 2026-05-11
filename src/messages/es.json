@@ -2082,6 +2082,15 @@
           "delete_question_aria": "Eliminar pregunta",
           "add_question_aria": "Agregar pregunta"
         },
+        "dimension_combobox": {
+          "none": "Sin dimensión",
+          "search_placeholder": "Buscar o crear dimensión...",
+          "empty": "No se encontraron dimensiones",
+          "create_item": "Crear «{name}»",
+          "creating": "Creando...",
+          "created_toast": "Dimensión «{name}» creada",
+          "create_failed": "No se pudo crear la dimensión"
+        },
         "placeholders": {
           "survey_name": "ej. Encuesta Clima Q1 2026",
           "template_name": "ej. Evaluación Trimestral de Clima",
@@ -2210,6 +2219,14 @@
         "branding_description": "Agrega un logo que aparecerá en el encabezado de la encuesta.",
         "logo_alt": "Logo de la encuesta",
         "logo_url_label": "URL del logo",
+        "logo_source_label": "Origen del logo",
+        "logo_source_upload": "Subir archivo",
+        "logo_source_url": "Pegar URL",
+        "logo_pick_file": "Elegir archivo",
+        "logo_uploading": "Subiendo...",
+        "logo_upload_hint": "PNG, JPEG, SVG o WebP. Máx. 2 MB.",
+        "logo_uploaded": "Logo subido",
+        "logo_upload_error": "No se pudo subir el archivo",
         "distributions_title": "Distribuciones",
         "distributions_count_one": "{count} distribución",
         "distributions_count_other": "{count} distribuciones",
