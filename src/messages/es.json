@@ -1592,14 +1592,14 @@
       }
     },
     "surveys_nav": {
-      "review_360": {
-        "title": "Evaluaciones 360",
-        "cycles": "Ciclos de Evaluación",
-        "templates": "Plantillas"
-      },
-      "climate": {
-        "title": "Clima Organizacional",
-        "surveys": "Encuestas",
+      "evaluations": {
+        "title": "Evaluaciones",
+        "climate": "Clima",
+        "pulse": "Pulso",
+        "leadership": "Liderazgo",
+        "culture": "Cultura",
+        "performance": "Desempeño",
+        "nps": "NPS",
         "templates": "Plantillas"
       }
     },
@@ -2072,6 +2072,15 @@
           "template_hint": "Pre-llena el nombre, descripción, tipo y preguntas. Aún puedes editar todo después.",
           "questions_count_one": "{count} pregunta",
           "questions_count_other": "{count} preguntas"
+        },
+        "questions_step": {
+          "text_placeholder": "Escribe el texto de la pregunta...",
+          "type_label": "Tipo",
+          "dimension_label": "Dimensión",
+          "no_dimension": "Sin dimensión",
+          "required_label": "Obligatoria",
+          "delete_question_aria": "Eliminar pregunta",
+          "add_question_aria": "Agregar pregunta"
         },
         "placeholders": {
           "survey_name": "ej. Encuesta Clima Q1 2026",

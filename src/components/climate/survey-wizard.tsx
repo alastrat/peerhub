@@ -49,7 +49,7 @@ export interface TemplateOption {
   id: string;
   name: string;
   description: string | null;
-  type: "CLIMATE" | "PULSE" | "ENPS";
+  type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
   isDefault: boolean;
   questionCount: number;
   questions: QuestionRow[];
@@ -59,7 +59,7 @@ export interface SurveyWizardInitialData {
   id: string;
   name: string;
   description: string | null;
-  type: "CLIMATE" | "PULSE" | "ENPS";
+  type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
   frequency: string;
   isAnonymous: boolean;
   templateId: string | null;
@@ -119,7 +119,7 @@ export function SurveyWizard({
   );
   const [name, setName] = useState(initialData?.name ?? "");
   const [description, setDescription] = useState(initialData?.description ?? "");
-  const [surveyType, setSurveyType] = useState<"CLIMATE" | "PULSE" | "ENPS">(
+  const [surveyType, setSurveyType] = useState<"CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE">(
     initialData?.type ?? "CLIMATE",
   );
   const [frequency, setFrequency] = useState(initialData?.frequency ?? "ONCE");
@@ -195,7 +195,7 @@ export function SurveyWizard({
     if (tpl.questions.length > 0) setQuestions(tpl.questions);
   };
 
-  const handleTypeChange = (type: "CLIMATE" | "PULSE" | "ENPS") => {
+  const handleTypeChange = (type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE") => {
     setSurveyType(type);
     if (mode === "create" && !selectedTemplateId) {
       if (type === "ENPS") {
@@ -361,7 +361,7 @@ export function SurveyWizard({
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
                   <Label>{t("basics.survey_type")}</Label>
-                  <Select value={surveyType} onValueChange={(v) => handleTypeChange(v as "CLIMATE" | "PULSE" | "ENPS")}>
+                  <Select value={surveyType} onValueChange={(v) => handleTypeChange(v as "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE")}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -460,12 +460,12 @@ export function SurveyWizard({
                         <Input
                           value={q.text}
                           onChange={(e) => updateQuestion(i, "text", e.target.value)}
-                          placeholder="Enter question text..."
+                          placeholder={t("questions_step.text_placeholder")}
                           className="border-0 border-b border-border/60 rounded-none px-0 text-base font-medium shadow-none focus-visible:border-primary focus-visible:ring-0"
                         />
                         <div className="grid gap-3 sm:grid-cols-3">
                           <div className="space-y-1">
-                            <Label className="text-xs">Type</Label>
+                            <Label className="text-xs">{t("questions_step.type_label")}</Label>
                             <Select value={q.type} onValueChange={(v) => updateQuestion(i, "type", v)}>
                               <SelectTrigger>
                                 <SelectValue />
@@ -480,16 +480,16 @@ export function SurveyWizard({
                             </Select>
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs">Dimension</Label>
+                            <Label className="text-xs">{t("questions_step.dimension_label")}</Label>
                             <Select
                               value={q.dimensionId || "none"}
                               onValueChange={(v) => updateQuestion(i, "dimensionId", v === "none" ? "" : v)}
                             >
                               <SelectTrigger>
-                                <SelectValue placeholder="No dimension" />
+                                <SelectValue placeholder={t("questions_step.no_dimension")} />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="none">No dimension</SelectItem>
+                                <SelectItem value="none">{t("questions_step.no_dimension")}</SelectItem>
                                 {dimensions.map((d) => (
                                   <SelectItem key={d.id} value={d.id}>
                                     {d.name}
@@ -504,7 +504,7 @@ export function SurveyWizard({
                                 checked={q.isRequired}
                                 onCheckedChange={(v) => updateQuestion(i, "isRequired", v)}
                               />
-                              <Label className="text-xs">Required</Label>
+                              <Label className="text-xs">{t("questions_step.required_label")}</Label>
                             </div>
                             {questions.length > 1 && (
                               <Button
@@ -516,7 +516,7 @@ export function SurveyWizard({
                                   removeQuestion(i);
                                   if (focusedQuestion === i) setFocusedQuestion(Math.max(0, i - 1));
                                 }}
-                                aria-label="Delete question"
+                                aria-label={t("questions_step.delete_question_aria")}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </Button>
@@ -537,7 +537,7 @@ export function SurveyWizard({
                   setFocusedQuestion(questions.length);
                 }}
                 className="h-12 w-12 rounded-full p-0 shadow-sm"
-                aria-label="Add question"
+                aria-label={t("questions_step.add_question_aria")}
               >
                 <Plus className="h-5 w-5" />
               </Button>

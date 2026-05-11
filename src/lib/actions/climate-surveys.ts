@@ -29,7 +29,7 @@ interface SurveyQuestionInput {
 interface CreateSurveyInput {
   name: string;
   description?: string;
-  type: "CLIMATE" | "PULSE" | "ENPS";
+  type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
   frequency?: string;
   isAnonymous?: boolean;
   questions: SurveyQuestionInput[];
@@ -330,7 +330,7 @@ export async function duplicateClimateSurvey(
 export interface SurveySettingsInput {
   name?: string;
   description?: string;
-  type?: "CLIMATE" | "PULSE" | "ENPS";
+  type?: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
   frequency?: string;
   isAnonymous?: boolean;
   questionsPerPage?: number | null;

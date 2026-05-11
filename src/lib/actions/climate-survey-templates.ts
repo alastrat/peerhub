@@ -29,7 +29,7 @@ interface TemplateQuestionInput {
 interface CreateTemplateInput {
   name: string;
   description?: string;
-  type: "CLIMATE" | "PULSE" | "ENPS";
+  type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
   questions: TemplateQuestionInput[];
 }
 

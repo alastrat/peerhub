@@ -47,7 +47,7 @@ interface SurveySettingsTabProps {
   initialValues: {
     name: string;
     description: string | null;
-    type: "CLIMATE" | "PULSE" | "ENPS";
+    type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
     frequency: string;
     isAnonymous: boolean;
     questionsPerPage: number | null;
@@ -163,7 +163,7 @@ export function SurveySettingsTab({
               <Select
                 value={type}
                 onValueChange={(v) =>
-                  setType(v as "CLIMATE" | "PULSE" | "ENPS")
+                  setType(v as "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE")
                 }
               >
                 <SelectTrigger>

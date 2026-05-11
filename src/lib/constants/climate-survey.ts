@@ -3,6 +3,9 @@ export const CLIMATE_SURVEY_TYPE_LABELS: Record<string, string> = {
   CLIMATE: "Encuesta de Clima",
   PULSE: "Encuesta de Pulso",
   ENPS: "eNPS",
+  LEADERSHIP: "Liderazgo",
+  CULTURE: "Cultura",
+  PERFORMANCE: "Desempeño",
 };
 
 export const CLIMATE_SURVEY_STATUS_LABELS: Record<string, string> = {
@@ -63,7 +66,14 @@ export const DEFAULT_DIMENSIONS = [
 // Locale-aware getters
 const CLIMATE_SURVEY_TYPE_LABELS_I18N: Record<string, Record<string, string>> = {
   es: CLIMATE_SURVEY_TYPE_LABELS,
-  en: { CLIMATE: "Climate Survey", PULSE: "Pulse Survey", ENPS: "eNPS" },
+  en: {
+    CLIMATE: "Climate Survey",
+    PULSE: "Pulse Survey",
+    ENPS: "eNPS",
+    LEADERSHIP: "Leadership",
+    CULTURE: "Culture",
+    PERFORMANCE: "Performance",
+  },
 };
 
 const CLIMATE_SURVEY_STATUS_LABELS_I18N: Record<string, Record<string, string>> = {
