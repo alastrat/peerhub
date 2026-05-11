@@ -1546,14 +1546,14 @@
       }
     },
     "surveys_nav": {
-      "review_360": {
-        "title": "360 Reviews",
-        "cycles": "Review Cycles",
-        "templates": "Templates"
-      },
-      "climate": {
-        "title": "Org Climate",
-        "surveys": "Surveys",
+      "evaluations": {
+        "title": "Evaluations",
+        "climate": "Climate",
+        "pulse": "Pulse",
+        "leadership": "Leadership",
+        "culture": "Culture",
+        "performance": "Performance",
+        "nps": "NPS",
         "templates": "Templates"
       }
     },
@@ -2005,6 +2005,15 @@
           "template_hint": "Pre-fills the name, description, type, and questions. You can still edit everything after.",
           "questions_count_one": "{count} question",
           "questions_count_other": "{count} questions"
+        },
+        "questions_step": {
+          "text_placeholder": "Enter question text...",
+          "type_label": "Type",
+          "dimension_label": "Dimension",
+          "no_dimension": "No dimension",
+          "required_label": "Required",
+          "delete_question_aria": "Delete question",
+          "add_question_aria": "Add question"
         },
         "placeholders": {
           "survey_name": "e.g. Q1 2026 Climate Survey",

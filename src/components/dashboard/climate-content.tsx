@@ -40,14 +40,20 @@ interface SurveyData {
 
 interface ClimateContentProps {
   surveys: SurveyData[];
+  // When set, the list is filtered to a single type and the page header
+  // shows that type's name instead of the default "Clima Laboral".
+  typeLabel?: string | null;
 }
 
-export function ClimateContent({ surveys }: ClimateContentProps) {
+export function ClimateContent({ surveys, typeLabel }: ClimateContentProps) {
   const t = useTranslations("dashboard.climate");
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t("title")} description={t("description")}>
+      <PageHeader
+        title={typeLabel ?? t("title")}
+        description={t("description")}
+      >
         <Link href="/surveys/climate/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" />

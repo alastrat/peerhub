@@ -45,7 +45,7 @@ interface InitialData {
   id: string;
   name: string;
   description: string | null;
-  type: "CLIMATE" | "PULSE" | "ENPS";
+  type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
   questions: {
     text: string;
     type: "LIKERT" | "TEXT" | "NPS" | "RATING";
@@ -89,7 +89,7 @@ export function ClimateTemplateWizard({
 
   const [name, setName] = useState(initialData?.name || "");
   const [description, setDescription] = useState(initialData?.description || "");
-  const [surveyType, setSurveyType] = useState<"CLIMATE" | "PULSE" | "ENPS">(
+  const [surveyType, setSurveyType] = useState<"CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE">(
     initialData?.type || "CLIMATE"
   );
 
@@ -102,7 +102,7 @@ export function ClimateTemplateWizard({
     })) || [{ text: "", type: "LIKERT", dimensionId: "", isRequired: true }]
   );
 
-  const handleTypeChange = (type: "CLIMATE" | "PULSE" | "ENPS") => {
+  const handleTypeChange = (type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE") => {
     setSurveyType(type);
     if (type === "ENPS") {
       setQuestions(DEFAULT_ENPS_QUESTIONS);
@@ -216,7 +216,7 @@ export function ClimateTemplateWizard({
             </div>
             <div className="space-y-2">
               <Label>{t("basics.survey_type")}</Label>
-              <Select value={surveyType} onValueChange={(v) => handleTypeChange(v as "CLIMATE" | "PULSE" | "ENPS")}>
+              <Select value={surveyType} onValueChange={(v) => handleTypeChange(v as "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE")}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

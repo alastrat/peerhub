@@ -73,6 +73,9 @@ enum ClimateSurveyType {
   CLIMATE
   PULSE
   ENPS
+  LEADERSHIP
+  CULTURE
+  PERFORMANCE
 }
 
 enum ClimateSurveyStatus {
