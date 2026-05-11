@@ -109,6 +109,15 @@ export function SurveySettingsTab({
     if (logoFileInputRef.current) logoFileInputRef.current.value = "";
     if (!file) return;
 
+    // Client-side size guard so users get instant feedback for huge files
+    // instead of waiting for the upload to fail server-side. Mirrors the
+    // 2MB limit enforced by uploadSurveyLogo.
+    const MAX_BYTES = 2 * 1024 * 1024;
+    if (file.size > MAX_BYTES) {
+      toast.error(t("logo_too_large"));
+      return;
+    }
+
     setIsUploadingLogo(true);
     try {
       const formData = new FormData();
@@ -118,8 +127,21 @@ export function SurveySettingsTab({
         toast.error(result.error || t("logo_upload_error"));
         return;
       }
+
+      // Persist the URL immediately so a successful upload isn't dangling in
+      // storage when the user navigates away without clicking Save. This also
+      // makes the "Logo subido" toast truthful — the change really is saved.
+      const persistResult = await updateSurveySettings(surveyId, {
+        logoUrl: result.data.url,
+      });
+      if (!persistResult.success) {
+        toast.error(persistResult.error || t("logo_upload_error"));
+        return;
+      }
+
       setLogoUrl(result.data.url);
       toast.success(t("logo_uploaded"));
+      router.refresh();
     } catch {
       toast.error(t("logo_upload_error"));
     } finally {

@@ -2227,6 +2227,7 @@
         "logo_upload_hint": "PNG, JPEG, SVG o WebP. Máx. 2 MB.",
         "logo_uploaded": "Logo subido",
         "logo_upload_error": "No se pudo subir el archivo",
+        "logo_too_large": "El archivo supera los 2 MB.",
         "distributions_title": "Distribuciones",
         "distributions_count_one": "{count} distribución",
         "distributions_count_other": "{count} distribuciones",

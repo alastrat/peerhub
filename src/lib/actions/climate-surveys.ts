@@ -463,9 +463,25 @@ export async function updateClimateSurveyQuestion(
       if (input.type !== undefined) data.type = input.type;
       if (input.isRequired !== undefined) data.isRequired = input.isRequired;
       if (input.dimensionId !== undefined) {
-        data.dimension = input.dimensionId
-          ? { connect: { id: input.dimensionId } }
-          : { disconnect: true };
+        if (input.dimensionId) {
+          // Tenant isolation: only allow dimensions that either belong to the
+          // caller's company or are global defaults. Without this check, a
+          // malicious admin could connect a question to another tenant's
+          // dimension by submitting its id directly.
+          const dim = await prisma.climateDimension.findFirst({
+            where: {
+              id: input.dimensionId,
+              OR: [{ companyId }, { companyId: null, isDefault: true }],
+            },
+            select: { id: true },
+          });
+          if (!dim) {
+            return { success: false, error: "Dimension not found" };
+          }
+          data.dimension = { connect: { id: dim.id } };
+        } else {
+          data.dimension = { disconnect: true };
+        }
       }
     }
 

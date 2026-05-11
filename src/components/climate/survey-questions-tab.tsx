@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -69,9 +69,22 @@ export function SurveyQuestionsTab({
 }: SurveyQuestionsTabProps) {
   const t = useTranslations("dashboard.climate.detail");
   const [editing, setEditing] = useState<QuestionRow | null>(null);
-  // Track hover via state — CSS group-hover wasn't reliably surfacing the
-  // pencil on this page, so we drive it from React directly.
+  // Drive pencil visibility from React state — CSS group-hover wasn't
+  // reliably surfacing it earlier. Combined with focus tracking + a touch
+  // detector, this keeps the affordance accessible for pointer / keyboard /
+  // touch users (CodeRabbit flagged the original hover-only version).
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [focusedId, setFocusedId] = useState<string | null>(null);
+  const [isTouch, setIsTouch] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(hover: none)");
+    setIsTouch(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsTouch(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   const canEditAtAll = status !== "ARCHIVED";
   const canEditStructure = status === "DRAFT";
@@ -97,52 +110,74 @@ export function SurveyQuestionsTab({
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {questions.map((q, i) => (
-              <div
-                key={q.id}
-                onMouseEnter={() => setHoveredId(q.id)}
-                onMouseLeave={() =>
-                  setHoveredId((current) => (current === q.id ? null : current))
-                }
-                className="flex items-start gap-4 p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
-              >
-                <span className="text-sm font-medium text-muted-foreground w-6">
-                  {i + 1}.
-                </span>
-                <div className="flex-1 space-y-1 min-w-0">
-                  <p className="font-medium">{q.text}</p>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className="text-xs">
-                      {SURVEY_QUESTION_TYPE_LABELS[q.type]}
-                    </Badge>
-                    {q.dimension && (
-                      <Badge variant="secondary" className="text-xs">
-                        {q.dimension.name}
+            {questions.map((q, i) => {
+              const showPencil =
+                canEditAtAll &&
+                (isTouch || hoveredId === q.id || focusedId === q.id);
+              return (
+                <div
+                  key={q.id}
+                  onMouseEnter={() => setHoveredId(q.id)}
+                  onMouseLeave={() =>
+                    setHoveredId((current) =>
+                      current === q.id ? null : current,
+                    )
+                  }
+                  onFocus={() => setFocusedId(q.id)}
+                  onBlur={(e) => {
+                    // Only clear when focus is leaving the entire row (not
+                    // moving between focusable descendants).
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      setFocusedId((current) =>
+                        current === q.id ? null : current,
+                      );
+                    }
+                  }}
+                  className="flex items-start gap-4 p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
+                >
+                  <span className="text-sm font-medium text-muted-foreground w-6">
+                    {i + 1}.
+                  </span>
+                  <div className="flex-1 space-y-1 min-w-0">
+                    <p className="font-medium">{q.text}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline" className="text-xs">
+                        {SURVEY_QUESTION_TYPE_LABELS[q.type]}
                       </Badge>
-                    )}
-                    {q.isRequired && (
-                      <Badge variant="secondary" className="text-xs">
-                        {t("questions_tab.required_badge")}
-                      </Badge>
-                    )}
+                      {q.dimension && (
+                        <Badge variant="secondary" className="text-xs">
+                          {q.dimension.name}
+                        </Badge>
+                      )}
+                      {q.isRequired && (
+                        <Badge variant="secondary" className="text-xs">
+                          {t("questions_tab.required_badge")}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
+                  {canEditAtAll && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      aria-label={t("questions_tab.edit_dialog.edit_aria", {
+                        n: i + 1,
+                      })}
+                      // Always in the DOM (so keyboard Tab can land on it and
+                      // screen readers can announce it), but visually faded
+                      // until the row is hovered/focused/touched.
+                      className={`h-8 w-8 shrink-0 border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background focus-visible:opacity-100 transition-opacity ${
+                        showPencil ? "opacity-100" : "opacity-0"
+                      }`}
+                      onClick={() => setEditing(q)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
-                {canEditAtAll && hoveredId === q.id && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    aria-label={t("questions_tab.edit_dialog.edit_aria", {
-                      n: i + 1,
-                    })}
-                    className="h-8 w-8 shrink-0 border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background transition-colors"
-                    onClick={() => setEditing(q)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

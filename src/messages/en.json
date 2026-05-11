@@ -2181,6 +2181,7 @@
         "logo_upload_hint": "PNG, JPEG, SVG or WebP. Max 2MB.",
         "logo_uploaded": "Logo uploaded",
         "logo_upload_error": "Couldn't upload the file",
+        "logo_too_large": "File exceeds the 2 MB limit.",
         "distributions_title": "Distributions",
         "distributions_count_one": "{count} distribution",
         "distributions_count_other": "{count} distributions",
