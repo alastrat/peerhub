@@ -69,6 +69,9 @@ export function SurveyQuestionsTab({
 }: SurveyQuestionsTabProps) {
   const t = useTranslations("dashboard.climate.detail");
   const [editing, setEditing] = useState<QuestionRow | null>(null);
+  // Track hover via state — CSS group-hover wasn't reliably surfacing the
+  // pencil on this page, so we drive it from React directly.
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const canEditAtAll = status !== "ARCHIVED";
   const canEditStructure = status === "DRAFT";
@@ -97,7 +100,11 @@ export function SurveyQuestionsTab({
             {questions.map((q, i) => (
               <div
                 key={q.id}
-                className="group flex items-start gap-4 p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
+                onMouseEnter={() => setHoveredId(q.id)}
+                onMouseLeave={() =>
+                  setHoveredId((current) => (current === q.id ? null : current))
+                }
+                className="flex items-start gap-4 p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
               >
                 <span className="text-sm font-medium text-muted-foreground w-6">
                   {i + 1}.
@@ -120,7 +127,7 @@ export function SurveyQuestionsTab({
                     )}
                   </div>
                 </div>
-                {canEditAtAll && (
+                {canEditAtAll && hoveredId === q.id && (
                   <Button
                     type="button"
                     variant="outline"
@@ -128,7 +135,7 @@ export function SurveyQuestionsTab({
                     aria-label={t("questions_tab.edit_dialog.edit_aria", {
                       n: i + 1,
                     })}
-                    className="h-8 w-8 shrink-0 border-foreground/20 bg-background text-foreground hover:bg-foreground hover:text-background opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="h-8 w-8 shrink-0 border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background transition-colors"
                     onClick={() => setEditing(q)}
                   >
                     <Pencil className="h-4 w-4" />
