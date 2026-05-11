@@ -165,10 +165,14 @@ export function SurveyQuestionsTab({
                         n: i + 1,
                       })}
                       // Always in the DOM (so keyboard Tab can land on it and
-                      // screen readers can announce it), but visually faded
-                      // until the row is hovered/focused/touched.
-                      className={`h-8 w-8 shrink-0 border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background focus-visible:opacity-100 transition-opacity ${
-                        showPencil ? "opacity-100" : "opacity-0"
+                      // screen readers can announce it), but visually faded —
+                      // and click-disabled — until the row is hovered/focused
+                      // /touched. focus-visible: also re-enables pointer
+                      // events so a keyboard-focused button stays clickable.
+                      className={`h-8 w-8 shrink-0 border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background focus-visible:opacity-100 focus-visible:pointer-events-auto transition-opacity ${
+                        showPencil
+                          ? "opacity-100 pointer-events-auto"
+                          : "opacity-0 pointer-events-none"
                       }`}
                       onClick={() => setEditing(q)}
                     >
