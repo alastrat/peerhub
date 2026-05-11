@@ -1952,7 +1952,25 @@
           "title": "Questions",
           "anonymous_survey": "Anonymous survey",
           "non_anonymous_survey": "Non-anonymous survey",
-          "required_badge": "Required"
+          "required_badge": "Required",
+          "edit_dialog": {
+            "edit_aria": "Edit question {n}",
+            "title": "Edit question",
+            "description": "Adjust the text, type, dimension or whether it's required.",
+            "description_text_only": "Only the text can be edited — this survey already has responses.",
+            "text_label": "Text",
+            "type_label": "Type",
+            "dimension_label": "Dimension",
+            "dimension_none": "No dimension",
+            "required_label": "Required",
+            "structural_locked": "locked",
+            "text_only_hint": "Changing the type, dimension or required flag would invalidate already-collected responses, so those fields are locked.",
+            "save": "Save",
+            "cancel": "Cancel",
+            "saved": "Question updated",
+            "error": "Couldn't save the question",
+            "text_required": "Text is required"
+          }
         },
         "insights_tab": {
           "no_insights": "No insights available",
@@ -1989,7 +2007,10 @@
           "create_survey": "Create Survey",
           "save_changes": "Save changes",
           "create_template": "Create Template",
-          "saving": "Saving..."
+          "saving": "Saving...",
+          "save_draft": "Save draft",
+          "save_draft_disabled_hint": "Add a name and at least one question to save.",
+          "draft_saved": "Draft saved"
         },
         "basics": {
           "survey_details": "Survey Details",
@@ -2113,6 +2134,38 @@
           "image_url_placeholder": "https://example.com/banner.jpg",
           "image_url_hint": "Paste any public image URL. Recommended aspect ratio: 3:1."
         }
+      },
+      "settings_tab": {
+        "survey_details_title": "Survey Details",
+        "name_label": "Survey name",
+        "description_label": "Description",
+        "type_label": "Type",
+        "frequency_label": "Frequency",
+        "response_settings_title": "Response Settings",
+        "anonymous_label": "Anonymous responses",
+        "anonymous_hint": "Respondent identities will not be linked to their answers.",
+        "questions_per_page_label": "Questions per page",
+        "questions_per_page_hint": "Set to 0 to show all questions on a single page.",
+        "access_settings_title": "Access Settings",
+        "restrict_label": "Restrict access period",
+        "restrict_hint": "Respondents can only complete the survey during a specified time window.",
+        "access_start_label": "Survey opens after this date",
+        "access_end_label": "Survey closes after this date",
+        "branding_title": "Branding",
+        "branding_description": "Add a logo that will appear in the survey header.",
+        "logo_alt": "Survey logo",
+        "logo_url_label": "Logo URL",
+        "distributions_title": "Distributions",
+        "distributions_count_one": "{count} distribution",
+        "distributions_count_other": "{count} distributions",
+        "sent_relative": "Sent {when}",
+        "not_sent": "Not sent",
+        "due_target": "Due {when} · Target: {target}",
+        "completed_count": "{completed}/{total} completed",
+        "completion_percent": "{percent}% completion",
+        "save_settings": "Save settings",
+        "saved_toast": "Settings saved",
+        "save_failed": "Failed to save settings"
       }
     },
     "reports_page": {

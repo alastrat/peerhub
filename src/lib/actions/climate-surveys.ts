@@ -396,3 +396,89 @@ export async function updateSurveySettings(
     return { success: false, error: msg };
   }
 }
+
+interface UpdateQuestionInput {
+  text: string;
+  type?: SurveyQuestionType;
+  dimensionId?: string | null;
+  isRequired?: boolean;
+}
+
+/**
+ * Update a single question on an existing survey. Used by the inline-edit
+ * pencil on the survey detail page so admins can fix typos or refine wording
+ * after a survey is already in the wild.
+ *
+ * Rules:
+ * - DRAFT surveys → all fields editable (text, type, dimensionId, isRequired)
+ * - ACTIVE / CLOSED → only `text` is editable; structural changes (type,
+ *   dimension, required) would invalidate already-collected responses, so we
+ *   silently drop them with an error rather than risk corruption.
+ * - ARCHIVED → no edits at all.
+ */
+export async function updateClimateSurveyQuestion(
+  surveyId: string,
+  questionId: string,
+  input: UpdateQuestionInput,
+): Promise<ActionResult> {
+  try {
+    const { companyId } = await requireCompanyAdmin();
+
+    const survey = await prisma.climateSurvey.findFirst({
+      where: { id: surveyId, companyId },
+      select: { id: true, status: true },
+    });
+    if (!survey) {
+      return { success: false, error: "Survey not found" };
+    }
+
+    if (survey.status === "ARCHIVED") {
+      return { success: false, error: "Archived surveys cannot be edited" };
+    }
+
+    const question = await prisma.surveyQuestion.findFirst({
+      where: { id: questionId, surveyId },
+      select: { id: true },
+    });
+    if (!question) {
+      return { success: false, error: "Question not found" };
+    }
+
+    const trimmedText = input.text?.trim();
+    if (!trimmedText) {
+      return { success: false, error: "Question text is required" };
+    }
+
+    const isDraft = survey.status === "DRAFT";
+
+    // Build the update payload. Non-draft is text-only — the caller's
+    // structural fields are intentionally ignored, not rejected, so the UI
+    // can disable those inputs without forcing the client to filter the
+    // payload before submitting.
+    const data: Prisma.SurveyQuestionUpdateInput = {
+      text: trimmedText,
+    };
+
+    if (isDraft) {
+      if (input.type !== undefined) data.type = input.type;
+      if (input.isRequired !== undefined) data.isRequired = input.isRequired;
+      if (input.dimensionId !== undefined) {
+        data.dimension = input.dimensionId
+          ? { connect: { id: input.dimensionId } }
+          : { disconnect: true };
+      }
+    }
+
+    await prisma.surveyQuestion.update({
+      where: { id: questionId },
+      data,
+    });
+
+    revalidatePath(`/surveys/climate/${surveyId}`);
+    return { success: true };
+  } catch (error) {
+    const msg =
+      error instanceof Error ? error.message : "Failed to update question";
+    return { success: false, error: msg };
+  }
+}

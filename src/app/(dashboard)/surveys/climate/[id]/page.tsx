@@ -25,13 +25,13 @@ import {
   CLIMATE_SURVEY_TYPE_LABELS,
   CLIMATE_SURVEY_STATUS_LABELS,
   CLIMATE_SURVEY_STATUS_COLORS,
-  SURVEY_QUESTION_TYPE_LABELS,
   SURVEY_FREQUENCY_LABELS,
 } from "@/lib/constants/climate-survey";
 import { formatRelativeTime } from "@/lib/utils/dates";
 import { DistributeDialog } from "@/components/climate/distribute-dialog";
 import { SurveyDetailActions } from "@/components/climate/survey-detail-actions";
 import { SurveyAnswersTab } from "@/components/climate/survey-answers-tab";
+import { SurveyQuestionsTab } from "@/components/climate/survey-questions-tab";
 import { SurveySettingsTab } from "@/components/climate/survey-settings-tab";
 import { SurveyInsightsTab } from "@/components/climate/survey-insights-tab";
 import { getSurveyResults } from "@/lib/queries/climate-reports";
@@ -94,6 +94,14 @@ export default async function SurveyDetailPage({ params }: PageProps) {
   const companyId = session.companyUser.companyId;
   const survey = await getSurvey(companyId, id);
   if (!survey) notFound();
+
+  // Dimensions feed the inline question-edit dialog so admins can change a
+  // question's dimension link without opening the full survey editor.
+  const dimensions = await prisma.climateDimension.findMany({
+    where: { OR: [{ companyId }, { companyId: null, isDefault: true }] },
+    orderBy: { order: "asc" },
+    select: { id: true, name: true },
+  });
 
   const isDraft = survey.status === "DRAFT";
   const isActiveOrClosed =
@@ -323,55 +331,22 @@ export default async function SurveyDetailPage({ params }: PageProps) {
 
         {/* Questions Tab */}
         <TabsContent value="questions">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("questions_tab.title")}</CardTitle>
-              <CardDescription>
-                {survey.isAnonymous
-                  ? t("questions_tab.anonymous_survey")
-                  : t("questions_tab.non_anonymous_survey")}{" "}
-                ·{" "}
-                {t(
-                  survey.questions.length === 1
-                    ? "questions_count_one"
-                    : "questions_count_other",
-                  { count: survey.questions.length },
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {survey.questions.map((q, i) => (
-                  <div
-                    key={q.id}
-                    className="flex items-start gap-4 p-3 rounded-lg bg-muted/50"
-                  >
-                    <span className="text-sm font-medium text-muted-foreground w-6">
-                      {i + 1}.
-                    </span>
-                    <div className="flex-1 space-y-1">
-                      <p className="font-medium">{q.text}</p>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {SURVEY_QUESTION_TYPE_LABELS[q.type]}
-                        </Badge>
-                        {q.dimension && (
-                          <Badge variant="secondary" className="text-xs">
-                            {q.dimension.name}
-                          </Badge>
-                        )}
-                        {q.isRequired && (
-                          <Badge variant="secondary" className="text-xs">
-                            {t("questions_tab.required_badge")}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <SurveyQuestionsTab
+            surveyId={survey.id}
+            isAnonymous={survey.isAnonymous}
+            status={survey.status}
+            questions={survey.questions.map((q) => ({
+              id: q.id,
+              text: q.text,
+              type: q.type,
+              isRequired: q.isRequired,
+              dimensionId: q.dimensionId,
+              dimension: q.dimension
+                ? { id: q.dimension.id, name: q.dimension.name }
+                : null,
+            }))}
+            dimensions={dimensions}
+          />
         </TabsContent>
 
         {/* Settings Tab */}
