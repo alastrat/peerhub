@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Loader2, Save, ImagePlus } from "lucide-react";
+import { Loader2, Save, ImagePlus, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,11 +25,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  CLIMATE_SURVEY_TYPE_LABELS,
-  SURVEY_FREQUENCY_LABELS,
-} from "@/lib/constants/climate-survey";
-import {
   updateSurveySettings,
+  uploadSurveyLogo,
   type SurveySettingsInput,
 } from "@/lib/actions/climate-surveys";
 import { formatRelativeTime } from "@/lib/utils/dates";
@@ -47,7 +45,7 @@ interface SurveySettingsTabProps {
   initialValues: {
     name: string;
     description: string | null;
-    type: "CLIMATE" | "PULSE" | "ENPS";
+    type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
     frequency: string;
     isAnonymous: boolean;
     questionsPerPage: number | null;
@@ -72,19 +70,27 @@ export function SurveySettingsTab({
   distributions,
 }: SurveySettingsTabProps) {
   const router = useRouter();
+  const t = useTranslations("dashboard.climate.settings_tab");
   const [isPending, startTransition] = useTransition();
 
   const [name, setName] = useState(initialValues.name);
   const [description, setDescription] = useState(
     initialValues.description ?? ""
   );
-  const [type, setType] = useState(initialValues.type);
-  const [frequency, setFrequency] = useState(initialValues.frequency);
+  // type + frequency are intentionally not editable from the settings form —
+  // they're set at survey creation and reading them here would suggest they
+  // can be changed. Existing values stay on the row untouched.
   const [isAnonymous, setIsAnonymous] = useState(initialValues.isAnonymous);
   const [questionsPerPage, setQuestionsPerPage] = useState<string>(
     initialValues.questionsPerPage?.toString() ?? "0"
   );
   const [logoUrl, setLogoUrl] = useState(initialValues.logoUrl ?? "");
+  // "upload" = pick a file and hand it to Supabase Storage; "url" = paste a
+  // public URL into the input. Default to URL so the existing data is what
+  // the user sees first.
+  const [logoSource, setLogoSource] = useState<"upload" | "url">("url");
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const logoFileInputRef = useRef<HTMLInputElement | null>(null);
   const [restrictAccess, setRestrictAccess] = useState(
     !!(initialValues.accessStartDate || initialValues.accessEndDate)
   );
@@ -95,13 +101,59 @@ export function SurveySettingsTab({
     toDatetimeLocal(initialValues.accessEndDate)
   );
 
+  const handleLogoFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    // Reset the input so picking the same file twice re-fires onChange.
+    if (logoFileInputRef.current) logoFileInputRef.current.value = "";
+    if (!file) return;
+
+    // Client-side size guard so users get instant feedback for huge files
+    // instead of waiting for the upload to fail server-side. Mirrors the
+    // 2MB limit enforced by uploadSurveyLogo.
+    const MAX_BYTES = 2 * 1024 * 1024;
+    if (file.size > MAX_BYTES) {
+      toast.error(t("logo_too_large"));
+      return;
+    }
+
+    setIsUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.set("file", file);
+      const result = await uploadSurveyLogo(surveyId, formData);
+      if (!result.success || !result.data) {
+        toast.error(result.error || t("logo_upload_error"));
+        return;
+      }
+
+      // Persist the URL immediately so a successful upload isn't dangling in
+      // storage when the user navigates away without clicking Save. This also
+      // makes the "Logo subido" toast truthful — the change really is saved.
+      const persistResult = await updateSurveySettings(surveyId, {
+        logoUrl: result.data.url,
+      });
+      if (!persistResult.success) {
+        toast.error(persistResult.error || t("logo_upload_error"));
+        return;
+      }
+
+      setLogoUrl(result.data.url);
+      toast.success(t("logo_uploaded"));
+      router.refresh();
+    } catch {
+      toast.error(t("logo_upload_error"));
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
   const handleSave = () => {
     startTransition(async () => {
       const input: SurveySettingsInput = {
         name,
         description: description || undefined,
-        type,
-        frequency,
         isAnonymous,
         questionsPerPage:
           questionsPerPage === "0" || questionsPerPage === ""
@@ -117,15 +169,13 @@ export function SurveySettingsTab({
       try {
         const result = await updateSurveySettings(surveyId, input);
         if (result.success) {
-          toast.success("Settings saved");
+          toast.success(t("saved_toast"));
           router.refresh();
         } else {
-          toast.error(result.error || "Failed to save settings");
+          toast.error(result.error || t("save_failed"));
         }
       } catch (err) {
-        toast.error(
-          err instanceof Error ? err.message : "Failed to save settings"
-        );
+        toast.error(err instanceof Error ? err.message : t("save_failed"));
       }
     });
   };
@@ -135,11 +185,11 @@ export function SurveySettingsTab({
       {/* Survey Details */}
       <Card>
         <CardHeader>
-          <CardTitle>Survey Details</CardTitle>
+          <CardTitle>{t("survey_details_title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Survey name</Label>
+            <Label htmlFor="name">{t("name_label")}</Label>
             <Input
               id="name"
               value={name}
@@ -148,7 +198,7 @@ export function SurveySettingsTab({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">{t("description_label")}</Label>
             <Textarea
               id="description"
               value={description}
@@ -157,62 +207,20 @@ export function SurveySettingsTab({
             />
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Type</Label>
-              <Select
-                value={type}
-                onValueChange={(v) =>
-                  setType(v as "CLIMATE" | "PULSE" | "ENPS")
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(CLIMATE_SURVEY_TYPE_LABELS).map(
-                    ([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    )
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Frequency</Label>
-              <Select value={frequency} onValueChange={setFrequency}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(SURVEY_FREQUENCY_LABELS).map(
-                    ([value, label]) => (
-                      <SelectItem key={value} value={value}>
-                        {label}
-                      </SelectItem>
-                    )
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
         </CardContent>
       </Card>
 
       {/* Response Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>Response Settings</CardTitle>
+          <CardTitle>{t("response_settings_title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Anonymous responses</Label>
+              <Label>{t("anonymous_label")}</Label>
               <p className="text-xs text-muted-foreground">
-                Respondent identities will not be linked to their answers.
+                {t("anonymous_hint")}
               </p>
             </div>
             <Switch
@@ -223,9 +231,9 @@ export function SurveySettingsTab({
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label htmlFor="qpp">Questions per page</Label>
+              <Label htmlFor="qpp">{t("questions_per_page_label")}</Label>
               <p className="text-xs text-muted-foreground">
-                Set to 0 to show all questions on a single page.
+                {t("questions_per_page_hint")}
               </p>
             </div>
             <Input
@@ -243,15 +251,14 @@ export function SurveySettingsTab({
       {/* Access Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>Access Settings</CardTitle>
+          <CardTitle>{t("access_settings_title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Restrict access period</Label>
+              <Label>{t("restrict_label")}</Label>
               <p className="text-xs text-muted-foreground">
-                Respondents can only complete the survey during a specified time
-                window.
+                {t("restrict_hint")}
               </p>
             </div>
             <Switch
@@ -269,9 +276,7 @@ export function SurveySettingsTab({
           {restrictAccess && (
             <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
               <div className="space-y-2">
-                <Label htmlFor="access-start">
-                  Survey opens after this date
-                </Label>
+                <Label htmlFor="access-start">{t("access_start_label")}</Label>
                 <Input
                   id="access-start"
                   type="datetime-local"
@@ -280,9 +285,7 @@ export function SurveySettingsTab({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="access-end">
-                  Survey closes after this date
-                </Label>
+                <Label htmlFor="access-end">{t("access_end_label")}</Label>
                 <Input
                   id="access-end"
                   type="datetime-local"
@@ -298,32 +301,85 @@ export function SurveySettingsTab({
       {/* Branding */}
       <Card>
         <CardHeader>
-          <CardTitle>Branding</CardTitle>
-          <CardDescription>
-            Add a logo that will appear in the survey header.
-          </CardDescription>
+          <CardTitle>{t("branding_title")}</CardTitle>
+          <CardDescription>{t("branding_description")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4">
+          <div className="flex items-start gap-4">
             {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={logoUrl}
-                alt="Survey logo"
-                className="h-14 w-14 rounded-lg border object-contain p-1"
+                alt={t("logo_alt")}
+                className="h-14 w-14 shrink-0 rounded-lg border object-contain p-1"
               />
             ) : (
-              <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
                 <ImagePlus className="h-6 w-6" />
               </div>
             )}
-            <div className="flex-1 space-y-2">
-              <Label htmlFor="logo-url">Logo URL</Label>
-              <Input
-                id="logo-url"
-                value={logoUrl}
-                onChange={(e) => setLogoUrl(e.target.value)}
-                placeholder="https://example.com/logo.png"
-              />
+            <div className="flex-1 space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="logo-source">{t("logo_source_label")}</Label>
+                <Select
+                  value={logoSource}
+                  onValueChange={(v) => setLogoSource(v as "upload" | "url")}
+                >
+                  <SelectTrigger id="logo-source">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="upload">
+                      {t("logo_source_upload")}
+                    </SelectItem>
+                    <SelectItem value="url">
+                      {t("logo_source_url")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {logoSource === "upload" ? (
+                <div className="space-y-1.5">
+                  <input
+                    ref={logoFileInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                    className="sr-only"
+                    aria-hidden="true"
+                    tabIndex={-1}
+                    onChange={handleLogoFileChange}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => logoFileInputRef.current?.click()}
+                    disabled={isUploadingLogo}
+                  >
+                    {isUploadingLogo ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="mr-2 h-4 w-4" />
+                    )}
+                    {isUploadingLogo
+                      ? t("logo_uploading")
+                      : t("logo_pick_file")}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    {t("logo_upload_hint")}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <Label htmlFor="logo-url">{t("logo_url_label")}</Label>
+                  <Input
+                    id="logo-url"
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    placeholder="https://example.com/logo.png"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </CardContent>
@@ -333,10 +389,14 @@ export function SurveySettingsTab({
       {distributions.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Distributions</CardTitle>
+            <CardTitle>{t("distributions_title")}</CardTitle>
             <CardDescription>
-              {distributions.length} distribution
-              {distributions.length !== 1 ? "s" : ""}
+              {t(
+                distributions.length === 1
+                  ? "distributions_count_one"
+                  : "distributions_count_other",
+                { count: distributions.length },
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -348,27 +408,36 @@ export function SurveySettingsTab({
                 >
                   <div>
                     <p className="text-sm font-medium">
-                      Sent{" "}
                       {dist.sentAt
-                        ? formatRelativeTime(dist.sentAt)
-                        : "Not sent"}
+                        ? t("sent_relative", {
+                            when: formatRelativeTime(dist.sentAt),
+                          })
+                        : t("not_sent")}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Due {formatRelativeTime(dist.dueDate)} · Target:{" "}
-                      {dist.targetType}
+                      {t("due_target", {
+                        when: formatRelativeTime(dist.dueDate),
+                        target: dist.targetType,
+                      })}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium">
-                      {dist.completedCount}/{dist.responseCount} completed
+                      {t("completed_count", {
+                        completed: dist.completedCount,
+                        total: dist.responseCount,
+                      })}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {dist.responseCount > 0
-                        ? Math.round(
-                            (dist.completedCount / dist.responseCount) * 100
-                          )
-                        : 0}
-                      % completion
+                      {t("completion_percent", {
+                        percent:
+                          dist.responseCount > 0
+                            ? Math.round(
+                                (dist.completedCount / dist.responseCount) *
+                                  100,
+                              )
+                            : 0,
+                      })}
                     </p>
                   </div>
                 </div>
@@ -386,7 +455,7 @@ export function SurveySettingsTab({
           ) : (
             <Save className="mr-2 h-4 w-4" />
           )}
-          Save settings
+          {t("save_settings")}
         </Button>
       </div>
     </div>

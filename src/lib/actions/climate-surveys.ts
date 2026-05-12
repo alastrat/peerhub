@@ -29,7 +29,7 @@ interface SurveyQuestionInput {
 interface CreateSurveyInput {
   name: string;
   description?: string;
-  type: "CLIMATE" | "PULSE" | "ENPS";
+  type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
   frequency?: string;
   isAnonymous?: boolean;
   questions: SurveyQuestionInput[];
@@ -330,7 +330,7 @@ export async function duplicateClimateSurvey(
 export interface SurveySettingsInput {
   name?: string;
   description?: string;
-  type?: "CLIMATE" | "PULSE" | "ENPS";
+  type?: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
   frequency?: string;
   isAnonymous?: boolean;
   questionsPerPage?: number | null;
@@ -393,6 +393,194 @@ export async function updateSurveySettings(
         : error instanceof Error
           ? error.message
           : "Failed to update settings";
+    return { success: false, error: msg };
+  }
+}
+
+interface UpdateQuestionInput {
+  text: string;
+  type?: SurveyQuestionType;
+  dimensionId?: string | null;
+  isRequired?: boolean;
+}
+
+/**
+ * Update a single question on an existing survey. Used by the inline-edit
+ * pencil on the survey detail page so admins can fix typos or refine wording
+ * after a survey is already in the wild.
+ *
+ * Rules:
+ * - DRAFT surveys → all fields editable (text, type, dimensionId, isRequired)
+ * - ACTIVE / CLOSED → only `text` is editable; structural changes (type,
+ *   dimension, required) would invalidate already-collected responses, so we
+ *   silently drop them with an error rather than risk corruption.
+ * - ARCHIVED → no edits at all.
+ */
+export async function updateClimateSurveyQuestion(
+  surveyId: string,
+  questionId: string,
+  input: UpdateQuestionInput,
+): Promise<ActionResult> {
+  try {
+    const { companyId } = await requireCompanyAdmin();
+
+    const survey = await prisma.climateSurvey.findFirst({
+      where: { id: surveyId, companyId },
+      select: { id: true, status: true },
+    });
+    if (!survey) {
+      return { success: false, error: "Survey not found" };
+    }
+
+    if (survey.status === "ARCHIVED") {
+      return { success: false, error: "Archived surveys cannot be edited" };
+    }
+
+    const question = await prisma.surveyQuestion.findFirst({
+      where: { id: questionId, surveyId },
+      select: { id: true },
+    });
+    if (!question) {
+      return { success: false, error: "Question not found" };
+    }
+
+    const trimmedText = input.text?.trim();
+    if (!trimmedText) {
+      return { success: false, error: "Question text is required" };
+    }
+
+    const isDraft = survey.status === "DRAFT";
+
+    // Build the update payload. Non-draft is text-only — the caller's
+    // structural fields are intentionally ignored, not rejected, so the UI
+    // can disable those inputs without forcing the client to filter the
+    // payload before submitting.
+    const data: Prisma.SurveyQuestionUpdateInput = {
+      text: trimmedText,
+    };
+
+    if (isDraft) {
+      if (input.type !== undefined) data.type = input.type;
+      if (input.isRequired !== undefined) data.isRequired = input.isRequired;
+      if (input.dimensionId !== undefined) {
+        if (input.dimensionId) {
+          // Tenant isolation: only allow dimensions that either belong to the
+          // caller's company or are global defaults. Without this check, a
+          // malicious admin could connect a question to another tenant's
+          // dimension by submitting its id directly.
+          const dim = await prisma.climateDimension.findFirst({
+            where: {
+              id: input.dimensionId,
+              OR: [{ companyId }, { companyId: null, isDefault: true }],
+            },
+            select: { id: true },
+          });
+          if (!dim) {
+            return { success: false, error: "Dimension not found" };
+          }
+          data.dimension = { connect: { id: dim.id } };
+        } else {
+          data.dimension = { disconnect: true };
+        }
+      }
+    }
+
+    await prisma.surveyQuestion.update({
+      where: { id: questionId },
+      data,
+    });
+
+    revalidatePath(`/surveys/climate/${surveyId}`);
+    return { success: true };
+  } catch (error) {
+    const msg =
+      error instanceof Error ? error.message : "Failed to update question";
+    return { success: false, error: msg };
+  }
+}
+
+const ALLOWED_LOGO_MIME = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/svg+xml",
+  "image/webp",
+]);
+const MAX_LOGO_BYTES = 2 * 1024 * 1024; // 2MB
+
+/**
+ * Upload a logo for a survey to Supabase Storage. The client passes a File,
+ * we validate MIME + size server-side, then return the public URL the
+ * settings form can paste into its `logoUrl` field.
+ *
+ * Storage layout: `survey-assets/surveys/<surveyId>/logo-<timestamp>.<ext>`.
+ * The bucket is public so the URL works without auth — that's fine for
+ * branding assets, but don't reuse this action for anything sensitive.
+ */
+export async function uploadSurveyLogo(
+  surveyId: string,
+  formData: FormData,
+): Promise<ActionResult<{ url: string }>> {
+  try {
+    const { companyId } = await requireCompanyAdmin();
+
+    const survey = await prisma.climateSurvey.findFirst({
+      where: { id: surveyId, companyId },
+      select: { id: true },
+    });
+    if (!survey) {
+      return { success: false, error: "Survey not found" };
+    }
+
+    const file = formData.get("file");
+    if (!(file instanceof File)) {
+      return { success: false, error: "No file provided" };
+    }
+
+    if (!ALLOWED_LOGO_MIME.has(file.type)) {
+      return {
+        success: false,
+        error: "Unsupported file type. Use PNG, JPEG, SVG or WebP.",
+      };
+    }
+
+    if (file.size > MAX_LOGO_BYTES) {
+      return {
+        success: false,
+        error: "File is too large. Maximum size is 2MB.",
+      };
+    }
+
+    const { createSupabaseStorageClient, SURVEY_ASSETS_BUCKET } = await import(
+      "@/lib/supabase/server"
+    );
+    const supabase = createSupabaseStorageClient();
+
+    const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+    const path = `surveys/${surveyId}/logo-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(SURVEY_ASSETS_BUCKET)
+      .upload(path, file, {
+        contentType: file.type,
+        cacheControl: "31536000",
+        upsert: false,
+      });
+
+    if (uploadError) {
+      return {
+        success: false,
+        error: `Upload failed: ${uploadError.message}`,
+      };
+    }
+
+    const { data: publicUrl } = supabase.storage
+      .from(SURVEY_ASSETS_BUCKET)
+      .getPublicUrl(path);
+
+    return { success: true, data: { url: publicUrl.publicUrl } };
+  } catch (error) {
+    const msg =
+      error instanceof Error ? error.message : "Failed to upload logo";
     return { success: false, error: msg };
   }
 }

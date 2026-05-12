@@ -1592,14 +1592,14 @@
       }
     },
     "surveys_nav": {
-      "review_360": {
-        "title": "Evaluaciones 360",
-        "cycles": "Ciclos de Evaluación",
-        "templates": "Plantillas"
-      },
-      "climate": {
-        "title": "Clima Organizacional",
-        "surveys": "Encuestas",
+      "evaluations": {
+        "title": "Evaluaciones",
+        "climate": "Clima",
+        "pulse": "Pulso",
+        "leadership": "Liderazgo",
+        "culture": "Cultura",
+        "performance": "Desempeño",
+        "nps": "NPS",
         "templates": "Plantillas"
       }
     },
@@ -1998,7 +1998,25 @@
           "title": "Preguntas",
           "anonymous_survey": "Encuesta anónima",
           "non_anonymous_survey": "Encuesta no anónima",
-          "required_badge": "Obligatoria"
+          "required_badge": "Obligatoria",
+          "edit_dialog": {
+            "edit_aria": "Editar pregunta {n}",
+            "title": "Editar pregunta",
+            "description": "Ajusta el texto, tipo, dimensión o si es obligatoria.",
+            "description_text_only": "Solo puedes editar el texto de esta pregunta porque la encuesta ya tiene respuestas.",
+            "text_label": "Texto",
+            "type_label": "Tipo",
+            "dimension_label": "Dimensión",
+            "dimension_none": "Sin dimensión",
+            "required_label": "Obligatoria",
+            "structural_locked": "no editable",
+            "text_only_hint": "Cambiar el tipo, dimensión u obligatoriedad invalidaría las respuestas ya recolectadas, por eso esos campos están bloqueados.",
+            "save": "Guardar",
+            "cancel": "Cancelar",
+            "saved": "Pregunta actualizada",
+            "error": "No se pudo guardar la pregunta",
+            "text_required": "El texto es obligatorio"
+          }
         },
         "insights_tab": {
           "no_insights": "Aún no hay análisis disponibles",
@@ -2035,7 +2053,10 @@
           "create_survey": "Crear Encuesta",
           "save_changes": "Guardar cambios",
           "create_template": "Crear Plantilla",
-          "saving": "Guardando..."
+          "saving": "Guardando...",
+          "save_draft": "Guardar borrador",
+          "save_draft_disabled_hint": "Agrega un nombre y al menos una pregunta para guardar.",
+          "draft_saved": "Borrador guardado"
         },
         "basics": {
           "survey_details": "Detalles de la encuesta",
@@ -2051,6 +2072,24 @@
           "template_hint": "Pre-llena el nombre, descripción, tipo y preguntas. Aún puedes editar todo después.",
           "questions_count_one": "{count} pregunta",
           "questions_count_other": "{count} preguntas"
+        },
+        "questions_step": {
+          "text_placeholder": "Escribe el texto de la pregunta...",
+          "type_label": "Tipo",
+          "dimension_label": "Dimensión",
+          "no_dimension": "Sin dimensión",
+          "required_label": "Obligatoria",
+          "delete_question_aria": "Eliminar pregunta",
+          "add_question_aria": "Agregar pregunta"
+        },
+        "dimension_combobox": {
+          "none": "Sin dimensión",
+          "search_placeholder": "Buscar o crear dimensión...",
+          "empty": "No se encontraron dimensiones",
+          "create_item": "Crear «{name}»",
+          "creating": "Creando...",
+          "created_toast": "Dimensión «{name}» creada",
+          "create_failed": "No se pudo crear la dimensión"
         },
         "placeholders": {
           "survey_name": "ej. Encuesta Clima Q1 2026",
@@ -2159,6 +2198,47 @@
           "image_url_placeholder": "https://ejemplo.com/banner.jpg",
           "image_url_hint": "Pega la URL pública de cualquier imagen. Relación de aspecto recomendada: 3:1."
         }
+      },
+      "settings_tab": {
+        "survey_details_title": "Detalles de la encuesta",
+        "name_label": "Nombre de la encuesta",
+        "description_label": "Descripción",
+        "type_label": "Tipo",
+        "frequency_label": "Frecuencia",
+        "response_settings_title": "Configuración de respuestas",
+        "anonymous_label": "Respuestas anónimas",
+        "anonymous_hint": "Las identidades de los participantes no se vincularán con sus respuestas.",
+        "questions_per_page_label": "Preguntas por página",
+        "questions_per_page_hint": "Usa 0 para mostrar todas las preguntas en una sola página.",
+        "access_settings_title": "Configuración de acceso",
+        "restrict_label": "Restringir período de acceso",
+        "restrict_hint": "Los participantes solo pueden completar la encuesta dentro de un período definido.",
+        "access_start_label": "La encuesta abre a partir de esta fecha",
+        "access_end_label": "La encuesta cierra después de esta fecha",
+        "branding_title": "Marca",
+        "branding_description": "Agrega un logo que aparecerá en el encabezado de la encuesta.",
+        "logo_alt": "Logo de la encuesta",
+        "logo_url_label": "URL del logo",
+        "logo_source_label": "Origen del logo",
+        "logo_source_upload": "Subir archivo",
+        "logo_source_url": "Pegar URL",
+        "logo_pick_file": "Elegir archivo",
+        "logo_uploading": "Subiendo...",
+        "logo_upload_hint": "PNG, JPEG, SVG o WebP. Máx. 2 MB.",
+        "logo_uploaded": "Logo subido",
+        "logo_upload_error": "No se pudo subir el archivo",
+        "logo_too_large": "El archivo supera los 2 MB.",
+        "distributions_title": "Distribuciones",
+        "distributions_count_one": "{count} distribución",
+        "distributions_count_other": "{count} distribuciones",
+        "sent_relative": "Enviada {when}",
+        "not_sent": "No enviada",
+        "due_target": "Vence {when} · Objetivo: {target}",
+        "completed_count": "{completed}/{total} completadas",
+        "completion_percent": "{percent}% completadas",
+        "save_settings": "Guardar configuración",
+        "saved_toast": "Configuración guardada",
+        "save_failed": "No se pudo guardar la configuración"
       }
     },
     "reports_page": {

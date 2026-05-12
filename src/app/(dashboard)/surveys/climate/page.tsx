@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
+import { ClimateSurveyType } from "@prisma/client";
 import {
   Card,
   CardContent,
@@ -9,10 +10,28 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClimateContent } from "@/components/dashboard/climate-content";
+import { CLIMATE_SURVEY_TYPE_LABELS } from "@/lib/constants/climate-survey";
 
-async function getSurveys(companyId: string) {
+const VALID_TYPES = new Set(Object.values(ClimateSurveyType));
+
+function parseTypeParam(raw: string | undefined): ClimateSurveyType | null {
+  if (!raw) return null;
+  const upper = raw.toUpperCase();
+  return VALID_TYPES.has(upper as ClimateSurveyType)
+    ? (upper as ClimateSurveyType)
+    : null;
+}
+
+async function getSurveys(
+  companyId: string,
+  type: ClimateSurveyType | null,
+) {
   return prisma.climateSurvey.findMany({
-    where: { companyId, status: { not: "ARCHIVED" } },
+    where: {
+      companyId,
+      status: { not: "ARCHIVED" },
+      ...(type ? { type } : {}),
+    },
     include: {
       questions: true,
       distributions: {
@@ -44,7 +63,13 @@ function SurveysLoading() {
   );
 }
 
-async function SurveysLoader({ companyId }: { companyId: string }) {
+async function SurveysLoader({
+  companyId,
+  type,
+}: {
+  companyId: string;
+  type: ClimateSurveyType | null;
+}) {
   // Check feature flag
   const company = await prisma.company.findUnique({
     where: { id: companyId },
@@ -54,7 +79,7 @@ async function SurveysLoader({ companyId }: { companyId: string }) {
     redirect("/overview");
   }
 
-  const surveys = await getSurveys(companyId);
+  const surveys = await getSurveys(companyId, type);
 
   const surveyData = surveys.map((survey) => {
     const totalResponses = survey.distributions.reduce(
@@ -78,18 +103,30 @@ async function SurveysLoader({ companyId }: { companyId: string }) {
     };
   });
 
-  return <ClimateContent surveys={surveyData} />;
+  const typeLabel = type ? CLIMATE_SURVEY_TYPE_LABELS[type] : null;
+
+  return <ClimateContent surveys={surveyData} typeLabel={typeLabel} />;
 }
 
-export default async function ClimateSurveysPage() {
+interface PageProps {
+  searchParams: Promise<{ type?: string }>;
+}
+
+export default async function ClimateSurveysPage({ searchParams }: PageProps) {
   const session = await auth();
   if (!session?.companyUser || session.companyUser.role !== "ADMIN") {
     redirect("/overview");
   }
 
+  const { type: rawType } = await searchParams;
+  const type = parseTypeParam(rawType);
+
   return (
     <Suspense fallback={<SurveysLoading />}>
-      <SurveysLoader companyId={session.companyUser.companyId} />
+      <SurveysLoader
+        companyId={session.companyUser.companyId}
+        type={type}
+      />
     </Suspense>
   );
 }
