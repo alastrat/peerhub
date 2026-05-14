@@ -1994,6 +1994,19 @@
           "settings": "Configuración",
           "insights": "Análisis"
         },
+        "actions": {
+          "edit_survey": "Editar encuesta",
+          "open_preview": "Abrir vista previa",
+          "copy_preview_link": "Copiar enlace de vista previa",
+          "preview_copied": "Enlace copiado",
+          "copy_failed": "No se pudo copiar el enlace",
+          "close_survey": "Cerrar encuesta",
+          "close_failed": "No se pudo cerrar la encuesta",
+          "closed_toast": "Encuesta cerrada",
+          "reactivate_survey": "Reactivar encuesta",
+          "reactivate_failed": "No se pudo reactivar la encuesta",
+          "reactivated_toast": "Encuesta reactivada"
+        },
         "questions_tab": {
           "title": "Preguntas",
           "anonymous_survey": "Encuesta anónima",

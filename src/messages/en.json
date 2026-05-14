@@ -1948,6 +1948,19 @@
           "settings": "Settings",
           "insights": "Insights"
         },
+        "actions": {
+          "edit_survey": "Edit survey",
+          "open_preview": "Open preview",
+          "copy_preview_link": "Copy preview link",
+          "preview_copied": "Preview link copied",
+          "copy_failed": "Could not copy link",
+          "close_survey": "Close survey",
+          "close_failed": "Failed to close survey",
+          "closed_toast": "Survey closed",
+          "reactivate_survey": "Reactivate survey",
+          "reactivate_failed": "Failed to reactivate survey",
+          "reactivated_toast": "Survey reactivated"
+        },
         "questions_tab": {
           "title": "Questions",
           "anonymous_survey": "Anonymous survey",

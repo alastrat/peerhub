@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   MoreVertical,
@@ -34,10 +35,10 @@ export function SurveyDetailActions({
   surveyStatus,
 }: SurveyDetailActionsProps) {
   const router = useRouter();
+  const t = useTranslations("dashboard.climate.detail.actions");
   const [isPending, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
 
-  const isDraft = surveyStatus === "DRAFT";
   const isActive = surveyStatus === "ACTIVE";
   const isClosed = surveyStatus === "CLOSED";
 
@@ -50,10 +51,10 @@ export function SurveyDetailActions({
     try {
       await navigator.clipboard.writeText(previewUrl);
       setCopied(true);
-      toast.success("Preview link copied");
+      toast.success(t("preview_copied"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Could not copy link");
+      toast.error(t("copy_failed"));
     }
   };
 
@@ -61,10 +62,10 @@ export function SurveyDetailActions({
     startTransition(async () => {
       const result = await closeSurvey(surveyId);
       if (result.success) {
-        toast.success("Survey closed");
+        toast.success(t("closed_toast"));
         router.refresh();
       } else {
-        toast.error(result.error || "Failed to close survey");
+        toast.error(result.error || t("close_failed"));
       }
     });
   };
@@ -73,10 +74,10 @@ export function SurveyDetailActions({
     startTransition(async () => {
       const result = await reactivateSurvey(surveyId);
       if (result.success) {
-        toast.success("Survey reactivated");
+        toast.success(t("reactivated_toast"));
         router.refresh();
       } else {
-        toast.error(result.error || "Failed to reactivate survey");
+        toast.error(result.error || t("reactivate_failed"));
       }
     });
   };
@@ -96,7 +97,7 @@ export function SurveyDetailActions({
         <DropdownMenuItem asChild>
           <Link href={`/surveys/climate/${surveyId}/edit`}>
             <Edit className="mr-2 h-4 w-4" />
-            Edit survey
+            {t("edit_survey")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
@@ -106,7 +107,7 @@ export function SurveyDetailActions({
             rel="noopener noreferrer"
           >
             <Eye className="mr-2 h-4 w-4" />
-            Open preview
+            {t("open_preview")}
           </a>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleCopy}>
@@ -115,7 +116,7 @@ export function SurveyDetailActions({
           ) : (
             <Copy className="mr-2 h-4 w-4" />
           )}
-          Copy preview link
+          {t("copy_preview_link")}
         </DropdownMenuItem>
 
         {(isActive || isClosed) && (
@@ -127,13 +128,13 @@ export function SurveyDetailActions({
                 className="text-destructive focus:text-destructive"
               >
                 <PowerOff className="mr-2 h-4 w-4" />
-                Close survey
+                {t("close_survey")}
               </DropdownMenuItem>
             )}
             {isClosed && (
               <DropdownMenuItem onClick={handleReactivate}>
                 <Power className="mr-2 h-4 w-4" />
-                Reactivate survey
+                {t("reactivate_survey")}
               </DropdownMenuItem>
             )}
           </>
