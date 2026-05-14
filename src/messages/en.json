@@ -1423,7 +1423,11 @@
   },
   "portal": {
     "climate_survey": {
-      "preview_mode_no_save": "Preview mode — changes are not saved"
+      "preview_mode_no_save": "Preview mode — changes are not saved",
+      "preview_banner_label": "Preview",
+      "preview_banner_body": "This is a live preview of <strong>{name}</strong>. No answers are recorded.",
+      "preview_restart_hint": "Preview mode — click above to restart from the welcome screen.",
+      "anonymous_badge": "Your response is 100% confidential"
     }
   },
   "dashboard": {

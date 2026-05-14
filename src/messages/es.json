@@ -1469,7 +1469,11 @@
   },
   "portal": {
     "climate_survey": {
-      "preview_mode_no_save": "Modo de vista previa — los cambios no se guardan"
+      "preview_mode_no_save": "Modo de vista previa — los cambios no se guardan",
+      "preview_banner_label": "Vista previa",
+      "preview_banner_body": "Esta es una vista previa en vivo de <strong>{name}</strong>. No se registran respuestas.",
+      "preview_restart_hint": "Modo de vista previa — toca arriba para volver a la pantalla de bienvenida.",
+      "anonymous_badge": "Tu respuesta es 100% confidencial"
     }
   },
   "dashboard": {

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db/prisma";
 import { PortalClimateSurveyFlow } from "@/components/portal/portal-climate-survey-flow";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +35,7 @@ export default async function SurveyPreviewPage({ params }: PageProps) {
 
   const locale = await getLocale();
   const messages = await getMessages();
+  const t = await getTranslations("portal.climate_survey");
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
@@ -43,11 +44,13 @@ export default async function SurveyPreviewPage({ params }: PageProps) {
       <div className="border-b bg-amber-50 text-amber-900">
         <div className="mx-auto flex max-w-4xl items-center gap-2 px-4 py-2 text-xs">
           <Badge variant="outline" className="border-amber-300 bg-amber-100 text-amber-900">
-            Preview
+            {t("preview_banner_label")}
           </Badge>
           <span>
-            This is a live preview of <strong>{survey.name}</strong>. No answers
-            are recorded.
+            {t.rich("preview_banner_body", {
+              name: survey.name,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
           </span>
         </div>
       </div>
