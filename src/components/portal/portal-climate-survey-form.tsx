@@ -248,9 +248,9 @@ export function PortalClimateSurveyForm({
             <Image
               src={logoUrl}
               alt="Logo"
-              width={96}
-              height={32}
-              className="h-7 w-auto shrink-0 object-contain"
+              width={200}
+              height={64}
+              className="h-11 w-auto shrink-0 object-contain"
               unoptimized
             />
           ) : null}

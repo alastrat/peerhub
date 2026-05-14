@@ -197,16 +197,14 @@ export function PortalClimateSurveyFlow({
           </Link>
         )}
         {logoUrl && (
-          <div className="flex h-10 items-center rounded-lg bg-white/90 px-3 shadow-sm backdrop-blur">
-            <Image
-              src={logoUrl}
-              alt="Logo"
-              width={80}
-              height={32}
-              className="h-7 w-auto object-contain"
-              unoptimized
-            />
-          </div>
+          <Image
+            src={logoUrl}
+            alt="Logo"
+            width={200}
+            height={64}
+            className="h-12 w-auto shrink-0 object-contain"
+            unoptimized
+          />
         )}
         <div className="flex-1 min-w-0">
           <p className="text-sm text-muted-foreground truncate">
