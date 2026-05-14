@@ -1980,6 +1980,12 @@
         "title": "Crear Encuesta",
         "description": "Construye una nueva encuesta de clima laboral"
       },
+      "edit_page": {
+        "title": "Editar: {name}",
+        "description_draft": "Modifica este borrador",
+        "description_published": "Edita la apariencia y la presentación",
+        "questions_locked_after_send": "Las preguntas no se pueden cambiar después de enviar la encuesta"
+      },
       "create_template_page": {
         "title": "Crear Plantilla",
         "description": "Construye una plantilla reutilizable de encuesta de clima"

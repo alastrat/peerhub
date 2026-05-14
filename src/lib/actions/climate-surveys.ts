@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/config";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import type { ActionResult } from "@/types";
 import { Prisma, type ClimateSurvey, type SurveyQuestion, type SurveyQuestionType } from "@prisma/client";
 
@@ -136,7 +137,8 @@ export async function updateClimateSurvey(
     // Non-draft surveys: block structural changes (questions, name, type, frequency)
     if (!isDraft) {
       if (input.questions) {
-        return { success: false, error: "Questions cannot be changed after the survey has been sent" };
+        const t = await getTranslations("dashboard.climate.edit_page");
+        return { success: false, error: t("questions_locked_after_send") };
       }
       // Strip structural fields — only allow presentation updates
       input = {

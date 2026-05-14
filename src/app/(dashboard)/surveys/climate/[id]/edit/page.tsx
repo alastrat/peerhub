@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/design-system/page-header";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ export default async function EditClimateSurveyPage({ params }: PageProps) {
   }
 
   const companyId = session.companyUser.companyId;
+  const t = await getTranslations("dashboard.climate");
 
   const [survey, dimensions, templates] = await Promise.all([
     prisma.climateSurvey.findFirst({
@@ -97,11 +99,11 @@ export default async function EditClimateSurveyPage({ params }: PageProps) {
           </Button>
         </Link>
         <PageHeader
-          title={`Edit: ${survey.name}`}
+          title={t("edit_page.title", { name: survey.name })}
           description={
             survey.status === "DRAFT"
-              ? "Modify this draft survey"
-              : "Edit appearance and presentation settings"
+              ? t("edit_page.description_draft")
+              : t("edit_page.description_published")
           }
         />
       </div>

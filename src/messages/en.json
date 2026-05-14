@@ -1934,6 +1934,12 @@
         "title": "Create Survey",
         "description": "Build a new work environment survey"
       },
+      "edit_page": {
+        "title": "Edit: {name}",
+        "description_draft": "Modify this draft survey",
+        "description_published": "Edit appearance and presentation settings",
+        "questions_locked_after_send": "Questions cannot be changed after the survey has been sent"
+      },
       "create_template_page": {
         "title": "Create Template",
         "description": "Build a reusable climate survey template"

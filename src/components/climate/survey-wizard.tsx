@@ -704,44 +704,44 @@ export function SurveyWizard({
                     });
 
           const showIframe = previewViewMode === "iframe" && effectiveSurveyId;
-          return (
-            <div className="space-y-4">
-              {/* Mode toggle: browser-mockup preview ↔ editor panels */}
-              <div className="flex items-center justify-end gap-2">
-                {showIframe && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIframeRefreshKey((k) => k + 1)}
-                  >
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    {t("preview.reload_preview")}
-                  </Button>
-                )}
+          const toolbar = (
+            <div className="flex items-center justify-end gap-2">
+              {showIframe && (
                 <Button
                   type="button"
-                  variant={showIframe ? "default" : "outline"}
+                  variant="outline"
                   size="sm"
-                  onClick={() =>
-                    setPreviewViewMode((m) => (m === "iframe" ? "edit" : "iframe"))
-                  }
-                  disabled={previewViewMode === "edit" && !effectiveSurveyId}
+                  onClick={() => setIframeRefreshKey((k) => k + 1)}
                 >
-                  {showIframe ? (
-                    <>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      {t("preview.mode_edit")}
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="mr-2 h-4 w-4" />
-                      {t("preview.mode_preview")}
-                    </>
-                  )}
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  {t("preview.reload_preview")}
                 </Button>
-              </div>
-
+              )}
+              <Button
+                type="button"
+                variant={showIframe ? "default" : "outline"}
+                size="sm"
+                onClick={() =>
+                  setPreviewViewMode((m) => (m === "iframe" ? "edit" : "iframe"))
+                }
+                disabled={previewViewMode === "edit" && !effectiveSurveyId}
+              >
+                {showIframe ? (
+                  <>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    {t("preview.mode_edit")}
+                  </>
+                ) : (
+                  <>
+                    <Eye className="mr-2 h-4 w-4" />
+                    {t("preview.mode_preview")}
+                  </>
+                )}
+              </Button>
+            </div>
+          );
+          return (
+            <div className="space-y-4">
               {showIframe ? (
                 /* Browser-mockup preview of the saved survey */
                 <div className="overflow-hidden rounded-xl border bg-background shadow-md">
@@ -769,6 +769,10 @@ export function SurveyWizard({
                   {t("preview.preview_unavailable")}
                 </div>
               ) : null}
+
+              {/* Mode toggle (Edit / Preview + Reload) — kept below the
+                  preview/editor content so it never visually competes with
+                  the survey it controls. */}
 
               {/* Editor panels — shown when Edit mode is active */}
               {previewViewMode === "edit" && (
@@ -1275,6 +1279,8 @@ export function SurveyWizard({
               </div>
               </>
               )}
+
+              {toolbar}
             </div>
           );
         })()}
