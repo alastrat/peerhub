@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, Save, Send, CheckCircle2, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -100,13 +100,32 @@ export function PortalClimateSurveyForm({
   onBackToWelcome,
 }: PortalClimateSurveyFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const accent = accentColor || DEFAULT_ACCENT;
 
-  // Pagination
+  // Pagination — the active page is reflected in the URL (?page=N, 1-indexed)
+  // so a refresh keeps the respondent on the same question batch.
   const isPaginated = questionsPerPage > 0;
   const perPage = isPaginated ? questionsPerPage : questions.length;
   const totalPages = isPaginated ? Math.ceil(questions.length / perPage) : 1;
-  const [currentPage, setCurrentPage] = useState(0);
+  const pageParam = searchParams?.get("page");
+  const parsedPage = pageParam ? parseInt(pageParam, 10) - 1 : 0;
+  const currentPage = Math.min(
+    Math.max(0, Number.isNaN(parsedPage) ? 0 : parsedPage),
+    Math.max(0, totalPages - 1),
+  );
+  const setCurrentPage = useCallback(
+    (next: number) => {
+      const params = new URLSearchParams(searchParams?.toString() ?? "");
+      const clamped = Math.min(Math.max(0, next), Math.max(0, totalPages - 1));
+      if (clamped === 0) params.delete("page");
+      else params.set("page", String(clamped + 1));
+      const qs = params.toString();
+      router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
+    },
+    [pathname, router, searchParams, totalPages],
+  );
 
   /** Style object for a selected answer button — branded with accent color */
   const selectedStyle = {

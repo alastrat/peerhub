@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, Check, ClipboardCheck, ShieldCheck } from "lucide-react";
 import type { WallpaperConfig, ColorConfig } from "@/lib/utils/wallpaper";
@@ -82,8 +82,41 @@ export function PortalClimateSurveyFlow({
   previewMode = false,
 }: PortalClimateSurveyFlowProps) {
   const router = useRouter();
-  const [stage, setStage] = useState<"welcome" | "form" | "thankyou">("welcome");
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  // Stage lives in the URL (?stage=form|thankyou) so a refresh keeps the
+  // respondent on the screen they were on. Default is the welcome screen.
+  const stageParam = searchParams?.get("stage");
+  const stage: "welcome" | "form" | "thankyou" =
+    stageParam === "form" || stageParam === "thankyou" ? stageParam : "welcome";
+
+  const consentKey = `survey-consent:${distributionId}`;
   const [consentAccepted, setConsentAccepted] = useState(false);
+
+  const setStage = useCallback(
+    (next: "welcome" | "form" | "thankyou") => {
+      const params = new URLSearchParams(searchParams?.toString() ?? "");
+      if (next === "welcome") params.delete("stage");
+      else params.set("stage", next);
+      const qs = params.toString();
+      router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
+
+  // Hydrate consent + auto-skip welcome on refresh if the respondent already
+  // accepted. Preview mode never persists consent (testers want to re-see the
+  // welcome flow on every preview load).
+  useEffect(() => {
+    if (previewMode) return;
+    if (typeof window === "undefined") return;
+    const accepted = window.localStorage.getItem(consentKey) === "1";
+    if (!accepted) return;
+    setConsentAccepted(true);
+    if (stage === "welcome") setStage("form");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [consentKey, previewMode]);
 
   const resolvedTitle = welcomeTitle?.trim() || surveyName;
   const resolvedCta = welcomeCtaText?.trim() || DEFAULT_CTA_TEXT;
@@ -285,7 +318,12 @@ export function PortalClimateSurveyFlow({
           <Button
             type="button"
             size="lg"
-            onClick={() => setStage("form")}
+            onClick={() => {
+              if (!previewMode && typeof window !== "undefined") {
+                window.localStorage.setItem(consentKey, "1");
+              }
+              setStage("form");
+            }}
             disabled={isAnonymous && !consentAccepted}
             style={{
               backgroundColor: isAnonymous && !consentAccepted ? undefined : colors.buttons,
