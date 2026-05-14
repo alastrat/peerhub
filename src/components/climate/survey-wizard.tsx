@@ -24,6 +24,7 @@ import { Plus, Trash2, ArrowLeft, ArrowRight, Check, Eye, FileText, ShieldCheck,
 import { cn } from "@/lib/utils";
 import { createClimateSurvey, updateClimateSurvey } from "@/lib/actions/climate-surveys";
 import { WallpaperPicker } from "@/components/climate/wallpaper-picker";
+import { SurveyQuestionsBuilder } from "@/components/climate/survey-questions-builder";
 import { ImportQuestionsDialog } from "@/components/climate/import-questions-dialog";
 import { DimensionCombobox } from "@/components/climate/dimension-combobox";
 import type { ParsedQuestionRow } from "@/lib/utils/climate-questions-import";
@@ -283,7 +284,15 @@ export function SurveyWizard({
 
   const canProceed = () => {
     if (step === 0) return name.trim().length > 0;
-    if (step === 1) return questions.length > 0 && questions.every((q) => q.text.trim().length > 0);
+    if (step === 1) {
+      // Every question must have non-empty text AND a real dimension assigned.
+      // Forcing dimensions matches the section-based editor's contract: there
+      // is no "unclassified" persistence path.
+      if (questions.length === 0) return false;
+      return questions.every(
+        (q) => q.text.trim().length > 0 && q.dimensionId.trim().length > 0,
+      );
+    }
     return true;
   };
 
@@ -636,118 +645,30 @@ export function SurveyWizard({
         </div>
       )}
 
-      {/* Step 2: Questions — clean builder canvas */}
+      {/* Step 2: Questions — section-based editor (sections == dimensions),
+          matching the 360° template builder UX. */}
       {step === 1 && (
-        <div className="rounded-xl border bg-muted/40 p-6 sm:p-8">
-          <div className="mx-auto max-w-3xl space-y-4">
-            {questions.map((q, i) => {
-              const isFocused = focusedQuestion === i;
-              return (
-                <div
-                  key={i}
-                  onClick={() => setFocusedQuestion(i)}
-                  className={cn(
-                    "relative rounded-xl bg-white shadow-sm transition-all",
-                    isFocused
-                      ? "border-l-4 border-l-primary border border-r-border border-t-border border-b-border shadow-md"
-                      : "border border-border hover:shadow-md",
-                  )}
-                >
-                  <div className="p-5 sm:p-6">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-2 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-                        {i + 1}
-                      </span>
-                      <div className="flex-1 space-y-3">
-                        <Input
-                          value={q.text}
-                          onChange={(e) => updateQuestion(i, "text", e.target.value)}
-                          placeholder={t("questions_step.text_placeholder")}
-                          className="border-0 border-b border-border/60 rounded-none px-0 text-base font-medium shadow-none focus-visible:border-primary focus-visible:ring-0"
-                        />
-                        <div className="grid gap-3 sm:grid-cols-3">
-                          <div className="space-y-1">
-                            <Label className="text-xs">{t("questions_step.type_label")}</Label>
-                            <Select value={q.type} onValueChange={(v) => updateQuestion(i, "type", v)}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {Object.entries(SURVEY_QUESTION_TYPE_LABELS).map(([key, label]) => (
-                                  <SelectItem key={key} value={key}>
-                                    {label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs">{t("questions_step.dimension_label")}</Label>
-                            <DimensionCombobox
-                              dimensions={dimensions}
-                              value={q.dimensionId}
-                              onChange={(id) => updateQuestion(i, "dimensionId", id)}
-                              onCreated={handleDimensionCreated}
-                            />
-                          </div>
-                          <div className="flex items-end justify-between gap-3">
-                            <div className="flex items-center gap-2">
-                              <Switch
-                                checked={q.isRequired}
-                                onCheckedChange={(v) => updateQuestion(i, "isRequired", v)}
-                              />
-                              <Label className="text-xs">{t("questions_step.required_label")}</Label>
-                            </div>
-                            {questions.length > 1 && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeQuestion(i);
-                                  if (focusedQuestion === i) setFocusedQuestion(Math.max(0, i - 1));
-                                }}
-                                aria-label={t("questions_step.delete_question_aria")}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  addQuestion();
-                  setFocusedQuestion(questions.length);
-                }}
-                className="h-12 w-12 rounded-full p-0 shadow-sm"
-                aria-label={t("questions_step.add_question_aria")}
-              >
-                <Plus className="h-5 w-5" />
-              </Button>
-              <ImportQuestionsDialog
-                dimensions={dimensions}
-                onImport={(rows: ParsedQuestionRow[], mode) => {
-                  const next =
-                    mode === "replace"
-                      ? rows.map((r) => ({ ...r }))
-                      : [
-                          ...questions.filter((q) => q.text.trim() !== ""),
-                          ...rows.map((r) => ({ ...r })),
-                        ];
-                  setQuestions(next);
-                  setFocusedQuestion(0);
-                }}
-              />
-            </div>
+        <div className="space-y-4">
+          <SurveyQuestionsBuilder
+            questions={questions}
+            dimensions={dimensions}
+            onChange={setQuestions}
+            onDimensionCreated={handleDimensionCreated}
+          />
+          <div className="flex justify-end">
+            <ImportQuestionsDialog
+              dimensions={dimensions}
+              onImport={(rows: ParsedQuestionRow[], mode) => {
+                const next =
+                  mode === "replace"
+                    ? rows.map((r) => ({ ...r }))
+                    : [
+                        ...questions.filter((q) => q.text.trim() !== ""),
+                        ...rows.map((r) => ({ ...r })),
+                      ];
+                setQuestions(next);
+              }}
+            />
           </div>
         </div>
       )}
