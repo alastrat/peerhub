@@ -1458,6 +1458,9 @@
     "company_url": "URL de la empresa",
     "company_url_placeholder": "acme",
     "company_url_help": "Este será el identificador único de tu empresa",
+    "company_tax_id": "NIT",
+    "company_tax_id_placeholder": "900123456-7",
+    "company_tax_id_help": "Identificador tributario de la empresa (NIT, RUT, RFC, EIN, etc.)",
     "create_company": "Crear empresa",
     "errors": {
       "save_personal_info": "No pudimos guardar tu información. Inténtalo de nuevo.",
@@ -1508,6 +1511,9 @@
       "field_name": "Nombre de la empresa",
       "field_name_placeholder": "Acme S.A.",
       "field_slug": "Slug",
+      "field_tax_id": "NIT",
+      "field_tax_id_placeholder": "900123456-7",
+      "field_tax_id_hint": "Identificador tributario de la empresa (NIT, RUT, RFC, EIN, etc.)",
       "field_logo": "URL del logotipo (opcional)",
       "field_domain": "Dominio (opcional)",
       "field_domain_hint": "Los usuarios con este dominio podrán unirse automáticamente.",
@@ -2071,6 +2077,7 @@
         "steps": {
           "basics": "Datos básicos",
           "questions": "Preguntas",
+          "participants": "Participantes",
           "preview": "Vista previa",
           "review": "Revisar"
         },
@@ -2157,6 +2164,29 @@
             "unknown_dimension": "La dimensión no coincide con ninguna existente.",
             "parse_failed": "No se pudo leer el archivo. Verifica que sea un CSV válido."
           }
+        },
+        "participants_step": {
+          "title": "Seleccionar participantes",
+          "description": "Define quiénes recibirán la encuesta cuando se publique.",
+          "scope_label": "Alcance",
+          "scope_all": "Toda la empresa",
+          "scope_all_hint": "Se incluirá a todas las personas activas.",
+          "scope_hub": "Por sede",
+          "scope_hub_hint": "Selecciona una o varias sedes.",
+          "scope_department": "Por departamento",
+          "scope_department_hint": "Selecciona uno o varios departamentos.",
+          "scope_team": "Por equipo",
+          "scope_team_hint": "Selecciona uno o varios equipos (incluye miembros multi-departamentales).",
+          "scope_custom": "Selección personalizada",
+          "scope_custom_hint": "Elige manualmente a cada persona.",
+          "selected_count": "{selected} de {total} seleccionados",
+          "select_all": "Seleccionar todos",
+          "clear": "Limpiar",
+          "no_employees": "Aún no hay empleados activos.",
+          "no_departments": "Aún no hay departamentos.",
+          "no_teams": "Aún no hay equipos.",
+          "no_hubs": "Aún no hay sedes.",
+          "no_title": "Sin cargo"
         },
         "preview": {
           "editing_label": "Editando:",

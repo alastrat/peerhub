@@ -22,29 +22,54 @@ export default async function EditClimateSurveyPage({ params }: PageProps) {
   const companyId = session.companyUser.companyId;
   const t = await getTranslations("dashboard.climate");
 
-  const [survey, dimensions, templates] = await Promise.all([
-    prisma.climateSurvey.findFirst({
-      where: { id, companyId },
-      include: {
-        questions: { orderBy: { order: "asc" } },
-      },
-    }),
-    prisma.climateDimension.findMany({
-      where: {
-        OR: [{ companyId }, { companyId: null, isDefault: true }],
-      },
-      orderBy: { order: "asc" },
-      select: { id: true, name: true },
-    }),
-    prisma.climateSurveyTemplate.findMany({
-      where: {
-        isArchived: false,
-        OR: [{ companyId }, { companyId: null, isDefault: true }],
-      },
-      orderBy: [{ isDefault: "desc" }, { name: "asc" }],
-      include: { questions: { orderBy: { order: "asc" } } },
-    }),
-  ]);
+  const [survey, dimensions, templates, employees, departments, teams, hubs, company] =
+    await Promise.all([
+      prisma.climateSurvey.findFirst({
+        where: { id, companyId },
+        include: {
+          questions: { orderBy: { order: "asc" } },
+        },
+      }),
+      prisma.climateDimension.findMany({
+        where: {
+          OR: [{ companyId }, { companyId: null, isDefault: true }],
+        },
+        orderBy: { order: "asc" },
+        select: { id: true, name: true },
+      }),
+      prisma.climateSurveyTemplate.findMany({
+        where: {
+          isArchived: false,
+          OR: [{ companyId }, { companyId: null, isDefault: true }],
+        },
+        orderBy: [{ isDefault: "desc" }, { name: "asc" }],
+        include: { questions: { orderBy: { order: "asc" } } },
+      }),
+      prisma.employee.findMany({
+        where: { companyId, isActive: true },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, email: true, title: true, departmentId: true },
+      }),
+      prisma.department.findMany({
+        where: { companyId },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.team.findMany({
+        where: { companyId, isActive: true },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.hub.findMany({
+        where: { companyId, isActive: true },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.company.findUnique({
+        where: { id: companyId },
+        select: { featureHubs: true },
+      }),
+    ]);
 
   if (!survey) notFound();
 
@@ -113,6 +138,11 @@ export default async function EditClimateSurveyPage({ params }: PageProps) {
         templates={templateOptions}
         mode="edit"
         initialData={initialData}
+        employees={employees}
+        departments={departments}
+        teams={teams}
+        hubs={hubs}
+        featureHubs={company?.featureHubs ?? false}
       />
     </div>
   );

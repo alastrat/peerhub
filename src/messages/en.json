@@ -1412,6 +1412,9 @@
     "company_url": "Company URL",
     "company_url_placeholder": "acme",
     "company_url_help": "This will be your unique company identifier",
+    "company_tax_id": "Tax ID",
+    "company_tax_id_placeholder": "900123456-7",
+    "company_tax_id_help": "Company tax identifier (NIT, VAT, EIN, etc.)",
     "create_company": "Create Company",
     "errors": {
       "save_personal_info": "We couldn't save your info. Please try again.",
@@ -1462,6 +1465,9 @@
       "field_name": "Company name",
       "field_name_placeholder": "Acme Inc.",
       "field_slug": "Slug",
+      "field_tax_id": "Tax ID",
+      "field_tax_id_placeholder": "900123456-7",
+      "field_tax_id_hint": "Company tax identifier (NIT, VAT, EIN, etc.)",
       "field_logo": "Logo URL (optional)",
       "field_domain": "Domain (optional)",
       "field_domain_hint": "Users with this email domain can auto-join.",
@@ -2025,6 +2031,7 @@
         "steps": {
           "basics": "Basics",
           "questions": "Questions",
+          "participants": "Participants",
           "preview": "Preview",
           "review": "Review"
         },
@@ -2111,6 +2118,29 @@
             "unknown_dimension": "The dimension doesn't match any existing one.",
             "parse_failed": "Couldn't read the file. Make sure it's a valid CSV."
           }
+        },
+        "participants_step": {
+          "title": "Select participants",
+          "description": "Choose who will receive the survey once it goes live.",
+          "scope_label": "Scope",
+          "scope_all": "Whole company",
+          "scope_all_hint": "All active employees will be included.",
+          "scope_hub": "By location",
+          "scope_hub_hint": "Select one or more locations.",
+          "scope_department": "By department",
+          "scope_department_hint": "Select one or more departments.",
+          "scope_team": "By team",
+          "scope_team_hint": "Select one or more teams (includes cross-department members).",
+          "scope_custom": "Custom selection",
+          "scope_custom_hint": "Manually pick each person.",
+          "selected_count": "{selected} of {total} selected",
+          "select_all": "Select all",
+          "clear": "Clear",
+          "no_employees": "No active employees yet.",
+          "no_departments": "No departments yet.",
+          "no_teams": "No teams yet.",
+          "no_hubs": "No locations yet.",
+          "no_title": "No title"
         },
         "preview": {
           "editing_label": "Editing:",

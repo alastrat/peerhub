@@ -15,26 +15,53 @@ export default async function NewSurveyPage() {
 
   const companyId = session.companyUser.companyId;
 
-  // Fetch dimensions (company-specific + global defaults) and available templates
-  const [dimensions, templates] = await Promise.all([
-    prisma.climateDimension.findMany({
-      where: {
-        OR: [{ companyId }, { companyId: null, isDefault: true }],
-      },
-      orderBy: { order: "asc" },
-      select: { id: true, name: true },
-    }),
-    prisma.climateSurveyTemplate.findMany({
-      where: {
-        isArchived: false,
-        OR: [{ companyId }, { companyId: null, isDefault: true }],
-      },
-      orderBy: [{ isDefault: "desc" }, { name: "asc" }],
-      include: {
-        questions: { orderBy: { order: "asc" } },
-      },
-    }),
-  ]);
+  // Fetch dimensions, templates, and the rosters needed for the
+  // Participants step (employees, departments, teams, hubs + the hubs
+  // feature flag).
+  const [dimensions, templates, employees, departments, teams, hubs, company] =
+    await Promise.all([
+      prisma.climateDimension.findMany({
+        where: {
+          OR: [{ companyId }, { companyId: null, isDefault: true }],
+        },
+        orderBy: { order: "asc" },
+        select: { id: true, name: true },
+      }),
+      prisma.climateSurveyTemplate.findMany({
+        where: {
+          isArchived: false,
+          OR: [{ companyId }, { companyId: null, isDefault: true }],
+        },
+        orderBy: [{ isDefault: "desc" }, { name: "asc" }],
+        include: {
+          questions: { orderBy: { order: "asc" } },
+        },
+      }),
+      prisma.employee.findMany({
+        where: { companyId, isActive: true },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true, email: true, title: true, departmentId: true },
+      }),
+      prisma.department.findMany({
+        where: { companyId },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.team.findMany({
+        where: { companyId, isActive: true },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.hub.findMany({
+        where: { companyId, isActive: true },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.company.findUnique({
+        where: { id: companyId },
+        select: { featureHubs: true },
+      }),
+    ]);
 
   const templateOptions = templates.map((t) => ({
     id: t.id,
@@ -54,7 +81,15 @@ export default async function NewSurveyPage() {
   return (
     <div className="space-y-6">
       <PageHeader title={t("title")} description={t("description")} />
-      <SurveyWizard dimensions={dimensions} templates={templateOptions} />
+      <SurveyWizard
+        dimensions={dimensions}
+        templates={templateOptions}
+        employees={employees}
+        departments={departments}
+        teams={teams}
+        hubs={hubs}
+        featureHubs={company?.featureHubs ?? false}
+      />
     </div>
   );
 }
