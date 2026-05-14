@@ -33,6 +33,7 @@ interface CreateSurveyInput {
   type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
   frequency?: string;
   isAnonymous?: boolean;
+  anonymityThreshold?: number;
   questions: SurveyQuestionInput[];
   templateId?: string;
   welcomeTitle?: string;
@@ -73,6 +74,9 @@ export async function createClimateSurvey(
         type: input.type,
         frequency: (input.frequency as Prisma.EnumSurveyFrequencyFieldUpdateOperationsInput["set"]) || "ONCE",
         isAnonymous: input.isAnonymous ?? true,
+        ...(input.anonymityThreshold !== undefined && {
+          anonymityThreshold: Math.max(1, Math.trunc(input.anonymityThreshold)),
+        }),
         templateId: input.templateId || null,
         welcomeTitle: input.welcomeTitle?.trim() || null,
         welcomeBody: input.welcomeBody ?? null,
@@ -168,6 +172,9 @@ export async function updateClimateSurvey(
       ...(input.type && { type: input.type }),
       ...(input.frequency && { frequency: input.frequency as Prisma.EnumSurveyFrequencyFieldUpdateOperationsInput["set"] }),
       ...(input.isAnonymous !== undefined && { isAnonymous: input.isAnonymous }),
+      ...(input.anonymityThreshold !== undefined && {
+        anonymityThreshold: Math.max(1, Math.trunc(input.anonymityThreshold)),
+      }),
       ...(input.templateId !== undefined && { templateId: input.templateId || null }),
       ...(input.welcomeTitle !== undefined && { welcomeTitle: input.welcomeTitle?.trim() || null }),
       ...(input.welcomeBody !== undefined && { welcomeBody: input.welcomeBody || null }),
@@ -289,6 +296,7 @@ export async function duplicateClimateSurvey(
         type: original.type,
         frequency: original.frequency,
         isAnonymous: original.isAnonymous,
+        anonymityThreshold: original.anonymityThreshold,
         // Copy all customization fields
         templateId: original.templateId,
         welcomeTitle: original.welcomeTitle,
@@ -335,6 +343,7 @@ export interface SurveySettingsInput {
   type?: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
   frequency?: string;
   isAnonymous?: boolean;
+  anonymityThreshold?: number;
   questionsPerPage?: number | null;
   logoUrl?: string | null;
   accessStartDate?: Date | string | null;
@@ -368,6 +377,9 @@ export async function updateSurveySettings(
     if (input.frequency !== undefined)
       data.frequency = input.frequency as Prisma.EnumSurveyFrequencyFieldUpdateOperationsInput["set"];
     if (input.isAnonymous !== undefined) data.isAnonymous = input.isAnonymous;
+    if (input.anonymityThreshold !== undefined) {
+      data.anonymityThreshold = Math.max(1, Math.trunc(input.anonymityThreshold));
+    }
     if (input.questionsPerPage !== undefined) data.questionsPerPage = input.questionsPerPage;
     if (input.logoUrl !== undefined) data.logoUrl = input.logoUrl?.trim() || null;
     if (input.accessStartDate !== undefined)

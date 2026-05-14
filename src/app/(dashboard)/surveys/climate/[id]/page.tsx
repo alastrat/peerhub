@@ -359,6 +359,7 @@ export default async function SurveyDetailPage({ params }: PageProps) {
               type: survey.type,
               frequency: survey.frequency,
               isAnonymous: survey.isAnonymous,
+              anonymityThreshold: survey.anonymityThreshold,
               questionsPerPage: survey.questionsPerPage,
               logoUrl: survey.logoUrl,
               accessStartDate: survey.accessStartDate,

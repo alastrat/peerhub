@@ -55,6 +55,7 @@ export default async function EditClimateSurveyPage({ params }: PageProps) {
     type: survey.type,
     frequency: survey.frequency,
     isAnonymous: survey.isAnonymous,
+    anonymityThreshold: survey.anonymityThreshold,
     templateId: survey.templateId,
     welcomeTitle: survey.welcomeTitle,
     welcomeBody: survey.welcomeBody,

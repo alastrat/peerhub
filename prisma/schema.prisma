@@ -677,6 +677,12 @@ model ClimateSurvey {
   frequency   SurveyFrequency     @default(ONCE)
   isAnonymous Boolean             @default(true)
 
+  // Minimum respondents required before a segment's results are shown in
+  // aggregations. Protects individual privacy: a department with <N replies
+  // gets its dimension scores hidden so individuals can't be inferred.
+  // Industry standard for climate surveys is 5; smaller orgs may use 3.
+  anonymityThreshold Int @default(5)
+
   // Welcome page customization (shown to respondents before the form)
   welcomeTitle     String?
   welcomeBody      String?

@@ -48,6 +48,7 @@ interface SurveySettingsTabProps {
     type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
     frequency: string;
     isAnonymous: boolean;
+    anonymityThreshold: number;
     questionsPerPage: number | null;
     logoUrl: string | null;
     accessStartDate: Date | null;
@@ -81,6 +82,9 @@ export function SurveySettingsTab({
   // they're set at survey creation and reading them here would suggest they
   // can be changed. Existing values stay on the row untouched.
   const [isAnonymous, setIsAnonymous] = useState(initialValues.isAnonymous);
+  const [anonymityThreshold, setAnonymityThreshold] = useState<number>(
+    initialValues.anonymityThreshold,
+  );
   const [questionsPerPage, setQuestionsPerPage] = useState<string>(
     initialValues.questionsPerPage?.toString() ?? "0"
   );
@@ -155,6 +159,7 @@ export function SurveySettingsTab({
         name,
         description: description || undefined,
         isAnonymous,
+        anonymityThreshold,
         questionsPerPage:
           questionsPerPage === "0" || questionsPerPage === ""
             ? null
@@ -226,6 +231,31 @@ export function SurveySettingsTab({
             <Switch
               checked={isAnonymous}
               onCheckedChange={setIsAnonymous}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-0.5">
+              <Label htmlFor="anonymity-threshold">
+                {t("anonymity_threshold_label")}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t("anonymity_threshold_hint")}
+              </p>
+            </div>
+            <Input
+              id="anonymity-threshold"
+              type="number"
+              min={1}
+              max={50}
+              value={anonymityThreshold}
+              onChange={(e) => {
+                const n = parseInt(e.target.value, 10);
+                setAnonymityThreshold(
+                  Number.isFinite(n) && n >= 1 ? Math.min(n, 50) : 1,
+                );
+              }}
+              className="w-24 shrink-0"
             />
           </div>
 

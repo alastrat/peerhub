@@ -65,6 +65,7 @@ export interface SurveyWizardInitialData {
   type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
   frequency: string;
   isAnonymous: boolean;
+  anonymityThreshold: number;
   templateId: string | null;
   welcomeTitle: string | null;
   welcomeBody: string | null;
@@ -134,6 +135,9 @@ export function SurveyWizard({
   );
   const [frequency, setFrequency] = useState(initialData?.frequency ?? "ONCE");
   const [isAnonymous, setIsAnonymous] = useState(initialData?.isAnonymous ?? true);
+  const [anonymityThreshold, setAnonymityThreshold] = useState<number>(
+    initialData?.anonymityThreshold ?? 5,
+  );
 
   // Questions
   const [questions, setQuestions] = useState<QuestionRow[]>(
@@ -264,6 +268,7 @@ export function SurveyWizard({
       type: surveyType,
       frequency,
       isAnonymous,
+      anonymityThreshold,
       templateId: selectedTemplateId || undefined,
       welcomeTitle: welcomeTitle.trim() || undefined,
       welcomeBody: welcomeBody || undefined,
@@ -299,6 +304,7 @@ export function SurveyWizard({
       surveyType,
       frequency,
       isAnonymous,
+      anonymityThreshold,
       selectedTemplateId,
       welcomeTitle,
       welcomeBody,
@@ -512,6 +518,29 @@ export function SurveyWizard({
                   <Switch id="anonymous" checked={isAnonymous} onCheckedChange={setIsAnonymous} />
                   <Label htmlFor="anonymous">{t("basics.anonymous")}</Label>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="anonymity-threshold">
+                  {t("basics.anonymity_threshold_label")}
+                </Label>
+                <Input
+                  id="anonymity-threshold"
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={anonymityThreshold}
+                  onChange={(e) => {
+                    const n = parseInt(e.target.value, 10);
+                    setAnonymityThreshold(
+                      Number.isFinite(n) && n >= 1 ? Math.min(n, 50) : 1,
+                    );
+                  }}
+                  className="w-32"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t("basics.anonymity_threshold_hint")}
+                </p>
               </div>
 
               {templates.length > 0 && mode === "create" && (
