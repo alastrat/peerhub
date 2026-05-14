@@ -3,6 +3,7 @@
 import { useState, useTransition, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Loader2, Save, Send, CheckCircle2, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -102,6 +103,7 @@ export function PortalClimateSurveyForm({
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const t = useTranslations("portal.climate_survey");
   const accent = accentColor || DEFAULT_ACCENT;
 
   // Pagination — the active page is reflected in the URL (?page=N, 1-indexed)
@@ -163,7 +165,7 @@ export function PortalClimateSurveyForm({
   const saveDraft = useCallback(
     async (silent = false) => {
       if (previewMode) {
-        if (!silent) toast.info("Preview mode — changes are not saved");
+        if (!silent) toast.info(t("preview_mode_no_save"));
         return;
       }
       setIsSaving(true);

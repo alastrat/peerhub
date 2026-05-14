@@ -1421,6 +1421,11 @@
       "sign_in_first": "Please sign in first"
     }
   },
+  "portal": {
+    "climate_survey": {
+      "preview_mode_no_save": "Preview mode — changes are not saved"
+    }
+  },
   "dashboard": {
     "common": {
       "save": "Save",

@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { prisma } from "@/lib/db/prisma";
 import { PortalClimateSurveyFlow } from "@/components/portal/portal-climate-survey-flow";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +33,11 @@ export default async function SurveyPreviewPage({ params }: PageProps) {
 
   if (!survey) notFound();
 
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
+    <NextIntlClientProvider locale={locale} messages={messages}>
     <div className="min-h-screen">
       {/* Thin preview banner so testers know they're on a preview page */}
       <div className="border-b bg-amber-50 text-amber-900">
@@ -82,5 +88,6 @@ export default async function SurveyPreviewPage({ params }: PageProps) {
         />
       </main>
     </div>
+    </NextIntlClientProvider>
   );
 }

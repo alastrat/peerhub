@@ -1467,6 +1467,11 @@
       "sign_in_first": "Inicia sesión primero"
     }
   },
+  "portal": {
+    "climate_survey": {
+      "preview_mode_no_save": "Modo de vista previa — los cambios no se guardan"
+    }
+  },
   "dashboard": {
     "common": {
       "save": "Guardar",
