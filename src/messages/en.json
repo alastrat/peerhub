@@ -2149,7 +2149,11 @@
           "slide_all_questions_one": "All {count} question",
           "slide_all_questions_other": "All {count} questions",
           "slide_page_of": "Page {current} of {total}",
-          "answer_textarea_placeholder": "Type your response..."
+          "answer_textarea_placeholder": "Type your response...",
+          "mode_preview": "Preview",
+          "mode_edit": "Edit",
+          "reload_preview": "Reload",
+          "preview_unavailable": "Save a draft to see the live preview here."
         },
         "wallpaper": {
           "style_label": "Wallpaper style",

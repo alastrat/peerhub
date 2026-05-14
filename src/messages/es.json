@@ -2195,7 +2195,11 @@
           "slide_all_questions_one": "Toda la {count} pregunta",
           "slide_all_questions_other": "Todas las {count} preguntas",
           "slide_page_of": "Página {current} de {total}",
-          "answer_textarea_placeholder": "Escribe tu respuesta..."
+          "answer_textarea_placeholder": "Escribe tu respuesta...",
+          "mode_preview": "Vista previa",
+          "mode_edit": "Editar",
+          "reload_preview": "Recargar",
+          "preview_unavailable": "Guarda un borrador para ver la vista previa en vivo aquí."
         },
         "wallpaper": {
           "style_label": "Estilo de fondo",

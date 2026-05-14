@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,11 +19,12 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, ArrowLeft, ArrowRight, Check, Eye, FileText, ShieldCheck, ClipboardCheck } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, ArrowRight, Check, Eye, FileText, ShieldCheck, ClipboardCheck, Pencil, RefreshCw, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClimateSurvey, updateClimateSurvey } from "@/lib/actions/climate-surveys";
 import { WallpaperPicker } from "@/components/climate/wallpaper-picker";
 import { ImportQuestionsDialog } from "@/components/climate/import-questions-dialog";
+import { DimensionCombobox } from "@/components/climate/dimension-combobox";
 import type { ParsedQuestionRow } from "@/lib/utils/climate-questions-import";
 import type { WallpaperConfig, ColorConfig } from "@/lib/utils/wallpaper";
 import { getWallpaperCSS, parseWallpaperConfig, parseColorConfig, resolveColors, DEFAULT_COLORS } from "@/lib/utils/wallpaper";
@@ -101,7 +104,7 @@ const LIKERT_OPTIONS = [
 ];
 
 export function SurveyWizard({
-  dimensions,
+  dimensions: initialDimensions,
   templates = [],
   mode = "create",
   initialData,
@@ -112,6 +115,13 @@ export function SurveyWizard({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(0);
+  const [dimensions, setDimensions] = useState<DimensionOption[]>(initialDimensions);
+
+  const handleDimensionCreated = (dim: DimensionOption) => {
+    setDimensions((prev) =>
+      prev.some((d) => d.id === dim.id) ? prev : [...prev, dim],
+    );
+  };
 
   // Basics
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
@@ -177,6 +187,14 @@ export function SurveyWizard({
     "welcome",
   );
   const [questionIndex, setQuestionIndex] = useState(0);
+
+  // Step-3 mode: "iframe" shows a browser mockup of the saved survey;
+  // "edit" shows the editor panels. Default to iframe whenever a persisted
+  // survey id exists (edit mode or post-draft create mode).
+  const [previewViewMode, setPreviewViewMode] = useState<"iframe" | "edit">(
+    initialData?.id ? "iframe" : "edit",
+  );
+  const [iframeRefreshKey, setIframeRefreshKey] = useState(0);
   // 0 = all on one page; >0 = N questions per page
   const [questionsPerPage, setQuestionsPerPage] = useState(
     initialData?.questionsPerPage ?? 0,
@@ -228,9 +246,19 @@ export function SurveyWizard({
     return true;
   };
 
-  const handleSubmit = () => {
-    setError(null);
-    const payload = {
+  // Track the persisted draft id after the first "Save draft" in create mode,
+  // so subsequent saves update the same record instead of creating duplicates.
+  const [createdId, setCreatedId] = useState<string | null>(null);
+  const effectiveSurveyId = initialData?.id ?? createdId;
+
+  // Build payload from current state. `forDraft=true` filters empty question rows
+  // so the user can save mid-edit without tripping the "all questions need text"
+  // gate the final submit relies on.
+  const buildPayload = (forDraft: boolean) => {
+    const rows = forDraft
+      ? questions.filter((q) => q.text.trim().length > 0)
+      : questions;
+    return {
       name: name.trim(),
       description: description?.trim() || undefined,
       type: surveyType,
@@ -239,7 +267,8 @@ export function SurveyWizard({
       templateId: selectedTemplateId || undefined,
       welcomeTitle: welcomeTitle.trim() || undefined,
       welcomeBody: welcomeBody || undefined,
-      welcomeBannerUrl: wallpaper?.style === "image" ? wallpaper.url : welcomeBannerUrl?.trim() || undefined,
+      welcomeBannerUrl:
+        wallpaper?.style === "image" ? wallpaper.url : welcomeBannerUrl?.trim() || undefined,
       wallpaperConfig: wallpaper as unknown as Record<string, unknown> | undefined,
       colorConfig: colors as unknown as Record<string, unknown>,
       questionsPerPage: questionsPerPage || null,
@@ -248,7 +277,7 @@ export function SurveyWizard({
       thankYouTitle: thankYouTitle.trim() || undefined,
       thankYouBody: thankYouBody || undefined,
       thankYouCtaText: thankYouCtaText.trim() || undefined,
-      questions: questions.map((q, i) => ({
+      questions: rows.map((q, i) => ({
         text: q.text.trim(),
         type: q.type,
         dimensionId: q.dimensionId || undefined,
@@ -256,15 +285,95 @@ export function SurveyWizard({
         isRequired: q.isRequired,
       })),
     };
+  };
+
+  // Snapshot of the last saved state. Used to detect unsaved changes for the
+  // beforeunload guard. Initialized after first render so editing initialData
+  // doesn't flag as dirty on mount.
+  const currentSnapshot = useMemo(
+    () => JSON.stringify(buildPayload(false)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      name,
+      description,
+      surveyType,
+      frequency,
+      isAnonymous,
+      selectedTemplateId,
+      welcomeTitle,
+      welcomeBody,
+      welcomeCtaText,
+      themeColor,
+      thankYouTitle,
+      thankYouBody,
+      thankYouCtaText,
+      wallpaper,
+      colors,
+      questionsPerPage,
+      questions,
+    ],
+  );
+  const savedSnapshotRef = useRef<string | null>(null);
+  const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
+  useEffect(() => {
+    if (savedSnapshotRef.current === null) {
+      savedSnapshotRef.current = currentSnapshot;
+      setSavedSnapshot(currentSnapshot);
+    }
+  }, [currentSnapshot]);
+  const isDirty = savedSnapshot !== null && savedSnapshot !== currentSnapshot;
+
+  // Native browser warning when the user tries to close/reload with unsaved
+  // edits. Modern browsers ignore the custom message and show their own.
+  useEffect(() => {
+    if (!isDirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
+
+  const canSaveDraft =
+    name.trim().length > 0 &&
+    questions.some((q) => q.text.trim().length > 0) &&
+    !isPending;
+
+  const handleSaveDraft = () => {
+    if (!canSaveDraft) return;
+    setError(null);
+    const payload = buildPayload(true);
+    startTransition(async () => {
+      const result = effectiveSurveyId
+        ? await updateClimateSurvey(effectiveSurveyId, payload)
+        : await createClimateSurvey(payload);
+      if (result.success) {
+        if (!effectiveSurveyId && result.data?.id) setCreatedId(result.data.id);
+        const snapshot = currentSnapshot;
+        savedSnapshotRef.current = snapshot;
+        setSavedSnapshot(snapshot);
+        toast.success(t("actions.draft_saved"));
+      } else {
+        setError(result.error || "Failed to save draft");
+      }
+    });
+  };
+
+  const handleSubmit = () => {
+    setError(null);
+    const payload = buildPayload(false);
 
     startTransition(async () => {
-      const result =
-        mode === "edit" && initialData
-          ? await updateClimateSurvey(initialData.id, payload)
-          : await createClimateSurvey(payload);
+      const result = effectiveSurveyId
+        ? await updateClimateSurvey(effectiveSurveyId, payload)
+        : await createClimateSurvey(payload);
 
       if (result.success) {
-        router.push(`/surveys/climate/${result.data?.id}`);
+        const snapshot = currentSnapshot;
+        savedSnapshotRef.current = snapshot;
+        setSavedSnapshot(snapshot);
+        router.push(`/surveys/climate/${result.data?.id ?? effectiveSurveyId}`);
         router.refresh();
       } else {
         setError(result.error || `Failed to ${mode === "edit" ? "update" : "create"} survey`);
@@ -288,6 +397,16 @@ export function SurveyWizard({
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
         {step === 0 ? t("actions.cancel") : t("actions.previous")}
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleSaveDraft}
+        disabled={!canSaveDraft || !isDirty}
+        title={!canSaveDraft ? t("actions.save_draft_disabled_hint") : undefined}
+      >
+        <Save className="mr-2 h-4 w-4" />
+        {isPending ? t("actions.saving") : t("actions.save_draft")}
       </Button>
       {step < STEPS.length - 1 ? (
         <Button size="sm" onClick={() => setStep(step + 1)} disabled={!canProceed()}>
@@ -481,22 +600,12 @@ export function SurveyWizard({
                           </div>
                           <div className="space-y-1">
                             <Label className="text-xs">{t("questions_step.dimension_label")}</Label>
-                            <Select
-                              value={q.dimensionId || "none"}
-                              onValueChange={(v) => updateQuestion(i, "dimensionId", v === "none" ? "" : v)}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder={t("questions_step.no_dimension")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">{t("questions_step.no_dimension")}</SelectItem>
-                                {dimensions.map((d) => (
-                                  <SelectItem key={d.id} value={d.id}>
-                                    {d.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <DimensionCombobox
+                              dimensions={dimensions}
+                              value={q.dimensionId}
+                              onChange={(id) => updateQuestion(i, "dimensionId", id)}
+                              onCreated={handleDimensionCreated}
+                            />
                           </div>
                           <div className="flex items-end justify-between gap-3">
                             <div className="flex items-center gap-2">
@@ -594,8 +703,76 @@ export function SurveyWizard({
                       total: totalPages,
                     });
 
+          const showIframe = previewViewMode === "iframe" && effectiveSurveyId;
           return (
             <div className="space-y-4">
+              {/* Mode toggle: browser-mockup preview ↔ editor panels */}
+              <div className="flex items-center justify-end gap-2">
+                {showIframe && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIframeRefreshKey((k) => k + 1)}
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    {t("preview.reload_preview")}
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant={showIframe ? "default" : "outline"}
+                  size="sm"
+                  onClick={() =>
+                    setPreviewViewMode((m) => (m === "iframe" ? "edit" : "iframe"))
+                  }
+                  disabled={previewViewMode === "edit" && !effectiveSurveyId}
+                >
+                  {showIframe ? (
+                    <>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      {t("preview.mode_edit")}
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="mr-2 h-4 w-4" />
+                      {t("preview.mode_preview")}
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {showIframe ? (
+                /* Browser-mockup preview of the saved survey */
+                <div className="overflow-hidden rounded-xl border bg-background shadow-md">
+                  <div className="flex items-center gap-3 border-b bg-muted/60 px-4 py-2.5">
+                    <div className="flex gap-1.5">
+                      <span className="h-3 w-3 rounded-full bg-rose-400" />
+                      <span className="h-3 w-3 rounded-full bg-amber-400" />
+                      <span className="h-3 w-3 rounded-full bg-emerald-400" />
+                    </div>
+                    <div className="flex flex-1 items-center gap-2 truncate rounded-md border bg-background px-3 py-1 text-xs text-muted-foreground">
+                      <Lock className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{`/survey-preview/${effectiveSurveyId}`}</span>
+                    </div>
+                  </div>
+                  <iframe
+                    key={iframeRefreshKey}
+                    src={`/survey-preview/${effectiveSurveyId}`}
+                    title="Survey preview"
+                    className="block h-[680px] w-full border-0 bg-white"
+                  />
+                </div>
+              ) : !effectiveSurveyId ? (
+                /* Create mode without a draft yet: nothing to iframe. */
+                <div className="rounded-xl border bg-muted/30 p-8 text-center text-sm text-muted-foreground">
+                  {t("preview.preview_unavailable")}
+                </div>
+              ) : null}
+
+              {/* Editor panels — shown when Edit mode is active */}
+              {previewViewMode === "edit" && (
+              <>
               {/* Section selector — controls both panels */}
               <div className="flex flex-wrap items-center gap-2">
                 <Label className="text-sm text-muted-foreground">{t("preview.editing_label")}</Label>
@@ -1096,6 +1273,8 @@ export function SurveyWizard({
                 </Card>
               </div>
               </div>
+              </>
+              )}
             </div>
           );
         })()}
