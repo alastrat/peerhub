@@ -62,6 +62,7 @@ export default async function SurveyPreviewPage({ params }: PageProps) {
           thankYouTitle={survey.thankYouTitle}
           thankYouBody={survey.thankYouBody}
           thankYouCtaText={survey.thankYouCtaText}
+          logoUrl={survey.logoUrl}
           questionsPerPage={survey.questionsPerPage}
           dueDateLabel="—"
           daysLeft={999}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useEffect, useCallback, useMemo } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, Save, Send, CheckCircle2, ArrowLeft, ArrowRight } from "lucide-react";
@@ -58,6 +59,14 @@ interface PortalClimateSurveyFormProps {
   accentColor?: string;
   /** 0 = all on one page, >0 = paginated with N per page */
   questionsPerPage?: number;
+  /** Optional survey-specific logo shown in the sticky header. */
+  logoUrl?: string | null;
+  /** Survey name shown in the sticky header. */
+  surveyName?: string;
+  /** Localized due-date label shown in the sticky header. */
+  dueDateLabel?: string;
+  /** Optional back action from the sticky header (e.g. return to welcome). */
+  onBackToWelcome?: () => void;
 }
 
 // 4-point Spanish Likert scale per brochure
@@ -85,6 +94,10 @@ export function PortalClimateSurveyForm({
   previewMode = false,
   accentColor,
   questionsPerPage = 0,
+  logoUrl,
+  surveyName,
+  dueDateLabel,
+  onBackToWelcome,
 }: PortalClimateSurveyFormProps) {
   const router = useRouter();
   const accent = accentColor || DEFAULT_ACCENT;
@@ -215,38 +228,84 @@ export function PortalClimateSurveyForm({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Progress bar */}
-      <Card className="bg-white shadow-sm">
-        <CardContent className="p-4 space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">
-              {totalAnswered} de {questions.length} respondidas
-            </span>
-            <span className="flex items-center gap-2 text-xs text-muted-foreground">
+    <div className="flex min-h-screen flex-col">
+      {/* Andela-style sticky header: logo + survey name + question counter,
+          with a thin accent-coloured progress bar pinned to its bottom edge. */}
+      <header className="sticky top-0 z-30 border-b bg-white/95 shadow-sm backdrop-blur">
+        <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
+          {onBackToWelcome && (
+            <button
+              type="button"
+              onClick={onBackToWelcome}
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md hover:bg-muted"
+              aria-label="Volver al inicio"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+          )}
+
+          {logoUrl ? (
+            <Image
+              src={logoUrl}
+              alt="Logo"
+              width={96}
+              height={32}
+              className="h-7 w-auto shrink-0 object-contain"
+              unoptimized
+            />
+          ) : null}
+
+          <div className="min-w-0 flex-1">
+            {surveyName && (
+              <p className="truncate text-sm font-semibold">{surveyName}</p>
+            )}
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>
+                {totalAnswered} de {questions.length} respondidas
+              </span>
+              {dueDateLabel && dueDateLabel !== "—" && (
+                <>
+                  <span aria-hidden>·</span>
+                  <span className="truncate">Vence el {dueDateLabel}</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-3">
+            <span className="hidden items-center gap-1 text-xs text-muted-foreground sm:inline-flex">
               {isSaving && <Loader2 className="h-3 w-3 animate-spin" />}
               {lastSaved && !isSaving && (
                 <>
                   <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-                  Guardado automáticamente
+                  Guardado
                 </>
               )}
             </span>
+            <span
+              className="rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums"
+              style={{ backgroundColor: accent + "15", color: accent }}
+            >
+              {totalAnswered}/{questions.length}
+            </span>
           </div>
+        </div>
+
+        <div
+          className="relative h-1 w-full overflow-hidden"
+          style={{ backgroundColor: accent + "1f" }}
+        >
           <div
-            className="relative h-2 w-full overflow-hidden rounded-full"
-            style={{ backgroundColor: accent + "20" }}
-          >
-            <div
-              className="h-full transition-all duration-500 ease-out"
-              style={{
-                width: `${progress}%`,
-                backgroundColor: accent,
-              }}
-            />
-          </div>
-        </CardContent>
-      </Card>
+            className="h-full transition-all duration-500 ease-out"
+            style={{
+              width: `${progress}%`,
+              backgroundColor: accent,
+            }}
+          />
+        </div>
+      </header>
+
+      <div className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-6 sm:py-8">
 
       {/* Page navigation (top) */}
       {isPaginated && totalPages > 1 && (
@@ -289,15 +348,17 @@ export function PortalClimateSurveyForm({
             <CardHeader>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <CardTitle className="text-base leading-snug">
-                    <span className="text-muted-foreground mr-2">{i + 1}.</span>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Pregunta {i + 1} de {questions.length}
+                  </p>
+                  <CardTitle className="mt-2 text-xl font-semibold leading-snug sm:text-2xl">
                     {q.text}
                     {q.isRequired && (
                       <span className="text-destructive ml-1">*</span>
                     )}
                   </CardTitle>
                   {q.description && (
-                    <CardDescription className="mt-1">
+                    <CardDescription className="mt-2 text-sm">
                       {q.description}
                     </CardDescription>
                   )}
@@ -467,12 +528,15 @@ export function PortalClimateSurveyForm({
       })()}
 
       {missingRequired.length > 0 && (
-        <p className="text-sm text-muted-foreground text-right">
-          Faltan {missingRequired.length} pregunta
-          {missingRequired.length !== 1 ? "s" : ""} obligatoria
-          {missingRequired.length !== 1 ? "s" : ""} por responder
-        </p>
+        <div className="flex justify-end">
+          <p className="rounded-md bg-white/90 px-3 py-1 text-sm text-muted-foreground shadow-sm backdrop-blur">
+            Faltan {missingRequired.length} pregunta
+            {missingRequired.length !== 1 ? "s" : ""} obligatoria
+            {missingRequired.length !== 1 ? "s" : ""} por responder
+          </p>
+        </div>
       )}
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { ArrowLeft, ArrowRight, Check, ClipboardCheck, ShieldCheck } from "lucide-react";
 import type { WallpaperConfig, ColorConfig } from "@/lib/utils/wallpaper";
 import { getWallpaperCSS, parseWallpaperConfig, parseColorConfig, resolveColors, getContrastBadgeColors } from "@/lib/utils/wallpaper";
@@ -45,6 +46,7 @@ interface PortalClimateSurveyFlowProps {
   thankYouTitle: string | null;
   thankYouBody: string | null;
   thankYouCtaText: string | null;
+  logoUrl?: string | null;
   questionsPerPage: number | null;
   dueDateLabel: string;
   daysLeft: number;
@@ -70,6 +72,7 @@ export function PortalClimateSurveyFlow({
   thankYouTitle,
   thankYouBody,
   thankYouCtaText,
+  logoUrl,
   questionsPerPage: questionsPerPageProp,
   dueDateLabel,
   daysLeft,
@@ -159,41 +162,22 @@ export function PortalClimateSurveyFlow({
   if (stage === "form") {
     return (
       <div
-        className="min-h-screen w-full px-4 py-8 space-y-6"
+        className="min-h-screen w-full"
         style={headerCSS.style}
       >
-        <div className="mx-auto max-w-2xl space-y-4">
-          {/* Header bar */}
-          <div className="flex items-center gap-4 rounded-xl bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
-            <button
-              type="button"
-              onClick={() => setStage("welcome")}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted"
-              aria-label="Back to welcome"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </button>
-            <div>
-              <h1
-                className="text-sm font-semibold"
-                style={{ color: colors.titleText }}
-              >
-                {resolvedTitle}
-              </h1>
-              <p className="text-xs text-muted-foreground">Vence el {dueDateLabel}</p>
-            </div>
-          </div>
-
-          <PortalClimateSurveyForm
-            distributionId={distributionId}
-            questions={questions}
-            draftAnswers={draftAnswers}
-            onSubmitted={() => setStage("thankyou")}
-            previewMode={previewMode}
-            accentColor={accent}
-            questionsPerPage={questionsPerPageProp ?? 0}
-          />
-        </div>
+        <PortalClimateSurveyForm
+          distributionId={distributionId}
+          questions={questions}
+          draftAnswers={draftAnswers}
+          onSubmitted={() => setStage("thankyou")}
+          previewMode={previewMode}
+          accentColor={accent}
+          questionsPerPage={questionsPerPageProp ?? 0}
+          logoUrl={logoUrl}
+          surveyName={resolvedTitle}
+          dueDateLabel={dueDateLabel}
+          onBackToWelcome={() => setStage("welcome")}
+        />
       </div>
     );
   }
@@ -211,6 +195,18 @@ export function PortalClimateSurveyFlow({
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
+        )}
+        {logoUrl && (
+          <div className="flex h-10 items-center rounded-lg bg-white/90 px-3 shadow-sm backdrop-blur">
+            <Image
+              src={logoUrl}
+              alt="Logo"
+              width={80}
+              height={32}
+              className="h-7 w-auto object-contain"
+              unoptimized
+            />
+          </div>
         )}
         <div className="flex-1 min-w-0">
           <p className="text-sm text-muted-foreground truncate">
