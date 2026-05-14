@@ -470,45 +470,44 @@ export function SurveyWizard({
 
   return (
     <div className="space-y-6">
-      {/* Progress + navigation (pill-style indicator matching the 360° wizard) */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center">
-          {STEP_KEYS.map((key, i) => {
-            const Icon = STEP_ICONS[key];
-            const isActive = i === step;
-            const isDone = i < step;
-            return (
-              <div key={key} className="flex items-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (isDone) setStep(i);
-                  }}
-                  className={cn(
-                    "flex items-center gap-2 rounded-full px-4 py-2 transition-colors",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : isDone
-                        ? "bg-primary/20 text-primary cursor-pointer hover:bg-primary/30"
-                        : "bg-muted text-muted-foreground",
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span className="hidden text-sm sm:inline">{STEPS[i]}</span>
-                </button>
-                {i < STEP_KEYS.length - 1 && (
-                  <div
-                    className={cn(
-                      "mx-2 h-0.5 w-8",
-                      isDone ? "bg-primary" : "bg-muted",
-                    )}
-                  />
+      {/* Progress indicator (pill-style, matches the 360° wizard).
+          Navigation buttons live at the bottom of the page, below the
+          active step's content, so they don't compete with the step pills. */}
+      <div className="flex flex-wrap items-center">
+        {STEP_KEYS.map((key, i) => {
+          const Icon = STEP_ICONS[key];
+          const isActive = i === step;
+          const isDone = i < step;
+          return (
+            <div key={key} className="flex items-center">
+              <button
+                type="button"
+                onClick={() => {
+                  if (isDone) setStep(i);
+                }}
+                className={cn(
+                  "flex items-center gap-2 rounded-full px-4 py-2 transition-colors",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : isDone
+                      ? "bg-primary/20 text-primary cursor-pointer hover:bg-primary/30"
+                      : "bg-muted text-muted-foreground",
                 )}
-              </div>
-            );
-          })}
-        </div>
-        <NavButtons />
+              >
+                <Icon className="h-4 w-4" />
+                <span className="hidden text-sm sm:inline">{STEPS[i]}</span>
+              </button>
+              {i < STEP_KEYS.length - 1 && (
+                <div
+                  className={cn(
+                    "mx-2 h-0.5 w-8",
+                    isDone ? "bg-primary" : "bg-muted",
+                  )}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -1545,6 +1544,11 @@ export function SurveyWizard({
           );
         })()}
 
+      {/* Wizard navigation: stays pinned to the bottom of the page so it
+          doesn't compete with the step indicator for attention. */}
+      <div className="flex justify-end">
+        <NavButtons />
+      </div>
     </div>
   );
 }
