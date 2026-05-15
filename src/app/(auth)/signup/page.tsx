@@ -64,9 +64,9 @@ export default function SignupPage() {
             <Image
               src="/logo-kultiva.png"
               alt="Kultiva"
-              width={140}
-              height={58}
-              className="h-10 w-auto"
+              width={280}
+              height={115}
+              className="h-16 w-auto"
               priority
             />
           </Link>
@@ -112,15 +112,14 @@ export default function SignupPage() {
               </Button>
             </form>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/20" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="px-3 text-xs uppercase tracking-wider text-white/60">
-                  {t("or_continue_with")}
-                </span>
-              </div>
+            {/* Divider — two flanking lines instead of a through-line so
+                the label doesn't visually bisect the gradient panel. */}
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-white/20" />
+              <span className="shrink-0 text-xs uppercase tracking-wider text-white/60">
+                {t("or_continue_with")}
+              </span>
+              <div className="h-px flex-1 bg-white/20" />
             </div>
 
             <Button

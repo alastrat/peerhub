@@ -1504,7 +1504,7 @@
       "email_placeholder": "tu@empresa.com",
       "sign_up_email": "Continuar con correo",
       "sign_up_google": "Continuar con Google",
-      "or_continue_with": "O continúa con correo electrónico",
+      "or_continue_with": "O continúa con",
       "have_account": "¿Ya tienes cuenta?",
       "sign_in": "Inicia sesión",
       "terms_consent": "Al registrarte, aceptas nuestros <terms>Términos de Servicio</terms> y <privacy>Política de Privacidad</privacy>."
@@ -1516,7 +1516,7 @@
       "email_placeholder": "tu@empresa.com",
       "sign_in_email": "Continuar con correo",
       "sign_in_google": "Continuar con Google",
-      "or_continue_with": "O continúa con correo electrónico",
+      "or_continue_with": "O continúa con",
       "no_account": "¿No tienes cuenta?",
       "sign_up": "Regístrate",
       "errors": {
