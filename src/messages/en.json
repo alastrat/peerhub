@@ -2038,9 +2038,54 @@
             "text_required": "Text is required"
           }
         },
+        "respondent_sheet": {
+          "anonymous_title": "Anonymous Respondent",
+          "anonymous_subtitle": "Identity hidden — anonymous survey",
+          "completed_badge": "Completed",
+          "in_progress_badge": "In Progress",
+          "tab_report": "Report",
+          "tab_answers": "Answers",
+          "stats_avg": "Avg. Score",
+          "stats_answered": "Answered",
+          "stats_duration": "Duration",
+          "diff_vs_avg": "{diff} vs avg",
+          "scores_by_dimension": "Scores by Dimension",
+          "history": "History",
+          "timeline": {
+            "submitted": "Survey submitted",
+            "submitted_detail": "{count, plural, one {# question answered} other {all # questions answered}}",
+            "draft_saved": "Last draft saved",
+            "last_activity": "Last activity",
+            "answered_detail": "{answered} of {total} questions answered",
+            "started": "Survey started",
+            "invitation": "Invitation sent",
+            "invitation_detail": "Via email notification"
+          },
+          "answers": {
+            "no_answer": "No answer",
+            "survey_avg_tooltip": "Survey avg: {value}",
+            "avg_label": "avg {value}"
+          }
+        },
         "insights_tab": {
           "no_insights": "No insights available",
-          "no_insights_hint": "Insights will appear once the survey has been sent and responses are collected."
+          "no_insights_hint": "Insights will appear once the survey has been sent and responses are collected.",
+          "response_breakdown": "Response breakdown (out of {total})",
+          "completed": "Completed",
+          "pending": "Pending",
+          "completion_rate": "Completion rate",
+          "enps_score": "eNPS Score: {score}",
+          "detractors": "Detractors: {pct}%",
+          "passives": "Passives: {pct}%",
+          "promoters": "Promoters: {pct}%",
+          "average_rating": "Average rating",
+          "out_of": "out of {max}",
+          "average_score": "Average score: {pct}%",
+          "scores_by_dimension": "Scores by dimension",
+          "scores_by_dimension_desc": "Average scores across all completed responses",
+          "question_results": "Question results",
+          "responses_count": "{count, plural, one {# response} other {# responses}}",
+          "more_responses": "+{count, plural, one {# more response} other {# more responses}}"
         },
         "participants_tab": {
           "title": "Participants",

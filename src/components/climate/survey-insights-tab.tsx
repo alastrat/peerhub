@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -141,6 +142,7 @@ export function SurveyInsightsTab({
   totalCompleted,
   totalPending,
 }: SurveyInsightsTabProps) {
+  const t = useTranslations("dashboard.climate.detail.insights_tab");
   const hasNPS = results.questionResults.some((q) => q.type === "NPS");
   const maxScore = hasNPS ? 10 : 5;
 
@@ -188,18 +190,18 @@ export function SurveyInsightsTab({
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>
-              Response breakdown (out of {totalInvited})
+              {t("response_breakdown", { total: totalInvited })}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <StatusBar
-              label="Completed"
+              label={t("completed")}
               count={totalCompleted}
               total={totalInvited}
               color="#22c55e"
             />
             <StatusBar
-              label="Pending"
+              label={t("pending")}
               count={totalPending}
               total={totalInvited}
               color="#eab308"
@@ -212,7 +214,7 @@ export function SurveyInsightsTab({
           <CardContent className="flex flex-col items-center justify-center gap-6 pt-6">
             <div className="relative">
               <RateCircle
-                label="Completion rate"
+                label={t("completion_rate")}
                 value={results.completionRate}
                 color="#22c55e"
               />
@@ -225,7 +227,7 @@ export function SurveyInsightsTab({
       {npsBreakdown && results.npsScore != null && (
         <Card>
           <CardHeader>
-            <CardTitle>eNPS Score: {results.npsScore}</CardTitle>
+            <CardTitle>{t("enps_score", { score: results.npsScore })}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -251,25 +253,25 @@ export function SurveyInsightsTab({
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-red-600">
-                  Detractors:{" "}
-                  {Math.round(
-                    (npsBreakdown.detractors / npsBreakdown.total) * 100
-                  )}
-                  %
+                  {t("detractors", {
+                    pct: Math.round(
+                      (npsBreakdown.detractors / npsBreakdown.total) * 100,
+                    ),
+                  })}
                 </span>
                 <span className="text-yellow-600">
-                  Passives:{" "}
-                  {Math.round(
-                    (npsBreakdown.passives / npsBreakdown.total) * 100
-                  )}
-                  %
+                  {t("passives", {
+                    pct: Math.round(
+                      (npsBreakdown.passives / npsBreakdown.total) * 100,
+                    ),
+                  })}
                 </span>
                 <span className="text-green-600">
-                  Promoters:{" "}
-                  {Math.round(
-                    (npsBreakdown.promoters / npsBreakdown.total) * 100
-                  )}
-                  %
+                  {t("promoters", {
+                    pct: Math.round(
+                      (npsBreakdown.promoters / npsBreakdown.total) * 100,
+                    ),
+                  })}
                 </span>
               </div>
             </div>
@@ -281,7 +283,7 @@ export function SurveyInsightsTab({
       <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>Average rating</CardTitle>
+            <CardTitle>{t("average_rating")}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-4">
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted">
@@ -292,7 +294,7 @@ export function SurveyInsightsTab({
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              out of {maxScore}
+              {t("out_of", { max: maxScore })}
             </p>
           </CardContent>
         </Card>
@@ -300,10 +302,12 @@ export function SurveyInsightsTab({
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>
-              Average score:{" "}
-              {results.overallAverage != null
-                ? `${Math.round((results.overallAverage / maxScore) * 100)}%`
-                : "—"}
+              {t("average_score", {
+                pct:
+                  results.overallAverage != null
+                    ? Math.round((results.overallAverage / maxScore) * 100)
+                    : 0,
+              })}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -339,10 +343,8 @@ export function SurveyInsightsTab({
       {results.dimensionScores.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Scores by Dimension</CardTitle>
-            <CardDescription>
-              Average scores across all completed responses
-            </CardDescription>
+            <CardTitle>{t("scores_by_dimension")}</CardTitle>
+            <CardDescription>{t("scores_by_dimension_desc")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {results.dimensionScores
@@ -362,7 +364,7 @@ export function SurveyInsightsTab({
       {/* Question-level Results */}
       <Card>
         <CardHeader>
-          <CardTitle>Question Results</CardTitle>
+          <CardTitle>{t("question_results")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {results.questionResults.map((q, i) => (
@@ -398,7 +400,7 @@ export function SurveyInsightsTab({
               {q.count > 0 && (
                 <div className="ml-9">
                   <p className="text-xs text-muted-foreground">
-                    {q.count} responses
+                    {t("responses_count", { count: q.count })}
                   </p>
                 </div>
               )}
@@ -414,7 +416,9 @@ export function SurveyInsightsTab({
                   ))}
                   {q.textResponses.length > 5 && (
                     <p className="text-xs text-muted-foreground">
-                      +{q.textResponses.length - 5} more responses
+                      {t("more_responses", {
+                        count: q.textResponses.length - 5,
+                      })}
                     </p>
                   )}
                 </div>
