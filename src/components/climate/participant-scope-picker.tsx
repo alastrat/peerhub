@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowDown, ArrowUp, ArrowUpDown, Search } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -266,6 +266,8 @@ function CustomEmployeePicker({
   const [hubId, setHubId] = useState<string>(ALL);
   const [teamId, setTeamId] = useState<string>(ALL);
   const [sort, setSort] = useState<SortState | null>({ key: "name", dir: "asc" });
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 10;
 
   // Only surface hub / team filters when those columns have any data to
   // distinguish on — otherwise they're noise.
@@ -313,7 +315,21 @@ function CustomEmployeePicker({
     return rows;
   }, [employees, search, departmentId, hubId, teamId, sort]);
 
-  const visibleIds = useMemo(() => filtered.map((e) => e.id), [filtered]);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  // Whenever a filter / search trims the result set, snap the cursor back
+  // into a valid page instead of leaving the user on a now-empty page.
+  useEffect(() => {
+    if (page > totalPages - 1) setPage(0);
+  }, [page, totalPages]);
+
+  const pageRows = useMemo(
+    () => filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [filtered, page],
+  );
+
+  // "Visible" for the indeterminate select-all is the rows actually on
+  // screen — i.e., the current page, not the entire filtered result.
+  const visibleIds = useMemo(() => pageRows.map((e) => e.id), [pageRows]);
   const selected = useMemo(() => new Set(value), [value]);
   const allVisibleSelected =
     visibleIds.length > 0 && visibleIds.every((id) => selected.has(id));
@@ -377,34 +393,16 @@ function CustomEmployeePicker({
         )}
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex justify-end">
         <Badge variant="secondary">
           {t("selected_count", {
             selected: selected.size,
             total: employees.length,
           })}
         </Badge>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => onChange(employees.map((e) => e.id))}
-          >
-            {t("select_all")}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => onChange([])}
-          >
-            {t("clear")}
-          </Button>
-        </div>
       </div>
 
-      <div className="rounded-lg border">
+      <div className="overflow-hidden rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -439,7 +437,7 @@ function CustomEmployeePicker({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((e) => {
+            {pageRows.map((e) => {
               const isSelected = selected.has(e.id);
               return (
                 <TableRow key={e.id} data-state={isSelected ? "selected" : undefined}>
@@ -480,6 +478,42 @@ function CustomEmployeePicker({
             )}
           </TableBody>
         </Table>
+        {filtered.length > PAGE_SIZE && (
+          <div className="flex items-center justify-between border-t bg-muted/20 px-3 py-2">
+            <span className="text-xs text-muted-foreground">
+              {t("pagination_page_of", {
+                current: page + 1,
+                total: totalPages,
+              })}
+            </span>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
+                disabled={page === 0}
+                aria-label={t("pagination_previous")}
+              >
+                <ChevronLeft className="mr-1 h-4 w-4" />
+                {t("pagination_previous")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setPage((p) => Math.min(totalPages - 1, p + 1))
+                }
+                disabled={page >= totalPages - 1}
+                aria-label={t("pagination_next")}
+              >
+                {t("pagination_next")}
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -2283,7 +2283,10 @@
           "col_title": "Cargo",
           "no_matches": "Ningún empleado coincide con los filtros.",
           "select_all_aria": "Seleccionar todos los visibles",
-          "select_row_aria": "Seleccionar a {name}"
+          "select_row_aria": "Seleccionar a {name}",
+          "pagination_previous": "Anterior",
+          "pagination_next": "Siguiente",
+          "pagination_page_of": "Página {current} de {total}"
         },
         "preview": {
           "editing_label": "Editando:",

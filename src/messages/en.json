@@ -2235,7 +2235,10 @@
           "col_title": "Title",
           "no_matches": "No employees match the filters.",
           "select_all_aria": "Select all visible",
-          "select_row_aria": "Select {name}"
+          "select_row_aria": "Select {name}",
+          "pagination_previous": "Previous",
+          "pagination_next": "Next",
+          "pagination_page_of": "Page {current} of {total}"
         },
         "preview": {
           "editing_label": "Editing:",
