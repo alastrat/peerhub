@@ -2,10 +2,13 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +47,7 @@ interface RoleData {
 }
 
 export function RolesList({ roles: initial, isSuperAdmin }: { roles: RoleData[]; isSuperAdmin: boolean }) {
+  const t = useTranslations("dashboard.roles_page");
   const [roles, setRoles] = useState(initial);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +76,7 @@ export function RolesList({ roles: initial, isSuperAdmin }: { roles: RoleData[];
         // Reload to get fresh data
         window.location.reload();
       } else {
-        setError(result.error || "Failed to create role");
+        setError(result.error || t("create_failed"));
       }
     });
   };
@@ -84,49 +88,48 @@ export function RolesList({ roles: initial, isSuperAdmin }: { roles: RoleData[];
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-1.5 h-4 w-4" />
-              Create Role
+              {t("create_role")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <form onSubmit={handleCreate}>
               <DialogHeader>
-                <DialogTitle>Create Role</DialogTitle>
-                <DialogDescription>
-                  Create a new custom role with specific permissions.
-                </DialogDescription>
+                <DialogTitle>{t("create_role")}</DialogTitle>
+                <DialogDescription>{t("create_role_description")}</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Name</label>
+                  <Label htmlFor="new-role-name">{t("name_label")}</Label>
                   <Input
+                    id="new-role-name"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    placeholder="e.g. HR Lead"
+                    placeholder={t("name_placeholder")}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Description</label>
-                  <Input
+                  <Label htmlFor="new-role-description">{t("description_label")}</Label>
+                  <Textarea
+                    id="new-role-description"
+                    rows={3}
                     value={newDesc}
                     onChange={(e) => setNewDesc(e.target.value)}
-                    placeholder="Optional description"
+                    placeholder={t("description_placeholder")}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    Clone permissions from
-                  </label>
+                  <Label htmlFor="new-role-clone-from">{t("clone_from_label")}</Label>
                   <Select value={cloneFrom} onValueChange={setCloneFrom}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Start from scratch" />
+                    <SelectTrigger id="new-role-clone-from">
+                      <SelectValue placeholder={t("start_from_scratch")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">
-                        Start from scratch (all off)
+                        {t("start_from_scratch_all_off")}
                       </SelectItem>
                       {roles.map((r) => (
                         <SelectItem key={r.id} value={r.id}>
-                          Clone from {r.name}
+                          {t("clone_from", { name: r.name })}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -139,7 +142,7 @@ export function RolesList({ roles: initial, isSuperAdmin }: { roles: RoleData[];
                   type="submit"
                   disabled={isPending || !newName.trim()}
                 >
-                  {isPending ? "Creating..." : "Create Role"}
+                  {isPending ? t("creating") : t("create_role")}
                 </Button>
               </DialogFooter>
             </form>
@@ -171,12 +174,12 @@ export function RolesList({ roles: initial, isSuperAdmin }: { roles: RoleData[];
                       </Badge>
                       {role.isSystem && (
                         <span className="text-xs text-gray-400 font-normal">
-                          System
+                          {t("system_badge")}
                         </span>
                       )}
                     </CardTitle>
                     <CardDescription>
-                      {role.description || "No description"}
+                      {role.description || t("no_description")}
                     </CardDescription>
                   </div>
                 </div>
@@ -185,16 +188,30 @@ export function RolesList({ roles: initial, isSuperAdmin }: { roles: RoleData[];
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span>
-                      {role.membersCount}{" "}
-                      {role.membersCount === 1 ? "member" : "members"}
+                      {t(
+                        role.membersCount === 1
+                          ? "members_count_one"
+                          : "members_count_other",
+                        { count: role.membersCount },
+                      )}
                     </span>
-                    <span className="text-gray-500">{writes} write</span>
-                    <span className="text-gray-500">{reads} read</span>
+                    <span className="text-gray-500">
+                      {t(writes === 1 ? "writes_count" : "writes_count_other", {
+                        count: writes,
+                      })}
+                    </span>
+                    <span className="text-gray-500">
+                      {t(reads === 1 ? "reads_count" : "reads_count_other", {
+                        count: reads,
+                      })}
+                    </span>
                   </div>
                   <Link href={`/settings/company/roles/${role.id}`} className="edit-btn">
                     <Button variant="outline" size="sm">
                       <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                      {role.isSystem && !isSuperAdmin ? "View Permissions" : "Edit Permissions"}
+                      {role.isSystem && !isSuperAdmin
+                        ? t("view_permissions")
+                        : t("edit_permissions")}
                     </Button>
                   </Link>
                 </div>

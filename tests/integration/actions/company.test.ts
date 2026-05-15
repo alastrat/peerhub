@@ -113,6 +113,7 @@ describe("company actions", () => {
       const result = await createCompany({
         name: "Acme Corp",
         slug: "acme-corp",
+        taxId: "900123456-7",
         userId: "admin-user",
         jobTitle: "People Lead",
       });
@@ -130,7 +131,7 @@ describe("company actions", () => {
 
       // Verify transaction calls
       expect(capturedTxClient!.company.create).toHaveBeenCalledWith({
-        data: { name: "Acme Corp", slug: "acme-corp" },
+        data: { name: "Acme Corp", slug: "acme-corp", taxId: "900123456-7" },
       });
       expect(capturedTxClient!.employee.create).toHaveBeenCalledWith({
         data: {
@@ -156,6 +157,7 @@ describe("company actions", () => {
       const result = await createCompany({
         name: "Another Corp",
         slug: "acme-corp",
+        taxId: "900123456-7",
         userId: "admin-user",
       });
 
@@ -170,6 +172,7 @@ describe("company actions", () => {
       const result = await createCompany({
         name: "Acme Corp",
         slug: "acme-corp",
+        taxId: "900123456-7",
         userId: "admin-user",
       });
 
@@ -184,6 +187,7 @@ describe("company actions", () => {
       const result = await createCompany({
         name: "Acme Corp",
         slug: "acme-corp",
+        taxId: "900123456-7",
         userId: "admin-user",
       });
 
@@ -221,6 +225,7 @@ describe("company actions", () => {
       await createCompany({
         name: "Acme Corp",
         slug: "acme-corp",
+        taxId: "900123456-7",
         userId: "attacker-user", // attempt to point at someone else
       });
 
@@ -239,6 +244,7 @@ describe("company actions", () => {
       const result = await createCompany({
         name: "Acme Corp",
         slug: "acme-corp",
+        taxId: "900123456-7",
         userId: "admin-user",
       });
 
@@ -256,6 +262,7 @@ describe("company actions", () => {
       const result = await createCompany({
         name: "Acme Corp",
         slug: "acme-corp",
+        taxId: "900123456-7",
         userId: "admin-user",
       });
 

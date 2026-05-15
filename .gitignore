@@ -48,3 +48,11 @@ next-env.d.ts
 .playwright-mcp/
 
 #template/
+
+# Supabase CLI runtime state (linked project + cached cli download)
+supabase/.temp/
+
+# pnpm artifacts (project still uses npm; remove these guards once we
+# formally migrate to pnpm)
+pnpm-lock.yaml
+pnpm-workspace.yaml

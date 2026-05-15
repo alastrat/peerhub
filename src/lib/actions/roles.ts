@@ -94,7 +94,6 @@ export async function getCompanyRoles(companyId: string) {
 export async function createRole(input: {
   name: string;
   description?: string;
-  color?: string;
   cloneFromId?: string;
 }): Promise<ActionResult<{ id: string }>> {
   try {
@@ -144,7 +143,7 @@ export async function createRole(input: {
         slug,
         name: input.name.trim(),
         description: input.description?.trim() || null,
-        color: input.color || "#6b7280",
+        color: "#6b7280",
         isSystem: false,
         baseRole: null,
         permissions,

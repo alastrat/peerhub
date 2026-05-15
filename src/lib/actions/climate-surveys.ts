@@ -141,8 +141,18 @@ export async function updateClimateSurvey(
     // Non-draft surveys: block structural changes (questions, name, type, frequency)
     if (!isDraft) {
       if (input.questions) {
-        const t = await getTranslations("dashboard.climate.edit_page");
-        return { success: false, error: t("questions_locked_after_send") };
+        // The error is surfaced verbatim in the wizard. We prefer the
+        // translated message at runtime but fall back to the canonical
+        // English string when next-intl's request context isn't available
+        // (e.g. integration tests run outside a request lifecycle).
+        let error = "Questions cannot be changed after the survey has been sent";
+        try {
+          const t = await getTranslations("dashboard.climate.edit_page");
+          error = t("questions_locked_after_send");
+        } catch {
+          // intentionally fall back to the English baseline above
+        }
+        return { success: false, error };
       }
       // Strip structural fields — only allow presentation updates
       input = {

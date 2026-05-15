@@ -115,10 +115,16 @@ describe("updateGlobalRoleSchema", () => {
 });
 
 describe("createPlatformCompanySchema", () => {
+  // Reasonable tax id used to satisfy the now-required field across the
+  // happy-path cases. Format-agnostic (NIT-style) — the schema only
+  // validates length + allowed characters.
+  const VALID_TAX_ID = "900123456-7";
+
   it("validates a valid input", () => {
     const result = createPlatformCompanySchema.safeParse({
       name: "Acme Corp",
       slug: "acme-corp",
+      taxId: VALID_TAX_ID,
     });
     expect(result.success).toBe(true);
   });
@@ -166,6 +172,7 @@ describe("createPlatformCompanySchema", () => {
     const result = createPlatformCompanySchema.safeParse({
       name: "Acme",
       slug: "acme-123",
+      taxId: VALID_TAX_ID,
     });
     expect(result.success).toBe(true);
   });
@@ -186,11 +193,13 @@ describe("createPlatformCompanyWithAdminSchema", () => {
     lastName: "Doe",
     email: "admin@acme.com",
   };
+  const VALID_TAX_ID = "900123456-7";
 
   it("validates a minimal input (only required fields)", () => {
     const result = createPlatformCompanyWithAdminSchema.safeParse({
       name: "Acme Corp",
       slug: "acme-corp",
+      taxId: VALID_TAX_ID,
       admin: validAdmin,
     });
     expect(result.success).toBe(true);
@@ -200,6 +209,7 @@ describe("createPlatformCompanyWithAdminSchema", () => {
     const result = createPlatformCompanyWithAdminSchema.safeParse({
       name: "Acme Corp",
       slug: "acme-corp",
+      taxId: VALID_TAX_ID,
       logo: "https://acme.com/logo.png",
       domain: "acme.com",
       primaryColor: "#613171",
@@ -257,6 +267,7 @@ describe("createPlatformCompanyWithAdminSchema", () => {
     const result = createPlatformCompanyWithAdminSchema.safeParse({
       name: "Acme",
       slug: "acme",
+      taxId: VALID_TAX_ID,
       logo: "",
       admin: validAdmin,
     });

@@ -331,12 +331,13 @@ describe("createPlatformCompany", () => {
     const result = await createPlatformCompany({
       name: "Acme Inc",
       slug: "acme-inc",
+      taxId: "900123456-7",
     });
 
     expect(result.success).toBe(true);
     expect(result).toEqual({ success: true, data: { id: "comp-1" } });
     expect(mockPrisma.company.create).toHaveBeenCalledWith({
-      data: { name: "Acme Inc", slug: "acme-inc" },
+      data: { name: "Acme Inc", slug: "acme-inc", taxId: "900123456-7" },
     });
   });
 
@@ -349,6 +350,7 @@ describe("createPlatformCompany", () => {
     const result = await createPlatformCompany({
       name: "Acme Inc",
       slug: "acme-inc",
+      taxId: "900123456-7",
     });
 
     expect(result.success).toBe(false);
@@ -362,6 +364,7 @@ describe("createPlatformCompany", () => {
     const result = await createPlatformCompany({
       name: "Test",
       slug: "test",
+      taxId: "900123456-7",
     });
 
     expect(result.success).toBe(false);
@@ -377,6 +380,7 @@ describe("createPlatformCompany", () => {
     const result = await createPlatformCompany({
       name: "Test",
       slug: "test",
+      taxId: "900123456-7",
     });
 
     expect(result.success).toBe(false);
