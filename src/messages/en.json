@@ -2040,7 +2040,23 @@
         },
         "insights_tab": {
           "no_insights": "No insights available",
-          "no_insights_hint": "Insights will appear once the survey has been sent and responses are collected."
+          "no_insights_hint": "Insights will appear once the survey has been sent and responses are collected.",
+          "response_breakdown": "Response breakdown (out of {total})",
+          "completed": "Completed",
+          "pending": "Pending",
+          "completion_rate": "Completion rate",
+          "enps_score": "eNPS Score: {score}",
+          "detractors": "Detractors: {pct}%",
+          "passives": "Passives: {pct}%",
+          "promoters": "Promoters: {pct}%",
+          "average_rating": "Average rating",
+          "out_of": "out of {max}",
+          "average_score": "Average score: {pct}%",
+          "scores_by_dimension": "Scores by dimension",
+          "scores_by_dimension_desc": "Average scores across all completed responses",
+          "question_results": "Question results",
+          "responses_count": "{count, plural, one {# response} other {# responses}}",
+          "more_responses": "+{count, plural, one {# more response} other {# more responses}}"
         },
         "participants_tab": {
           "title": "Participants",

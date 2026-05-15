@@ -306,9 +306,14 @@ export default async function SurveyDetailPage({ params }: PageProps) {
         </Card>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="answers">
+      {/* Tabs — Análisis first so admins land on results, not the raw
+          response feed, when opening an active or closed survey. */}
+      <Tabs defaultValue="insights">
         <TabsList>
+          <TabsTrigger value="insights" className="gap-1.5">
+            <BarChart3 className="h-4 w-4" />
+            {t("tabs.insights")}
+          </TabsTrigger>
           <TabsTrigger value="answers" className="gap-1.5">
             <MessageSquare className="h-4 w-4" />
             {t("tabs.answers")}
@@ -324,10 +329,6 @@ export default async function SurveyDetailPage({ params }: PageProps) {
           <TabsTrigger value="settings" className="gap-1.5">
             <Settings className="h-4 w-4" />
             {t("tabs.settings")}
-          </TabsTrigger>
-          <TabsTrigger value="insights" className="gap-1.5">
-            <BarChart3 className="h-4 w-4" />
-            {t("tabs.insights")}
           </TabsTrigger>
         </TabsList>
 

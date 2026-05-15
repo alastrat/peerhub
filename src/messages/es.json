@@ -2086,7 +2086,23 @@
         },
         "insights_tab": {
           "no_insights": "Aún no hay análisis disponibles",
-          "no_insights_hint": "Los análisis aparecerán cuando se envíe la encuesta y se recopilen respuestas."
+          "no_insights_hint": "Los análisis aparecerán cuando se envíe la encuesta y se recopilen respuestas.",
+          "response_breakdown": "Resumen de respuestas (de {total})",
+          "completed": "Completadas",
+          "pending": "Pendientes",
+          "completion_rate": "Tasa de finalización",
+          "enps_score": "Puntaje eNPS: {score}",
+          "detractors": "Detractores: {pct}%",
+          "passives": "Pasivos: {pct}%",
+          "promoters": "Promotores: {pct}%",
+          "average_rating": "Promedio general",
+          "out_of": "de {max}",
+          "average_score": "Puntaje promedio: {pct}%",
+          "scores_by_dimension": "Puntajes por dimensión",
+          "scores_by_dimension_desc": "Promedio entre todas las respuestas completadas",
+          "question_results": "Resultados por pregunta",
+          "responses_count": "{count, plural, one {# respuesta} other {# respuestas}}",
+          "more_responses": "+{count, plural, one {# respuesta más} other {# respuestas más}}"
         },
         "participants_tab": {
           "title": "Participantes",
