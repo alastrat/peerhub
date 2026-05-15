@@ -72,26 +72,24 @@ export function AuthCarousel() {
       onMouseLeave={() => {
         pausedRef.current = false;
       }}
-      className="relative hidden flex-col overflow-hidden p-12 lg:flex"
-      style={{
-        backgroundImage:
-          "linear-gradient(135deg, #4c2459 0%, #613171 45%, #7a3e8c 100%)",
-      }}
+      className="relative hidden flex-col overflow-hidden bg-background p-12 lg:flex"
     >
-      {/* Subtle grid texture (matches the Kezak reference) */}
+      {/* Subtle grid texture (tinted purple to keep the brand cue on the
+          white panel without overpowering the icons) */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-20"
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
+            "linear-gradient(rgba(97,49,113,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(97,49,113,0.6) 1px, transparent 1px)",
           backgroundSize: "48px 48px",
         }}
+        aria-hidden
       />
 
       {/* One icon at a time — `key` swaps the element so the browser can
           GC the previous src; the fade is driven by CSS animation on mount.
-          The icon sits inside a soft circular backdrop to read as a hero
-          element on the purple gradient rather than a floating PNG. */}
+          The icon sits inside a soft purple halo so it reads as a hero
+          element on white. */}
       <div className="relative z-10 flex flex-1 items-center justify-center">
         <div
           key={slide.key}
@@ -99,31 +97,37 @@ export function AuthCarousel() {
         >
           {/* Soft circular halo behind the icon */}
           <div
-            className="absolute inset-0 rounded-full bg-white/10 blur-2xl"
+            className="absolute inset-0 rounded-full bg-primary/10 blur-3xl"
             aria-hidden
           />
-          <div className="absolute inset-8 rounded-full bg-white/15 backdrop-blur-sm" aria-hidden />
+          <div
+            className="absolute inset-8 rounded-full bg-primary/5"
+            aria-hidden
+          />
           <Image
             src={slide.image}
             alt=""
             width={420}
             height={420}
-            className="relative h-56 w-56 object-contain drop-shadow-2xl"
+            className="relative h-56 w-56 object-contain drop-shadow-xl"
             priority
           />
         </div>
       </div>
 
       {/* Tagline + description (re-mounts per slide for the same fade-in) */}
-      <div className="relative z-10 space-y-4 text-white">
-        <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
-          <span className="text-xl font-bold">K</span>
+      <div className="relative z-10 space-y-4">
+        <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+          <span className="text-xl font-bold text-primary">K</span>
         </div>
-        <div key={slide.key} className="min-h-[7.5rem] animate-in fade-in duration-700">
-          <h2 className="whitespace-pre-line text-3xl font-semibold leading-tight">
+        <div
+          key={slide.key}
+          className="min-h-[7.5rem] animate-in fade-in duration-700"
+        >
+          <h2 className="whitespace-pre-line text-3xl font-semibold leading-tight text-foreground">
             {t(`slides.${slide.key}.title`)}
           </h2>
-          <p className="mt-3 max-w-md text-sm text-white/80">
+          <p className="mt-3 max-w-md text-sm text-muted-foreground">
             {t(`slides.${slide.key}.description`)}
           </p>
         </div>
@@ -141,8 +145,8 @@ export function AuthCarousel() {
               className={cn(
                 "h-1.5 rounded-full transition-all",
                 i === active
-                  ? "w-12 bg-white"
-                  : "w-6 bg-white/40 hover:bg-white/60",
+                  ? "w-12 bg-primary"
+                  : "w-6 bg-muted hover:bg-muted-foreground/40",
               )}
             />
           ))}

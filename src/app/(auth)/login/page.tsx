@@ -4,12 +4,12 @@ import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Logo } from "@/components/design-system/logo";
 import { AuthCarousel } from "@/components/auth/auth-carousel";
 
 function LoginContent() {
@@ -45,27 +45,49 @@ function LoginContent() {
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      {/* LEFT — branded form panel */}
-      <div className="flex flex-col bg-background">
-        <header className="flex items-center justify-between px-6 py-6 sm:px-10">
+      {/* LEFT — purple branded form panel */}
+      <div
+        className="relative flex flex-col overflow-hidden text-white"
+        style={{
+          backgroundImage:
+            "linear-gradient(135deg, #4c2459 0%, #613171 45%, #7a3e8c 100%)",
+        }}
+      >
+        {/* Subtle grid texture (matches the carousel side for cohesion) */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-15"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }}
+          aria-hidden
+        />
+
+        <header className="relative z-10 flex items-center justify-between px-6 py-6 sm:px-10">
           <Link href="/" aria-label="Kultiva home">
-            <Logo />
+            <Image
+              src="/logo-kultiva.png"
+              alt="Kultiva"
+              width={140}
+              height={58}
+              className="h-10 w-auto"
+              priority
+            />
           </Link>
         </header>
 
-        <main className="flex flex-1 items-center justify-center px-6 py-12 sm:px-10">
-          <div className="w-full max-w-sm space-y-8">
+        <main className="relative z-10 flex flex-1 items-center justify-center px-6 py-12 sm:px-10">
+          <div className="w-full max-w-sm space-y-7">
             <div className="space-y-2 text-center">
-              <h1 className="text-3xl font-semibold tracking-tight">
+              <h1 className="text-3xl font-semibold tracking-tight text-white">
                 {t("welcome_title")}
               </h1>
-              <p className="text-sm text-muted-foreground">
-                {t("welcome_subtitle")}
-              </p>
+              <p className="text-sm text-white/75">{t("welcome_subtitle")}</p>
             </div>
 
             {error && (
-              <div className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <div className="rounded-lg border border-red-400/30 bg-red-500/15 px-3 py-2 text-sm text-red-100">
                 {error === "OAuthAccountNotLinked"
                   ? t("errors.linked")
                   : t("errors.generic")}
@@ -74,7 +96,9 @@ function LoginContent() {
 
             <form onSubmit={handleEmailSignIn} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">{t("email_label")}</Label>
+                <Label htmlFor="email" className="text-white">
+                  {t("email_label")}
+                </Label>
                 <Input
                   id="email"
                   type="email"
@@ -84,11 +108,15 @@ function LoginContent() {
                   required
                   disabled={isLoading}
                   autoComplete="email"
+                  // White surface against purple — the contrast is the point.
+                  className="bg-white text-foreground placeholder:text-muted-foreground"
                 />
               </div>
               <Button
                 type="submit"
-                className="w-full"
+                // Solid white CTA on the purple panel; primary purple
+                // would disappear into the gradient.
+                className="w-full bg-white text-primary shadow-sm hover:bg-white/90"
                 disabled={isLoading || isGoogleLoading}
               >
                 {isLoading ? (
@@ -102,10 +130,10 @@ function LoginContent() {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t" />
+                <div className="w-full border-t border-white/20" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-background px-3 text-xs uppercase tracking-wider text-muted-foreground">
+                <span className="px-3 text-xs uppercase tracking-wider text-white/60">
                   {t("or_continue_with")}
                 </span>
               </div>
@@ -113,7 +141,7 @@ function LoginContent() {
 
             <Button
               variant="outline"
-              className="w-full"
+              className="w-full border-white/30 bg-white/10 text-white backdrop-blur hover:bg-white/20 hover:text-white"
               onClick={handleGoogleSignIn}
               disabled={isGoogleLoading || isLoading}
             >
@@ -142,11 +170,11 @@ function LoginContent() {
               {t("sign_in_google")}
             </Button>
 
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-center text-sm text-white/70">
               {t("no_account")}{" "}
               <Link
                 href="/signup"
-                className="font-medium text-primary hover:underline"
+                className="font-medium text-white underline-offset-4 hover:underline"
               >
                 {t("sign_up")}
               </Link>
@@ -154,20 +182,21 @@ function LoginContent() {
           </div>
         </main>
 
-        <footer className="flex flex-wrap items-center justify-between gap-3 px-6 py-6 text-xs text-muted-foreground sm:px-10">
+        <footer className="relative z-10 flex flex-wrap items-center justify-between gap-3 px-6 py-6 text-xs text-white/60 sm:px-10">
           <span>{t("footer.copyright", { year })}</span>
           <div className="flex items-center gap-4">
-            <Link href="/terms" className="hover:text-foreground">
+            <Link href="/terms" className="hover:text-white">
               {t("footer.terms")}
             </Link>
             <span aria-hidden>·</span>
-            <Link href="/privacy" className="hover:text-foreground">
+            <Link href="/privacy" className="hover:text-white">
               {t("footer.privacy")}
             </Link>
           </div>
         </footer>
       </div>
 
+      {/* RIGHT — white showcase panel */}
       <AuthCarousel />
     </div>
   );
