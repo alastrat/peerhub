@@ -1,37 +1,31 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 interface Slide {
-  /** Stock image URL (Unsplash, hot-link-friendly). */
+  /** Local public-path icon (Kultiva service pillar illustration). */
   image: string;
   /** i18n key under `auth.login.showcase.slides.<key>`. */
   key: "climate" | "feedback" | "analytics";
 }
 
-// Stock photos of corporate / professional people, served straight from
-// Unsplash's CDN with `unoptimized` so we don't have to allowlist the
-// hostname in next.config.ts. Each URL pins the photo id + crops it to
-// a sensible portrait-leaning size for the right-panel composition.
+// Kultiva's brand service-pillar icons. Mapped to the existing slide
+// keys so the i18n copy stays stable while the visual swaps from
+// stock photos to on-brand illustrations.
 const SLIDES: Slide[] = [
   {
-    // Diverse team in a meeting / collaboration setting
-    image:
-      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=900&h=1100&fit=crop&auto=format&q=80",
+    image: "/images/services/icon-cultura.png",
     key: "climate",
   },
   {
-    // Two people reviewing feedback / 1:1 conversation
-    image:
-      "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=900&h=1100&fit=crop&auto=format&q=80",
+    image: "/images/services/icon-comunicacion.png",
     key: "feedback",
   },
   {
-    // Analyst / data professional at a laptop with charts
-    image:
-      "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=900&h=1100&fit=crop&auto=format&q=80",
+    image: "/images/services/icon-cambio.png",
     key: "analytics",
   },
 ];
@@ -94,22 +88,28 @@ export function AuthCarousel() {
         }}
       />
 
-      {/* One image at a time — `key` swaps the element so the browser can
-          GC the previous src; the fade is driven by CSS animation on mount
-          instead of toggling opacity across multiple hidden siblings. */}
+      {/* One icon at a time — `key` swaps the element so the browser can
+          GC the previous src; the fade is driven by CSS animation on mount.
+          The icon sits inside a soft circular backdrop to read as a hero
+          element on the purple gradient rather than a floating PNG. */}
       <div className="relative z-10 flex flex-1 items-center justify-center">
-        <div className="relative h-[460px] w-full max-w-md overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
-          {/* Plain <img> on purpose: Unsplash hot-links don't need Next.js
-              image optimization for this surface, and rotating between
-              Next/Image elements was the source of the dev render loop. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            key={slide.key}
+        <div
+          key={slide.key}
+          className="relative flex h-[360px] w-[360px] items-center justify-center animate-in fade-in zoom-in-95 duration-700"
+        >
+          {/* Soft circular halo behind the icon */}
+          <div
+            className="absolute inset-0 rounded-full bg-white/10 blur-2xl"
+            aria-hidden
+          />
+          <div className="absolute inset-8 rounded-full bg-white/15 backdrop-blur-sm" aria-hidden />
+          <Image
             src={slide.image}
             alt=""
-            className="h-full w-full animate-in fade-in duration-700 object-cover"
-            loading="eager"
-            decoding="async"
+            width={420}
+            height={420}
+            className="relative h-56 w-56 object-contain drop-shadow-2xl"
+            priority
           />
         </div>
       </div>

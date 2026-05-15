@@ -1471,6 +1471,32 @@
     }
   },
   "auth": {
+    "verify_request": {
+      "title": "Revisa tu correo",
+      "description": "Te enviamos un enlace para iniciar sesión. Haz clic en el enlace del correo para continuar.",
+      "hint": "¿No recibiste el correo? Revisa tu carpeta de spam o intenta iniciar sesión de nuevo.",
+      "back_to_login": "Volver al inicio de sesión"
+    },
+    "error_page": {
+      "title": "Error de autenticación",
+      "support_hint": "Si el problema persiste, contacta a soporte.",
+      "try_again": "Intentar de nuevo",
+      "errors": {
+        "Configuration": "Hay un problema con la configuración del servidor.",
+        "AccessDenied": "No tienes permiso para iniciar sesión.",
+        "Verification": "El enlace de inicio de sesión expiró o ya fue usado.",
+        "OAuthSignin": "Error al construir la URL de autorización.",
+        "OAuthCallback": "Error al procesar la respuesta del proveedor OAuth.",
+        "OAuthCreateAccount": "No pudimos crear el usuario del proveedor OAuth.",
+        "EmailCreateAccount": "No pudimos crear el usuario del proveedor de correo.",
+        "Callback": "Error en la ruta de callback OAuth.",
+        "OAuthAccountNotLinked": "Este correo ya está vinculado con otra cuenta.",
+        "EmailSignin": "No pudimos enviar el enlace de verificación.",
+        "CredentialsSignin": "Las credenciales son inválidas.",
+        "SessionRequired": "Inicia sesión para acceder a esta página.",
+        "Default": "Ocurrió un error durante la autenticación."
+      }
+    },
     "signup": {
       "welcome_title": "Crea tu cuenta",
       "welcome_subtitle": "Comienza con Kultiva gratis y empodera a tu equipo.",

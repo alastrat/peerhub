@@ -1425,6 +1425,32 @@
     }
   },
   "auth": {
+    "verify_request": {
+      "title": "Check your email",
+      "description": "We sent you a sign-in link. Click the link in the email to continue.",
+      "hint": "Didn't receive the email? Check your spam folder or try signing in again.",
+      "back_to_login": "Back to sign in"
+    },
+    "error_page": {
+      "title": "Authentication error",
+      "support_hint": "If this problem persists, please contact support.",
+      "try_again": "Try again",
+      "errors": {
+        "Configuration": "There is a problem with the server configuration.",
+        "AccessDenied": "You do not have permission to sign in.",
+        "Verification": "The sign-in link has expired or has already been used.",
+        "OAuthSignin": "Error in constructing an authorization URL.",
+        "OAuthCallback": "Error in handling the response from the OAuth provider.",
+        "OAuthCreateAccount": "Could not create OAuth provider user in the database.",
+        "EmailCreateAccount": "Could not create email provider user in the database.",
+        "Callback": "Error in the OAuth callback handler route.",
+        "OAuthAccountNotLinked": "This email is already associated with another account.",
+        "EmailSignin": "Could not send the email verification link.",
+        "CredentialsSignin": "The credentials you provided are invalid.",
+        "SessionRequired": "Please sign in to access this page.",
+        "Default": "An error occurred during authentication."
+      }
+    },
     "signup": {
       "welcome_title": "Create your account",
       "welcome_subtitle": "Get started with Kultiva for free and empower your team.",
