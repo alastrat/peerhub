@@ -2271,7 +2271,19 @@
           "no_departments": "Aún no hay departamentos.",
           "no_teams": "Aún no hay equipos.",
           "no_hubs": "Aún no hay sedes.",
-          "no_title": "Sin cargo"
+          "no_title": "Sin cargo",
+          "search_placeholder": "Buscar por nombre o correo...",
+          "filter_all_departments": "Todos los departamentos",
+          "filter_all_hubs": "Todas las sedes",
+          "filter_all_teams": "Todos los equipos",
+          "col_name": "Nombre",
+          "col_email": "Correo",
+          "col_department": "Departamento",
+          "col_hub": "Sede",
+          "col_title": "Cargo",
+          "no_matches": "Ningún empleado coincide con los filtros.",
+          "select_all_aria": "Seleccionar todos los visibles",
+          "select_row_aria": "Seleccionar a {name}"
         },
         "preview": {
           "editing_label": "Editando:",

@@ -2223,7 +2223,19 @@
           "no_departments": "No departments yet.",
           "no_teams": "No teams yet.",
           "no_hubs": "No locations yet.",
-          "no_title": "No title"
+          "no_title": "No title",
+          "search_placeholder": "Search by name or email...",
+          "filter_all_departments": "All departments",
+          "filter_all_hubs": "All locations",
+          "filter_all_teams": "All teams",
+          "col_name": "Name",
+          "col_email": "Email",
+          "col_department": "Department",
+          "col_hub": "Location",
+          "col_title": "Title",
+          "no_matches": "No employees match the filters.",
+          "select_all_aria": "Select all visible",
+          "select_row_aria": "Select {name}"
         },
         "preview": {
           "editing_label": "Editing:",

@@ -450,11 +450,17 @@ function InvitePicker({
       <ParticipantScopePicker
         value={picker}
         onChange={setPicker}
+        // The tab already gets rich InviteeRow data (department / hub / teams),
+        // so the CUSTOM-scope table can render + filter on those columns
+        // without an extra lookup.
         employees={employees.map((e) => ({
           id: e.id,
           name: e.name,
           email: e.email,
           title: e.title,
+          department: e.department,
+          hub: e.hub,
+          teams: e.teams,
         }))}
         hubs={hubs}
         departments={departments}

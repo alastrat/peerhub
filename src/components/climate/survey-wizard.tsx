@@ -689,7 +689,19 @@ export function SurveyWizard({
             setParticipantScopeIds(next.scopeIds);
             setParticipantIds(next.participantIds);
           }}
-          employees={employees}
+          // Enrich each employee with the resolved department object so the
+          // CUSTOM-scope table can render the department column + filter.
+          // The wizard fetches employees with `departmentId` only; we look it
+          // up here once instead of refetching with a join.
+          employees={employees.map((e) => ({
+            id: e.id,
+            name: e.name,
+            email: e.email,
+            title: e.title,
+            department: e.departmentId
+              ? departments.find((d) => d.id === e.departmentId) ?? null
+              : null,
+          }))}
           hubs={hubs}
           departments={departments}
           teams={teams}

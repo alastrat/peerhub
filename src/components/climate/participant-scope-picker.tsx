@@ -1,10 +1,13 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { ArrowDown, ArrowUp, ArrowUpDown, Search } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -13,20 +16,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
 export type ParticipantScope = "ALL" | "HUB" | "DEPARTMENT" | "TEAM" | "CUSTOM";
+
+export interface NamedOption {
+  id: string;
+  name: string;
+}
 
 export interface EmployeeOption {
   id: string;
   name: string;
   email: string;
   title: string | null;
-}
-
-export interface NamedOption {
-  id: string;
-  name: string;
+  /** Optional. Surfaced as a column + filter on the CUSTOM scope. */
+  department?: NamedOption | null;
+  /** Optional. Surfaced as a column + filter on the CUSTOM scope. */
+  hub?: NamedOption | null;
+  /** Optional. Used by the team filter on the CUSTOM scope. */
+  teams?: NamedOption[];
 }
 
 export interface ParticipantScopeValue {
@@ -47,8 +64,16 @@ interface Props {
   featureHubs?: boolean;
   /** Optional wrapper: when true, the picker is wrapped in a Card with a
    *  localized title + description. The wizard uses this; the participants
-   *  tab embeds inside its own card and disables it. Default true. */
+   *  tab embeds inside its own surface. Default true. */
   withCard?: boolean;
+}
+
+const ALL = "__all__";
+type SortKey = "name" | "email" | "department" | "hub" | "title";
+type SortDir = "asc" | "desc";
+interface SortState {
+  key: SortKey;
+  dir: SortDir;
 }
 
 export function ParticipantScopePicker({
@@ -70,16 +95,6 @@ export function ParticipantScopePicker({
       scopeIds: has
         ? value.scopeIds.filter((x) => x !== id)
         : [...value.scopeIds, id],
-    });
-  };
-
-  const toggleParticipant = (id: string) => {
-    const has = value.participantIds.includes(id);
-    onChange({
-      ...value,
-      participantIds: has
-        ? value.participantIds.filter((x) => x !== id)
-        : [...value.participantIds, id],
     });
   };
 
@@ -145,90 +160,17 @@ export function ParticipantScopePicker({
       )}
 
       {value.scope === "CUSTOM" && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <Badge variant="secondary">
-              {t("selected_count", {
-                selected: value.participantIds.length,
-                total: employees.length,
-              })}
-            </Badge>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  onChange({
-                    ...value,
-                    participantIds: employees.map((e) => e.id),
-                  })
-                }
-              >
-                {t("select_all")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => onChange({ ...value, participantIds: [] })}
-              >
-                {t("clear")}
-              </Button>
-            </div>
-          </div>
-          <div className="max-h-80 space-y-2 overflow-auto rounded-lg border p-3">
-            {employees.length === 0 ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">
-                {t("no_employees")}
-              </p>
-            ) : (
-              employees.map((employee) => {
-                const isSelected = value.participantIds.includes(employee.id);
-                return (
-                  <div
-                    key={employee.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => toggleParticipant(employee.id)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        toggleParticipant(employee.id);
-                      }
-                    }}
-                    className={cn(
-                      "flex cursor-pointer items-center gap-3 rounded-md p-2 transition-colors",
-                      isSelected
-                        ? "border border-primary/30 bg-primary/10"
-                        : "hover:bg-muted",
-                    )}
-                  >
-                    <Checkbox checked={isSelected} />
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium">
-                      {employee.name
-                        ? employee.name
-                            .split(" ")
-                            .map((p) => p[0])
-                            .slice(0, 2)
-                            .join("")
-                            .toUpperCase()
-                        : "?"}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {employee.name || employee.email}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {employee.title || t("no_title")}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+        <CustomEmployeePicker
+          value={value.participantIds}
+          onChange={(ids) =>
+            onChange({ ...value, participantIds: ids })
+          }
+          employees={employees}
+          departments={departments}
+          hubs={hubs}
+          teams={teams}
+          featureHubs={featureHubs}
+        />
       )}
     </>
   );
@@ -294,4 +236,332 @@ function ScopeChecklist({
       })}
     </div>
   );
+}
+
+// ---------------------------------------------------------------------------
+// CUSTOM scope — search + filters + sortable table. Mirrors the table the
+// detail-page Participantes tab used to surface, so the create + invite UIs
+// keep parity.
+
+function CustomEmployeePicker({
+  value,
+  onChange,
+  employees,
+  departments,
+  hubs,
+  teams,
+  featureHubs,
+}: {
+  value: string[];
+  onChange: (ids: string[]) => void;
+  employees: EmployeeOption[];
+  departments: NamedOption[];
+  hubs: NamedOption[];
+  teams: NamedOption[];
+  featureHubs: boolean;
+}) {
+  const t = useTranslations("dashboard.climate.wizard.participants_step");
+  const [search, setSearch] = useState("");
+  const [departmentId, setDepartmentId] = useState<string>(ALL);
+  const [hubId, setHubId] = useState<string>(ALL);
+  const [teamId, setTeamId] = useState<string>(ALL);
+  const [sort, setSort] = useState<SortState | null>({ key: "name", dir: "asc" });
+
+  // Only surface hub / team filters when those columns have any data to
+  // distinguish on — otherwise they're noise.
+  const anyHub = employees.some((e) => e.hub);
+  const anyTeam = employees.some((e) => e.teams && e.teams.length > 0);
+  const showHubFilter = featureHubs && anyHub && hubs.length > 0;
+  const showTeamFilter = anyTeam && teams.length > 0;
+
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    let rows = employees;
+    if (term) {
+      rows = rows.filter(
+        (e) =>
+          e.name.toLowerCase().includes(term) ||
+          e.email.toLowerCase().includes(term),
+      );
+    }
+    if (departmentId !== ALL) {
+      rows = rows.filter((e) => e.department?.id === departmentId);
+    }
+    if (hubId !== ALL) {
+      rows = rows.filter((e) => e.hub?.id === hubId);
+    }
+    if (teamId !== ALL) {
+      rows = rows.filter((e) => e.teams?.some((tm) => tm.id === teamId));
+    }
+    if (sort) {
+      const get = (e: EmployeeOption): unknown => {
+        switch (sort.key) {
+          case "name":
+            return e.name;
+          case "email":
+            return e.email;
+          case "department":
+            return e.department?.name ?? null;
+          case "hub":
+            return e.hub?.name ?? null;
+          case "title":
+            return e.title;
+        }
+      };
+      rows = [...rows].sort((a, b) => compare(get(a), get(b), sort.dir));
+    }
+    return rows;
+  }, [employees, search, departmentId, hubId, teamId, sort]);
+
+  const visibleIds = useMemo(() => filtered.map((e) => e.id), [filtered]);
+  const selected = useMemo(() => new Set(value), [value]);
+  const allVisibleSelected =
+    visibleIds.length > 0 && visibleIds.every((id) => selected.has(id));
+  const someVisibleSelected =
+    !allVisibleSelected && visibleIds.some((id) => selected.has(id));
+
+  const toggleId = (id: string) => {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onChange(Array.from(next));
+  };
+  const toggleAllVisible = () => {
+    const next = new Set(selected);
+    if (allVisibleSelected) {
+      for (const id of visibleIds) next.delete(id);
+    } else {
+      for (const id of visibleIds) next.add(id);
+    }
+    onChange(Array.from(next));
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative min-w-[200px] flex-1">
+          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t("search_placeholder")}
+            className="ps-10"
+          />
+        </div>
+        {departments.length > 0 && (
+          <FilterSelect
+            ariaLabel={t("col_department")}
+            value={departmentId}
+            onChange={setDepartmentId}
+            allLabel={t("filter_all_departments")}
+            options={departments}
+          />
+        )}
+        {showHubFilter && (
+          <FilterSelect
+            ariaLabel={t("col_hub")}
+            value={hubId}
+            onChange={setHubId}
+            allLabel={t("filter_all_hubs")}
+            options={hubs}
+          />
+        )}
+        {showTeamFilter && (
+          <FilterSelect
+            ariaLabel={t("col_team")}
+            value={teamId}
+            onChange={setTeamId}
+            allLabel={t("filter_all_teams")}
+            options={teams}
+          />
+        )}
+      </div>
+
+      <div className="flex items-center justify-between">
+        <Badge variant="secondary">
+          {t("selected_count", {
+            selected: selected.size,
+            total: employees.length,
+          })}
+        </Badge>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onChange(employees.map((e) => e.id))}
+          >
+            {t("select_all")}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onChange([])}
+          >
+            {t("clear")}
+          </Button>
+        </div>
+      </div>
+
+      <div className="rounded-lg border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={
+                    allVisibleSelected
+                      ? true
+                      : someVisibleSelected
+                        ? "indeterminate"
+                        : false
+                  }
+                  onCheckedChange={toggleAllVisible}
+                  aria-label={t("select_all_aria")}
+                  disabled={visibleIds.length === 0}
+                />
+              </TableHead>
+              <SortableHead field="name" label={t("col_name")} sort={sort} onSort={setSort} />
+              <SortableHead field="email" label={t("col_email")} sort={sort} onSort={setSort} />
+              {departments.length > 0 && (
+                <SortableHead
+                  field="department"
+                  label={t("col_department")}
+                  sort={sort}
+                  onSort={setSort}
+                />
+              )}
+              {showHubFilter && (
+                <SortableHead field="hub" label={t("col_hub")} sort={sort} onSort={setSort} />
+              )}
+              <SortableHead field="title" label={t("col_title")} sort={sort} onSort={setSort} />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filtered.map((e) => {
+              const isSelected = selected.has(e.id);
+              return (
+                <TableRow key={e.id} data-state={isSelected ? "selected" : undefined}>
+                  <TableCell>
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => toggleId(e.id)}
+                      aria-label={t("select_row_aria", { name: e.name })}
+                    />
+                  </TableCell>
+                  <TableCell className="font-medium">{e.name || e.email}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{e.email}</TableCell>
+                  {departments.length > 0 && (
+                    <TableCell className="text-sm text-muted-foreground">
+                      {e.department?.name ?? "—"}
+                    </TableCell>
+                  )}
+                  {showHubFilter && (
+                    <TableCell className="text-sm text-muted-foreground">
+                      {e.hub?.name ?? "—"}
+                    </TableCell>
+                  )}
+                  <TableCell className="text-sm text-muted-foreground">
+                    {e.title ?? "—"}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+            {filtered.length === 0 && (
+              <TableRow>
+                <TableCell
+                  colSpan={3 + (departments.length > 0 ? 1 : 0) + (showHubFilter ? 1 : 0)}
+                  className="py-8 text-center text-sm text-muted-foreground"
+                >
+                  {employees.length === 0 ? t("no_employees") : t("no_matches")}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
+
+function FilterSelect({
+  ariaLabel,
+  value,
+  onChange,
+  allLabel,
+  options,
+}: {
+  ariaLabel: string;
+  value: string;
+  onChange: (v: string) => void;
+  allLabel: string;
+  options: NamedOption[];
+}) {
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger className="h-9 w-[180px]" aria-label={ariaLabel}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={ALL}>{allLabel}</SelectItem>
+        {options.map((o) => (
+          <SelectItem key={o.id} value={o.id}>
+            {o.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+function SortableHead({
+  field,
+  label,
+  sort,
+  onSort,
+}: {
+  field: SortKey;
+  label: string;
+  sort: SortState | null;
+  onSort: (next: SortState) => void;
+}) {
+  const active = sort?.key === field;
+  const dir = active ? sort!.dir : null;
+  const Icon = !active ? ArrowUpDown : dir === "asc" ? ArrowUp : ArrowDown;
+  return (
+    <TableHead>
+      <button
+        type="button"
+        onClick={() =>
+          onSort({ key: field, dir: active && dir === "asc" ? "desc" : "asc" })
+        }
+        className={cn(
+          "inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide",
+          active ? "text-foreground" : "text-muted-foreground",
+          "hover:text-foreground",
+        )}
+      >
+        <span>{label}</span>
+        <Icon className={cn("h-3.5 w-3.5 transition-opacity", active ? "opacity-100" : "opacity-40")} />
+      </button>
+    </TableHead>
+  );
+}
+
+function compare(a: unknown, b: unknown, dir: SortDir) {
+  const aMissing = a == null || a === "";
+  const bMissing = b == null || b === "";
+  if (aMissing && bMissing) return 0;
+  if (aMissing) return 1;
+  if (bMissing) return -1;
+  if (typeof a === "number" && typeof b === "number") {
+    return dir === "asc" ? a - b : b - a;
+  }
+  if (a instanceof Date && b instanceof Date) {
+    return dir === "asc" ? a.getTime() - b.getTime() : b.getTime() - a.getTime();
+  }
+  const sa = String(a).toLowerCase();
+  const sb = String(b).toLowerCase();
+  return dir === "asc" ? sa.localeCompare(sb) : sb.localeCompare(sa);
 }
