@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { createClimateSurvey, updateClimateSurvey } from "@/lib/actions/climate-surveys";
 import { WallpaperPicker } from "@/components/climate/wallpaper-picker";
 import { SurveyQuestionsBuilder } from "@/components/climate/survey-questions-builder";
+import { ParticipantScopePicker } from "@/components/climate/participant-scope-picker";
 import { ImportQuestionsDialog } from "@/components/climate/import-questions-dialog";
 import { DimensionCombobox } from "@/components/climate/dimension-combobox";
 import type { ParsedQuestionRow } from "@/lib/utils/climate-questions-import";
@@ -677,176 +678,23 @@ export function SurveyWizard({
           optional manual selection). Captured in component state for now;
           a follow-up will persist this as a SurveyDistribution on submit. */}
       {step === 2 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("participants_step.title")}</CardTitle>
-            <CardDescription>{t("participants_step.description")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t("participants_step.scope_label")}</Label>
-              <Select
-                value={participantScope}
-                onValueChange={(v) => {
-                  setParticipantScope(v as ParticipantScope);
-                  setParticipantScopeIds([]);
-                  setParticipantIds([]);
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">{t("participants_step.scope_all")}</SelectItem>
-                  {featureHubs && (
-                    <SelectItem value="HUB">{t("participants_step.scope_hub")}</SelectItem>
-                  )}
-                  <SelectItem value="DEPARTMENT">{t("participants_step.scope_department")}</SelectItem>
-                  <SelectItem value="TEAM">{t("participants_step.scope_team")}</SelectItem>
-                  <SelectItem value="CUSTOM">{t("participants_step.scope_custom")}</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                {participantScope === "ALL" && t("participants_step.scope_all_hint")}
-                {participantScope === "HUB" && t("participants_step.scope_hub_hint")}
-                {participantScope === "DEPARTMENT" && t("participants_step.scope_department_hint")}
-                {participantScope === "TEAM" && t("participants_step.scope_team_hint")}
-                {participantScope === "CUSTOM" && t("participants_step.scope_custom_hint")}
-              </p>
-            </div>
-
-            {participantScope === "HUB" && (
-              <ScopeChecklist
-                items={hubs}
-                selectedIds={participantScopeIds}
-                onToggle={(id) =>
-                  setParticipantScopeIds((prev) =>
-                    prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-                  )
-                }
-                emptyLabel={t("participants_step.no_hubs")}
-              />
-            )}
-            {participantScope === "DEPARTMENT" && (
-              <ScopeChecklist
-                items={departments}
-                selectedIds={participantScopeIds}
-                onToggle={(id) =>
-                  setParticipantScopeIds((prev) =>
-                    prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-                  )
-                }
-                emptyLabel={t("participants_step.no_departments")}
-              />
-            )}
-            {participantScope === "TEAM" && (
-              <ScopeChecklist
-                items={teams}
-                selectedIds={participantScopeIds}
-                onToggle={(id) =>
-                  setParticipantScopeIds((prev) =>
-                    prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-                  )
-                }
-                emptyLabel={t("participants_step.no_teams")}
-              />
-            )}
-
-            {participantScope === "CUSTOM" && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Badge variant="secondary">
-                    {t("participants_step.selected_count", {
-                      selected: participantIds.length,
-                      total: employees.length,
-                    })}
-                  </Badge>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        setParticipantIds(employees.map((e) => e.id))
-                      }
-                    >
-                      {t("participants_step.select_all")}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setParticipantIds([])}
-                    >
-                      {t("participants_step.clear")}
-                    </Button>
-                  </div>
-                </div>
-                <div className="max-h-80 space-y-2 overflow-auto rounded-lg border p-3">
-                  {employees.length === 0 ? (
-                    <p className="py-6 text-center text-sm text-muted-foreground">
-                      {t("participants_step.no_employees")}
-                    </p>
-                  ) : (
-                    employees.map((employee) => {
-                      const isSelected = participantIds.includes(employee.id);
-                      return (
-                        <div
-                          key={employee.id}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() =>
-                            setParticipantIds((prev) =>
-                              isSelected
-                                ? prev.filter((x) => x !== employee.id)
-                                : [...prev, employee.id],
-                            )
-                          }
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              setParticipantIds((prev) =>
-                                isSelected
-                                  ? prev.filter((x) => x !== employee.id)
-                                  : [...prev, employee.id],
-                              );
-                            }
-                          }}
-                          className={cn(
-                            "flex cursor-pointer items-center gap-3 rounded-md p-2 transition-colors",
-                            isSelected
-                              ? "border border-primary/30 bg-primary/10"
-                              : "hover:bg-muted",
-                          )}
-                        >
-                          <Checkbox checked={isSelected} />
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium">
-                            {employee.name
-                              ? employee.name
-                                  .split(" ")
-                                  .map((p) => p[0])
-                                  .slice(0, 2)
-                                  .join("")
-                                  .toUpperCase()
-                              : "?"}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium">
-                              {employee.name || employee.email}
-                            </p>
-                            <p className="truncate text-xs text-muted-foreground">
-                              {employee.title || t("participants_step.no_title")}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <ParticipantScopePicker
+          value={{
+            scope: participantScope,
+            scopeIds: participantScopeIds,
+            participantIds: participantIds,
+          }}
+          onChange={(next) => {
+            setParticipantScope(next.scope);
+            setParticipantScopeIds(next.scopeIds);
+            setParticipantIds(next.participantIds);
+          }}
+          employees={employees}
+          hubs={hubs}
+          departments={departments}
+          teams={teams}
+          featureHubs={featureHubs}
+        />
       )}
 
       {/* Step 4: Preview — editable welcome fields on the left, navigable live preview on the right */}
@@ -1474,50 +1322,3 @@ export function SurveyWizard({
   );
 }
 
-function ScopeChecklist({
-  items,
-  selectedIds,
-  onToggle,
-  emptyLabel,
-}: {
-  items: { id: string; name: string }[];
-  selectedIds: string[];
-  onToggle: (id: string) => void;
-  emptyLabel: string;
-}) {
-  if (items.length === 0) {
-    return (
-      <div className="rounded-lg border bg-muted/30 p-6 text-center text-sm text-muted-foreground">
-        {emptyLabel}
-      </div>
-    );
-  }
-  return (
-    <div className="max-h-64 space-y-2 overflow-auto rounded-lg border p-3">
-      {items.map((item) => {
-        const isSelected = selectedIds.includes(item.id);
-        return (
-          <div
-            key={item.id}
-            role="button"
-            tabIndex={0}
-            onClick={() => onToggle(item.id)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onToggle(item.id);
-              }
-            }}
-            className={cn(
-              "flex cursor-pointer items-center gap-3 rounded-md p-2 transition-colors",
-              isSelected ? "border border-primary/30 bg-primary/10" : "hover:bg-muted",
-            )}
-          >
-            <Checkbox checked={isSelected} />
-            <span className="text-sm">{item.name}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
