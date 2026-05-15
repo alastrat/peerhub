@@ -1424,6 +1424,33 @@
       "sign_in_first": "Please sign in first"
     }
   },
+  "auth": {
+    "login": {
+      "welcome_title": "Welcome to Kultiva",
+      "welcome_subtitle": "Sign in to access your talent management platform.",
+      "email_label": "Email address",
+      "email_placeholder": "you@company.com",
+      "sign_in_email": "Continue with email",
+      "sign_in_google": "Continue with Google",
+      "or_continue_with": "Or continue with email",
+      "no_account": "Don't have an account?",
+      "sign_up": "Sign up",
+      "errors": {
+        "linked": "This email is already linked to another account.",
+        "generic": "An error occurred. Please try again."
+      },
+      "footer": {
+        "copyright": "© {year} Kultiva. All rights reserved.",
+        "terms": "Terms & conditions",
+        "privacy": "Privacy policy"
+      },
+      "showcase": {
+        "tagline_1": "One platform for",
+        "tagline_2": "informed talent decisions",
+        "description": "Kultiva brings climate surveys, 360° feedback and people analytics together — so your HR team can move from data to impact."
+      }
+    }
+  },
   "portal": {
     "climate_survey": {
       "preview_mode_no_save": "Preview mode — changes are not saved",
