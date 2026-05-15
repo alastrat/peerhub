@@ -1471,6 +1471,18 @@
     }
   },
   "auth": {
+    "signup": {
+      "welcome_title": "Crea tu cuenta",
+      "welcome_subtitle": "Comienza con Kultiva gratis y empodera a tu equipo.",
+      "email_label": "Correo de trabajo",
+      "email_placeholder": "tu@empresa.com",
+      "sign_up_email": "Continuar con correo",
+      "sign_up_google": "Continuar con Google",
+      "or_continue_with": "O continúa con correo electrónico",
+      "have_account": "¿Ya tienes cuenta?",
+      "sign_in": "Inicia sesión",
+      "terms_consent": "Al registrarte, aceptas nuestros <terms>Términos de Servicio</terms> y <privacy>Política de Privacidad</privacy>."
+    },
     "login": {
       "welcome_title": "Bienvenido a Kultiva",
       "welcome_subtitle": "Inicia sesión para acceder a tu plataforma de gestión de talento.",
@@ -1493,7 +1505,21 @@
       "showcase": {
         "tagline_1": "Una plataforma única para",
         "tagline_2": "decisiones de talento informadas",
-        "description": "Kultiva conecta encuestas de clima, retroalimentación 360° y analítica de personas en un solo lugar — para que tu equipo de RR.HH. pase del dato al impacto."
+        "description": "Kultiva conecta encuestas de clima, retroalimentación 360° y analítica de personas en un solo lugar — para que tu equipo de RR.HH. pase del dato al impacto.",
+        "slides": {
+          "climate": {
+            "title": "Mide el clima\nde tu organización",
+            "description": "Encuestas anónimas con dimensiones personalizadas, umbral de anonimato configurable y resultados en tiempo real."
+          },
+          "feedback": {
+            "title": "Retroalimentación 360°\nque acciona",
+            "description": "Ciclos completos de feedback entre pares, líderes y colaboradores, con reportes individuales y plantillas reutilizables."
+          },
+          "analytics": {
+            "title": "Decisiones basadas\nen datos de tu gente",
+            "description": "Un panel unificado de participación, NPS interno y dimensiones de clima — del dato al insight en un solo lugar."
+          }
+        }
       }
     }
   },

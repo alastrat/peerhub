@@ -4,13 +4,13 @@ import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/design-system/logo";
+import { AuthCarousel } from "@/components/auth/auth-carousel";
 
 function LoginContent() {
   const t = useTranslations("auth.login");
@@ -168,78 +168,7 @@ function LoginContent() {
         </footer>
       </div>
 
-      {/* RIGHT — purple showcase panel with stacked platform screenshots */}
-      <div
-        className="relative hidden flex-col overflow-hidden p-12 lg:flex"
-        style={{
-          backgroundImage:
-            "linear-gradient(135deg, #4c2459 0%, #613171 45%, #7a3e8c 100%)",
-        }}
-      >
-        {/* Subtle grid texture */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-20"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
-
-        {/* Floating dashboard preview composition */}
-        <div className="relative z-10 flex flex-1 items-center justify-center">
-          <div className="relative h-[520px] w-full max-w-xl">
-            {/* Back card — full dashboard */}
-            <div className="absolute right-0 top-0 w-[420px] -rotate-3 overflow-hidden rounded-2xl border border-white/10 bg-white shadow-2xl">
-              <Image
-                src="/images/platform/platform-dashboard.png"
-                alt="Kultiva dashboard"
-                width={840}
-                height={560}
-                className="h-auto w-full"
-                priority
-              />
-            </div>
-
-            {/* Middle card — climate results, offset down-left */}
-            <div className="absolute left-0 top-32 w-[380px] rotate-2 overflow-hidden rounded-2xl border border-white/10 bg-white shadow-2xl">
-              <Image
-                src="/images/screenshots/climate-results.png"
-                alt="Climate survey results"
-                width={760}
-                height={520}
-                className="h-auto w-full"
-              />
-            </div>
-
-            {/* Front card — analytics, foreground */}
-            <div className="absolute bottom-0 right-10 w-[340px] -rotate-1 overflow-hidden rounded-2xl border border-white/10 bg-white shadow-2xl">
-              <Image
-                src="/images/screenshots/analytics-dashboard.png"
-                alt="Analytics dashboard"
-                width={680}
-                height={460}
-                className="h-auto w-full"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom tagline + Kultiva mark */}
-        <div className="relative z-10 space-y-4 text-white">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
-            <span className="text-xl font-bold">K</span>
-          </div>
-          <h2 className="text-3xl font-semibold leading-tight">
-            {t("showcase.tagline_1")}
-            <br />
-            {t("showcase.tagline_2")}
-          </h2>
-          <p className="max-w-md text-sm text-white/80">
-            {t("showcase.description")}
-          </p>
-        </div>
-      </div>
+      <AuthCarousel />
     </div>
   );
 }

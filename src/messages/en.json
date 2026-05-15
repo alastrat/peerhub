@@ -1425,6 +1425,18 @@
     }
   },
   "auth": {
+    "signup": {
+      "welcome_title": "Create your account",
+      "welcome_subtitle": "Get started with Kultiva for free and empower your team.",
+      "email_label": "Work email",
+      "email_placeholder": "you@company.com",
+      "sign_up_email": "Continue with email",
+      "sign_up_google": "Continue with Google",
+      "or_continue_with": "Or continue with email",
+      "have_account": "Already have an account?",
+      "sign_in": "Sign in",
+      "terms_consent": "By signing up, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
+    },
     "login": {
       "welcome_title": "Welcome to Kultiva",
       "welcome_subtitle": "Sign in to access your talent management platform.",
@@ -1447,7 +1459,21 @@
       "showcase": {
         "tagline_1": "One platform for",
         "tagline_2": "informed talent decisions",
-        "description": "Kultiva brings climate surveys, 360° feedback and people analytics together — so your HR team can move from data to impact."
+        "description": "Kultiva brings climate surveys, 360° feedback and people analytics together — so your HR team can move from data to impact.",
+        "slides": {
+          "climate": {
+            "title": "Measure your\norganization's climate",
+            "description": "Anonymous surveys with custom dimensions, configurable anonymity thresholds and real-time results."
+          },
+          "feedback": {
+            "title": "360° feedback\nthat drives action",
+            "description": "Complete review cycles across peers, managers and reports, with individual reports and reusable templates."
+          },
+          "analytics": {
+            "title": "Decisions backed\nby people data",
+            "description": "A unified view of participation, internal NPS and climate dimensions — from data to insight in one place."
+          }
+        }
       }
     }
   },
