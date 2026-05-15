@@ -78,11 +78,16 @@ export async function createCompanyWithAdmin(data: {
   userName?: string;
 }) {
   return prisma.$transaction(async (tx) => {
-    // Create the company
+    // Create the company. taxId is required at the schema level with no
+    // default; this legacy helper doesn't collect it from callers, so we
+    // fall back to the "PENDING" sentinel that the schema comment defines
+    // for backfilled / legacy rows. New flows should go through
+    // createPlatformCompany which validates a real taxId via Zod.
     const company = await tx.company.create({
       data: {
         name: data.name,
         slug: data.slug,
+        taxId: "PENDING",
       },
     });
 
