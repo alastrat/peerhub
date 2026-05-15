@@ -1470,6 +1470,85 @@
       "sign_in_first": "Inicia sesión primero"
     }
   },
+  "auth": {
+    "verify_request": {
+      "title": "Revisa tu correo",
+      "description": "Te enviamos un enlace para iniciar sesión. Haz clic en el enlace del correo para continuar.",
+      "hint": "¿No recibiste el correo? Revisa tu carpeta de spam o intenta iniciar sesión de nuevo.",
+      "back_to_login": "Volver al inicio de sesión"
+    },
+    "error_page": {
+      "title": "Error de autenticación",
+      "support_hint": "Si el problema persiste, contacta a soporte.",
+      "try_again": "Intentar de nuevo",
+      "errors": {
+        "Configuration": "Hay un problema con la configuración del servidor.",
+        "AccessDenied": "No tienes permiso para iniciar sesión.",
+        "Verification": "El enlace de inicio de sesión expiró o ya fue usado.",
+        "OAuthSignin": "Error al construir la URL de autorización.",
+        "OAuthCallback": "Error al procesar la respuesta del proveedor OAuth.",
+        "OAuthCreateAccount": "No pudimos crear el usuario del proveedor OAuth.",
+        "EmailCreateAccount": "No pudimos crear el usuario del proveedor de correo.",
+        "Callback": "Error en la ruta de callback OAuth.",
+        "OAuthAccountNotLinked": "Este correo ya está vinculado con otra cuenta.",
+        "EmailSignin": "No pudimos enviar el enlace de verificación.",
+        "CredentialsSignin": "Las credenciales son inválidas.",
+        "SessionRequired": "Inicia sesión para acceder a esta página.",
+        "Default": "Ocurrió un error durante la autenticación."
+      }
+    },
+    "signup": {
+      "welcome_title": "Crea tu cuenta",
+      "welcome_subtitle": "Comienza con Kultiva gratis y empodera a tu equipo.",
+      "email_label": "Correo de trabajo",
+      "email_placeholder": "tu@empresa.com",
+      "sign_up_email": "Continuar con correo",
+      "sign_up_google": "Continuar con Google",
+      "or_continue_with": "O continúa con",
+      "have_account": "¿Ya tienes cuenta?",
+      "sign_in": "Inicia sesión",
+      "terms_consent": "Al registrarte, aceptas nuestros <terms>Términos de Servicio</terms> y <privacy>Política de Privacidad</privacy>."
+    },
+    "login": {
+      "welcome_title": "Bienvenido a Kultiva",
+      "welcome_subtitle": "Inicia sesión para acceder a tu plataforma de gestión de talento.",
+      "email_label": "Correo electrónico",
+      "email_placeholder": "tu@empresa.com",
+      "sign_in_email": "Continuar con correo",
+      "sign_in_google": "Continuar con Google",
+      "or_continue_with": "O continúa con",
+      "no_account": "¿No tienes cuenta?",
+      "sign_up": "Regístrate",
+      "errors": {
+        "linked": "Este correo ya está vinculado con otra cuenta.",
+        "generic": "Ocurrió un error. Inténtalo de nuevo."
+      },
+      "footer": {
+        "copyright": "© {year} Kultiva. Todos los derechos reservados.",
+        "terms": "Términos y condiciones",
+        "privacy": "Política de privacidad"
+      },
+      "showcase": {
+        "tagline_1": "Una plataforma única para",
+        "tagline_2": "decisiones de talento informadas",
+        "description": "Kultiva conecta encuestas de clima, retroalimentación 360° y analítica de personas en un solo lugar — para que tu equipo de RR.HH. pase del dato al impacto.",
+        "slides": {
+          "climate": {
+            "title": "Mide el clima\nde tu organización",
+            "description": "Encuestas anónimas con dimensiones personalizadas, umbral de anonimato configurable y resultados en tiempo real."
+          },
+          "feedback": {
+            "title": "Retroalimentación 360°\nque acciona",
+            "description": "Ciclos completos de feedback entre pares, líderes y colaboradores, con reportes individuales y plantillas reutilizables."
+          },
+          "analytics": {
+            "title": "Decisiones basadas\nen datos de tu gente",
+            "description": "Un panel unificado de participación, NPS interno y dimensiones de clima — del dato al insight en un solo lugar."
+          }
+        }
+      }
+    }
+  },
   "portal": {
     "climate_survey": {
       "preview_mode_no_save": "Modo de vista previa — los cambios no se guardan",

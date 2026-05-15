@@ -1,21 +1,20 @@
-import { Logo } from "@/components/design-system/logo";
-import Link from "next/link";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="flex h-16 items-center justify-center border-b">
-        <Link href="/">
-          <Logo />
-        </Link>
-      </header>
-      <main className="flex flex-1 items-center justify-center p-4">
-        <div className="w-full max-w-md">{children}</div>
-      </main>
-    </div>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      {/* The auth shell is intentionally minimal — the login/signup pages
+          own their own full-bleed layouts (logo, two-panel split, etc.) so
+          they can render edge-to-edge without a global header. */}
+      <div className="min-h-screen bg-muted/30">{children}</div>
+    </NextIntlClientProvider>
   );
 }
