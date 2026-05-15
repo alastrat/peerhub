@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import {
   CheckCircle2,
   Clock,
@@ -129,6 +130,8 @@ export function RespondentDetailSheet({
   questionAverages,
   isAnonymous,
 }: RespondentDetailSheetProps) {
+  const t = useTranslations("dashboard.climate.detail.respondent_sheet");
+
   // Compute per-respondent stats
   const stats = useMemo(() => {
     if (!respondent) return null;
@@ -213,9 +216,9 @@ export function RespondentDetailSheet({
   if (respondent.isComplete && respondent.submittedAt) {
     timeline.push({
       icon: <CheckCircle2 className="h-4 w-4" />,
-      label: "Survey submitted",
+      label: t("timeline.submitted"),
       date: formatDateTime(respondent.submittedAt),
-      detail: `All ${respondent.totalQuestions} questions answered`,
+      detail: t("timeline.submitted_detail", { count: respondent.totalQuestions }),
     });
   }
 
@@ -224,15 +227,18 @@ export function RespondentDetailSheet({
     const label =
       respondent.isComplete && respondent.submittedAt
         ? respondent.updatedAt.getTime() !== respondent.submittedAt.getTime()
-          ? "Last draft saved"
+          ? t("timeline.draft_saved")
           : null
-        : "Last activity";
+        : t("timeline.last_activity");
     if (label) {
       timeline.push({
         icon: <ClipboardCheck className="h-4 w-4" />,
         label,
         date: formatDateTime(respondent.updatedAt),
-        detail: `${respondent.answeredCount} of ${respondent.totalQuestions} questions answered`,
+        detail: t("timeline.answered_detail", {
+          answered: respondent.answeredCount,
+          total: respondent.totalQuestions,
+        }),
       });
     }
   }
@@ -244,7 +250,7 @@ export function RespondentDetailSheet({
   if (answerDates.length > 0) {
     timeline.push({
       icon: <Play className="h-4 w-4" />,
-      label: "Survey started",
+      label: t("timeline.started"),
       date: formatDateTime(new Date(Math.min(...answerDates))),
     });
   }
@@ -252,9 +258,9 @@ export function RespondentDetailSheet({
   if (respondent.distributionSentAt) {
     timeline.push({
       icon: <Send className="h-4 w-4" />,
-      label: "Invitation sent",
+      label: t("timeline.invitation"),
       date: formatDateTime(respondent.distributionSentAt),
-      detail: "Via email notification",
+      detail: t("timeline.invitation_detail"),
     });
   }
 
@@ -279,11 +285,11 @@ export function RespondentDetailSheet({
           </div>
           <SheetHeader className="flex-col items-start mx-4 space-y-0">
             <SheetTitle className="text-base leading-snug">
-              {isAnonymous ? "Anonymous Respondent" : respondent.employeeName}
+              {isAnonymous ? t("anonymous_title") : respondent.employeeName}
             </SheetTitle>
             <SheetDescription className="text-xs leading-tight">
               {isAnonymous ? (
-                "Identity hidden — anonymous survey"
+                t("anonymous_subtitle")
               ) : (
                 <>
                   {respondent.employeeEmail}
@@ -302,7 +308,7 @@ export function RespondentDetailSheet({
                 : "shrink-0 border-yellow-200 bg-yellow-50 text-yellow-700"
             }
           >
-            {respondent.isComplete ? "Completed" : "In Progress"}
+            {respondent.isComplete ? t("completed_badge") : t("in_progress_badge")}
           </Badge>
         </div>
 
@@ -315,14 +321,14 @@ export function RespondentDetailSheet({
                 className="gap-1.5 rounded-md px-3 py-1.5 text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm"
               >
                 <FileText className="h-3.5 w-3.5" />
-                Report
+                {t("tab_report")}
               </TabsTrigger>
               <TabsTrigger
                 value="answers"
                 className="gap-1.5 rounded-md px-3 py-1.5 text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm"
               >
                 <MessageSquare className="h-3.5 w-3.5" />
-                Answers
+                {t("tab_answers")}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -337,7 +343,7 @@ export function RespondentDetailSheet({
                     ? stats.avgScore.toFixed(1)
                     : "—"}
                 </div>
-                <div className="text-xs text-muted-foreground">Avg. Score</div>
+                <div className="text-xs text-muted-foreground">{t("stats_avg")}</div>
                 {stats?.diff != null && (
                   <div
                     className={`mt-0.5 text-xs font-medium ${
@@ -345,7 +351,7 @@ export function RespondentDetailSheet({
                     }`}
                   >
                     {stats.diff >= 0 ? "▲" : "▼"}{" "}
-                    {Math.abs(stats.diff).toFixed(1)} vs avg
+                    {t("diff_vs_avg", { diff: Math.abs(stats.diff).toFixed(1) })}
                   </div>
                 )}
               </div>
@@ -353,7 +359,7 @@ export function RespondentDetailSheet({
                 <div className="text-xl font-bold">
                   {respondent.answeredCount}/{respondent.totalQuestions}
                 </div>
-                <div className="text-xs text-muted-foreground">Answered</div>
+                <div className="text-xs text-muted-foreground">{t("stats_answered")}</div>
                 <div className="mt-0.5 text-xs text-muted-foreground">
                   {respondent.totalQuestions > 0
                     ? Math.round(
@@ -374,7 +380,7 @@ export function RespondentDetailSheet({
                       )
                     : "—"}
                 </div>
-                <div className="text-xs text-muted-foreground">Duration</div>
+                <div className="text-xs text-muted-foreground">{t("stats_duration")}</div>
               </div>
             </div>
 
@@ -382,7 +388,7 @@ export function RespondentDetailSheet({
             {stats && stats.dimensionScores.length > 0 && (
               <div className="border-b px-6 py-2">
                 <h4 className="mb-3 text-sm font-semibold">
-                  Scores by Dimension
+                  {t("scores_by_dimension")}
                 </h4>
                 <div className="space-y-3">
                   {stats.dimensionScores
@@ -423,7 +429,7 @@ export function RespondentDetailSheet({
             <div className="px-6 py-2">
               <h4 className="mb-4 flex items-center gap-2 text-sm font-semibold">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                History
+                {t("history")}
               </h4>
               <div className="relative ml-4">
                 {/* Vertical line spanning all items */}
@@ -523,13 +529,15 @@ export function RespondentDetailSheet({
                               style={{
                                 left: `${(surveyAvg / max) * 100}%`,
                               }}
-                              title={`Survey avg: ${surveyAvg.toFixed(1)}`}
+                              title={t("answers.survey_avg_tooltip", {
+                                value: surveyAvg.toFixed(1),
+                              })}
                             />
                           )}
                         </div>
                         {surveyAvg != null && (
                           <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                            avg {surveyAvg.toFixed(1)}
+                            {t("answers.avg_label", { value: surveyAvg.toFixed(1) })}
                           </span>
                         )}
                       </div>
@@ -543,7 +551,7 @@ export function RespondentDetailSheet({
 
                     {!hasRating && !hasText && (
                       <p className="ml-5 text-xs italic text-muted-foreground/60">
-                        No answer
+                        {t("answers.no_answer")}
                       </p>
                     )}
                   </div>

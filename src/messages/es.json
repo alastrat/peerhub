@@ -2084,6 +2084,35 @@
             "text_required": "El texto es obligatorio"
           }
         },
+        "respondent_sheet": {
+          "anonymous_title": "Participante anónimo",
+          "anonymous_subtitle": "Identidad oculta — encuesta anónima",
+          "completed_badge": "Completada",
+          "in_progress_badge": "En progreso",
+          "tab_report": "Reporte",
+          "tab_answers": "Respuestas",
+          "stats_avg": "Promedio",
+          "stats_answered": "Respondidas",
+          "stats_duration": "Duración",
+          "diff_vs_avg": "{diff} vs promedio",
+          "scores_by_dimension": "Puntajes por dimensión",
+          "history": "Historial",
+          "timeline": {
+            "submitted": "Encuesta enviada",
+            "submitted_detail": "{count, plural, one {# pregunta respondida} other {todas las # preguntas respondidas}}",
+            "draft_saved": "Último borrador guardado",
+            "last_activity": "Última actividad",
+            "answered_detail": "{answered} de {total} preguntas respondidas",
+            "started": "Encuesta iniciada",
+            "invitation": "Invitación enviada",
+            "invitation_detail": "Mediante notificación por correo"
+          },
+          "answers": {
+            "no_answer": "Sin respuesta",
+            "survey_avg_tooltip": "Promedio de la encuesta: {value}",
+            "avg_label": "prom {value}"
+          }
+        },
         "insights_tab": {
           "no_insights": "Aún no hay análisis disponibles",
           "no_insights_hint": "Los análisis aparecerán cuando se envíe la encuesta y se recopilen respuestas.",

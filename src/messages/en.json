@@ -2038,6 +2038,35 @@
             "text_required": "Text is required"
           }
         },
+        "respondent_sheet": {
+          "anonymous_title": "Anonymous Respondent",
+          "anonymous_subtitle": "Identity hidden — anonymous survey",
+          "completed_badge": "Completed",
+          "in_progress_badge": "In Progress",
+          "tab_report": "Report",
+          "tab_answers": "Answers",
+          "stats_avg": "Avg. Score",
+          "stats_answered": "Answered",
+          "stats_duration": "Duration",
+          "diff_vs_avg": "{diff} vs avg",
+          "scores_by_dimension": "Scores by Dimension",
+          "history": "History",
+          "timeline": {
+            "submitted": "Survey submitted",
+            "submitted_detail": "{count, plural, one {# question answered} other {all # questions answered}}",
+            "draft_saved": "Last draft saved",
+            "last_activity": "Last activity",
+            "answered_detail": "{answered} of {total} questions answered",
+            "started": "Survey started",
+            "invitation": "Invitation sent",
+            "invitation_detail": "Via email notification"
+          },
+          "answers": {
+            "no_answer": "No answer",
+            "survey_avg_tooltip": "Survey avg: {value}",
+            "avg_label": "avg {value}"
+          }
+        },
         "insights_tab": {
           "no_insights": "No insights available",
           "no_insights_hint": "Insights will appear once the survey has been sent and responses are collected.",
