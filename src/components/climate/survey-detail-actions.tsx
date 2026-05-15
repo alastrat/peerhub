@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   MoreVertical,
@@ -27,33 +28,40 @@ import { closeSurvey, reactivateSurvey } from "@/lib/actions/climate-distributio
 interface SurveyDetailActionsProps {
   surveyId: string;
   surveyStatus: "DRAFT" | "ACTIVE" | "CLOSED" | "ARCHIVED";
+  /** Most recent SurveyDistribution id (null if the survey has not been
+   *  distributed yet). Required to build the shareable survey URL. */
+  latestDistributionId: string | null;
 }
 
 export function SurveyDetailActions({
   surveyId,
   surveyStatus,
+  latestDistributionId,
 }: SurveyDetailActionsProps) {
   const router = useRouter();
+  const t = useTranslations("dashboard.climate.detail.actions");
   const [isPending, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
 
-  const isDraft = surveyStatus === "DRAFT";
   const isActive = surveyStatus === "ACTIVE";
   const isClosed = surveyStatus === "CLOSED";
+  // The respondent-facing link points the recipient at the portal, which
+  // then forwards them (after sign-in) to the distribution-specific
+  // climate-survey route. Only meaningful for ACTIVE surveys that have
+  // been distributed at least once.
+  const canCopyShareLink = isActive && !!latestDistributionId;
 
-  const previewUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/survey-preview/${surveyId}`
-      : `/survey-preview/${surveyId}`;
-
-  const handleCopy = async () => {
+  const handleCopyShareLink = async () => {
+    if (typeof window === "undefined" || !latestDistributionId) return;
+    const surveyPath = `/portal/climate-survey/${latestDistributionId}`;
+    const url = `${window.location.origin}/portal?redirect=${encodeURIComponent(surveyPath)}`;
     try {
-      await navigator.clipboard.writeText(previewUrl);
+      await navigator.clipboard.writeText(url);
       setCopied(true);
-      toast.success("Preview link copied");
+      toast.success(t("link_copied"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Could not copy link");
+      toast.error(t("copy_failed"));
     }
   };
 
@@ -61,10 +69,10 @@ export function SurveyDetailActions({
     startTransition(async () => {
       const result = await closeSurvey(surveyId);
       if (result.success) {
-        toast.success("Survey closed");
+        toast.success(t("closed_toast"));
         router.refresh();
       } else {
-        toast.error(result.error || "Failed to close survey");
+        toast.error(result.error || t("close_failed"));
       }
     });
   };
@@ -73,10 +81,10 @@ export function SurveyDetailActions({
     startTransition(async () => {
       const result = await reactivateSurvey(surveyId);
       if (result.success) {
-        toast.success("Survey reactivated");
+        toast.success(t("reactivated_toast"));
         router.refresh();
       } else {
-        toast.error(result.error || "Failed to reactivate survey");
+        toast.error(result.error || t("reactivate_failed"));
       }
     });
   };
@@ -96,7 +104,7 @@ export function SurveyDetailActions({
         <DropdownMenuItem asChild>
           <Link href={`/surveys/climate/${surveyId}/edit`}>
             <Edit className="mr-2 h-4 w-4" />
-            Edit survey
+            {t("edit_survey")}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
@@ -106,17 +114,19 @@ export function SurveyDetailActions({
             rel="noopener noreferrer"
           >
             <Eye className="mr-2 h-4 w-4" />
-            Open preview
+            {t("open_preview")}
           </a>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleCopy}>
-          {copied ? (
-            <Check className="mr-2 h-4 w-4" />
-          ) : (
-            <Copy className="mr-2 h-4 w-4" />
-          )}
-          Copy preview link
-        </DropdownMenuItem>
+        {canCopyShareLink && (
+          <DropdownMenuItem onClick={handleCopyShareLink}>
+            {copied ? (
+              <Check className="mr-2 h-4 w-4" />
+            ) : (
+              <Copy className="mr-2 h-4 w-4" />
+            )}
+            {t("copy_link")}
+          </DropdownMenuItem>
+        )}
 
         {(isActive || isClosed) && (
           <>
@@ -127,13 +137,13 @@ export function SurveyDetailActions({
                 className="text-destructive focus:text-destructive"
               >
                 <PowerOff className="mr-2 h-4 w-4" />
-                Close survey
+                {t("close_survey")}
               </DropdownMenuItem>
             )}
             {isClosed && (
               <DropdownMenuItem onClick={handleReactivate}>
                 <Power className="mr-2 h-4 w-4" />
-                Reactivate survey
+                {t("reactivate_survey")}
               </DropdownMenuItem>
             )}
           </>

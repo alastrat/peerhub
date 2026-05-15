@@ -101,6 +101,7 @@ export default async function PortalClimateSurveyPage({ params }: PageProps) {
       thankYouTitle={distribution.survey.thankYouTitle}
       thankYouBody={distribution.survey.thankYouBody}
       thankYouCtaText={distribution.survey.thankYouCtaText}
+      logoUrl={distribution.survey.logoUrl}
       questionsPerPage={distribution.survey.questionsPerPage}
       dueDateLabel={formatDate(distribution.dueDate)}
       daysLeft={daysLeft}

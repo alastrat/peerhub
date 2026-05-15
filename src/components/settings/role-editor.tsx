@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -35,10 +36,19 @@ import {
   deleteRole,
 } from "@/lib/actions/roles";
 
-const LEVEL_STYLES: Record<PermissionLevel, { label: string; className: string }> = {
-  off: { label: "Off", className: "text-gray-500" },
-  read: { label: "Read", className: "text-blue-600" },
-  write: { label: "Write", className: "text-emerald-600" },
+const LEVEL_CLASSES: Record<PermissionLevel, string> = {
+  off: "text-gray-500",
+  read: "text-blue-600",
+  write: "text-emerald-600",
+};
+
+// Map group titles from PERMISSION_GROUPS to i18n slugs under `groups`.
+const GROUP_KEY: Record<string, string> = {
+  "Company Management": "company_management",
+  "360 Feedback": "feedback_360",
+  ATS: "ats",
+  Onboarding: "onboarding",
+  "Work Environment": "work_environment",
 };
 
 interface RoleData {
@@ -64,6 +74,7 @@ export function RoleEditor({
   readOnly?: boolean;
 }) {
   const router = useRouter();
+  const t = useTranslations("dashboard.roles_page");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -94,7 +105,7 @@ export function RoleEditor({
           description,
         });
         if (!detailResult.success) {
-          setError(detailResult.error || "Failed to save");
+          setError(detailResult.error || t("save_failed"));
           return;
         }
       }
@@ -105,10 +116,10 @@ export function RoleEditor({
         permissions,
       });
       if (permResult.success) {
-        setSuccess("Changes saved");
+        setSuccess(t("changes_saved"));
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        setError(permResult.error || "Failed to save");
+        setError(permResult.error || t("save_failed"));
       }
     });
   };
@@ -125,7 +136,7 @@ export function RoleEditor({
       if (result.success) {
         router.push("/settings/company/roles");
       } else {
-        setError(result.error || "Failed to delete role");
+        setError(result.error || t("delete_failed"));
       }
     });
   };
@@ -141,23 +152,23 @@ export function RoleEditor({
       {!role.isSystem && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Role Details</CardTitle>
+            <CardTitle className="text-base">{t("role_details_title")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Name</label>
+                <label className="text-sm font-medium">{t("name_label")}</label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Description</label>
+                <label className="text-sm font-medium">{t("description_label")}</label>
                 <Input
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Optional description"
+                  placeholder={t("description_placeholder")}
                 />
               </div>
             </div>
@@ -168,14 +179,16 @@ export function RoleEditor({
       {/* Permissions matrix */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Permissions</CardTitle>
+          <CardTitle className="text-base">{t("permissions_title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {visibleGroups.map((group) => (
+            {visibleGroups.map((group) => {
+              const groupSlug = GROUP_KEY[group.title];
+              return (
               <div key={group.title}>
                 <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {group.title}
+                  {groupSlug ? t(`groups.${groupSlug}`) : group.title}
                 </h3>
                 <div className="space-y-1">
                   {group.permissions.map((perm) => {
@@ -183,6 +196,8 @@ export function RoleEditor({
                       (permissions[perm.key] as PermissionLevel) || "off";
                     const isLocked =
                       isAdminSystem && perm.key === "company.roles";
+                    const permSlug = perm.key.replace(/\./g, "_");
+                    const levelLabel = t(`level_${currentLevel}`);
 
                     return (
                       <div
@@ -190,17 +205,19 @@ export function RoleEditor({
                         className="flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-muted/50 transition-colors"
                       >
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">{perm.label}</p>
+                          <p className="text-sm font-medium">
+                            {t(`permissions.${permSlug}.label`)}
+                          </p>
                           <p className="text-xs text-muted-foreground">
-                            {perm.description}
+                            {t(`permissions.${permSlug}.description`)}
                           </p>
                         </div>
                         <div className="ml-4 w-28 shrink-0">
                           {isLocked || readOnly ? (
                             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                               {isLocked && <Lock className="h-3.5 w-3.5" />}
-                              <span className={LEVEL_STYLES[currentLevel].className + " font-medium"}>
-                                {LEVEL_STYLES[currentLevel].label}
+                              <span className={LEVEL_CLASSES[currentLevel] + " font-medium"}>
+                                {levelLabel}
                               </span>
                             </div>
                           ) : (
@@ -215,25 +232,25 @@ export function RoleEditor({
                             >
                               <SelectTrigger className="h-8 text-sm">
                                 <SelectValue>
-                                  <span
-                                    className={
-                                      LEVEL_STYLES[currentLevel].className
-                                    }
-                                  >
-                                    {LEVEL_STYLES[currentLevel].label}
+                                  <span className={LEVEL_CLASSES[currentLevel]}>
+                                    {levelLabel}
                                   </span>
                                 </SelectValue>
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="off">
-                                  <span className="text-gray-500">Off</span>
+                                  <span className={LEVEL_CLASSES.off}>
+                                    {t("level_off")}
+                                  </span>
                                 </SelectItem>
                                 <SelectItem value="read">
-                                  <span className="text-blue-600">Read</span>
+                                  <span className={LEVEL_CLASSES.read}>
+                                    {t("level_read")}
+                                  </span>
                                 </SelectItem>
                                 <SelectItem value="write">
-                                  <span className="text-emerald-600">
-                                    Write
+                                  <span className={LEVEL_CLASSES.write}>
+                                    {t("level_write")}
                                   </span>
                                 </SelectItem>
                               </SelectContent>
@@ -245,7 +262,8 @@ export function RoleEditor({
                   })}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>
@@ -262,21 +280,26 @@ export function RoleEditor({
               <AlertDialogTrigger asChild>
                 <Button variant="outline" className="text-destructive">
                   <Trash2 className="mr-1.5 h-4 w-4" />
-                  Delete Role
+                  {t("delete_role")}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete role?</AlertDialogTitle>
+                  <AlertDialogTitle>{t("delete_confirm_title")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will permanently delete the <strong>{role.name}</strong>{" "}
-                    role.
+                    {t.rich("delete_confirm_body", {
+                      name: role.name,
+                      strong: (chunks) => <strong>{chunks}</strong>,
+                    })}
                     {role.membersCount > 0 && (
                       <>
                         {" "}
-                        {role.membersCount}{" "}
-                        {role.membersCount === 1 ? "member" : "members"} will be
-                        reassigned to:
+                        {t(
+                          role.membersCount === 1
+                            ? "delete_reassign_one"
+                            : "delete_reassign_other",
+                          { count: role.membersCount },
+                        )}
                       </>
                     )}
                   </AlertDialogDescription>
@@ -285,7 +308,7 @@ export function RoleEditor({
                   <div className="py-2">
                     <Select value={reassignTo} onValueChange={setReassignTo}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
+                        <SelectValue placeholder={t("select_role_placeholder")} />
                       </SelectTrigger>
                       <SelectContent>
                         {otherRoles.map((r) => (
@@ -298,13 +321,13 @@ export function RoleEditor({
                   </div>
                 )}
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleDelete}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     disabled={role.membersCount > 0 && !reassignTo}
                   >
-                    Delete
+                    {t("delete")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -312,7 +335,7 @@ export function RoleEditor({
           )}
           <Button onClick={handleSave} disabled={isPending}>
             <Save className="mr-1.5 h-4 w-4" />
-            {isPending ? "Saving..." : "Save Changes"}
+            {isPending ? t("saving") : t("save_changes")}
           </Button>
         </div>
       </div>}

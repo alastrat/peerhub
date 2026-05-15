@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth/config";
 import { redirect, notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db/prisma";
 import { PageHeader } from "@/components/design-system/page-header";
 import { RoleEditor } from "@/components/settings/role-editor";
@@ -15,6 +16,8 @@ export default async function RoleEditPage({
   const { roleId } = await params;
   const session = await auth();
   if (!session?.user) redirect("/login");
+
+  const t = await getTranslations("dashboard.roles_page");
 
   const isSuperAdmin = session.user.globalRole === "SUPER_ADMIN";
   const isCompanyAdmin = isSuperAdmin || session.companyUser?.role === "ADMIN";
@@ -57,11 +60,16 @@ export default async function RoleEditPage({
           </Button>
         </Link>
         <PageHeader
-          title={`Edit: ${role.name}`}
+          title={t("edit_heading", { name: role.name })}
           description={
             role.isSystem
-              ? "System role — permissions can be customized but the role cannot be deleted"
-              : `Custom role — ${role._count.members} members`
+              ? t("system_role_hint")
+              : t(
+                  role._count.members === 1
+                    ? "custom_role_members_one"
+                    : "custom_role_members_other",
+                  { count: role._count.members },
+                )
           }
           className="mb-0"
         />

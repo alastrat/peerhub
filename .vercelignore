@@ -1,0 +1,9 @@
+.env
+.env.local
+.env.*.local
+pnpm-lock.yaml
+pnpm-workspace.yaml
+.next
+node_modules
+.vercel
+tests

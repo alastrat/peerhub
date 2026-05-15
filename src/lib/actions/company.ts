@@ -10,11 +10,14 @@ import { Prisma } from "@prisma/client";
 interface CreateCompanyInput {
   name: string;
   slug: string;
+  taxId: string;
   userId: string;
   // Optional job title — the onboarding flow collects this in step 1 but
   // can't persist it until an Employee row exists, which only happens here.
   jobTitle?: string;
 }
+
+const TAX_ID_RE = /^[A-Za-z0-9.\-/ ]+$/;
 
 interface CreateCompanyResult {
   company: Company;
@@ -55,6 +58,12 @@ export async function createCompany(
       };
     }
 
+    // Validate tax ID (required, format-agnostic).
+    const taxId = input.taxId.trim();
+    if (taxId.length < 5 || taxId.length > 32 || !TAX_ID_RE.test(taxId)) {
+      return { success: false, error: "Invalid tax ID" };
+    }
+
     // Check if slug is already taken
     const existingCompany = await prisma.company.findUnique({
       where: { slug: input.slug },
@@ -78,6 +87,7 @@ export async function createCompany(
         data: {
           name: input.name,
           slug: input.slug,
+          taxId,
         },
       });
 

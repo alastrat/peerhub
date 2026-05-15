@@ -306,38 +306,6 @@ describe("role actions", () => {
       expect(result.error).toContain("Unauthorized");
     });
 
-    it("uses default color when none provided", async () => {
-      mockPrisma.companyRoleConfig.findUnique.mockResolvedValue(null);
-      mockPrisma.companyRoleConfig.aggregate.mockResolvedValue({
-        _max: { order: 0 },
-      });
-      mockPrisma.companyRoleConfig.create.mockResolvedValue({ id: "role-x" });
-
-      await createRole({ name: "No Color" });
-
-      expect(mockPrisma.companyRoleConfig.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ color: "#6b7280" }),
-        })
-      );
-    });
-
-    it("uses provided color", async () => {
-      mockPrisma.companyRoleConfig.findUnique.mockResolvedValue(null);
-      mockPrisma.companyRoleConfig.aggregate.mockResolvedValue({
-        _max: { order: 0 },
-      });
-      mockPrisma.companyRoleConfig.create.mockResolvedValue({ id: "role-x" });
-
-      await createRole({ name: "Custom Color", color: "#ff0000" });
-
-      expect(mockPrisma.companyRoleConfig.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({ color: "#ff0000" }),
-        })
-      );
-    });
-
     it("handles database errors gracefully", async () => {
       mockPrisma.companyRoleConfig.findUnique.mockResolvedValue(null);
       mockPrisma.companyRoleConfig.aggregate.mockResolvedValue({

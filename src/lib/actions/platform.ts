@@ -22,6 +22,90 @@ async function requireSuperAdmin() {
   return session;
 }
 
+// Shared logo upload constraints — kept in sync with the client-side guard in
+// create-company-dialog.tsx so the user sees the same limits in both places.
+const ALLOWED_COMPANY_LOGO_MIME = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/svg+xml",
+  "image/webp",
+]);
+const MAX_COMPANY_LOGO_BYTES = 2 * 1024 * 1024; // 2MB
+
+/**
+ * Upload a company logo to object storage BEFORE the Company row exists.
+ *
+ * The super-admin "Crear cuenta" wizard collects the logo in step 2, but the
+ * Company record isn't created until the final step. So we upload to a
+ * `_pending/` prefix keyed by a fresh UUID and return the public URL the
+ * client tucks into `logo` state.
+ *
+ * Reuses the existing `survey-assets` bucket to avoid the operational cost of
+ * spinning up a second bucket for a feature that ships one file per company.
+ * Orphaned uploads (user abandons the wizard) are accepted as a known cost —
+ * they're tiny image files and there's a lifecycle policy ready to clean
+ * `_pending/` if we ever care.
+ */
+export async function uploadCompanyLogo(
+  formData: FormData,
+): Promise<ActionResult<{ url: string }>> {
+  try {
+    await requireSuperAdmin();
+
+    const file = formData.get("file");
+    if (!(file instanceof File)) {
+      return { success: false, error: "No file provided" };
+    }
+
+    if (!ALLOWED_COMPANY_LOGO_MIME.has(file.type)) {
+      return {
+        success: false,
+        error: "Unsupported file type. Use PNG, JPEG, SVG or WebP.",
+      };
+    }
+
+    if (file.size > MAX_COMPANY_LOGO_BYTES) {
+      return {
+        success: false,
+        error: "File is too large. Maximum size is 2MB.",
+      };
+    }
+
+    const { createSupabaseStorageClient, SURVEY_ASSETS_BUCKET } = await import(
+      "@/lib/supabase/server"
+    );
+    const supabase = createSupabaseStorageClient();
+
+    const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+    const path = `companies/_pending/${crypto.randomUUID()}-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(SURVEY_ASSETS_BUCKET)
+      .upload(path, file, {
+        contentType: file.type,
+        cacheControl: "31536000",
+        upsert: false,
+      });
+
+    if (uploadError) {
+      return {
+        success: false,
+        error: `Upload failed: ${uploadError.message}`,
+      };
+    }
+
+    const { data: publicUrl } = supabase.storage
+      .from(SURVEY_ASSETS_BUCKET)
+      .getPublicUrl(path);
+
+    return { success: true, data: { url: publicUrl.publicUrl } };
+  } catch (error) {
+    const msg =
+      error instanceof Error ? error.message : "Failed to upload logo";
+    return { success: false, error: msg };
+  }
+}
+
 // ============================================
 // SUPER ADMIN DOMAINS
 // ============================================
@@ -139,7 +223,7 @@ export async function deletePlatformUser(
 // ============================================
 
 export async function createPlatformCompany(
-  input: { name: string; slug: string }
+  input: { name: string; slug: string; taxId: string }
 ): Promise<ActionResult<{ id: string }>> {
   try {
     await requireSuperAdmin();
@@ -154,7 +238,7 @@ export async function createPlatformCompany(
     }
 
     const company = await prisma.company.create({
-      data: { name: parsed.name, slug: parsed.slug },
+      data: { name: parsed.name, slug: parsed.slug, taxId: parsed.taxId },
     });
 
     revalidatePath("/settings/platform/companies");
@@ -212,6 +296,7 @@ export async function createPlatformCompanyWithAdmin(
         data: {
           name: parsed.name,
           slug: parsed.slug,
+          taxId: parsed.taxId,
           logo: parsed.logo || null,
           domain: parsed.domain || null,
           primaryColor: parsed.primaryColor || undefined,

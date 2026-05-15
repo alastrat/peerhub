@@ -14,12 +14,24 @@ export const updateGlobalRoleSchema = z.object({
   globalRole: z.enum(["SUPER_ADMIN", "USER"]),
 });
 
+// Tax / legal identifier (NIT in Colombia, VAT/EIN elsewhere). Required, but
+// kept format-agnostic since the same field serves tenants in multiple
+// jurisdictions. We accept alphanumerics + the separators that show up in
+// real-world formats (dash, dot, slash, space).
+export const taxIdSchema = z
+  .string()
+  .trim()
+  .min(5, "Tax ID must be at least 5 characters")
+  .max(32, "Tax ID is too long")
+  .regex(/^[A-Za-z0-9.\-/ ]+$/, "Invalid characters in tax ID");
+
 export const createPlatformCompanySchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   slug: z
     .string()
     .min(2, "Slug must be at least 2 characters")
     .regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers, and hyphens"),
+  taxId: taxIdSchema,
 });
 
 // Personal info collected on the onboarding step before company creation.

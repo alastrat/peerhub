@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/config";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import type { ActionResult } from "@/types";
 import { Prisma, type ClimateSurvey, type SurveyQuestion, type SurveyQuestionType } from "@prisma/client";
 
@@ -32,6 +33,7 @@ interface CreateSurveyInput {
   type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
   frequency?: string;
   isAnonymous?: boolean;
+  anonymityThreshold?: number;
   questions: SurveyQuestionInput[];
   templateId?: string;
   welcomeTitle?: string;
@@ -72,6 +74,9 @@ export async function createClimateSurvey(
         type: input.type,
         frequency: (input.frequency as Prisma.EnumSurveyFrequencyFieldUpdateOperationsInput["set"]) || "ONCE",
         isAnonymous: input.isAnonymous ?? true,
+        ...(input.anonymityThreshold !== undefined && {
+          anonymityThreshold: Math.max(1, Math.trunc(input.anonymityThreshold)),
+        }),
         templateId: input.templateId || null,
         welcomeTitle: input.welcomeTitle?.trim() || null,
         welcomeBody: input.welcomeBody ?? null,
@@ -136,7 +141,18 @@ export async function updateClimateSurvey(
     // Non-draft surveys: block structural changes (questions, name, type, frequency)
     if (!isDraft) {
       if (input.questions) {
-        return { success: false, error: "Questions cannot be changed after the survey has been sent" };
+        // The error is surfaced verbatim in the wizard. We prefer the
+        // translated message at runtime but fall back to the canonical
+        // English string when next-intl's request context isn't available
+        // (e.g. integration tests run outside a request lifecycle).
+        let error = "Questions cannot be changed after the survey has been sent";
+        try {
+          const t = await getTranslations("dashboard.climate.edit_page");
+          error = t("questions_locked_after_send");
+        } catch {
+          // intentionally fall back to the English baseline above
+        }
+        return { success: false, error };
       }
       // Strip structural fields — only allow presentation updates
       input = {
@@ -166,6 +182,9 @@ export async function updateClimateSurvey(
       ...(input.type && { type: input.type }),
       ...(input.frequency && { frequency: input.frequency as Prisma.EnumSurveyFrequencyFieldUpdateOperationsInput["set"] }),
       ...(input.isAnonymous !== undefined && { isAnonymous: input.isAnonymous }),
+      ...(input.anonymityThreshold !== undefined && {
+        anonymityThreshold: Math.max(1, Math.trunc(input.anonymityThreshold)),
+      }),
       ...(input.templateId !== undefined && { templateId: input.templateId || null }),
       ...(input.welcomeTitle !== undefined && { welcomeTitle: input.welcomeTitle?.trim() || null }),
       ...(input.welcomeBody !== undefined && { welcomeBody: input.welcomeBody || null }),
@@ -287,6 +306,7 @@ export async function duplicateClimateSurvey(
         type: original.type,
         frequency: original.frequency,
         isAnonymous: original.isAnonymous,
+        anonymityThreshold: original.anonymityThreshold,
         // Copy all customization fields
         templateId: original.templateId,
         welcomeTitle: original.welcomeTitle,
@@ -333,6 +353,7 @@ export interface SurveySettingsInput {
   type?: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
   frequency?: string;
   isAnonymous?: boolean;
+  anonymityThreshold?: number;
   questionsPerPage?: number | null;
   logoUrl?: string | null;
   accessStartDate?: Date | string | null;
@@ -366,6 +387,9 @@ export async function updateSurveySettings(
     if (input.frequency !== undefined)
       data.frequency = input.frequency as Prisma.EnumSurveyFrequencyFieldUpdateOperationsInput["set"];
     if (input.isAnonymous !== undefined) data.isAnonymous = input.isAnonymous;
+    if (input.anonymityThreshold !== undefined) {
+      data.anonymityThreshold = Math.max(1, Math.trunc(input.anonymityThreshold));
+    }
     if (input.questionsPerPage !== undefined) data.questionsPerPage = input.questionsPerPage;
     if (input.logoUrl !== undefined) data.logoUrl = input.logoUrl?.trim() || null;
     if (input.accessStartDate !== undefined)

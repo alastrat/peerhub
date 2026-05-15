@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { Logo } from "@/components/design-system/logo";
 import { getPortalSession } from "@/lib/auth/portal-session";
 import { prisma } from "@/lib/db/prisma";
@@ -11,6 +13,8 @@ export default async function PortalLayout({
   children: React.ReactNode;
 }) {
   const session = await getPortalSession();
+  const locale = await getLocale();
+  const messages = await getMessages();
 
   let displayName: string | null = null;
   if (session) {
@@ -22,6 +26,7 @@ export default async function PortalLayout({
   }
 
   return (
+    <NextIntlClientProvider locale={locale} messages={messages}>
     <div className="min-h-screen bg-muted/30 flex flex-col">
       <header className="border-b bg-background">
         <div className="container mx-auto flex items-center justify-between px-4 py-3">
@@ -54,5 +59,6 @@ export default async function PortalLayout({
         </div>
       </footer>
     </div>
+    </NextIntlClientProvider>
   );
 }

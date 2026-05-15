@@ -34,6 +34,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { SURVEY_QUESTION_TYPE_LABELS } from "@/lib/constants/climate-survey";
 import { updateClimateSurveyQuestion } from "@/lib/actions/climate-surveys";
+import { DimensionCombobox } from "@/components/climate/dimension-combobox";
 import type { SurveyQuestionType } from "@prisma/client";
 
 interface QuestionRow {
@@ -65,10 +66,20 @@ export function SurveyQuestionsTab({
   isAnonymous,
   status,
   questions,
-  dimensions,
+  dimensions: initialDimensions,
 }: SurveyQuestionsTabProps) {
   const t = useTranslations("dashboard.climate.detail");
   const [editing, setEditing] = useState<QuestionRow | null>(null);
+  // Local copy so newly-created dimensions from the inline combobox survive
+  // until the next router refresh — otherwise the option list would silently
+  // miss what the user just created.
+  const [dimensions, setDimensions] =
+    useState<DimensionOption[]>(initialDimensions);
+  const handleDimensionCreated = (dim: DimensionOption) => {
+    setDimensions((prev) =>
+      prev.some((d) => d.id === dim.id) ? prev : [...prev, dim],
+    );
+  };
   // Drive pencil visibility from React state — CSS group-hover wasn't
   // reliably surfacing it earlier. Combined with focus tracking + a touch
   // detector, this keeps the affordance accessible for pointer / keyboard /
@@ -109,34 +120,124 @@ export function SurveyQuestionsTab({
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <DimensionGroups
+            questions={questions}
+            canEditAtAll={canEditAtAll}
+            hoveredId={hoveredId}
+            focusedId={focusedId}
+            isTouch={isTouch}
+            onHover={setHoveredId}
+            onFocus={setFocusedId}
+            onEdit={setEditing}
+            t={t}
+          />
+        </CardContent>
+      </Card>
+
+      <EditQuestionDialog
+        surveyId={surveyId}
+        dimensions={dimensions}
+        onDimensionCreated={handleDimensionCreated}
+        textOnly={isTextOnly}
+        question={editing}
+        onClose={() => setEditing(null)}
+      />
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Grouped renderer
+
+const NO_DIM_KEY = "__none__";
+
+type T = ReturnType<typeof useTranslations>;
+
+interface DimensionGroupsProps {
+  questions: QuestionRow[];
+  canEditAtAll: boolean;
+  hoveredId: string | null;
+  focusedId: string | null;
+  isTouch: boolean;
+  onHover: (id: string | null) => void;
+  onFocus: (id: string | null) => void;
+  onEdit: (q: QuestionRow) => void;
+  t: T;
+}
+
+function DimensionGroups({
+  questions,
+  canEditAtAll,
+  hoveredId,
+  focusedId,
+  isTouch,
+  onHover,
+  onFocus,
+  onEdit,
+  t,
+}: DimensionGroupsProps) {
+  // Global 1-based index per question id — kept stable when grouping so the
+  // badge identifies the same question whether the view is flat or grouped.
+  const globalIndex = new Map(questions.map((q, i) => [q.id, i + 1]));
+
+  // Build groups in order of first appearance, then move the "no dimension"
+  // bucket to the end if it exists alongside real dimensions.
+  const groups: { key: string; name: string | null; items: QuestionRow[] }[] = [];
+  for (const q of questions) {
+    const key = q.dimension?.id ?? NO_DIM_KEY;
+    let group = groups.find((g) => g.key === key);
+    if (!group) {
+      group = { key, name: q.dimension?.name ?? null, items: [] };
+      groups.push(group);
+    }
+    group.items.push(q);
+  }
+  const noneIdx = groups.findIndex((g) => g.key === NO_DIM_KEY);
+  if (noneIdx !== -1 && groups.length > 1) {
+    const [none] = groups.splice(noneIdx, 1);
+    groups.push(none);
+  }
+
+  return (
+    <div className="space-y-6">
+      {groups.map((group) => (
+        <section key={group.key} className="space-y-2">
+          <header className="flex items-baseline gap-2 px-1">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {group.name ?? t("questions_tab.no_dimension_group")}
+            </h3>
+            <span className="text-xs text-muted-foreground">
+              {t(
+                group.items.length === 1
+                  ? "questions_count_one"
+                  : "questions_count_other",
+                { count: group.items.length },
+              )}
+            </span>
+          </header>
           <div className="space-y-3">
-            {questions.map((q, i) => {
+            {group.items.map((q) => {
+              const n = globalIndex.get(q.id) ?? 0;
               const showPencil =
                 canEditAtAll &&
                 (isTouch || hoveredId === q.id || focusedId === q.id);
               return (
                 <div
                   key={q.id}
-                  onMouseEnter={() => setHoveredId(q.id)}
+                  onMouseEnter={() => onHover(q.id)}
                   onMouseLeave={() =>
-                    setHoveredId((current) =>
-                      current === q.id ? null : current,
-                    )
+                    onHover(hoveredId === q.id ? null : hoveredId)
                   }
-                  onFocus={() => setFocusedId(q.id)}
+                  onFocus={() => onFocus(q.id)}
                   onBlur={(e) => {
-                    // Only clear when focus is leaving the entire row (not
-                    // moving between focusable descendants).
                     if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                      setFocusedId((current) =>
-                        current === q.id ? null : current,
-                      );
+                      onFocus(focusedId === q.id ? null : focusedId);
                     }
                   }}
                   className="flex items-start gap-4 p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
                 >
                   <span className="text-sm font-medium text-muted-foreground w-6">
-                    {i + 1}.
+                    {n}.
                   </span>
                   <div className="flex-1 space-y-1 min-w-0">
                     <p className="font-medium">{q.text}</p>
@@ -144,11 +245,6 @@ export function SurveyQuestionsTab({
                       <Badge variant="outline" className="text-xs">
                         {SURVEY_QUESTION_TYPE_LABELS[q.type]}
                       </Badge>
-                      {q.dimension && (
-                        <Badge variant="secondary" className="text-xs">
-                          {q.dimension.name}
-                        </Badge>
-                      )}
                       {q.isRequired && (
                         <Badge variant="secondary" className="text-xs">
                           {t("questions_tab.required_badge")}
@@ -162,19 +258,14 @@ export function SurveyQuestionsTab({
                       variant="outline"
                       size="icon"
                       aria-label={t("questions_tab.edit_dialog.edit_aria", {
-                        n: i + 1,
+                        n,
                       })}
-                      // Always in the DOM (so keyboard Tab can land on it and
-                      // screen readers can announce it), but visually faded —
-                      // and click-disabled — until the row is hovered/focused
-                      // /touched. focus-visible: also re-enables pointer
-                      // events so a keyboard-focused button stays clickable.
                       className={`h-8 w-8 shrink-0 border-foreground/30 bg-background text-foreground hover:bg-foreground hover:text-background focus-visible:opacity-100 focus-visible:pointer-events-auto transition-opacity ${
                         showPencil
                           ? "opacity-100 pointer-events-auto"
                           : "opacity-0 pointer-events-none"
                       }`}
-                      onClick={() => setEditing(q)}
+                      onClick={() => onEdit(q)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -183,23 +274,16 @@ export function SurveyQuestionsTab({
               );
             })}
           </div>
-        </CardContent>
-      </Card>
-
-      <EditQuestionDialog
-        surveyId={surveyId}
-        dimensions={dimensions}
-        textOnly={isTextOnly}
-        question={editing}
-        onClose={() => setEditing(null)}
-      />
-    </>
+        </section>
+      ))}
+    </div>
   );
 }
 
 interface EditQuestionDialogProps {
   surveyId: string;
   dimensions: DimensionOption[];
+  onDimensionCreated: (d: DimensionOption) => void;
   textOnly: boolean;
   question: QuestionRow | null;
   onClose: () => void;
@@ -208,6 +292,7 @@ interface EditQuestionDialogProps {
 function EditQuestionDialog({
   surveyId,
   dimensions,
+  onDimensionCreated,
   textOnly,
   question,
   onClose,
@@ -315,23 +400,15 @@ function EditQuestionDialog({
 
           <div className="space-y-1.5">
             <Label>{t("dimension_label")}</Label>
-            <Select
-              value={dimensionId}
-              onValueChange={setDimensionId}
+            <DimensionCombobox
+              dimensions={dimensions}
+              // DimensionCombobox treats "" as "no dimension"; we keep
+              // "__none__" internally to match the submit code below.
+              value={dimensionId === "__none__" ? "" : dimensionId}
+              onChange={(id) => setDimensionId(id || "__none__")}
+              onCreated={onDimensionCreated}
               disabled={textOnly}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">{t("dimension_none")}</SelectItem>
-                {dimensions.map((d) => (
-                  <SelectItem key={d.id} value={d.id}>
-                    {d.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
           </div>
 
           <div className="flex items-center justify-between rounded-md border bg-muted/30 px-3 py-2">

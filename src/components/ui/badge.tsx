@@ -9,8 +9,12 @@ const badgeVariants = cva(
       variant: {
         default:
           "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
+        // Brand-aligned chip: light purple background + dark purple text.
+        // Used across the app for count badges and similar passive chips so
+        // they read as part of the purple visual language rather than as
+        // muted neutral pills.
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "border-transparent bg-primary/10 text-primary hover:bg-primary/15",
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
         outline: "text-foreground",

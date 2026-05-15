@@ -126,6 +126,11 @@ model Company {
   logo         String?
   primaryColor String?  @default("#0066FF")
   domain       String?
+  // Tax/legal identifier (NIT in Colombia, VAT/EIN elsewhere). Required at
+  // the DB layer (NOT NULL, no default) — every insert must supply a value.
+  // Format validation lives in Zod; legacy rows from before this column
+  // existed were backfilled with the sentinel "PENDING".
+  taxId        String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -676,6 +681,12 @@ model ClimateSurvey {
   status      ClimateSurveyStatus @default(DRAFT)
   frequency   SurveyFrequency     @default(ONCE)
   isAnonymous Boolean             @default(true)
+
+  // Minimum respondents required before a segment's results are shown in
+  // aggregations. Protects individual privacy: a department with <N replies
+  // gets its dimension scores hidden so individuals can't be inferred.
+  // Industry standard for climate surveys is 5; smaller orgs may use 3.
+  anonymityThreshold Int @default(5)
 
   // Welcome page customization (shown to respondents before the form)
   welcomeTitle     String?

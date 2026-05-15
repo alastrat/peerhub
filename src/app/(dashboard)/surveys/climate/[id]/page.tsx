@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Settings,
   BarChart3,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +32,7 @@ import { formatRelativeTime } from "@/lib/utils/dates";
 import { DistributeDialog } from "@/components/climate/distribute-dialog";
 import { SurveyDetailActions } from "@/components/climate/survey-detail-actions";
 import { SurveyAnswersTab } from "@/components/climate/survey-answers-tab";
+import { SurveyParticipantsTab } from "@/components/climate/survey-participants-tab";
 import { SurveyQuestionsTab } from "@/components/climate/survey-questions-tab";
 import { SurveySettingsTab } from "@/components/climate/survey-settings-tab";
 import { SurveyInsightsTab } from "@/components/climate/survey-insights-tab";
@@ -128,7 +130,17 @@ export default async function SurveyDetailPage({ params }: PageProps) {
         prisma.employee.findMany({
           where: { companyId, isActive: true },
           orderBy: { name: "asc" },
-          select: { id: true, name: true, email: true },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            title: true,
+            department: { select: { id: true, name: true } },
+            hub: { select: { id: true, name: true } },
+            teamMemberships: {
+              select: { team: { select: { id: true, name: true } } },
+            },
+          },
         }),
         prisma.company.findUnique({
           where: { id: companyId },
@@ -255,6 +267,7 @@ export default async function SurveyDetailPage({ params }: PageProps) {
           <SurveyDetailActions
             surveyId={survey.id}
             surveyStatus={survey.status}
+            latestDistributionId={survey.distributions[0]?.id ?? null}
           />
         </div>
       </div>
@@ -300,6 +313,10 @@ export default async function SurveyDetailPage({ params }: PageProps) {
             <MessageSquare className="h-4 w-4" />
             {t("tabs.answers")}
           </TabsTrigger>
+          <TabsTrigger value="participants" className="gap-1.5">
+            <Users className="h-4 w-4" />
+            {t("tabs.participants")}
+          </TabsTrigger>
           <TabsTrigger value="questions" className="gap-1.5">
             <FileText className="h-4 w-4" />
             {t("tabs.questions")}
@@ -326,6 +343,39 @@ export default async function SurveyDetailPage({ params }: PageProps) {
             questions={questionsData}
             questionAverages={questionAverages}
             isAnonymous={survey.isAnonymous}
+          />
+        </TabsContent>
+
+        {/* Participants Tab */}
+        <TabsContent value="participants">
+          <SurveyParticipantsTab
+            surveyId={survey.id}
+            surveyStatus={survey.status}
+            responses={allResponses}
+            isAnonymous={survey.isAnonymous}
+            accessEndDate={survey.accessEndDate}
+            employees={
+              isDraft
+                ? employees.map((e) => ({
+                    id: e.id,
+                    name: e.name,
+                    email: e.email,
+                    title: e.title ?? null,
+                    department: e.department
+                      ? { id: e.department.id, name: e.department.name }
+                      : null,
+                    hub: e.hub ? { id: e.hub.id, name: e.hub.name } : null,
+                    teams: (e.teamMemberships ?? []).map((tm) => ({
+                      id: tm.team.id,
+                      name: tm.team.name,
+                    })),
+                  }))
+                : []
+            }
+            hubs={hubs}
+            departments={departments}
+            teams={teams}
+            featureHubs={company?.featureHubs ?? false}
           />
         </TabsContent>
 
@@ -359,6 +409,7 @@ export default async function SurveyDetailPage({ params }: PageProps) {
               type: survey.type,
               frequency: survey.frequency,
               isAnonymous: survey.isAnonymous,
+              anonymityThreshold: survey.anonymityThreshold,
               questionsPerPage: survey.questionsPerPage,
               logoUrl: survey.logoUrl,
               accessStartDate: survey.accessStartDate,

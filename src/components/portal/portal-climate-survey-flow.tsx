@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import Image from "next/image";
+import { useTranslations } from "next-intl";
+import confetti from "canvas-confetti";
 import { ArrowLeft, ArrowRight, Check, ClipboardCheck, ShieldCheck } from "lucide-react";
 import type { WallpaperConfig, ColorConfig } from "@/lib/utils/wallpaper";
 import { getWallpaperCSS, parseWallpaperConfig, parseColorConfig, resolveColors, getContrastBadgeColors } from "@/lib/utils/wallpaper";
@@ -45,6 +48,7 @@ interface PortalClimateSurveyFlowProps {
   thankYouTitle: string | null;
   thankYouBody: string | null;
   thankYouCtaText: string | null;
+  logoUrl?: string | null;
   questionsPerPage: number | null;
   dueDateLabel: string;
   daysLeft: number;
@@ -70,6 +74,7 @@ export function PortalClimateSurveyFlow({
   thankYouTitle,
   thankYouBody,
   thankYouCtaText,
+  logoUrl,
   questionsPerPage: questionsPerPageProp,
   dueDateLabel,
   daysLeft,
@@ -79,8 +84,57 @@ export function PortalClimateSurveyFlow({
   previewMode = false,
 }: PortalClimateSurveyFlowProps) {
   const router = useRouter();
-  const [stage, setStage] = useState<"welcome" | "form" | "thankyou">("welcome");
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const t = useTranslations("portal.climate_survey");
+
+  // Stage lives in the URL (?stage=form|thankyou) so a refresh keeps the
+  // respondent on the screen they were on. Default is the welcome screen.
+  const stageParam = searchParams?.get("stage");
+  const stage: "welcome" | "form" | "thankyou" =
+    stageParam === "form" || stageParam === "thankyou" ? stageParam : "welcome";
+
+  const consentKey = `survey-consent:${distributionId}`;
   const [consentAccepted, setConsentAccepted] = useState(false);
+
+  const setStage = useCallback(
+    (next: "welcome" | "form" | "thankyou") => {
+      const params = new URLSearchParams(searchParams?.toString() ?? "");
+      if (next === "welcome") params.delete("stage");
+      else params.set("stage", next);
+      const qs = params.toString();
+      router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
+
+  // Hydrate consent + auto-skip welcome on refresh if the respondent already
+  // accepted. Preview mode never persists consent (testers want to re-see the
+  // welcome flow on every preview load).
+  useEffect(() => {
+    if (previewMode) return;
+    if (typeof window === "undefined") return;
+    const accepted = window.localStorage.getItem(consentKey) === "1";
+    if (!accepted) return;
+    setConsentAccepted(true);
+    if (stage === "welcome") setStage("form");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [consentKey, previewMode]);
+
+  // Celebrate completion with a brief confetti burst whenever we land on the
+  // thank-you screen (including on a direct ?stage=thankyou refresh).
+  useEffect(() => {
+    if (stage !== "thankyou") return;
+    if (typeof window === "undefined") return;
+    const end = Date.now() + 800;
+    const colors = ["#a78bfa", "#22c55e", "#fbbf24", "#f472b6"];
+    const tick = () => {
+      confetti({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0 }, colors });
+      confetti({ particleCount: 4, angle: 120, spread: 55, origin: { x: 1 }, colors });
+      if (Date.now() < end) requestAnimationFrame(tick);
+    };
+    tick();
+  }, [stage]);
 
   const resolvedTitle = welcomeTitle?.trim() || surveyName;
   const resolvedCta = welcomeCtaText?.trim() || DEFAULT_CTA_TEXT;
@@ -147,7 +201,7 @@ export function PortalClimateSurveyFlow({
             </Button>
             {previewMode && (
               <p className="mt-3 text-xs text-muted-foreground">
-                Preview mode — click above to restart from the welcome screen.
+                {t("preview_restart_hint")}
               </p>
             )}
           </CardContent>
@@ -159,41 +213,22 @@ export function PortalClimateSurveyFlow({
   if (stage === "form") {
     return (
       <div
-        className="min-h-screen w-full px-4 py-8 space-y-6"
+        className="min-h-screen w-full"
         style={headerCSS.style}
       >
-        <div className="mx-auto max-w-2xl space-y-4">
-          {/* Header bar */}
-          <div className="flex items-center gap-4 rounded-xl bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
-            <button
-              type="button"
-              onClick={() => setStage("welcome")}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted"
-              aria-label="Back to welcome"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </button>
-            <div>
-              <h1
-                className="text-sm font-semibold"
-                style={{ color: colors.titleText }}
-              >
-                {resolvedTitle}
-              </h1>
-              <p className="text-xs text-muted-foreground">Vence el {dueDateLabel}</p>
-            </div>
-          </div>
-
-          <PortalClimateSurveyForm
-            distributionId={distributionId}
-            questions={questions}
-            draftAnswers={draftAnswers}
-            onSubmitted={() => setStage("thankyou")}
-            previewMode={previewMode}
-            accentColor={accent}
-            questionsPerPage={questionsPerPageProp ?? 0}
-          />
-        </div>
+        <PortalClimateSurveyForm
+          distributionId={distributionId}
+          questions={questions}
+          draftAnswers={draftAnswers}
+          onSubmitted={() => setStage("thankyou")}
+          previewMode={previewMode}
+          accentColor={accent}
+          questionsPerPage={questionsPerPageProp ?? 0}
+          logoUrl={logoUrl}
+          surveyName={resolvedTitle}
+          dueDateLabel={dueDateLabel}
+          onBackToWelcome={() => setStage("welcome")}
+        />
       </div>
     );
   }
@@ -212,10 +247,17 @@ export function PortalClimateSurveyFlow({
             </Button>
           </Link>
         )}
+        {logoUrl && (
+          <Image
+            src={logoUrl}
+            alt="Logo"
+            width={200}
+            height={64}
+            className="h-12 w-auto shrink-0 object-contain"
+            unoptimized
+          />
+        )}
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-muted-foreground truncate">
-            {previewMode ? "Preview" : "Encuesta"}
-          </p>
         </div>
         {isAnonymous && (
           <Badge
@@ -223,7 +265,7 @@ export function PortalClimateSurveyFlow({
             style={{ backgroundColor: badgeColors.bg, color: badgeColors.text }}
           >
             <ShieldCheck className="h-3 w-3" />
-            Tu respuesta es 100% confidencial
+            {t("anonymous_badge")}
           </Badge>
         )}
       </div>
@@ -291,7 +333,12 @@ export function PortalClimateSurveyFlow({
           <Button
             type="button"
             size="lg"
-            onClick={() => setStage("form")}
+            onClick={() => {
+              if (!previewMode && typeof window !== "undefined") {
+                window.localStorage.setItem(consentKey, "1");
+              }
+              setStage("form");
+            }}
             disabled={isAnonymous && !consentAccepted}
             style={{
               backgroundColor: isAnonymous && !consentAccepted ? undefined : colors.buttons,

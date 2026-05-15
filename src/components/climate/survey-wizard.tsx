@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,12 +18,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, ArrowLeft, ArrowRight, Check, Eye, FileText, ShieldCheck, ClipboardCheck } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, ArrowRight, Check, Eye, FileText, ShieldCheck, ClipboardCheck, Pencil, RefreshCw, Lock, Users, ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClimateSurvey, updateClimateSurvey } from "@/lib/actions/climate-surveys";
 import { WallpaperPicker } from "@/components/climate/wallpaper-picker";
+import { SurveyQuestionsBuilder } from "@/components/climate/survey-questions-builder";
+import { ParticipantScopePicker } from "@/components/climate/participant-scope-picker";
 import { ImportQuestionsDialog } from "@/components/climate/import-questions-dialog";
+import { DimensionCombobox } from "@/components/climate/dimension-combobox";
 import type { ParsedQuestionRow } from "@/lib/utils/climate-questions-import";
 import type { WallpaperConfig, ColorConfig } from "@/lib/utils/wallpaper";
 import { getWallpaperCSS, parseWallpaperConfig, parseColorConfig, resolveColors, DEFAULT_COLORS } from "@/lib/utils/wallpaper";
@@ -62,6 +68,7 @@ export interface SurveyWizardInitialData {
   type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
   frequency: string;
   isAnonymous: boolean;
+  anonymityThreshold: number;
   templateId: string | null;
   welcomeTitle: string | null;
   welcomeBody: string | null;
@@ -77,14 +84,38 @@ export interface SurveyWizardInitialData {
   questions: QuestionRow[];
 }
 
+export interface EmployeeOption {
+  id: string;
+  name: string;
+  email: string;
+  title: string | null;
+  departmentId: string | null;
+}
+
+export interface NamedOption {
+  id: string;
+  name: string;
+}
+
 interface SurveyWizardProps {
   dimensions: DimensionOption[];
   templates?: TemplateOption[];
   mode?: "create" | "edit";
   initialData?: SurveyWizardInitialData;
+  employees?: EmployeeOption[];
+  departments?: NamedOption[];
+  teams?: NamedOption[];
+  hubs?: NamedOption[];
+  featureHubs?: boolean;
 }
 
-const STEP_KEYS = ["basics", "questions", "preview"] as const;
+const STEP_KEYS = ["basics", "questions", "participants", "preview"] as const;
+const STEP_ICONS: Record<(typeof STEP_KEYS)[number], React.ElementType> = {
+  basics: FileText,
+  questions: ListChecks,
+  participants: Users,
+  preview: Eye,
+};
 
 const DEFAULT_CTA_TEXT = "Comenzar encuesta";
 const DEFAULT_THEME_COLOR = "#613171";
@@ -101,10 +132,15 @@ const LIKERT_OPTIONS = [
 ];
 
 export function SurveyWizard({
-  dimensions,
+  dimensions: initialDimensions,
   templates = [],
   mode = "create",
   initialData,
+  employees = [],
+  departments = [],
+  teams = [],
+  hubs = [],
+  featureHubs = false,
 }: SurveyWizardProps) {
   const router = useRouter();
   const t = useTranslations("dashboard.climate.wizard");
@@ -112,6 +148,13 @@ export function SurveyWizard({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(0);
+  const [dimensions, setDimensions] = useState<DimensionOption[]>(initialDimensions);
+
+  const handleDimensionCreated = (dim: DimensionOption) => {
+    setDimensions((prev) =>
+      prev.some((d) => d.id === dim.id) ? prev : [...prev, dim],
+    );
+  };
 
   // Basics
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
@@ -124,6 +167,9 @@ export function SurveyWizard({
   );
   const [frequency, setFrequency] = useState(initialData?.frequency ?? "ONCE");
   const [isAnonymous, setIsAnonymous] = useState(initialData?.isAnonymous ?? true);
+  const [anonymityThreshold, setAnonymityThreshold] = useState<number>(
+    initialData?.anonymityThreshold ?? 5,
+  );
 
   // Questions
   const [questions, setQuestions] = useState<QuestionRow[]>(
@@ -172,11 +218,26 @@ export function SurveyWizard({
     return !!(initialData?.wallpaperConfig || initialData?.colorConfig);
   });
 
+  // Participants step — wizard-scoped selection (not yet persisted to the
+  // survey; see TODO at submission time).
+  type ParticipantScope = "ALL" | "HUB" | "DEPARTMENT" | "TEAM" | "CUSTOM";
+  const [participantScope, setParticipantScope] = useState<ParticipantScope>("CUSTOM");
+  const [participantScopeIds, setParticipantScopeIds] = useState<string[]>([]);
+  const [participantIds, setParticipantIds] = useState<string[]>([]);
+
   // Preview navigation: section + per-question cursor
   const [previewSection, setPreviewSection] = useState<"welcome" | "questions" | "thankyou">(
     "welcome",
   );
   const [questionIndex, setQuestionIndex] = useState(0);
+
+  // Step-3 mode: "iframe" shows a browser mockup of the saved survey;
+  // "edit" shows the editor panels. Default to iframe whenever a persisted
+  // survey id exists (edit mode or post-draft create mode).
+  const [previewViewMode, setPreviewViewMode] = useState<"iframe" | "edit">(
+    initialData?.id ? "iframe" : "edit",
+  );
+  const [iframeRefreshKey, setIframeRefreshKey] = useState(0);
   // 0 = all on one page; >0 = N questions per page
   const [questionsPerPage, setQuestionsPerPage] = useState(
     initialData?.questionsPerPage ?? 0,
@@ -224,22 +285,42 @@ export function SurveyWizard({
 
   const canProceed = () => {
     if (step === 0) return name.trim().length > 0;
-    if (step === 1) return questions.length > 0 && questions.every((q) => q.text.trim().length > 0);
+    if (step === 1) {
+      // Every question must have non-empty text AND a real dimension assigned.
+      // Forcing dimensions matches the section-based editor's contract: there
+      // is no "unclassified" persistence path.
+      if (questions.length === 0) return false;
+      return questions.every(
+        (q) => q.text.trim().length > 0 && q.dimensionId.trim().length > 0,
+      );
+    }
     return true;
   };
 
-  const handleSubmit = () => {
-    setError(null);
-    const payload = {
+  // Track the persisted draft id after the first "Save draft" in create mode,
+  // so subsequent saves update the same record instead of creating duplicates.
+  const [createdId, setCreatedId] = useState<string | null>(null);
+  const effectiveSurveyId = initialData?.id ?? createdId;
+
+  // Build payload from current state. `forDraft=true` filters empty question rows
+  // so the user can save mid-edit without tripping the "all questions need text"
+  // gate the final submit relies on.
+  const buildPayload = (forDraft: boolean) => {
+    const rows = forDraft
+      ? questions.filter((q) => q.text.trim().length > 0)
+      : questions;
+    return {
       name: name.trim(),
       description: description?.trim() || undefined,
       type: surveyType,
       frequency,
       isAnonymous,
+      anonymityThreshold,
       templateId: selectedTemplateId || undefined,
       welcomeTitle: welcomeTitle.trim() || undefined,
       welcomeBody: welcomeBody || undefined,
-      welcomeBannerUrl: wallpaper?.style === "image" ? wallpaper.url : welcomeBannerUrl?.trim() || undefined,
+      welcomeBannerUrl:
+        wallpaper?.style === "image" ? wallpaper.url : welcomeBannerUrl?.trim() || undefined,
       wallpaperConfig: wallpaper as unknown as Record<string, unknown> | undefined,
       colorConfig: colors as unknown as Record<string, unknown>,
       questionsPerPage: questionsPerPage || null,
@@ -248,7 +329,7 @@ export function SurveyWizard({
       thankYouTitle: thankYouTitle.trim() || undefined,
       thankYouBody: thankYouBody || undefined,
       thankYouCtaText: thankYouCtaText.trim() || undefined,
-      questions: questions.map((q, i) => ({
+      questions: rows.map((q, i) => ({
         text: q.text.trim(),
         type: q.type,
         dimensionId: q.dimensionId || undefined,
@@ -256,15 +337,96 @@ export function SurveyWizard({
         isRequired: q.isRequired,
       })),
     };
+  };
+
+  // Snapshot of the last saved state. Used to detect unsaved changes for the
+  // beforeunload guard. Initialized after first render so editing initialData
+  // doesn't flag as dirty on mount.
+  const currentSnapshot = useMemo(
+    () => JSON.stringify(buildPayload(false)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      name,
+      description,
+      surveyType,
+      frequency,
+      isAnonymous,
+      anonymityThreshold,
+      selectedTemplateId,
+      welcomeTitle,
+      welcomeBody,
+      welcomeCtaText,
+      themeColor,
+      thankYouTitle,
+      thankYouBody,
+      thankYouCtaText,
+      wallpaper,
+      colors,
+      questionsPerPage,
+      questions,
+    ],
+  );
+  const savedSnapshotRef = useRef<string | null>(null);
+  const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
+  useEffect(() => {
+    if (savedSnapshotRef.current === null) {
+      savedSnapshotRef.current = currentSnapshot;
+      setSavedSnapshot(currentSnapshot);
+    }
+  }, [currentSnapshot]);
+  const isDirty = savedSnapshot !== null && savedSnapshot !== currentSnapshot;
+
+  // Native browser warning when the user tries to close/reload with unsaved
+  // edits. Modern browsers ignore the custom message and show their own.
+  useEffect(() => {
+    if (!isDirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
+
+  const canSaveDraft =
+    name.trim().length > 0 &&
+    questions.some((q) => q.text.trim().length > 0) &&
+    !isPending;
+
+  const handleSaveDraft = () => {
+    if (!canSaveDraft) return;
+    setError(null);
+    const payload = buildPayload(true);
+    startTransition(async () => {
+      const result = effectiveSurveyId
+        ? await updateClimateSurvey(effectiveSurveyId, payload)
+        : await createClimateSurvey(payload);
+      if (result.success) {
+        if (!effectiveSurveyId && result.data?.id) setCreatedId(result.data.id);
+        const snapshot = currentSnapshot;
+        savedSnapshotRef.current = snapshot;
+        setSavedSnapshot(snapshot);
+        toast.success(t("actions.draft_saved"));
+      } else {
+        setError(result.error || "Failed to save draft");
+      }
+    });
+  };
+
+  const handleSubmit = () => {
+    setError(null);
+    const payload = buildPayload(false);
 
     startTransition(async () => {
-      const result =
-        mode === "edit" && initialData
-          ? await updateClimateSurvey(initialData.id, payload)
-          : await createClimateSurvey(payload);
+      const result = effectiveSurveyId
+        ? await updateClimateSurvey(effectiveSurveyId, payload)
+        : await createClimateSurvey(payload);
 
       if (result.success) {
-        router.push(`/surveys/climate/${result.data?.id}`);
+        const snapshot = currentSnapshot;
+        savedSnapshotRef.current = snapshot;
+        setSavedSnapshot(snapshot);
+        router.push(`/surveys/climate/${result.data?.id ?? effectiveSurveyId}`);
         router.refresh();
       } else {
         setError(result.error || `Failed to ${mode === "edit" ? "update" : "create"} survey`);
@@ -289,6 +451,16 @@ export function SurveyWizard({
         <ArrowLeft className="mr-2 h-4 w-4" />
         {step === 0 ? t("actions.cancel") : t("actions.previous")}
       </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleSaveDraft}
+        disabled={!canSaveDraft || !isDirty}
+        title={!canSaveDraft ? t("actions.save_draft_disabled_hint") : undefined}
+      >
+        <Save className="mr-2 h-4 w-4" />
+        {isPending ? t("actions.saving") : t("actions.save_draft")}
+      </Button>
       {step < STEPS.length - 1 ? (
         <Button size="sm" onClick={() => setStep(step + 1)} disabled={!canProceed()}>
           {t("actions.next")}
@@ -308,27 +480,44 @@ export function SurveyWizard({
 
   return (
     <div className="space-y-6">
-      {/* Progress + navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          {STEPS.map((label, i) => (
-            <div key={label} className="flex items-center gap-2">
-              <div
+      {/* Progress indicator (pill-style, matches the 360° wizard).
+          Navigation buttons live at the bottom of the page, below the
+          active step's content, so they don't compete with the step pills. */}
+      <div className="flex flex-wrap items-center">
+        {STEP_KEYS.map((key, i) => {
+          const Icon = STEP_ICONS[key];
+          const isActive = i === step;
+          const isDone = i < step;
+          return (
+            <div key={key} className="flex items-center">
+              <button
+                type="button"
+                onClick={() => {
+                  if (isDone) setStep(i);
+                }}
                 className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium",
-                  i <= step ? "bg-[#613171] text-white" : "bg-muted text-muted-foreground",
+                  "flex items-center gap-2 rounded-full px-4 py-2 transition-colors",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : isDone
+                      ? "bg-primary/20 text-primary cursor-pointer hover:bg-primary/30"
+                      : "bg-muted text-muted-foreground",
                 )}
               >
-                {i < step ? <Check className="h-4 w-4" /> : i + 1}
-              </div>
-              <span className={`text-sm ${i <= step ? "font-medium" : "text-muted-foreground"}`}>
-                {label}
-              </span>
-              {i < STEPS.length - 1 && <div className="mx-2 hidden h-px w-8 bg-border sm:block" />}
+                <Icon className="h-4 w-4" />
+                <span className="hidden text-sm sm:inline">{STEPS[i]}</span>
+              </button>
+              {i < STEP_KEYS.length - 1 && (
+                <div
+                  className={cn(
+                    "mx-2 h-0.5 w-8",
+                    isDone ? "bg-primary" : "bg-muted",
+                  )}
+                />
+              )}
             </div>
-          ))}
-        </div>
-        <NavButtons />
+          );
+        })}
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -395,6 +584,29 @@ export function SurveyWizard({
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="anonymity-threshold">
+                  {t("basics.anonymity_threshold_label")}
+                </Label>
+                <Input
+                  id="anonymity-threshold"
+                  type="number"
+                  min={1}
+                  max={50}
+                  value={anonymityThreshold}
+                  onChange={(e) => {
+                    const n = parseInt(e.target.value, 10);
+                    setAnonymityThreshold(
+                      Number.isFinite(n) && n >= 1 ? Math.min(n, 50) : 1,
+                    );
+                  }}
+                  className="w-32"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t("basics.anonymity_threshold_hint")}
+                </p>
+              </div>
+
               {templates.length > 0 && mode === "create" && (
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
@@ -434,134 +646,71 @@ export function SurveyWizard({
         </div>
       )}
 
-      {/* Step 2: Questions — clean builder canvas */}
+      {/* Step 2: Questions — section-based editor (sections == dimensions),
+          matching the 360° template builder UX. */}
       {step === 1 && (
-        <div className="rounded-xl border bg-muted/40 p-6 sm:p-8">
-          <div className="mx-auto max-w-3xl space-y-4">
-            {questions.map((q, i) => {
-              const isFocused = focusedQuestion === i;
-              return (
-                <div
-                  key={i}
-                  onClick={() => setFocusedQuestion(i)}
-                  className={cn(
-                    "relative rounded-xl bg-white shadow-sm transition-all",
-                    isFocused
-                      ? "border-l-4 border-l-primary border border-r-border border-t-border border-b-border shadow-md"
-                      : "border border-border hover:shadow-md",
-                  )}
-                >
-                  <div className="p-5 sm:p-6">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-2 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-                        {i + 1}
-                      </span>
-                      <div className="flex-1 space-y-3">
-                        <Input
-                          value={q.text}
-                          onChange={(e) => updateQuestion(i, "text", e.target.value)}
-                          placeholder={t("questions_step.text_placeholder")}
-                          className="border-0 border-b border-border/60 rounded-none px-0 text-base font-medium shadow-none focus-visible:border-primary focus-visible:ring-0"
-                        />
-                        <div className="grid gap-3 sm:grid-cols-3">
-                          <div className="space-y-1">
-                            <Label className="text-xs">{t("questions_step.type_label")}</Label>
-                            <Select value={q.type} onValueChange={(v) => updateQuestion(i, "type", v)}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {Object.entries(SURVEY_QUESTION_TYPE_LABELS).map(([key, label]) => (
-                                  <SelectItem key={key} value={key}>
-                                    {label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-1">
-                            <Label className="text-xs">{t("questions_step.dimension_label")}</Label>
-                            <Select
-                              value={q.dimensionId || "none"}
-                              onValueChange={(v) => updateQuestion(i, "dimensionId", v === "none" ? "" : v)}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder={t("questions_step.no_dimension")} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">{t("questions_step.no_dimension")}</SelectItem>
-                                {dimensions.map((d) => (
-                                  <SelectItem key={d.id} value={d.id}>
-                                    {d.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="flex items-end justify-between gap-3">
-                            <div className="flex items-center gap-2">
-                              <Switch
-                                checked={q.isRequired}
-                                onCheckedChange={(v) => updateQuestion(i, "isRequired", v)}
-                              />
-                              <Label className="text-xs">{t("questions_step.required_label")}</Label>
-                            </div>
-                            {questions.length > 1 && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeQuestion(i);
-                                  if (focusedQuestion === i) setFocusedQuestion(Math.max(0, i - 1));
-                                }}
-                                aria-label={t("questions_step.delete_question_aria")}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  addQuestion();
-                  setFocusedQuestion(questions.length);
-                }}
-                className="h-12 w-12 rounded-full p-0 shadow-sm"
-                aria-label={t("questions_step.add_question_aria")}
-              >
-                <Plus className="h-5 w-5" />
-              </Button>
-              <ImportQuestionsDialog
-                dimensions={dimensions}
-                onImport={(rows: ParsedQuestionRow[], mode) => {
-                  const next =
-                    mode === "replace"
-                      ? rows.map((r) => ({ ...r }))
-                      : [
-                          ...questions.filter((q) => q.text.trim() !== ""),
-                          ...rows.map((r) => ({ ...r })),
-                        ];
-                  setQuestions(next);
-                  setFocusedQuestion(0);
-                }}
-              />
-            </div>
+        <div className="space-y-4">
+          <SurveyQuestionsBuilder
+            questions={questions}
+            dimensions={dimensions}
+            onChange={setQuestions}
+            onDimensionCreated={handleDimensionCreated}
+          />
+          <div className="flex justify-end">
+            <ImportQuestionsDialog
+              dimensions={dimensions}
+              onImport={(rows: ParsedQuestionRow[], mode) => {
+                const next =
+                  mode === "replace"
+                    ? rows.map((r) => ({ ...r }))
+                    : [
+                        ...questions.filter((q) => q.text.trim() !== ""),
+                        ...rows.map((r) => ({ ...r })),
+                      ];
+                setQuestions(next);
+              }}
+            />
           </div>
         </div>
       )}
 
-      {/* Step 3: Preview — editable welcome fields on the left, navigable live preview on the right */}
-      {step === 2 &&
+      {/* Step 3: Participants — pick who will receive the survey (scope +
+          optional manual selection). Captured in component state for now;
+          a follow-up will persist this as a SurveyDistribution on submit. */}
+      {step === 2 && (
+        <ParticipantScopePicker
+          value={{
+            scope: participantScope,
+            scopeIds: participantScopeIds,
+            participantIds: participantIds,
+          }}
+          onChange={(next) => {
+            setParticipantScope(next.scope);
+            setParticipantScopeIds(next.scopeIds);
+            setParticipantIds(next.participantIds);
+          }}
+          // Enrich each employee with the resolved department object so the
+          // CUSTOM-scope table can render the department column + filter.
+          // The wizard fetches employees with `departmentId` only; we look it
+          // up here once instead of refetching with a join.
+          employees={employees.map((e) => ({
+            id: e.id,
+            name: e.name,
+            email: e.email,
+            title: e.title,
+            department: e.departmentId
+              ? departments.find((d) => d.id === e.departmentId) ?? null
+              : null,
+          }))}
+          hubs={hubs}
+          departments={departments}
+          teams={teams}
+          featureHubs={featureHubs}
+        />
+      )}
+
+      {/* Step 4: Preview — editable welcome fields on the left, navigable live preview on the right */}
+      {step === 3 &&
         (() => {
           const isWelcome = previewSection === "welcome";
           const isThankYou = previewSection === "thankyou";
@@ -594,8 +743,80 @@ export function SurveyWizard({
                       total: totalPages,
                     });
 
+          const showIframe = previewViewMode === "iframe" && effectiveSurveyId;
+          const toolbar = (
+            <div className="flex items-center justify-end gap-2">
+              {showIframe && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIframeRefreshKey((k) => k + 1)}
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  {t("preview.reload_preview")}
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant={showIframe ? "default" : "outline"}
+                size="sm"
+                onClick={() =>
+                  setPreviewViewMode((m) => (m === "iframe" ? "edit" : "iframe"))
+                }
+                disabled={previewViewMode === "edit" && !effectiveSurveyId}
+              >
+                {showIframe ? (
+                  <>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    {t("preview.mode_edit")}
+                  </>
+                ) : (
+                  <>
+                    <Eye className="mr-2 h-4 w-4" />
+                    {t("preview.mode_preview")}
+                  </>
+                )}
+              </Button>
+            </div>
+          );
           return (
             <div className="space-y-4">
+              {showIframe ? (
+                /* Browser-mockup preview of the saved survey */
+                <div className="overflow-hidden rounded-xl border bg-background shadow-md">
+                  <div className="flex items-center gap-3 border-b bg-muted/60 px-4 py-2.5">
+                    <div className="flex gap-1.5">
+                      <span className="h-3 w-3 rounded-full bg-rose-400" />
+                      <span className="h-3 w-3 rounded-full bg-amber-400" />
+                      <span className="h-3 w-3 rounded-full bg-emerald-400" />
+                    </div>
+                    <div className="flex flex-1 items-center gap-2 truncate rounded-md border bg-background px-3 py-1 text-xs text-muted-foreground">
+                      <Lock className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{`/survey-preview/${effectiveSurveyId}`}</span>
+                    </div>
+                  </div>
+                  <iframe
+                    key={iframeRefreshKey}
+                    src={`/survey-preview/${effectiveSurveyId}`}
+                    title="Survey preview"
+                    className="block h-[680px] w-full border-0 bg-white"
+                  />
+                </div>
+              ) : !effectiveSurveyId ? (
+                /* Create mode without a draft yet: nothing to iframe. */
+                <div className="rounded-xl border bg-muted/30 p-8 text-center text-sm text-muted-foreground">
+                  {t("preview.preview_unavailable")}
+                </div>
+              ) : null}
+
+              {/* Mode toggle (Edit / Preview + Reload) — kept below the
+                  preview/editor content so it never visually competes with
+                  the survey it controls. */}
+
+              {/* Editor panels — shown when Edit mode is active */}
+              {previewViewMode === "edit" && (
+              <>
               {/* Section selector — controls both panels */}
               <div className="flex flex-wrap items-center gap-2">
                 <Label className="text-sm text-muted-foreground">{t("preview.editing_label")}</Label>
@@ -1096,10 +1317,20 @@ export function SurveyWizard({
                 </Card>
               </div>
               </div>
+              </>
+              )}
+
+              {toolbar}
             </div>
           );
         })()}
 
+      {/* Wizard navigation: stays pinned to the bottom of the page so it
+          doesn't compete with the step indicator for attention. */}
+      <div className="flex justify-end">
+        <NavButtons />
+      </div>
     </div>
   );
 }
+

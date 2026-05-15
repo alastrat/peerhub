@@ -57,6 +57,12 @@ const companySchema = z.object({
       /^[a-z0-9-]+$/,
       "URL can only contain lowercase letters, numbers, and hyphens"
     ),
+  taxId: z
+    .string()
+    .trim()
+    .min(5, "Tax ID must be at least 5 characters")
+    .max(32, "Tax ID is too long")
+    .regex(/^[A-Za-z0-9.\-/ ]+$/, "Invalid characters in tax ID"),
 });
 
 type PersonalInfoFormValues = PersonalInfoInput;
@@ -96,7 +102,7 @@ export default function OnboardingPage() {
 
   const companyForm = useForm<CompanyFormValues>({
     resolver: zodResolver(companySchema),
-    defaultValues: { companyName: "", slug: "" },
+    defaultValues: { companyName: "", slug: "", taxId: "" },
   });
 
   useEffect(() => {
@@ -208,6 +214,7 @@ export default function OnboardingPage() {
       const result = await createCompany({
         name: data.companyName,
         slug: data.slug,
+        taxId: data.taxId,
         userId: session.user.id,
         jobTitle: pendingJobTitle || undefined,
       });
@@ -419,6 +426,26 @@ export default function OnboardingPage() {
                             </FormControl>
                             <FormDescription>
                               {t("company_url_help")}
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={companyForm.control}
+                        name="taxId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("company_tax_id")}</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder={t("company_tax_id_placeholder")}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              {t("company_tax_id_help")}
                             </FormDescription>
                             <FormMessage />
                           </FormItem>
