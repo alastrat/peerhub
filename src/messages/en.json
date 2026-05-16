@@ -1425,6 +1425,57 @@
     }
   },
   "auth": {
+    "invite": {
+      "not_found_title": "Invitation not found",
+      "not_found_description": "This invitation link is invalid. It may have been deleted or the URL is incorrect.",
+      "expired_title": "Invitation expired",
+      "expired_description": "Your invitation to join <strong>{company}</strong> has expired. Please ask the person who invited you to send a new one.",
+      "already_accepted_title": "Already accepted",
+      "already_accepted_description": "This invitation to join <strong>{company}</strong> has already been accepted. Please sign in to continue.",
+      "wrong_account_title": "Signed in as a different account",
+      "wrong_account_description": "This invitation was sent to <strong>{invitedEmail}</strong>, but you're currently signed in as <strong>{currentEmail}</strong>. Please sign out and try again from the invitation link.",
+      "go_to_login": "Go to sign in",
+      "sign_in": "Sign in",
+      "sign_out": "Sign out",
+      "accept_title": "You're invited to join {company}",
+      "accept_subtitle_role": "You've been invited as",
+      "accept_subtitle_in": "in",
+      "form": {
+        "email_label": "Email",
+        "email_hint": "This is the email that received the invitation.",
+        "prefill_notice": "We've pre-filled some details based on your invitation. Review and edit before continuing.",
+        "first_name_label": "First name",
+        "first_name_placeholder": "Jane",
+        "last_name_label": "Last name",
+        "last_name_placeholder": "Doe",
+        "phone_label": "Phone (optional)",
+        "job_title_label": "Job title (optional)",
+        "job_title_placeholder": "People Operations Lead",
+        "name_label": "Your name",
+        "name_placeholder": "Jane Doe",
+        "submit": "Accept and sign in",
+        "submit_hint": "After accepting, we'll email you a secure sign-in link. No password required.",
+        "errors": {
+          "name_required": "Please enter your name.",
+          "first_last_required": "Please enter your first and last name.",
+          "accept_failed": "Could not accept the invitation.",
+          "generic": "An error occurred. Please try again."
+        },
+        "accepted_toast": "Invitation accepted. Sending you a sign-in link..."
+      },
+      "signed_in": {
+        "title": "Join {company}",
+        "subtitle_in_dept": " in <strong>{department}</strong>",
+        "subtitle_suffix": ". You're already signed in, so you can accept in one click.",
+        "hint": "After accepting, you'll be able to switch to this company from the dashboard.",
+        "accept_button": "Accept invitation",
+        "welcome_toast": "Welcome to {company}!"
+      },
+      "showcase": {
+        "tagline": "You're now part of\na talent community",
+        "description": "Join the {company} team and start participating in your organization's surveys and feedback cycles."
+      }
+    },
     "verify_request": {
       "title": "Check your email",
       "description": "We sent you a sign-in link. Click the link in the email to continue.",

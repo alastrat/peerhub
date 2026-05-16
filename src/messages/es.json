@@ -1471,6 +1471,57 @@
     }
   },
   "auth": {
+    "invite": {
+      "not_found_title": "Invitación no encontrada",
+      "not_found_description": "Este enlace de invitación no es válido. Puede que haya sido eliminado o que la URL sea incorrecta.",
+      "expired_title": "Invitación expirada",
+      "expired_description": "Tu invitación para unirte a <strong>{company}</strong> expiró. Pídele a quien te invitó que te envíe una nueva.",
+      "already_accepted_title": "Invitación ya aceptada",
+      "already_accepted_description": "Esta invitación para unirte a <strong>{company}</strong> ya fue aceptada. Inicia sesión para continuar.",
+      "wrong_account_title": "Sesión iniciada con otra cuenta",
+      "wrong_account_description": "Esta invitación fue enviada a <strong>{invitedEmail}</strong>, pero actualmente estás conectado como <strong>{currentEmail}</strong>. Cierra sesión y vuelve a abrir el enlace de invitación.",
+      "go_to_login": "Ir al inicio de sesión",
+      "sign_in": "Iniciar sesión",
+      "sign_out": "Cerrar sesión",
+      "accept_title": "Te invitaron a unirte a {company}",
+      "accept_subtitle_role": "Te invitaron como",
+      "accept_subtitle_in": "en",
+      "form": {
+        "email_label": "Correo electrónico",
+        "email_hint": "Este es el correo que recibió la invitación.",
+        "prefill_notice": "Pre-llenamos algunos datos basados en tu invitación. Revísalos y edítalos antes de continuar.",
+        "first_name_label": "Nombre",
+        "first_name_placeholder": "Juana",
+        "last_name_label": "Apellido",
+        "last_name_placeholder": "Pérez",
+        "phone_label": "Teléfono (opcional)",
+        "job_title_label": "Cargo (opcional)",
+        "job_title_placeholder": "Líder de People Ops",
+        "name_label": "Tu nombre",
+        "name_placeholder": "Juana Pérez",
+        "submit": "Aceptar e iniciar sesión",
+        "submit_hint": "Después de aceptar, te enviaremos un enlace seguro para iniciar sesión. No necesitas contraseña.",
+        "errors": {
+          "name_required": "Ingresa tu nombre.",
+          "first_last_required": "Ingresa tu nombre y apellido.",
+          "accept_failed": "No pudimos aceptar la invitación.",
+          "generic": "Ocurrió un error. Inténtalo de nuevo."
+        },
+        "accepted_toast": "Invitación aceptada. Te enviamos un enlace para iniciar sesión..."
+      },
+      "signed_in": {
+        "title": "Unirte a {company}",
+        "subtitle_in_dept": " en <strong>{department}</strong>",
+        "subtitle_suffix": ". Como ya iniciaste sesión, puedes aceptar con un solo clic.",
+        "hint": "Después de aceptar, podrás cambiar a esta empresa desde el dashboard.",
+        "accept_button": "Aceptar invitación",
+        "welcome_toast": "¡Bienvenido a {company}!"
+      },
+      "showcase": {
+        "tagline": "Ahora eres parte de\nuna comunidad de talento",
+        "description": "Únete al equipo de {company} y comienza a participar en las encuestas y ciclos de feedback de la empresa."
+      }
+    },
     "verify_request": {
       "title": "Revisa tu correo",
       "description": "Te enviamos un enlace para iniciar sesión. Haz clic en el enlace del correo para continuar.",

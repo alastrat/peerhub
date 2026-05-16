@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { signIn } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Loader2, Mail } from "lucide-react";
 import PhoneInput from "react-phone-number-input";
@@ -30,6 +31,7 @@ export function InviteAcceptForm({
   email,
   prefilled,
 }: InviteAcceptFormProps) {
+  const t = useTranslations("auth.invite.form");
   const [isPending, startTransition] = useTransition();
 
   // When we have prefill data, branch into the richer review form. Otherwise
@@ -54,7 +56,7 @@ export function InviteAcceptForm({
       const trimmedFirst = firstName.trim();
       const trimmedLast = lastName.trim();
       if (!trimmedFirst || !trimmedLast) {
-        toast.error("Please enter your first and last name");
+        toast.error(t("errors.first_last_required"));
         return;
       }
 
@@ -66,10 +68,10 @@ export function InviteAcceptForm({
           jobTitle: jobTitle.trim(),
         });
         if (!result.success) {
-          toast.error(result.error || "Could not accept the invitation");
+          toast.error(result.error || t("errors.accept_failed"));
           return;
         }
-        toast.success("Invitation accepted. Sending you a sign-in link...");
+        toast.success(t("accepted_toast"));
         await signIn("email", { email, callbackUrl: "/overview" });
       });
       return;
@@ -78,16 +80,16 @@ export function InviteAcceptForm({
     // Legacy single-name path for invites without prefill.
     const trimmed = name.trim();
     if (!trimmed) {
-      toast.error("Please enter your name");
+      toast.error(t("errors.name_required"));
       return;
     }
     startTransition(async () => {
       const result = await acceptInvitation(token, trimmed);
       if (!result.success) {
-        toast.error(result.error || "Could not accept the invitation");
+        toast.error(result.error || t("errors.accept_failed"));
         return;
       }
-      toast.success("Invitation accepted. Sending you a sign-in link...");
+      toast.success(t("accepted_toast"));
       await signIn("email", { email, callbackUrl: "/overview" });
     });
   };
@@ -95,46 +97,58 @@ export function InviteAcceptForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" value={email} disabled readOnly />
-        <p className="text-xs text-muted-foreground">
-          This is the email that received the invitation.
-        </p>
+        <Label htmlFor="email" className="text-white">
+          {t("email_label")}
+        </Label>
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          disabled
+          readOnly
+          className="bg-white text-foreground placeholder:text-muted-foreground"
+        />
+        <p className="text-xs text-white/60">{t("email_hint")}</p>
       </div>
 
       {hasPrefill ? (
         <>
-          <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
-            We&apos;ve pre-filled some details based on your invitation. Review
-            and edit before continuing.
+          <div className="rounded-md border border-white/25 bg-white/10 px-3 py-2 text-xs text-white/80">
+            {t("prefill_notice")}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="firstName">First name</Label>
+              <Label htmlFor="firstName" className="text-white">
+                {t("first_name_label")}
+              </Label>
               <Input
                 id="firstName"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Jane"
+                placeholder={t("first_name_placeholder")}
                 disabled={isPending}
                 required
                 autoFocus
+                className="bg-white text-foreground placeholder:text-muted-foreground"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="lastName">Last name</Label>
+              <Label htmlFor="lastName" className="text-white">
+                {t("last_name_label")}
+              </Label>
               <Input
                 id="lastName"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                placeholder="Doe"
+                placeholder={t("last_name_placeholder")}
                 disabled={isPending}
                 required
+                className="bg-white text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label>Phone (optional)</Label>
+            <Label className="text-white">{t("phone_label")}</Label>
             <PhoneInput
               international
               defaultCountry="CO"
@@ -145,45 +159,53 @@ export function InviteAcceptForm({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="jobTitle">Job title (optional)</Label>
+            <Label htmlFor="jobTitle" className="text-white">
+              {t("job_title_label")}
+            </Label>
             <Input
               id="jobTitle"
               value={jobTitle}
               onChange={(e) => setJobTitle(e.target.value)}
-              placeholder="People Operations Lead"
+              placeholder={t("job_title_placeholder")}
               disabled={isPending}
+              className="bg-white text-foreground placeholder:text-muted-foreground"
             />
           </div>
         </>
       ) : (
         <div className="space-y-2">
-          <Label htmlFor="name">Your name</Label>
+          <Label htmlFor="name" className="text-white">
+            {t("name_label")}
+          </Label>
           <Input
             id="name"
             type="text"
-            placeholder="Jane Doe"
+            placeholder={t("name_placeholder")}
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={isPending}
             autoFocus
             required
+            className="bg-white text-foreground placeholder:text-muted-foreground"
           />
         </div>
       )}
 
-      <Button type="submit" className="w-full" disabled={isPending}>
+      <Button
+        type="submit"
+        // Same white-on-purple CTA pattern as login / signup.
+        className="w-full bg-white text-primary shadow-sm hover:bg-white/90"
+        disabled={isPending}
+      >
         {isPending ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : (
           <Mail className="mr-2 h-4 w-4" />
         )}
-        Accept and sign in
+        {t("submit")}
       </Button>
 
-      <p className="text-xs text-center text-muted-foreground">
-        After accepting, we&apos;ll email you a secure sign-in link. No password
-        required.
-      </p>
+      <p className="text-center text-xs text-white/60">{t("submit_hint")}</p>
     </form>
   );
 }
