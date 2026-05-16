@@ -14,6 +14,10 @@ export interface InvitationPreview {
   role: CompanyRole;
   companyName: string;
   companySlug: string;
+  /** Company.locale ("es" by default). The invite acceptance UI uses this
+   *  to render copy in the same language the recipient sees throughout
+   *  the rest of the platform, instead of inheriting the browser default. */
+  companyLocale: string;
   inviterEmail: string | null;
   expiresAt: string;
   acceptedAt: string | null;
@@ -36,7 +40,7 @@ export async function getInvitationByToken(
     const invitation = await prisma.invitation.findUnique({
       where: { token },
       include: {
-        company: { select: { name: true, slug: true } },
+        company: { select: { name: true, slug: true, locale: true } },
       },
     });
 
@@ -71,6 +75,7 @@ export async function getInvitationByToken(
         role: invitation.role,
         companyName: invitation.company.name,
         companySlug: invitation.company.slug,
+        companyLocale: invitation.company.locale,
         inviterEmail: null,
         expiresAt: invitation.expiresAt.toISOString(),
         acceptedAt: invitation.acceptedAt?.toISOString() ?? null,
