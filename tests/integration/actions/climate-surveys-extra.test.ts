@@ -63,6 +63,7 @@ import {
   updateSurveySettings,
   updateClimateSurveyQuestion,
   uploadSurveyLogo,
+  uploadSurveyWallpaper,
 } from "@/lib/actions/climate-surveys";
 import { getTranslations } from "next-intl/server";
 const mockedGetTranslations = getTranslations as unknown as ReturnType<typeof vi.fn>;
@@ -635,5 +636,96 @@ describe("uploadSurveyLogo", () => {
     const result = await uploadSurveyLogo("survey-1", fd);
     expect(result.success).toBe(false);
     expect(result.error).toContain("Unauthorized");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// uploadSurveyWallpaper — company-scoped, no surveyId required so the wizard
+// can call it before the survey row exists.
+// ---------------------------------------------------------------------------
+
+describe("uploadSurveyWallpaper", () => {
+  it("rejects when no file is provided", async () => {
+    const fd = new FormData();
+    const result = await uploadSurveyWallpaper(fd);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("No file provided");
+  });
+
+  it("rejects unsupported mime types", async () => {
+    const fd = new FormData();
+    fd.append("file", makeFile("evil.exe", "application/x-msdownload", 100));
+
+    const result = await uploadSurveyWallpaper(fd);
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/Unsupported file type/);
+  });
+
+  it("rejects oversized files (>2MB)", async () => {
+    const fd = new FormData();
+    fd.append("file", makeFile("big.png", "image/png", 3 * 1024 * 1024));
+
+    const result = await uploadSurveyWallpaper(fd);
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/too large/);
+  });
+
+  it("uploads to the company-scoped wallpapers path and returns the public URL", async () => {
+    storageMocks.upload.mockResolvedValue({ error: null });
+    storageMocks.getPublicUrl.mockReturnValue({
+      data: { publicUrl: "https://cdn.example.com/survey-assets/wp.jpg" },
+    });
+
+    const fd = new FormData();
+    fd.append("file", makeFile("hero.jpg", "image/jpeg", 1024));
+
+    const result = await uploadSurveyWallpaper(fd);
+
+    expect(result.success).toBe(true);
+    expect(result.data?.url).toBe(
+      "https://cdn.example.com/survey-assets/wp.jpg",
+    );
+    expect(storageMocks.upload).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /^companies\/company-1\/wallpapers\/\d+\.jpg$/,
+      ),
+      expect.any(File),
+      expect.objectContaining({
+        contentType: "image/jpeg",
+        cacheControl: "31536000",
+        upsert: false,
+      }),
+    );
+  });
+
+  it("surfaces upload errors from supabase", async () => {
+    storageMocks.upload.mockResolvedValue({ error: { message: "boom" } });
+
+    const fd = new FormData();
+    fd.append("file", makeFile("hero.png", "image/png", 500));
+
+    const result = await uploadSurveyWallpaper(fd);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("Upload failed: boom");
+  });
+
+  it("rejects non-admin callers via the wrapping error", async () => {
+    mockSession = createMemberSession();
+    const fd = new FormData();
+    fd.append("file", makeFile("logo.png", "image/png", 100));
+
+    const result = await uploadSurveyWallpaper(fd);
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("Unauthorized");
+  });
+
+  it("rejects unauthenticated callers via the wrapping error", async () => {
+    mockSession = createUnauthenticatedSession() as never;
+    const fd = new FormData();
+    fd.append("file", makeFile("logo.png", "image/png", 100));
+
+    const result = await uploadSurveyWallpaper(fd);
+    expect(result.success).toBe(false);
   });
 });
