@@ -54,6 +54,10 @@ interface Props {
   dimensions: DimensionOption[];
   onChange: (questions: QuestionRow[]) => void;
   onDimensionCreated: (dim: DimensionOption) => void;
+  /** Optional content rendered at the right side of the builder's footer
+   *  row, next to "Agregar dimensión". The wizard uses this to render
+   *  the Excel/CSV import dialog on the same line. */
+  footerExtras?: React.ReactNode;
 }
 
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -99,6 +103,7 @@ export function SurveyQuestionsBuilder({
   dimensions,
   onChange,
   onDimensionCreated,
+  footerExtras,
 }: Props) {
   const t = useTranslations("dashboard.climate.wizard.questions_step");
 
@@ -246,13 +251,10 @@ export function SurveyQuestionsBuilder({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">{t("sections_heading")}</h3>
-        <Button type="button" variant="outline" onClick={addSection}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t("add_section")}
-        </Button>
-      </div>
+      {/* Heading only — the "Agregar dimensión" trigger lives in the
+          footer row below alongside the wizard's import button so they
+          sit on the same baseline. */}
+      <h3 className="text-lg font-semibold">{t("sections_heading")}</h3>
 
       {sections.length === 0 && (
         <Card className="border-dashed">
@@ -439,6 +441,20 @@ export function SurveyQuestionsBuilder({
           </Card>
         );
       })}
+
+      {/* Footer row: Agregar dimensión (left) + caller-provided extras
+          like the Excel/CSV import button (right). Hidden when there are
+          no sections yet, since the empty-state card above already shows
+          its own centered Add button. */}
+      {sections.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Button type="button" variant="outline" onClick={addSection}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t("add_section")}
+          </Button>
+          {footerExtras}
+        </div>
+      )}
     </div>
   );
 }
