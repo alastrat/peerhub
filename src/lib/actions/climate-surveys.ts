@@ -608,3 +608,68 @@ export async function uploadSurveyLogo(
     return { success: false, error: msg };
   }
 }
+
+/**
+ * Upload a wallpaper / background image for a survey welcome screen. Unlike
+ * uploadSurveyLogo this is company-scoped (no surveyId), so the wizard can
+ * call it before the survey row exists.
+ *
+ * Storage layout: `survey-assets/companies/<companyId>/wallpapers/<ts>.<ext>`.
+ */
+export async function uploadSurveyWallpaper(
+  formData: FormData,
+): Promise<ActionResult<{ url: string }>> {
+  try {
+    const { companyId } = await requireCompanyAdmin();
+
+    const file = formData.get("file");
+    if (!(file instanceof File)) {
+      return { success: false, error: "No file provided" };
+    }
+    if (!ALLOWED_LOGO_MIME.has(file.type)) {
+      return {
+        success: false,
+        error: "Unsupported file type. Use PNG, JPEG, SVG or WebP.",
+      };
+    }
+    if (file.size > MAX_LOGO_BYTES) {
+      return {
+        success: false,
+        error: "File is too large. Maximum size is 2MB.",
+      };
+    }
+
+    const { createSupabaseStorageClient, SURVEY_ASSETS_BUCKET } = await import(
+      "@/lib/supabase/server"
+    );
+    const supabase = createSupabaseStorageClient();
+
+    const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+    const path = `companies/${companyId}/wallpapers/${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(SURVEY_ASSETS_BUCKET)
+      .upload(path, file, {
+        contentType: file.type,
+        cacheControl: "31536000",
+        upsert: false,
+      });
+
+    if (uploadError) {
+      return {
+        success: false,
+        error: `Upload failed: ${uploadError.message}`,
+      };
+    }
+
+    const { data: publicUrl } = supabase.storage
+      .from(SURVEY_ASSETS_BUCKET)
+      .getPublicUrl(path);
+
+    return { success: true, data: { url: publicUrl.publicUrl } };
+  } catch (error) {
+    const msg =
+      error instanceof Error ? error.message : "Failed to upload wallpaper";
+    return { success: false, error: msg };
+  }
+}
