@@ -649,14 +649,14 @@ export function SurveyWizard({
       {/* Step 2: Questions — section-based editor (sections == dimensions),
           matching the 360° template builder UX. */}
       {step === 1 && (
-        <div className="space-y-4">
-          <SurveyQuestionsBuilder
-            questions={questions}
-            dimensions={dimensions}
-            onChange={setQuestions}
-            onDimensionCreated={handleDimensionCreated}
-          />
-          <div className="flex justify-end">
+        <SurveyQuestionsBuilder
+          questions={questions}
+          dimensions={dimensions}
+          onChange={setQuestions}
+          onDimensionCreated={handleDimensionCreated}
+          // Import dialog sits in the builder's footer row, opposite the
+          // "Agregar dimensión" button — both on the same baseline.
+          footerExtras={
             <ImportQuestionsDialog
               dimensions={dimensions}
               onImport={(rows: ParsedQuestionRow[], mode) => {
@@ -670,8 +670,8 @@ export function SurveyWizard({
                 setQuestions(next);
               }}
             />
-          </div>
-        </div>
+          }
+        />
       )}
 
       {/* Step 3: Participants — pick who will receive the survey (scope +
