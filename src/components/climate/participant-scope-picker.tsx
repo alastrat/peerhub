@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -140,6 +141,8 @@ export function ParticipantScopePicker({
           selectedIds={value.scopeIds}
           onToggle={toggleScopeId}
           emptyLabel={t("no_hubs")}
+          manageHref="/settings/company/hubs"
+          manageLabel={t("manage_hubs")}
         />
       )}
       {value.scope === "DEPARTMENT" && (
@@ -148,6 +151,8 @@ export function ParticipantScopePicker({
           selectedIds={value.scopeIds}
           onToggle={toggleScopeId}
           emptyLabel={t("no_departments")}
+          manageHref="/settings/company/departments"
+          manageLabel={t("manage_departments")}
         />
       )}
       {value.scope === "TEAM" && (
@@ -156,6 +161,8 @@ export function ParticipantScopePicker({
           selectedIds={value.scopeIds}
           onToggle={toggleScopeId}
           emptyLabel={t("no_teams")}
+          manageHref="/settings/company/teams"
+          manageLabel={t("manage_teams")}
         />
       )}
 
@@ -195,16 +202,32 @@ function ScopeChecklist({
   selectedIds,
   onToggle,
   emptyLabel,
+  manageHref,
+  manageLabel,
 }: {
   items: NamedOption[];
   selectedIds: string[];
   onToggle: (id: string) => void;
   emptyLabel: string;
+  /** Settings route to create new items in this scope (departments,
+   *  teams, hubs). When provided alongside an empty result set, the
+   *  empty-state card shows a CTA link so the admin can leave the
+   *  wizard, create what they need, and come back. */
+  manageHref?: string;
+  manageLabel?: string;
 }) {
   if (items.length === 0) {
     return (
-      <div className="rounded-lg border bg-muted/30 p-6 text-center text-sm text-muted-foreground">
-        {emptyLabel}
+      <div className="flex flex-col items-center gap-3 rounded-lg border bg-muted/30 p-6 text-center text-sm text-muted-foreground">
+        <span>{emptyLabel}</span>
+        {manageHref && manageLabel && (
+          <Link href={manageHref} target="_blank" rel="noopener noreferrer">
+            <Button type="button" variant="outline" size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              {manageLabel}
+            </Button>
+          </Link>
+        )}
       </div>
     );
   }
