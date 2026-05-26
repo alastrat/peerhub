@@ -17,7 +17,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { Plus, Trash2, ArrowLeft, ArrowRight, Check, Save } from "lucide-react";
+import { toast } from "sonner";
 import { ImportQuestionsDialog } from "@/components/climate/import-questions-dialog";
 import type { ParsedQuestionRow } from "@/lib/utils/climate-questions-import";
 import {
@@ -56,21 +57,6 @@ interface InitialData {
 
 const STEP_KEYS = ["basics", "questions", "review"] as const;
 
-const DEFAULT_ENPS_QUESTIONS: QuestionRow[] = [
-  {
-    text: "How likely are you to recommend this company as a place to work to a friend or colleague?",
-    type: "NPS",
-    dimensionId: "",
-    isRequired: true,
-  },
-  {
-    text: "What is the primary reason for your score?",
-    type: "TEXT",
-    dimensionId: "",
-    isRequired: false,
-  },
-];
-
 export function ClimateTemplateWizard({
   dimensions,
   initialData,
@@ -86,6 +72,9 @@ export function ClimateTemplateWizard({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(0);
+  // Tracks the row created by the first "Save draft" so subsequent saves
+  // update instead of inserting duplicates.
+  const [draftId, setDraftId] = useState<string | null>(initialData?.id ?? null);
 
   const [name, setName] = useState(initialData?.name || "");
   const [description, setDescription] = useState(initialData?.description || "");
@@ -105,7 +94,20 @@ export function ClimateTemplateWizard({
   const handleTypeChange = (type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE") => {
     setSurveyType(type);
     if (type === "ENPS") {
-      setQuestions(DEFAULT_ENPS_QUESTIONS);
+      setQuestions([
+        {
+          text: t("questions_step.enps_default_recommend"),
+          type: "NPS",
+          dimensionId: "",
+          isRequired: true,
+        },
+        {
+          text: t("questions_step.enps_default_reason"),
+          type: "TEXT",
+          dimensionId: "",
+          isRequired: false,
+        },
+      ]);
     } else {
       if (questions.length === 0) {
         setQuestions([{ text: "", type: "LIKERT", dimensionId: "", isRequired: true }]);
@@ -136,26 +138,51 @@ export function ClimateTemplateWizard({
     return true;
   };
 
+  const buildPayload = () => ({
+    name: name.trim(),
+    description: description.trim() || undefined,
+    type: surveyType,
+    questions: questions
+      .filter((q) => q.text.trim().length > 0)
+      .map((q, i) => ({
+        text: q.text.trim(),
+        type: q.type,
+        dimensionId: q.dimensionId || undefined,
+        order: i,
+        isRequired: q.isRequired,
+      })),
+  });
+
+  const canSaveDraft =
+    name.trim().length > 0 &&
+    questions.some((q) => q.text.trim().length > 0) &&
+    !isPending;
+
+  const handleSaveDraft = () => {
+    if (!canSaveDraft) return;
+    setError(null);
+    const payload = buildPayload();
+    startTransition(async () => {
+      const result = draftId
+        ? await updateClimateSurveyTemplate(draftId, payload)
+        : await createClimateSurveyTemplate(payload);
+      if (result.success) {
+        if (!draftId && result.data?.id) setDraftId(result.data.id);
+        toast.success(t("actions.draft_saved"));
+      } else {
+        setError(result.error || "Failed to save draft");
+      }
+    });
+  };
+
   const handleSubmit = () => {
     setError(null);
     startTransition(async () => {
-      const payload = {
-        name: name.trim(),
-        description: description.trim() || undefined,
-        type: surveyType,
-        questions: questions.map((q, i) => ({
-          text: q.text.trim(),
-          type: q.type,
-          dimensionId: q.dimensionId || undefined,
-          order: i,
-          isRequired: q.isRequired,
-        })),
-      };
+      const payload = buildPayload();
 
-      const result =
-        mode === "edit" && initialData?.id
-          ? await updateClimateSurveyTemplate(initialData.id, payload)
-          : await createClimateSurveyTemplate(payload);
+      const result = draftId
+        ? await updateClimateSurveyTemplate(draftId, payload)
+        : await createClimateSurveyTemplate(payload);
 
       if (result.success) {
         router.push("/surveys/climate/templates");
@@ -248,11 +275,11 @@ export function ClimateTemplateWizard({
                       <Input
                         value={q.text}
                         onChange={(e) => updateQuestion(i, "text", e.target.value)}
-                        placeholder="Enter question text..."
+                        placeholder={t("questions_step.text_placeholder")}
                       />
                       <div className="grid gap-3 sm:grid-cols-3">
                         <div className="space-y-1">
-                          <Label className="text-xs">Type</Label>
+                          <Label className="text-xs">{t("questions_step.type_label")}</Label>
                           <Select
                             value={q.type}
                             onValueChange={(v) => updateQuestion(i, "type", v)}
@@ -270,16 +297,16 @@ export function ClimateTemplateWizard({
                           </Select>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Dimension</Label>
+                          <Label className="text-xs">{t("questions_step.dimension_label")}</Label>
                           <Select
                             value={q.dimensionId || "none"}
                             onValueChange={(v) => updateQuestion(i, "dimensionId", v === "none" ? "" : v)}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="No dimension" />
+                              <SelectValue placeholder={t("questions_step.no_dimension")} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="none">No dimension</SelectItem>
+                              <SelectItem value="none">{t("questions_step.no_dimension")}</SelectItem>
                               {dimensions.map((d) => (
                                 <SelectItem key={d.id} value={d.id}>
                                   {d.name}
@@ -294,7 +321,7 @@ export function ClimateTemplateWizard({
                               checked={q.isRequired}
                               onCheckedChange={(v) => updateQuestion(i, "isRequired", v)}
                             />
-                            <Label className="text-xs">Required</Label>
+                            <Label className="text-xs">{t("questions_step.required_label")}</Label>
                           </div>
                           {questions.length > 1 && (
                             <Button
@@ -317,7 +344,7 @@ export function ClimateTemplateWizard({
           <div className="flex flex-wrap items-center gap-3">
             <Button variant="outline" onClick={addQuestion}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Question
+              {t("questions_step.add_question")}
             </Button>
             <ImportQuestionsDialog
               dimensions={dimensions}
@@ -380,7 +407,7 @@ export function ClimateTemplateWizard({
                         </Badge>
                         {q.isRequired && (
                           <Badge variant="secondary" className="text-xs">
-                            Required
+                            {t("questions_step.required_label")}
                           </Badge>
                         )}
                       </div>
@@ -394,7 +421,7 @@ export function ClimateTemplateWizard({
       )}
 
       {/* Navigation */}
-      <div className="flex justify-between">
+      <div className="flex items-center justify-between gap-2">
         <Button
           variant="outline"
           onClick={() => (step === 0 ? router.push("/surveys/climate/templates") : setStep(step - 1))}
@@ -402,20 +429,31 @@ export function ClimateTemplateWizard({
           <ArrowLeft className="mr-2 h-4 w-4" />
           {step === 0 ? t("actions.cancel") : t("actions.previous")}
         </Button>
-        {step < STEPS.length - 1 ? (
-          <Button onClick={() => setStep(step + 1)} disabled={!canProceed()}>
-            {t("actions.next")}
-            <ArrowRight className="ml-2 h-4 w-4" />
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleSaveDraft}
+            disabled={!canSaveDraft}
+            title={!canSaveDraft ? t("actions.save_draft_disabled_hint") : undefined}
+          >
+            <Save className="mr-2 h-4 w-4" />
+            {isPending ? t("actions.saving") : t("actions.save_draft")}
           </Button>
-        ) : (
-          <Button onClick={handleSubmit} disabled={isPending || !canProceed()}>
-            {isPending
-              ? t("actions.saving")
-              : mode === "edit"
-                ? t("actions.save_changes")
-                : t("actions.create_template")}
-          </Button>
-        )}
+          {step < STEPS.length - 1 ? (
+            <Button onClick={() => setStep(step + 1)} disabled={!canProceed()}>
+              {t("actions.next")}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          ) : (
+            <Button onClick={handleSubmit} disabled={isPending || !canProceed()}>
+              {isPending
+                ? t("actions.saving")
+                : mode === "edit"
+                  ? t("actions.save_changes")
+                  : t("actions.create_template")}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

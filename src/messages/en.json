@@ -2329,7 +2329,9 @@
           "add_question": "Add question",
           "no_questions_in_section": "No questions in this dimension yet.",
           "no_sections_yet": "No dimensions yet. Add the first one to get started.",
-          "question_count": "{count, plural, one {# question} other {# questions}}"
+          "question_count": "{count, plural, one {# question} other {# questions}}",
+          "enps_default_recommend": "How likely are you to recommend this company as a place to work to a friend or colleague?",
+          "enps_default_reason": "What is the primary reason for your score?"
         },
         "dimension_combobox": {
           "none": "No dimension",
@@ -2488,9 +2490,12 @@
           "direction_down": "↓ Down",
           "direction_radial": "◎ Radial",
           "pattern": "Pattern",
-          "image_url": "Image URL",
-          "image_url_placeholder": "https://example.com/banner.jpg",
-          "image_url_hint": "Paste any public image URL. Recommended aspect ratio: 3:1."
+          "image_upload_label": "Background image",
+          "image_upload_cta": "Upload image",
+          "image_upload_hint": "PNG, JPG, SVG or WebP · max 2MB · 3:1 ratio recommended",
+          "image_uploading": "Uploading…",
+          "image_replace": "Replace",
+          "image_remove": "Remove"
         }
       },
       "settings_tab": {

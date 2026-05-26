@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -88,6 +89,18 @@ export function ParticipantScopePicker({
   withCard = true,
 }: Props) {
   const t = useTranslations("dashboard.climate.wizard.participants_step");
+  const router = useRouter();
+
+  // Refetch the parent server component whenever the tab regains focus, so
+  // creating a team/department/hub in a separate browser tab is reflected
+  // here without a manual page refresh.
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") router.refresh();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [router]);
 
   const toggleScopeId = (id: string) => {
     const has = value.scopeIds.includes(id);

@@ -1,9 +1,15 @@
 "use client";
 
+import { useRef, useState } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { Loader2, Upload, X } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { uploadSurveyWallpaper } from "@/lib/actions/climate-surveys";
 import type {
   WallpaperConfig,
   WallpaperStyle,
@@ -287,17 +293,114 @@ export function WallpaperPicker({
       )}
 
       {currentStyle === "image" && value?.style === "image" && (
-        <div className="space-y-2">
-          <Label>{t("image_url")}</Label>
-          <Input
-            value={value.url}
-            onChange={(e) => onChange({ ...value, url: e.target.value })}
-            placeholder={t("image_url_placeholder")}
-          />
-          <p className="text-xs text-muted-foreground">
-            {t("image_url_hint")}
-          </p>
+        <ImageUploadField
+          value={value.url}
+          onChange={(url) => onChange({ ...value, url })}
+        />
+      )}
+    </div>
+  );
+}
+
+function ImageUploadField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (url: string) => void;
+}) {
+  const t = useTranslations("dashboard.climate.wizard.wallpaper");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFile = async (file: File) => {
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await uploadSurveyWallpaper(formData);
+      if (res.success && res.data) {
+        onChange(res.data.url);
+      } else if (!res.success) {
+        toast.error(res.error);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label>{t("image_upload_label")}</Label>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/svg+xml,image/webp"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleFile(file);
+        }}
+      />
+      {value ? (
+        <div className="relative overflow-hidden rounded-lg border bg-muted/30">
+          <div className="relative aspect-[3/1] w-full">
+            <Image
+              src={value}
+              alt=""
+              fill
+              sizes="(max-width: 768px) 100vw, 400px"
+              className="object-cover"
+              unoptimized
+            />
+          </div>
+          <div className="flex items-center justify-between gap-2 border-t bg-background p-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => inputRef.current?.click()}
+              disabled={uploading}
+            >
+              {uploading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="mr-2 h-4 w-4" />
+              )}
+              {t("image_replace")}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onChange("")}
+              disabled={uploading}
+            >
+              <X className="mr-2 h-4 w-4" />
+              {t("image_remove")}
+            </Button>
+          </div>
         </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed bg-muted/30 px-4 py-8 text-sm text-muted-foreground transition-colors hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {uploading ? (
+            <Loader2 className="h-6 w-6 animate-spin" />
+          ) : (
+            <Upload className="h-6 w-6" />
+          )}
+          <span className="font-medium text-foreground">
+            {uploading ? t("image_uploading") : t("image_upload_cta")}
+          </span>
+          <span className="text-xs">{t("image_upload_hint")}</span>
+        </button>
       )}
     </div>
   );

@@ -2377,7 +2377,9 @@
           "no_sections_yet": "Aún no hay dimensiones. Agrega la primera para empezar.",
           "question_count_one": "{count} pregunta",
           "question_count_other": "{count} preguntas",
-          "question_count": "{count, plural, one {# pregunta} other {# preguntas}}"
+          "question_count": "{count, plural, one {# pregunta} other {# preguntas}}",
+          "enps_default_recommend": "¿Qué tan probable es que recomiendes esta empresa como un buen lugar para trabajar a un amigo o colega?",
+          "enps_default_reason": "¿Cuál es la razón principal de tu calificación?"
         },
         "dimension_combobox": {
           "none": "Sin dimensión",
@@ -2536,9 +2538,12 @@
           "direction_down": "↓ Abajo",
           "direction_radial": "◎ Radial",
           "pattern": "Patrón",
-          "image_url": "URL de imagen",
-          "image_url_placeholder": "https://ejemplo.com/banner.jpg",
-          "image_url_hint": "Pega la URL pública de cualquier imagen. Relación de aspecto recomendada: 3:1."
+          "image_upload_label": "Imagen de fondo",
+          "image_upload_cta": "Subir imagen",
+          "image_upload_hint": "PNG, JPG, SVG o WebP · máx. 2MB · relación recomendada 3:1",
+          "image_uploading": "Subiendo…",
+          "image_replace": "Reemplazar",
+          "image_remove": "Quitar"
         }
       },
       "settings_tab": {
