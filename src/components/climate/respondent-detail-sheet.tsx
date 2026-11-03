@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   CheckCircle2,
   Clock,
@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { SurveyQuestionType } from "@prisma/client";
+import { getQuestionScale, getScaleAnchor } from "@/lib/constants/climate-scales";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -43,6 +44,7 @@ interface QuestionData {
   isRequired: boolean;
   dimensionId: string | null;
   dimensionName: string | null;
+  config?: unknown;
 }
 
 export interface RespondentData {
@@ -75,13 +77,6 @@ interface RespondentDetailSheetProps {
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-const LIKERT_LABELS: Record<number, string> = {
-  1: "Nunca",
-  2: "Casi nunca",
-  3: "Casi siempre",
-  4: "Siempre",
-};
-
 function formatTimeDiff(start: Date, end: Date): string {
   const ms = new Date(end).getTime() - new Date(start).getTime();
   const minutes = Math.round(ms / 60000);
@@ -112,10 +107,8 @@ function ratingColor(value: number, max: number) {
   return { pill: "bg-red-50 text-red-700 border-red-200", bar: "#ef4444" };
 }
 
-function maxForType(type: SurveyQuestionType): number {
-  if (type === "NPS") return 10;
-  if (type === "RATING") return 5;
-  return 4; // LIKERT 4-point
+function maxFor(q: { type: SurveyQuestionType; config?: unknown }): number {
+  return getQuestionScale(q)?.max ?? 4;
 }
 
 /* ------------------------------------------------------------------ */
@@ -131,6 +124,7 @@ export function RespondentDetailSheet({
   isAnonymous,
 }: RespondentDetailSheetProps) {
   const t = useTranslations("dashboard.climate.detail.respondent_sheet");
+  const locale = useLocale();
 
   // Compute per-respondent stats
   const stats = useMemo(() => {
@@ -171,7 +165,7 @@ export function RespondentDetailSheet({
         dimMap.set(q.dimensionId, {
           name: q.dimensionName,
           ratings: [],
-          maxScore: maxForType(q.type),
+          maxScore: maxFor(q),
         });
       }
       dimMap.get(q.dimensionId)!.ratings.push(ans.ratingValue);
@@ -267,9 +261,7 @@ export function RespondentDetailSheet({
   // Determine the max score for the dominant question type
   const dominantMax =
     questions.filter((q) => q.type !== "TEXT").length > 0
-      ? maxForType(
-          questions.find((q) => q.type !== "TEXT")!.type
-        )
+      ? maxFor(questions.find((q) => q.type !== "TEXT")!)
       : 4;
 
   return (
@@ -474,7 +466,7 @@ export function RespondentDetailSheet({
                 const hasRating = ans?.ratingValue != null;
                 const hasText =
                   ans?.textValue != null && ans.textValue.trim().length > 0;
-                const max = maxForType(q.type);
+                const max = maxFor(q);
                 const surveyAvg = questionAverages[q.id];
 
                 return (
@@ -506,9 +498,9 @@ export function RespondentDetailSheet({
                           {ans!.ratingValue}
                         </span>
                         {q.type === "LIKERT" &&
-                          LIKERT_LABELS[ans!.ratingValue!] && (
+                          getScaleAnchor(getQuestionScale(q)!, ans!.ratingValue!, locale) && (
                             <span className="text-xs text-muted-foreground">
-                              {LIKERT_LABELS[ans!.ratingValue!]}
+                              {getScaleAnchor(getQuestionScale(q)!, ans!.ratingValue!, locale)}
                             </span>
                           )}
                         {/* Comparison bar */}

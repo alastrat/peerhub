@@ -2713,5 +2713,44 @@
         "workenv_results": { "label": "Resultados", "description": "Ver resultados y analítica de encuestas" }
       }
     }
+  },
+  "climate_scoring": {
+    "bands": {
+      "MUY_FAVORABLE": "Muy favorable",
+      "FAVORABLE": "Favorable",
+      "DESFAVORABLE": "Desfavorable",
+      "MUY_DESFAVORABLE": "Muy desfavorable"
+    },
+    "index_title": "Índice de Clima",
+    "index_desc": "Promedio de las dimensiones del instrumento validado (escala 1–4)",
+    "overall_title": "Promedio general",
+    "overall_desc": "Promedio de las preguntas de escala ({min}–{max})",
+    "overall_mixed": "Las preguntas usan escalas distintas, por eso no hay un promedio general.",
+    "favorable_pct": "{pct}% favorable",
+    "goal": "Meta: {band}",
+    "out_of": "de {max}",
+    "suppressed_title": "Resultados ocultos",
+    "suppressed_group": "Hay {count, plural, one {# respuesta completa} other {# respuestas completas}}; se necesitan al menos {min} para mostrar resultados y proteger la confidencialidad.",
+    "suppressed_cell": "Menos de {min} respuestas",
+    "dimensions_desc_instrument": "Promedio (1–4), nivel y % de respuestas favorables (Casi siempre o Siempre)",
+    "attention_title": "Puntos de atención",
+    "attention_desc": "Dimensiones y grupos por debajo de la meta ({band}), del más bajo al más alto",
+    "attention_none": "Ninguna dimensión ni grupo está por debajo de la meta.",
+    "attention_dimensions": "Dimensiones",
+    "attention_groups": "Grupos",
+    "segment_types": {
+      "department": "Departamento",
+      "team": "Equipo",
+      "hub": "Sede",
+      "leader": "Líder"
+    },
+    "heatmap_department": "Mapa de calor por departamento",
+    "heatmap_team": "Mapa de calor por equipo",
+    "heatmap_hub": "Mapa de calor por sede",
+    "heatmap_leader": "Mapa de calor por líder",
+    "heatmap_desc": "Promedio por grupo y dimensión. Los grupos con menos de {min} respuestas se ocultan.",
+    "heatmap_group": "Grupo",
+    "heatmap_index": "Índice",
+    "validated_item": "Ítem validado"
   }
 }

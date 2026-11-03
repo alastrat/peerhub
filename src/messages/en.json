@@ -2665,5 +2665,44 @@
         "workenv_results": { "label": "Results", "description": "View survey results and analytics" }
       }
     }
+  },
+  "climate_scoring": {
+    "bands": {
+      "MUY_FAVORABLE": "Very favorable",
+      "FAVORABLE": "Favorable",
+      "DESFAVORABLE": "Unfavorable",
+      "MUY_DESFAVORABLE": "Very unfavorable"
+    },
+    "index_title": "Climate Index",
+    "index_desc": "Average of the validated instrument's dimensions (1–4 scale)",
+    "overall_title": "Overall average",
+    "overall_desc": "Average of the scale questions ({min}–{max})",
+    "overall_mixed": "Questions use different scales, so there is no overall average.",
+    "favorable_pct": "{pct}% favorable",
+    "goal": "Goal: {band}",
+    "out_of": "out of {max}",
+    "suppressed_title": "Results hidden",
+    "suppressed_group": "There {count, plural, one {is # completed response} other {are # completed responses}}; at least {min} are needed to show results and protect confidentiality.",
+    "suppressed_cell": "Fewer than {min} responses",
+    "dimensions_desc_instrument": "Mean (1–4), level and % of favorable answers (Almost always or Always)",
+    "attention_title": "Attention points",
+    "attention_desc": "Dimensions and groups below the goal ({band}), lowest first",
+    "attention_none": "No dimension or group is below the goal.",
+    "attention_dimensions": "Dimensions",
+    "attention_groups": "Groups",
+    "segment_types": {
+      "department": "Department",
+      "team": "Team",
+      "hub": "Hub",
+      "leader": "Leader"
+    },
+    "heatmap_department": "Heatmap by department",
+    "heatmap_team": "Heatmap by team",
+    "heatmap_hub": "Heatmap by hub",
+    "heatmap_leader": "Heatmap by leader",
+    "heatmap_desc": "Mean by group and dimension. Groups with fewer than {min} responses are hidden.",
+    "heatmap_group": "Group",
+    "heatmap_index": "Index",
+    "validated_item": "Validated item"
   }
 }

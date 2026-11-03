@@ -150,9 +150,12 @@ export default async function SurveyDetailPage({ params }: PageProps) {
     : [[], [], [], [], null];
 
   // Fetch insights data for active/closed surveys
-  const results = isActiveOrClosed
-    ? await getSurveyResults(id, companyId)
-    : null;
+  const [results, insightsCompany] = isActiveOrClosed
+    ? await Promise.all([
+        getSurveyResults(id, companyId),
+        prisma.company.findUnique({ where: { id: companyId }, select: { featureHubs: true } }),
+      ])
+    : [null, null];
 
   // Flatten all responses for the Answers tab
   const allResponses = survey.distributions.flatMap((d) =>
@@ -207,6 +210,7 @@ export default async function SurveyDetailPage({ params }: PageProps) {
     isRequired: q.isRequired,
     dimensionId: q.dimensionId,
     dimensionName: q.dimension?.name ?? null,
+    config: q.config,
   }));
 
   return (
@@ -436,6 +440,7 @@ export default async function SurveyDetailPage({ params }: PageProps) {
               totalInvited={totalResponses}
               totalCompleted={completedResponses}
               totalPending={pendingResponses}
+              featureHubs={insightsCompany?.featureHubs ?? false}
             />
           ) : (
             <Card>

@@ -33,6 +33,7 @@ async function main() {
     data: {
       name: "Kultiva Demo",
       slug: "kultiva-demo",
+      taxId: "900000000-1",
     },
   });
 

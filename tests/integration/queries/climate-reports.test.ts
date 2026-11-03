@@ -19,8 +19,9 @@ vi.mock("@/lib/constants/climate-survey", () => ({
 }));
 
 // Import AFTER mocks
-import { getSurveyResults, getENPSTrend } from "@/lib/queries/climate-reports";
+import { getSurveyResults, getENPSTrend, loadSurveyForScoring, scoreScope } from "@/lib/queries/climate-reports";
 import { calculateNPS } from "@/lib/constants/climate-survey";
+import { instrumentItemConfig } from "@/lib/constants/climate-instrument";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -33,26 +34,41 @@ function buildSurveyData(overrides: Record<string, unknown> = {}) {
     companyId: "company-1",
     type: "CLIMATE",
     status: "ACTIVE",
+    anonymityThreshold: 1,
+    goalBand: "FAVORABLE",
+    instrumentVersion: null,
+    resultsReleasedAt: null,
     questions: [],
     distributions: [],
     ...overrides,
   };
 }
 
-function buildResponse(overrides: Record<string, unknown> = {}) {
+function employee(overrides: Record<string, unknown> = {}) {
   return {
-    id: "resp-1",
+    departmentId: "dept-1",
+    hubId: "hub-1",
+    managerId: "lead-1",
+    teamMemberships: [],
+    ...overrides,
+  };
+}
+
+let respCounter = 0;
+function buildResponse(overrides: Record<string, unknown> = {}) {
+  respCounter++;
+  return {
+    id: `resp-${respCounter}`,
     isComplete: true,
-    employee: {
-      departmentId: "dept-1",
-      department: { id: "dept-1", name: "Engineering" },
-      hubId: "hub-1",
-      hub: { id: "hub-1", name: "Main Office" },
-      teamMemberships: [],
-    },
+    segmentSnapshot: null,
+    employee: employee(),
     answers: [],
     ...overrides,
   };
+}
+
+function ans(questionId: string, ratingValue: number | null, textValue: string | null = null) {
+  return { questionId, ratingValue, textValue };
 }
 
 function buildQuestion(overrides: Record<string, unknown> = {}) {
@@ -61,10 +77,42 @@ function buildQuestion(overrides: Record<string, unknown> = {}) {
     text: "How do you rate leadership?",
     type: "LIKERT",
     order: 1,
+    config: { scale: "AGREE_5" },
     dimensionId: "dim-1",
-    dimension: { id: "dim-1", name: "Leadership" },
+    dimension: { id: "dim-1", name: "Leadership", code: null },
     ...overrides,
   };
+}
+
+function instrumentQuestion(itemCode: string, dimId: string, dimName: string, order: number) {
+  return buildQuestion({
+    id: itemCode,
+    text: itemCode,
+    order,
+    config: instrumentItemConfig(itemCode),
+    dimensionId: dimId,
+    dimension: { id: dimId, name: dimName, code: itemCode.split("-")[0] },
+  });
+}
+
+function withResponses(responses: unknown[], overrides: Record<string, unknown> = {}) {
+  return buildSurveyData({ distributions: [{ id: "dist-1", responses }], ...overrides });
+}
+
+function mockNames() {
+  mockPrisma.department.findMany.mockResolvedValue([
+    { id: "dept-1", name: "Engineering" },
+    { id: "dept-2", name: "Sales" },
+  ]);
+  mockPrisma.hub.findMany.mockResolvedValue([{ id: "hub-1", name: "Main Office" }]);
+  mockPrisma.team.findMany.mockResolvedValue([
+    { id: "team-1", name: "Platform" },
+    { id: "team-2", name: "Growth" },
+  ]);
+  mockPrisma.employee.findMany.mockResolvedValue([
+    { id: "lead-1", name: "Laura Leader" },
+    { id: "lead-2", name: "Mario Manager" },
+  ]);
 }
 
 // ---------------------------------------------------------------------------
@@ -74,402 +122,281 @@ function buildQuestion(overrides: Record<string, unknown> = {}) {
 describe("getSurveyResults", () => {
   beforeEach(() => {
     mockPrisma = createMockPrisma();
+    mockNames();
   });
 
-  it("should return null when survey not found", async () => {
+  it("returns null when survey not found", async () => {
     mockPrisma.climateSurvey.findFirst.mockResolvedValue(null);
+    expect(await getSurveyResults("missing", "company-1")).toBeNull();
+  });
 
-    const result = await getSurveyResults("survey-1", "company-1");
-
-    expect(result).toBeNull();
+  it("scopes the query to the company", async () => {
+    mockPrisma.climateSurvey.findFirst.mockResolvedValue(null);
+    await getSurveyResults("survey-1", "company-1");
     expect(mockPrisma.climateSurvey.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: "survey-1", companyId: "company-1" },
-      })
+      expect.objectContaining({ where: { id: "survey-1", companyId: "company-1" } }),
     );
   });
 
-  it("should compute completion rate correctly", async () => {
-    const survey = buildSurveyData({
-      distributions: [
-        {
-          id: "dist-1",
-          responses: [
-            buildResponse({ id: "resp-1", isComplete: true, answers: [] }),
-            buildResponse({ id: "resp-2", isComplete: true, answers: [] }),
-            buildResponse({ id: "resp-3", isComplete: true, answers: [] }),
-            buildResponse({ id: "resp-4", isComplete: false, answers: [] }),
-          ],
-        },
-      ],
-    });
-
-    mockPrisma.climateSurvey.findFirst.mockResolvedValue(survey);
-
-    const result = await getSurveyResults("survey-1", "company-1");
-
-    expect(result).not.toBeNull();
-    expect(result!.totalInvited).toBe(4);
-    expect(result!.totalResponded).toBe(3);
-    expect(result!.completionRate).toBe(75);
+  it("returns empty results for a survey with no responses", async () => {
+    mockPrisma.climateSurvey.findFirst.mockResolvedValue(buildSurveyData({ anonymityThreshold: 5 }));
+    const r = (await getSurveyResults("survey-1", "company-1"))!;
+    expect(r.totalInvited).toBe(0);
+    expect(r.totalResponded).toBe(0);
+    expect(r.completionRate).toBe(0);
+    expect(r.suppressed).toBe(true);
+    expect(r.index).toBeNull();
+    expect(r.npsScore).toBeNull();
   });
 
-  it("should compute overall average from all rating answers", async () => {
-    const question = buildQuestion({ id: "q1", type: "LIKERT" });
-
-    const survey = buildSurveyData({
-      questions: [question],
-      distributions: [
-        {
-          id: "dist-1",
-          responses: [
-            buildResponse({
-              id: "resp-1",
-              isComplete: true,
-              answers: [{ questionId: "q1", ratingValue: 4, textValue: null }],
-            }),
-            buildResponse({
-              id: "resp-2",
-              isComplete: true,
-              answers: [{ questionId: "q1", ratingValue: 3, textValue: null }],
-            }),
-            buildResponse({
-              id: "resp-3",
-              isComplete: true,
-              answers: [{ questionId: "q1", ratingValue: 5, textValue: null }],
-            }),
-          ],
-        },
-      ],
-    });
-
-    mockPrisma.climateSurvey.findFirst.mockResolvedValue(survey);
-
-    const result = await getSurveyResults("survey-1", "company-1");
-
-    expect(result).not.toBeNull();
-    // (4 + 3 + 5) / 3 = 4.0
-    expect(result!.overallAverage).toBe(4);
-  });
-
-  it("should compute dimension scores grouped by dimension", async () => {
-    const q1 = buildQuestion({
-      id: "q1",
-      text: "Rate leadership communication",
-      type: "LIKERT",
-      dimensionId: "dim-1",
-      dimension: { id: "dim-1", name: "Leadership" },
-    });
-    const q2 = buildQuestion({
-      id: "q2",
-      text: "Rate leadership vision",
-      type: "LIKERT",
-      dimensionId: "dim-1",
-      dimension: { id: "dim-1", name: "Leadership" },
-      order: 2,
-    });
-
-    const survey = buildSurveyData({
-      questions: [q1, q2],
-      distributions: [
-        {
-          id: "dist-1",
-          responses: [
-            buildResponse({
-              id: "resp-1",
-              isComplete: true,
-              answers: [
-                { questionId: "q1", ratingValue: 4, textValue: null },
-                { questionId: "q2", ratingValue: 3, textValue: null },
-              ],
-            }),
-            buildResponse({
-              id: "resp-2",
-              isComplete: true,
-              answers: [
-                { questionId: "q1", ratingValue: 5, textValue: null },
-                { questionId: "q2", ratingValue: 4, textValue: null },
-              ],
-            }),
-          ],
-        },
-      ],
-    });
-
-    mockPrisma.climateSurvey.findFirst.mockResolvedValue(survey);
-
-    const result = await getSurveyResults("survey-1", "company-1");
-
-    expect(result).not.toBeNull();
-    expect(result!.dimensionScores).toHaveLength(1);
-    const dimScore = result!.dimensionScores[0];
-    expect(dimScore.dimensionId).toBe("dim-1");
-    expect(dimScore.dimensionName).toBe("Leadership");
-    // (4 + 5 + 3 + 4) / 4 = 4.0
-    expect(dimScore.average).toBe(4);
-    expect(dimScore.count).toBe(4);
-  });
-
-  it("should compute NPS score for NPS-type questions", async () => {
-    const npsQuestion = buildQuestion({
-      id: "q-nps",
-      text: "Would you recommend this company?",
-      type: "NPS",
-      dimensionId: null,
-      dimension: null,
-    });
-
-    const npsRatings = [10, 9, 8, 7, 3, 2];
-
-    const survey = buildSurveyData({
-      questions: [npsQuestion],
-      distributions: [
-        {
-          id: "dist-1",
-          responses: npsRatings.map((rating, i) =>
-            buildResponse({
-              id: `resp-${i}`,
-              isComplete: true,
-              answers: [
-                { questionId: "q-nps", ratingValue: rating, textValue: null },
-              ],
-            })
-          ),
-        },
-      ],
-    });
-
-    mockPrisma.climateSurvey.findFirst.mockResolvedValue(survey);
-
-    const result = await getSurveyResults("survey-1", "company-1");
-
-    expect(result).not.toBeNull();
-    expect(calculateNPS).toHaveBeenCalledWith(npsRatings);
-    expect(result!.npsScore).not.toBeNull();
-    // promoters (>=9): 10, 9 = 2; detractors (<=6): 3, 2 = 2; total = 6
-    // NPS = ((2 - 2) / 6) * 100 = 0
-    expect(result!.npsScore).toBe(0);
-  });
-
-  it("should return null npsScore when no NPS questions", async () => {
-    const question = buildQuestion({
-      id: "q1",
-      type: "LIKERT",
-    });
-
-    const survey = buildSurveyData({
-      questions: [question],
-      distributions: [
-        {
-          id: "dist-1",
-          responses: [
-            buildResponse({
-              id: "resp-1",
-              isComplete: true,
-              answers: [{ questionId: "q1", ratingValue: 4, textValue: null }],
-            }),
-          ],
-        },
-      ],
-    });
-
-    mockPrisma.climateSurvey.findFirst.mockResolvedValue(survey);
-
-    const result = await getSurveyResults("survey-1", "company-1");
-
-    expect(result).not.toBeNull();
-    expect(result!.npsScore).toBeNull();
-  });
-
-  it("should build department breakdown by employee department", async () => {
-    const q1 = buildQuestion({
-      id: "q1",
-      type: "LIKERT",
-      dimensionId: "dim-1",
-      dimension: { id: "dim-1", name: "Leadership" },
-    });
-
-    const survey = buildSurveyData({
-      questions: [q1],
-      distributions: [
-        {
-          id: "dist-1",
-          responses: [
-            buildResponse({
-              id: "resp-1",
-              isComplete: true,
-              employee: {
-                departmentId: "dept-1",
-                department: { id: "dept-1", name: "Engineering" },
-                hubId: "hub-1",
-                hub: { id: "hub-1", name: "Main Office" },
-                teamMemberships: [],
-              },
-              answers: [
-                { questionId: "q1", ratingValue: 4, textValue: null },
-              ],
-            }),
-            buildResponse({
-              id: "resp-2",
-              isComplete: true,
-              employee: {
-                departmentId: "dept-2",
-                department: { id: "dept-2", name: "Marketing" },
-                hubId: "hub-1",
-                hub: { id: "hub-1", name: "Main Office" },
-                teamMemberships: [],
-              },
-              answers: [
-                { questionId: "q1", ratingValue: 5, textValue: null },
-              ],
-            }),
-          ],
-        },
-      ],
-    });
-
-    mockPrisma.climateSurvey.findFirst.mockResolvedValue(survey);
-
-    const result = await getSurveyResults("survey-1", "company-1");
-
-    expect(result).not.toBeNull();
-    expect(result!.departmentBreakdown).toHaveLength(2);
-
-    const engDept = result!.departmentBreakdown.find(
-      (d) => d.departmentId === "dept-1"
+  it("counts invited vs completed and computes completion rate", async () => {
+    mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+      withResponses([buildResponse(), buildResponse(), buildResponse({ isComplete: false })]),
     );
-    expect(engDept).toBeDefined();
-    expect(engDept!.departmentName).toBe("Engineering");
-    expect(engDept!.dimensionId).toBe("dim-1");
-    expect(engDept!.average).toBe(4);
-    expect(engDept!.count).toBe(1);
+    const r = (await getSurveyResults("survey-1", "company-1"))!;
+    expect(r.totalInvited).toBe(3);
+    expect(r.totalResponded).toBe(2);
+    expect(r.completionRate).toBe(67);
+  });
 
-    const mktDept = result!.departmentBreakdown.find(
-      (d) => d.departmentId === "dept-2"
+  it("hides every score and text answer when the survey is below the minimum", async () => {
+    mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+      withResponses(
+        [
+          buildResponse({ answers: [ans("q1", 5), ans("t", null, "secret")] }),
+          buildResponse({ answers: [ans("q1", 4), ans("t", null, "another")] }),
+        ],
+        {
+          anonymityThreshold: 3,
+          questions: [buildQuestion(), buildQuestion({ id: "t", type: "TEXT", config: null, order: 2 })],
+        },
+      ),
     );
-    expect(mktDept).toBeDefined();
-    expect(mktDept!.departmentName).toBe("Marketing");
-    expect(mktDept!.average).toBe(5);
-    expect(mktDept!.count).toBe(1);
+    const r = (await getSurveyResults("survey-1", "company-1"))!;
+    expect(r.suppressed).toBe(true);
+    expect(r.index).toBeNull();
+    expect(r.dimensionScores).toEqual([]);
+    expect(r.questionResults.every((q) => q.average == null && q.textResponses.length === 0)).toBe(true);
+    expect(r.departmentBreakdown.every((s) => s.suppressed)).toBe(true);
   });
 
-  it("should build team breakdown across cross-dept memberships", async () => {
-    const q1 = buildQuestion({
-      id: "q1",
-      type: "LIKERT",
-      dimensionId: "dim-1",
-      dimension: { id: "dim-1", name: "Leadership" },
-    });
-
-    const survey = buildSurveyData({
-      questions: [q1],
-      distributions: [
-        {
-          id: "dist-1",
-          responses: [
-            buildResponse({
-              id: "resp-1",
-              isComplete: true,
-              employee: {
-                departmentId: "dept-1",
-                department: { id: "dept-1", name: "Engineering" },
-                hubId: "hub-1",
-                hub: { id: "hub-1", name: "Main Office" },
-                teamMemberships: [
-                  { team: { id: "t1", name: "Alpha" } },
-                ],
-              },
-              answers: [
-                { questionId: "q1", ratingValue: 4, textValue: null },
-              ],
-            }),
-          ],
-        },
-      ],
-    });
-
-    mockPrisma.climateSurvey.findFirst.mockResolvedValue(survey);
-
-    const result = await getSurveyResults("survey-1", "company-1");
-
-    expect(result).not.toBeNull();
-    expect(result!.teamBreakdown).toHaveLength(1);
-
-    const teamAlpha = result!.teamBreakdown[0];
-    expect(teamAlpha.teamId).toBe("t1");
-    expect(teamAlpha.teamName).toBe("Alpha");
-    expect(teamAlpha.dimensionId).toBe("dim-1");
-    expect(teamAlpha.dimensionName).toBe("Leadership");
-    expect(teamAlpha.average).toBe(4);
-    expect(teamAlpha.count).toBe(1);
+  it("scores questions on their own scale with favorability and distribution", async () => {
+    mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+      withResponses(
+        [
+          buildResponse({ answers: [ans("q1", 5)] }),
+          buildResponse({ answers: [ans("q1", 4)] }),
+          buildResponse({ answers: [ans("q1", 2)] }),
+        ],
+        { questions: [buildQuestion()] },
+      ),
+    );
+    const r = (await getSurveyResults("survey-1", "company-1"))!;
+    const q = r.questionResults[0];
+    expect(q.average).toBeCloseTo(11 / 3);
+    expect(q.favorability).toBeCloseTo(2 / 3);
+    expect(q.distribution).toEqual({ 5: 1, 4: 1, 2: 1 });
+    expect(q.scaleKey).toBe("AGREE_5");
+    expect(q.scaleMin).toBe(1);
+    expect(q.scaleMax).toBe(5);
+    expect(r.index?.mean).toBeCloseTo(11 / 3);
+    expect(r.index?.band).toBeNull();
+    expect(r.isInstrument).toBe(false);
   });
 
-  it("should build hub breakdown by employee hub", async () => {
-    const q1 = buildQuestion({
-      id: "q1",
-      type: "LIKERT",
-      dimensionId: "dim-1",
-      dimension: { id: "dim-1", name: "Leadership" },
-    });
-
-    const survey = buildSurveyData({
-      questions: [q1],
-      distributions: [
+  it("keeps NPS out of the overall mean and computes eNPS separately", async () => {
+    mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+      withResponses(
+        [
+          buildResponse({ answers: [ans("q1", 4), ans("nps", 10)] }),
+          buildResponse({ answers: [ans("q1", 4), ans("nps", 0)] }),
+        ],
         {
-          id: "dist-1",
-          responses: [
-            buildResponse({
-              id: "resp-1",
-              isComplete: true,
-              employee: {
-                departmentId: "dept-1",
-                department: { id: "dept-1", name: "Engineering" },
-                hubId: "hub-1",
-                hub: { id: "hub-1", name: "Main Office" },
-                teamMemberships: [],
-              },
-              answers: [
-                { questionId: "q1", ratingValue: 3, textValue: null },
-              ],
-            }),
-            buildResponse({
-              id: "resp-2",
-              isComplete: true,
-              employee: {
-                departmentId: "dept-1",
-                department: { id: "dept-1", name: "Engineering" },
-                hubId: "hub-2",
-                hub: { id: "hub-2", name: "Remote Office" },
-                teamMemberships: [],
-              },
-              answers: [
-                { questionId: "q1", ratingValue: 5, textValue: null },
-              ],
-            }),
+          questions: [
+            buildQuestion(),
+            buildQuestion({ id: "nps", type: "NPS", config: null, dimensionId: null, dimension: null, order: 2 }),
           ],
         },
-      ],
+      ),
+    );
+    const r = (await getSurveyResults("survey-1", "company-1"))!;
+    expect(r.index?.mean).toBe(4);
+    expect(r.npsScore).toBe(0); // one promoter, one detractor
+    expect(calculateNPS).toHaveBeenCalledWith([10, 0]);
+  });
+
+  it("collects text responses", async () => {
+    mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+      withResponses([buildResponse({ answers: [ans("t", null, "Great team")] })], {
+        questions: [buildQuestion({ id: "t", type: "TEXT", config: null, dimensionId: null, dimension: null })],
+      }),
+    );
+    const r = (await getSurveyResults("survey-1", "company-1"))!;
+    expect(r.questionResults[0].textResponses).toEqual(["Great team"]);
+    expect(r.questionResults[0].scaleKey).toBeNull();
+  });
+
+  describe("instrument surveys", () => {
+    const questions = [
+      instrumentQuestion("LID-1", "lid", "Liderazgo", 1),
+      instrumentQuestion("LID-2", "lid", "Liderazgo", 2),
+      instrumentQuestion("CVI-1", "cvi", "Calidad de vida", 3),
+      instrumentQuestion("CVI-2", "cvi", "Calidad de vida", 4),
+    ];
+    const good = { "LID-1": 4, "LID-2": 4, "CVI-1": 2, "CVI-2": 2 };
+    const answersOf = (v: Record<string, number>) => Object.entries(v).map(([q, n]) => ans(q, n));
+
+    it("returns bands, the Índice de Clima, gaps and dimension codes", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+        withResponses([buildResponse({ answers: answersOf(good) })], { questions, instrumentVersion: "KCO-2026.1" }),
+      );
+      const r = (await getSurveyResults("survey-1", "company-1"))!;
+      expect(r.isInstrument).toBe(true);
+      expect(r.instrumentVersion).toBe("KCO-2026.1");
+      expect(r.index?.mean).toBe(3);
+      expect(r.index?.band).toBe("DESFAVORABLE");
+      const lid = r.dimensionScores.find((d) => d.dimensionId === "lid")!;
+      expect(lid.band).toBe("MUY_FAVORABLE");
+      expect(lid.dimensionCode).toBe("LID");
+      expect(r.gaps.map((g) => g.dimensionId)).toEqual(["cvi"]);
+      expect(r.questionResults[0].itemCode).toBe("LID-1");
     });
 
-    mockPrisma.climateSurvey.findFirst.mockResolvedValue(survey);
+    it("lists segments below the goal as attention points, lowest first", async () => {
+      const responses = [
+        // dept-1 / lead-1: low
+        buildResponse({ answers: answersOf({ "LID-1": 2, "LID-2": 2, "CVI-1": 2, "CVI-2": 2 }) }),
+        // dept-2 / lead-2: high
+        buildResponse({
+          answers: answersOf({ "LID-1": 4, "LID-2": 4, "CVI-1": 4, "CVI-2": 4 }),
+          employee: employee({ departmentId: "dept-2", managerId: "lead-2" }),
+        }),
+      ];
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(withResponses(responses, { questions }));
+      const r = (await getSurveyResults("survey-1", "company-1"))!;
+      expect(r.attentionSegments.map((s) => `${s.type}:${s.segmentName}`)).toEqual(
+        expect.arrayContaining(["department:Engineering", "leader:Laura Leader", "hub:Main Office"]),
+      );
+      expect(r.attentionSegments.find((s) => s.segmentName === "Sales")).toBeUndefined();
+      expect(r.attentionSegments[0].mean).toBeLessThanOrEqual(r.attentionSegments.at(-1)!.mean);
+    });
 
-    const result = await getSurveyResults("survey-1", "company-1");
+    it("uses a stricter goal band", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+        withResponses([buildResponse({ answers: answersOf({ "LID-1": 3, "LID-2": 4, "CVI-1": 3, "CVI-2": 4 }) })], {
+          questions,
+          goalBand: "MUY_FAVORABLE",
+        }),
+      );
+      const r = (await getSurveyResults("survey-1", "company-1"))!;
+      expect(r.goalBand).toBe("MUY_FAVORABLE");
+      expect(r.gaps).toHaveLength(2); // both Favorable (3.5) < Muy favorable
+    });
+  });
 
-    expect(result).not.toBeNull();
-    expect(result!.hubBreakdown).toHaveLength(2);
+  describe("segment breakdowns", () => {
+    it("builds department, hub, team and leader breakdowns with names", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+        withResponses(
+          [
+            buildResponse({
+              answers: [ans("q1", 5)],
+              employee: employee({ teamMemberships: [{ teamId: "team-1" }, { teamId: "team-2" }] }),
+            }),
+            buildResponse({ answers: [ans("q1", 3)], employee: employee({ departmentId: "dept-2", managerId: "lead-2" }) }),
+          ],
+          { questions: [buildQuestion()] },
+        ),
+      );
+      const r = (await getSurveyResults("survey-1", "company-1"))!;
+      expect(r.departmentBreakdown.map((s) => [s.segmentName, s.index?.mean])).toEqual([
+        ["Engineering", 5],
+        ["Sales", 3],
+      ]);
+      expect(r.hubBreakdown).toHaveLength(1);
+      expect(r.hubBreakdown[0].respondents).toBe(2);
+      expect(r.teamBreakdown.map((s) => s.segmentName)).toEqual(["Growth", "Platform"]);
+      expect(r.leaderBreakdown.map((s) => s.segmentName)).toEqual(["Laura Leader", "Mario Manager"]);
+      expect(r.departmentBreakdown[0].dimensions[0]).toMatchObject({ dimensionId: "dim-1", mean: 5 });
+    });
 
-    const mainHub = result!.hubBreakdown.find((h) => h.hubId === "hub-1");
-    expect(mainHub).toBeDefined();
-    expect(mainHub!.hubName).toBe("Main Office");
-    expect(mainHub!.dimensionId).toBe("dim-1");
-    expect(mainHub!.average).toBe(3);
-    expect(mainHub!.count).toBe(1);
+    it("suppresses segments under the survey's minimum", async () => {
+      const many = Array.from({ length: 3 }, () => buildResponse({ answers: [ans("q1", 4)] }));
+      const one = buildResponse({ answers: [ans("q1", 1)], employee: employee({ departmentId: "dept-2" }) });
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+        withResponses([...many, one], { questions: [buildQuestion()], anonymityThreshold: 3 }),
+      );
+      const r = (await getSurveyResults("survey-1", "company-1"))!;
+      const eng = r.departmentBreakdown.find((s) => s.segmentId === "dept-1")!;
+      const sales = r.departmentBreakdown.find((s) => s.segmentId === "dept-2")!;
+      expect(eng.suppressed).toBe(false);
+      expect(sales.suppressed).toBe(true);
+      expect(sales.index).toBeNull();
+      expect(sales.dimensions).toEqual([]);
+    });
 
-    const remoteHub = result!.hubBreakdown.find((h) => h.hubId === "hub-2");
-    expect(remoteHub).toBeDefined();
-    expect(remoteHub!.hubName).toBe("Remote Office");
-    expect(remoteHub!.average).toBe(5);
-    expect(remoteHub!.count).toBe(1);
+    it("prefers the stored segment snapshot over the employee's current position", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+        withResponses(
+          [
+            buildResponse({
+              answers: [ans("q1", 4)],
+              segmentSnapshot: { departmentId: "dept-2", hubId: null, teamIds: [], leaderEmployeeId: "lead-2" },
+              employee: employee({ departmentId: "dept-1", managerId: "lead-1" }),
+            }),
+          ],
+          { questions: [buildQuestion()] },
+        ),
+      );
+      const r = (await getSurveyResults("survey-1", "company-1"))!;
+      expect(r.departmentBreakdown.map((s) => s.segmentId)).toEqual(["dept-2"]);
+      expect(r.leaderBreakdown.map((s) => s.segmentId)).toEqual(["lead-2"]);
+      expect(r.hubBreakdown).toEqual([]);
+    });
+
+    it("skips responses with no employee and no snapshot", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+        withResponses([buildResponse({ answers: [ans("q1", 4)], employee: null })], { questions: [buildQuestion()] }),
+      );
+      const r = (await getSurveyResults("survey-1", "company-1"))!;
+      expect(r.totalResponded).toBe(1);
+      expect(r.departmentBreakdown).toEqual([]);
+      expect(r.leaderBreakdown).toEqual([]);
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// scoreScope
+// ---------------------------------------------------------------------------
+
+describe("scoreScope", () => {
+  beforeEach(() => {
+    mockPrisma = createMockPrisma();
+  });
+
+  it("scores only the responses in the scope and applies the minimum", async () => {
+    mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+      withResponses(
+        [
+          buildResponse({ answers: [ans("q1", 5)] }),
+          buildResponse({ answers: [ans("q1", 5)] }),
+          buildResponse({ answers: [ans("q1", 1)], employee: employee({ managerId: "lead-2" }) }),
+        ],
+        { questions: [buildQuestion()], anonymityThreshold: 2 },
+      ),
+    );
+    const survey = (await loadSurveyForScoring("survey-1", "company-1"))!;
+    const lead1 = scoreScope(survey, "LEADER", "lead-1");
+    expect(lead1.score.respondents).toBe(2);
+    expect(lead1.score.index?.mean).toBe(5);
+    expect(lead1.dimensions[0].dimensionName).toBe("Leadership");
+
+    const lead2 = scoreScope(survey, "LEADER", "lead-2");
+    expect(lead2.score.suppressed).toBe(true);
+
+    const org = scoreScope(survey, "ORGANIZATION", null);
+    expect(org.score.respondents).toBe(3);
   });
 });
 
