@@ -51,6 +51,7 @@ describe("portal actions", () => {
         name: "Test User",
         companyId: "company-1",
         isActive: true,
+        company: { locale: "en" },
       });
       mockPrisma.accessToken.create.mockResolvedValue({});
 
@@ -62,6 +63,7 @@ describe("portal actions", () => {
           email: "test@acme.com",
           isActive: true,
         },
+        include: { company: { select: { locale: true } } },
       });
       expect(mockPrisma.accessToken.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
@@ -75,7 +77,8 @@ describe("portal actions", () => {
       expect(sendPortalMagicLinkEmail).toHaveBeenCalledWith(
         "test@acme.com",
         "Test User",
-        "http://localhost:4999/portal/verify/mock-uuid-token"
+        "http://localhost:4999/portal/verify/mock-uuid-token",
+        "en"
       );
     });
 
@@ -89,6 +92,7 @@ describe("portal actions", () => {
           email: "user@acme.com",
           isActive: true,
         },
+        include: { company: { select: { locale: true } } },
       });
     });
 
@@ -107,7 +111,8 @@ describe("portal actions", () => {
       expect(sendPortalMagicLinkEmail).toHaveBeenCalledWith(
         "test@acme.com",
         "Test User",
-        expect.stringContaining("?redirect=%2Fportal%2Fclimate-survey%2Fdist-1")
+        expect.stringContaining("?redirect=%2Fportal%2Fclimate-survey%2Fdist-1"),
+        undefined
       );
     });
 
@@ -126,7 +131,8 @@ describe("portal actions", () => {
       expect(sendPortalMagicLinkEmail).toHaveBeenCalledWith(
         "test@acme.com",
         "Test User",
-        expect.stringMatching(/\/portal\/verify\/mock-uuid-token$/) // no ?redirect= appended
+        expect.stringMatching(/\/portal\/verify\/mock-uuid-token$/), // no ?redirect= appended
+        undefined
       );
     });
 

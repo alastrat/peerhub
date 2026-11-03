@@ -81,6 +81,7 @@ describe("notifyEmployee", () => {
       name: "Jane External",
       companyId: "company-1",
       companyUser: null, // No platform access
+      company: { locale: "es" },
     });
     mockPrisma.accessToken.create.mockResolvedValue({});
 
@@ -106,7 +107,8 @@ describe("notifyEmployee", () => {
     expect(sendPortalMagicLinkEmail).toHaveBeenCalledWith(
       "external@acme.com",
       "Jane External",
-      "http://localhost:4999/portal/verify/mock-notify-token"
+      "http://localhost:4999/portal/verify/mock-notify-token",
+      "es"
     );
   });
 

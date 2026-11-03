@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth/config";
 import { revalidatePath } from "next/cache";
 import { sendBulkEmails } from "@/lib/email/resend";
 import { buildSurveyInvitationEmail } from "@/lib/email/portal-templates";
+import { toSupportedLocale } from "@/i18n/translator";
 import type { ActionResult } from "@/types";
 import type { SurveyDistribution } from "@prisma/client";
 
@@ -120,8 +121,11 @@ export async function distributeSurvey(input: {
       });
     }
 
-    // Send invitation emails (best-effort — don't fail the distribution)
-    const dueDateLabel = input.dueDate.toLocaleDateString("en-US", {
+    // Send invitation emails (best-effort — don't fail the distribution),
+    // written in the company's language
+    const company = await prisma.company.findUnique({ where: { id: companyId }, select: { locale: true } });
+    const locale = toSupportedLocale(company?.locale);
+    const dueDateLabel = input.dueDate.toLocaleDateString(locale === "en" ? "en-US" : "es-CO", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -136,6 +140,7 @@ export async function distributeSurvey(input: {
         dueDate: dueDateLabel,
         surveyUrl,
         isAnonymous: survey.isAnonymous,
+        locale,
       });
       return { to: emp.email, subject, html, text };
     });

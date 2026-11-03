@@ -5,18 +5,9 @@
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db/prisma";
 import { sendEmail } from "./resend";
-import { baseTemplate } from "./portal-templates";
+import { baseTemplate, escapeHtml } from "./portal-templates";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
-export function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 export interface PlanEmailContent {
   subject: string;
@@ -33,7 +24,7 @@ function render(content: PlanEmailContent, url: string, greetingName: string, lo
     <p>${escapeHtml(hello)}</p>
     ${content.paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join("\n")}
     <a href="${url}" class="button">${escapeHtml(content.ctaLabel)}</a>
-  `);
+  `, locale);
   const text = [hello, ...content.paragraphs, `${content.ctaLabel}: ${url}`].join("\n\n");
   return { html, text };
 }

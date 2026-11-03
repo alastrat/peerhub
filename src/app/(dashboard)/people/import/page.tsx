@@ -1,15 +1,8 @@
 import { auth } from "@/lib/auth/config";
-import { prisma } from "@/lib/db/prisma";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/design-system/page-header";
 import { CSVImportWizard } from "@/components/people/csv-import-wizard";
-
-async function getDepartments(companyId: string) {
-  return prisma.department.findMany({
-    where: { companyId },
-    orderBy: { name: "asc" },
-  });
-}
 
 export default async function ImportPeoplePage() {
   const session = await auth();
@@ -17,16 +10,17 @@ export default async function ImportPeoplePage() {
     redirect("/overview");
   }
 
-  const departments = await getDepartments(session.companyUser.companyId);
+  // Dashboard routes have no locale segment: follow the company's language
+  const t = await getTranslations({ locale: session.companyUser.locale ?? "es", namespace: "people_import" });
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Import Employees"
-        description="Bulk import employees from a CSV file"
+        title={t("page_title")}
+        description={t("page_description")}
       />
 
-      <CSVImportWizard departments={departments} />
+      <CSVImportWizard />
     </div>
   );
 }

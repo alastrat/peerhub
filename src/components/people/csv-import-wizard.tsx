@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback, useTransition } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import {
@@ -36,15 +37,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { isValidBirthDate, parseGender } from "@/lib/constants/demographics";
 
-interface Department {
-  id: string;
-  name: string;
-}
-
-interface CSVImportWizardProps {
-  departments: Department[];
-}
-
 interface ParsedRow {
   email?: string;
   name?: string;
@@ -65,23 +57,32 @@ const REQUIRED_COLUMNS = ["email", "name"];
 const OPTIONAL_COLUMNS = ["title", "department", "managerEmail", "role", "startDate", "gender", "birthDate"];
 const ALL_COLUMNS = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS];
 
-const COLUMN_LABELS: Record<string, string> = {
-  email: "Email Address",
-  name: "Full Name",
-  title: "Job Title",
-  department: "Department",
-  managerEmail: "Manager Email",
-  role: "Role",
-  startDate: "Start Date (YYYY-MM-DD)",
-  gender: "Gender (F / M / No binario)",
-  birthDate: "Date of Birth (YYYY-MM-DD)",
-};
-
 type WizardStep = "upload" | "mapping" | "review" | "importing" | "complete";
 
-export function CSVImportWizard({ departments }: CSVImportWizardProps) {
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === "," && !inQuotes) {
+      result.push(current.trim());
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+export function CSVImportWizard() {
+  const t = useTranslations("people_import");
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const columnLabel = (col: string) => t(`columns.${col}`);
 
   const [step, setStep] = useState<WizardStep>("upload");
   const [file, setFile] = useState<File | null>(null);
@@ -108,7 +109,7 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
       const lines = text.split("\n").filter((line) => line.trim());
 
       if (lines.length < 2) {
-        toast.error("CSV file must have a header row and at least one data row");
+        toast.error(t("errors.file_too_short"));
         return;
       }
 
@@ -138,7 +139,7 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
       setStep("mapping");
     };
     reader.readAsText(csvFile);
-  }, []);
+  }, [t]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -148,26 +149,6 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
     },
     maxFiles: 1,
   });
-
-  function parseCSVLine(line: string): string[] {
-    const result: string[] = [];
-    let current = "";
-    let inQuotes = false;
-
-    for (let i = 0; i < line.length; i++) {
-      const char = line[i];
-      if (char === '"') {
-        inQuotes = !inQuotes;
-      } else if (char === "," && !inQuotes) {
-        result.push(current.trim());
-        current = "";
-      } else {
-        current += char;
-      }
-    }
-    result.push(current.trim());
-    return result;
-  }
 
   function validateRows(): ValidationResult[] {
     const results: ValidationResult[] = [];
@@ -185,31 +166,31 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
 
       // Validate required fields
       if (!data.email) {
-        errors.push("Email is required");
+        errors.push(t("errors.email_required"));
       } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-        errors.push("Invalid email format");
+        errors.push(t("errors.email_invalid"));
       }
 
       if (!data.name || data.name.length < 2) {
-        errors.push("Name must be at least 2 characters");
+        errors.push(t("errors.name_too_short"));
       }
 
       // Validate role if provided
       if (data.role && !["ADMIN", "MANAGER", "MEMBER"].includes(data.role.toUpperCase())) {
-        errors.push("Role must be Admin, Manager, or Member");
+        errors.push(t("errors.role_invalid"));
       }
 
       if (data.gender && !parseGender(data.gender)) {
-        errors.push(`Unknown gender "${data.gender}" (use F, M, No binario or Prefiero no decirlo)`);
+        errors.push(t("errors.gender_unknown", { value: data.gender }));
       }
       for (const key of ["startDate", "birthDate"] as const) {
         if (data[key] && Number.isNaN(new Date(data[key]!).getTime())) {
-          errors.push(`${COLUMN_LABELS[key]}: invalid date "${data[key]}"`);
+          errors.push(t("errors.invalid_date", { column: columnLabel(key), value: data[key]! }));
         }
       }
       // Same limits as /api/people/import, so these rows fail here, not mid-import
       if (data.birthDate && !Number.isNaN(new Date(data.birthDate).getTime()) && !isValidBirthDate(new Date(data.birthDate))) {
-        errors.push(`${COLUMN_LABELS.birthDate}: must be between 1900 and today`);
+        errors.push(t("errors.birth_date_range", { column: columnLabel("birthDate") }));
       }
 
       results.push({
@@ -229,7 +210,7 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
     );
 
     if (missingRequired.length > 0) {
-      toast.error(`Please map required columns: ${missingRequired.join(", ")}`);
+      toast.error(t("errors.map_required", { columns: missingRequired.map(columnLabel).join(", ") }));
       return;
     }
 
@@ -262,11 +243,11 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
         } else {
           const error = await response.json();
           failed++;
-          errors.push(`Row ${row.row}: ${error.message || "Failed to import"}`);
+          errors.push(t("errors.row", { row: row.row, message: error.message || t("errors.import_failed") }));
         }
       } catch {
         failed++;
-        errors.push(`Row ${row.row}: Network error`);
+        errors.push(t("errors.row", { row: row.row, message: t("errors.network") }));
       }
 
       setImportProgress(((i + 1) / validRows.length) * 100);
@@ -339,7 +320,7 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
         </div>
         <Button variant="outline" size="sm" onClick={downloadTemplate}>
           <Download className="mr-2 h-4 w-4" />
-          Download Template
+          {t("download_template")}
         </Button>
       </div>
 
@@ -347,10 +328,8 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
       {step === "upload" && (
         <Card>
           <CardHeader>
-            <CardTitle>Upload CSV File</CardTitle>
-            <CardDescription>
-              Upload a CSV file with employee data. Required columns: email, name.
-            </CardDescription>
+            <CardTitle>{t("upload.title")}</CardTitle>
+            <CardDescription>{t("upload.description")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div
@@ -365,10 +344,10 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
               <input {...getInputProps()} />
               <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
               <p className="mt-4 text-lg font-medium">
-                {isDragActive ? "Drop the file here" : "Drag & drop your CSV file here"}
+                {isDragActive ? t("upload.drop_active") : t("upload.drop_idle")}
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
-                or click to browse files
+                {t("upload.browse")}
               </p>
             </div>
           </CardContent>
@@ -379,10 +358,8 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
       {step === "mapping" && (
         <Card>
           <CardHeader>
-            <CardTitle>Map Columns</CardTitle>
-            <CardDescription>
-              Match your CSV columns to the required fields. Found {rows.length} rows.
-            </CardDescription>
+            <CardTitle>{t("mapping.title")}</CardTitle>
+            <CardDescription>{t("mapping.description", { count: rows.length })}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {file && (
@@ -409,10 +386,10 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
               {ALL_COLUMNS.map((col) => (
                 <div key={col} className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
-                    {COLUMN_LABELS[col]}
+                    {columnLabel(col)}
                     {REQUIRED_COLUMNS.includes(col) && (
                       <Badge variant="destructive" className="text-xs">
-                        Required
+                        {t("mapping.required")}
                       </Badge>
                     )}
                   </label>
@@ -423,10 +400,10 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a column" />
+                      <SelectValue placeholder={t("mapping.select_placeholder")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">-- Skip --</SelectItem>
+                      <SelectItem value="">{t("mapping.skip")}</SelectItem>
                       {headers.map((header, index) => (
                         <SelectItem key={index} value={index.toString()}>
                           {header}
@@ -441,7 +418,7 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
             {/* Preview */}
             {rows.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-sm font-medium">Preview (first 5 rows)</h4>
+                <h4 className="text-sm font-medium">{t("mapping.preview")}</h4>
                 <ScrollArea className="h-48 rounded border">
                   <Table>
                     <TableHeader>
@@ -479,9 +456,9 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
                   setStep("upload");
                 }}
               >
-                Back
+                {t("back")}
               </Button>
-              <Button onClick={handleMapping}>Continue</Button>
+              <Button onClick={handleMapping}>{t("continue")}</Button>
             </div>
           </CardContent>
         </Card>
@@ -491,21 +468,19 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
       {step === "review" && (
         <Card>
           <CardHeader>
-            <CardTitle>Review Import</CardTitle>
-            <CardDescription>
-              Review the data before importing. Fix any errors in your CSV and re-upload if needed.
-            </CardDescription>
+            <CardTitle>{t("review.title")}</CardTitle>
+            <CardDescription>{t("review.description")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex gap-4">
               <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950 rounded-lg">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
-                <span className="font-medium">{validCount} valid</span>
+                <span className="font-medium">{t("review.valid_count", { count: validCount })}</span>
               </div>
               {invalidCount > 0 && (
                 <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950 rounded-lg">
                   <AlertCircle className="h-5 w-5 text-red-600" />
-                  <span className="font-medium">{invalidCount} with errors</span>
+                  <span className="font-medium">{t("review.invalid_count", { count: invalidCount })}</span>
                 </div>
               )}
             </div>
@@ -514,14 +489,14 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-16">Row</TableHead>
-                    <TableHead className="w-24">Status</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Department</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Errors</TableHead>
+                    <TableHead className="w-16">{t("review.table.row")}</TableHead>
+                    <TableHead className="w-24">{t("review.table.status")}</TableHead>
+                    <TableHead>{t("review.table.email")}</TableHead>
+                    <TableHead>{t("review.table.name")}</TableHead>
+                    <TableHead>{t("review.table.title")}</TableHead>
+                    <TableHead>{t("review.table.department")}</TableHead>
+                    <TableHead>{t("review.table.role")}</TableHead>
+                    <TableHead>{t("review.table.errors")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -533,16 +508,16 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
                       <TableCell>{result.row}</TableCell>
                       <TableCell>
                         {result.errors.length === 0 ? (
-                          <Badge className="bg-green-600">Valid</Badge>
+                          <Badge className="bg-green-600">{t("review.valid")}</Badge>
                         ) : (
-                          <Badge variant="destructive">Error</Badge>
+                          <Badge variant="destructive">{t("review.error")}</Badge>
                         )}
                       </TableCell>
                       <TableCell>{result.data.email || "-"}</TableCell>
                       <TableCell>{result.data.name || "-"}</TableCell>
                       <TableCell>{result.data.title || "-"}</TableCell>
                       <TableCell>{result.data.department || "-"}</TableCell>
-                      <TableCell>{result.data.role || "Employee"}</TableCell>
+                      <TableCell>{result.data.role || t("review.default_role")}</TableCell>
                       <TableCell className="text-destructive text-sm">
                         {result.errors.join(", ")}
                       </TableCell>
@@ -554,10 +529,10 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
 
             <div className="flex justify-end gap-4">
               <Button variant="outline" onClick={() => setStep("mapping")}>
-                Back
+                {t("back")}
               </Button>
               <Button onClick={handleImport} disabled={validCount === 0}>
-                Import {validCount} Employees
+                {t("review.import", { count: validCount })}
               </Button>
             </div>
           </CardContent>
@@ -568,10 +543,8 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
       {step === "importing" && (
         <Card>
           <CardHeader>
-            <CardTitle>Importing...</CardTitle>
-            <CardDescription>
-              Please wait while we import your employees.
-            </CardDescription>
+            <CardTitle>{t("importing.title")}</CardTitle>
+            <CardDescription>{t("importing.description")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-center py-8">
@@ -579,7 +552,7 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
             </div>
             <Progress value={importProgress} className="h-2" />
             <p className="text-center text-sm text-muted-foreground">
-              {Math.round(importProgress)}% complete
+              {t("importing.progress", { percent: Math.round(importProgress) })}
             </p>
           </CardContent>
         </Card>
@@ -591,27 +564,25 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle2 className="h-6 w-6 text-green-600" />
-              Import Complete
+              {t("complete.title")}
             </CardTitle>
-            <CardDescription>
-              Your employee import has finished.
-            </CardDescription>
+            <CardDescription>{t("complete.description")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex gap-4">
               <div className="flex items-center gap-2 p-4 bg-green-50 dark:bg-green-950 rounded-lg flex-1">
                 <CheckCircle2 className="h-6 w-6 text-green-600" />
                 <div>
-                  <p className="font-medium">{importResults.success} imported</p>
-                  <p className="text-sm text-muted-foreground">Successfully added</p>
+                  <p className="font-medium">{t("complete.imported", { count: importResults.success })}</p>
+                  <p className="text-sm text-muted-foreground">{t("complete.imported_hint")}</p>
                 </div>
               </div>
               {importResults.failed > 0 && (
                 <div className="flex items-center gap-2 p-4 bg-red-50 dark:bg-red-950 rounded-lg flex-1">
                   <AlertCircle className="h-6 w-6 text-red-600" />
                   <div>
-                    <p className="font-medium">{importResults.failed} failed</p>
-                    <p className="text-sm text-muted-foreground">Could not import</p>
+                    <p className="font-medium">{t("complete.failed", { count: importResults.failed })}</p>
+                    <p className="text-sm text-muted-foreground">{t("complete.failed_hint")}</p>
                   </div>
                 </div>
               )}
@@ -619,7 +590,7 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
 
             {importResults.errors.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-sm font-medium">Errors:</h4>
+                <h4 className="text-sm font-medium">{t("complete.errors")}</h4>
                 <ScrollArea className="h-32 rounded border p-4">
                   <ul className="space-y-1 text-sm text-destructive">
                     {importResults.errors.map((error, i) => (
@@ -632,7 +603,7 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
 
             <div className="flex justify-end gap-4">
               <Button variant="outline" onClick={() => router.push("/people")}>
-                View Employees
+                {t("complete.view_people")}
               </Button>
               <Button
                 onClick={() => {
@@ -645,7 +616,7 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
                   setImportResults(null);
                 }}
               >
-                Import More
+                {t("complete.import_more")}
               </Button>
             </div>
           </CardContent>

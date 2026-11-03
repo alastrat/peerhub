@@ -3,12 +3,16 @@ import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
 import { csvImportRowSchema } from "@/lib/validations/user";
 import { isValidBirthDate, parseGender } from "@/lib/constants/demographics";
+import { getTranslator } from "@/i18n/translator";
 
 export async function POST(request: NextRequest) {
+  // Messages are shown per row in the import wizard, in the company's language
+  let t = getTranslator(null, "people_import.api");
   try {
     const session = await auth();
+    t = getTranslator(session?.companyUser?.locale, "people_import.api");
     if (!session?.companyUser || session.companyUser.role !== "ADMIN") {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ message: t("unauthorized") }, { status: 401 });
     }
 
     const companyId = session.companyUser.companyId;
@@ -17,8 +21,9 @@ export async function POST(request: NextRequest) {
     // Validate input
     const parsed = csvImportRowSchema.safeParse(body);
     if (!parsed.success) {
+      const field = parsed.error.issues[0]?.path.join(".");
       return NextResponse.json(
-        { message: parsed.error.issues[0]?.message || "Invalid data" },
+        { message: field ? t("invalid_field", { field }) : t("invalid_data") },
         { status: 400 }
       );
     }
@@ -34,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     if (existingEmployee) {
       return NextResponse.json(
-        { message: "Employee already exists in this company" },
+        { message: t("already_exists") },
         { status: 400 }
       );
     }
@@ -80,15 +85,15 @@ export async function POST(request: NextRequest) {
     // so a typo doesn't silently drop someone out of every segment.
     const gender = data.gender ? parseGender(data.gender) : null;
     if (data.gender && !gender) {
-      return NextResponse.json({ message: `Unknown gender "${data.gender}"` }, { status: 400 });
+      return NextResponse.json({ message: t("unknown_gender", { value: data.gender }) }, { status: 400 });
     }
     const birthDate = data.birthDate ? new Date(data.birthDate) : null;
     if (birthDate && !isValidBirthDate(birthDate)) {
-      return NextResponse.json({ message: `Invalid birth date "${data.birthDate}"` }, { status: 400 });
+      return NextResponse.json({ message: t("invalid_birth_date", { value: data.birthDate! }) }, { status: 400 });
     }
     const startDate = data.startDate ? new Date(data.startDate) : null;
     if (startDate && Number.isNaN(startDate.getTime())) {
-      return NextResponse.json({ message: `Invalid start date "${data.startDate}"` }, { status: 400 });
+      return NextResponse.json({ message: t("invalid_start_date", { value: data.startDate! }) }, { status: 400 });
     }
 
     // Create the Employee record
@@ -137,13 +142,13 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      message: "Employee imported successfully",
+      message: t("imported"),
       data: employee,
     });
   } catch (error) {
     console.error("Import error:", error);
     return NextResponse.json(
-      { message: "Failed to import employee" },
+      { message: t("failed") },
       { status: 500 }
     );
   }

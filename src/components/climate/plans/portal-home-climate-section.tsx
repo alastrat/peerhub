@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { ArrowRight, BarChart3, ClipboardCheck, ListChecks } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getMyPlans, getMyTasks, listLeaderSurveys } from "@/lib/queries/action-plans";
 import { formatDay } from "@/lib/constants/business-time";
+import { getPortalLocale } from "@/lib/auth/portal-locale";
 
 /** Portal home: team results for leaders, plus their plans and tasks. */
 export async function PortalHomeClimateSection({ employeeId, companyId }: { employeeId: string; companyId: string }) {
@@ -15,8 +16,8 @@ export async function PortalHomeClimateSection({ employeeId, companyId }: { empl
   ]);
   if (surveys.length === 0 && tasks.length === 0 && plans.length === 0) return null;
 
-  const t = await getTranslations("climate_plans.home");
-  const locale = await getLocale();
+  const locale = await getPortalLocale();
+  const t = await getTranslations({ locale, namespace: "climate_plans.home" });
   const overdue = tasks.filter((x) => x.overdue).length;
 
   return (

@@ -367,8 +367,8 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
       startDate: dateIn(0),
       endDate: dateIn(30),
     });
-    expect(early.error).toBe("Results haven't been released yet");
-    expect((await releaseSurveyResults(ctx.surveyA)).error).toBe("Only an administrator can release results");
+    expect(early.error).toBe("Los resultados aún no se han publicado");
+    expect((await releaseSurveyResults(ctx.surveyA)).error).toBe("Solo un administrador puede publicar los resultados");
   });
 
   it("releases results and emails leaders with gaps", async () => {
@@ -378,7 +378,7 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     const [first, second] = await Promise.all([releaseSurveyResults(ctx.surveyA), releaseSurveyResults(ctx.surveyA)]);
     expect([first.success, second.success].filter(Boolean)).toHaveLength(1);
     const res = first.success ? first : second;
-    expect((first.success ? second : first).error).toBe("Results were already released");
+    expect((first.success ? second : first).error).toBe("Los resultados ya se publicaron");
     expect(res.data).toEqual({ leaders: 3, leadersWithGaps: 2 }); // Lina (CVI, SPS) and Marco (LID); Nora suppressed
     expect(emailsTo(ctx.lina.email)[0].subject).toContain("Resultados de tu equipo");
     expect(emailsTo(ctx.marco.email)).toHaveLength(1);
@@ -389,7 +389,7 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     expect(survey.planDueDate!.toISOString()).toBe(
       businessDayAsDate(new Date(survey.resultsReleasedAt!.getTime() + 15 * DAY)).toISOString(),
     );
-    expect((await releaseSurveyResults(ctx.surveyA)).error).toBe("Results were already released");
+    expect((await releaseSurveyResults(ctx.surveyA)).error).toBe("Los resultados ya se publicaron");
   });
 
   it("shows each leader only their own team, and nothing to a suppressed team", async () => {
@@ -438,9 +438,9 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
       endDate: dateIn(60),
     };
     const foreign = await createActionPlan({ ...base, dimensionId: ctx.dims.CVI, scope: "LEADER", scopeRefId: ctx.marco.id });
-    expect(foreign.error).toBe("You can only create plans for your own team");
+    expect(foreign.error).toBe("Solo puedes crear planes para tu propio equipo");
     const org = await createActionPlan({ ...base, dimensionId: ctx.dims.CVI, scope: "ORGANIZATION" });
-    expect(org.error).toBe("You can only create plans for your own team");
+    expect(org.error).toBe("Solo puedes crear planes para tu propio equipo");
     const lowTarget = await createActionPlan({
       ...base,
       dimensionId: ctx.dims.LID,
@@ -448,7 +448,7 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
       scopeRefId: ctx.lina.id,
       targetBand: "FAVORABLE",
     });
-    expect(lowTarget.error).toBe("The target can't be below the current level");
+    expect(lowTarget.error).toBe("La meta no puede estar por debajo del nivel actual");
     const badDates = await createActionPlan({
       ...base,
       dimensionId: ctx.dims.CVI,
@@ -457,7 +457,7 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
       startDate: dateIn(10),
       endDate: dateIn(1),
     });
-    expect(badDates.error).toContain("start date");
+    expect(badDates.error).toContain("fecha de inicio");
 
     const ok = await createActionPlan({ ...base, dimensionId: ctx.dims.CVI, scope: "LEADER", scopeRefId: ctx.lina.id });
     expect(ok.success).toBe(true);
@@ -475,7 +475,7 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
 
   it("requires a task before submitting, then notifies HR and task owners", async () => {
     asPortal(ctx.lina);
-    expect((await submitActionPlan(ctx.linaPlan)).error).toBe("Add at least one task before submitting");
+    expect((await submitActionPlan(ctx.linaPlan)).error).toBe("Agrega al menos una tarea antes de enviar el plan");
 
     const t1 = await addActionPlanTask(ctx.linaPlan, {
       title: "Pausas activas semanales",
@@ -491,7 +491,7 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
       ownerEmployeeId: (await prisma.employee.create({ data: { companyId: ctx.otherCompanyId, name: "Ajeno", email: `ajeno-${RUN}@e2e.test` } })).id,
       dueDate: dateIn(5),
     });
-    expect(foreignOwner.error).toBe("Task owner not found");
+    expect(foreignOwner.error).toBe("No encontramos al responsable de la tarea en la empresa");
 
     expect((await saveLeaderContext(ctx.surveyA, { q1: "Equipo cansado", q2: "Cierre de trimestre" })).success).toBe(true);
 
@@ -499,8 +499,8 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     expect((await submitActionPlan(ctx.linaPlan)).success).toBe(true);
     expect(emailsTo(`ana-${RUN}@e2e.test`)[0].subject).toContain("Nuevo plan de acción");
     expect(emailsTo(ctx.linaTeam[1].email)[0].subject).toContain("Nueva tarea asignada");
-    expect((await submitActionPlan(ctx.linaPlan)).error).toBe("Only draft plans can be submitted");
-    expect((await deleteActionPlan(ctx.linaPlan)).error).toBe("Only draft plans can be deleted");
+    expect((await submitActionPlan(ctx.linaPlan)).error).toBe("Solo se pueden enviar planes en borrador");
+    expect((await deleteActionPlan(ctx.linaPlan)).error).toBe("Solo se pueden eliminar planes en borrador");
 
     const overview = (await getSurveyPlansOverview(ctx.surveyA, ctx.companyId))!;
     const lina = overview.leaders.find((l) => l.leaderEmployeeId === ctx.lina.id)!;
@@ -514,16 +514,16 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     asPortal(ctx.linaTeam[1]);
     expect((await getMyTasks(ctx.linaTeam[1].id, ctx.companyId)).map((t) => t.id)).toEqual([ctx.linaTask1]);
     expect((await setActionPlanTaskStatus(ctx.linaTask1, "IN_PROGRESS", "Arrancamos")).success).toBe(true);
-    expect((await setActionPlanTaskStatus(ctx.linaTask1, "CANCELLED")).error).toBe("Only the plan owner can cancel a task");
-    expect((await setActionPlanTaskStatus(ctx.linaTask2, "DONE")).error).toBe("You can't update this task");
+    expect((await setActionPlanTaskStatus(ctx.linaTask1, "CANCELLED")).error).toBe("Solo el responsable del plan puede cancelar una tarea");
+    expect((await setActionPlanTaskStatus(ctx.linaTask2, "DONE")).error).toBe("No puedes actualizar esta tarea");
     expect((await addActionPlanNote(ctx.linaPlan, "Primera pausa hecha", ctx.linaTask1)).success).toBe(true);
-    expect((await addActionPlanNote(ctx.linaPlan, "Nota general")).error).toBe("You can't add notes to this plan");
-    expect((await updateActionPlan(ctx.linaPlan, { title: "Hackeado" })).error).toBe("You can't edit this plan");
+    expect((await addActionPlanNote(ctx.linaPlan, "Nota general")).error).toBe("No puedes agregar notas a este plan");
+    expect((await updateActionPlan(ctx.linaPlan, { title: "Hackeado" })).error).toBe("No puedes editar este plan");
     expect((await setActionPlanTaskStatus(ctx.linaTask1, "DONE")).success).toBe(true);
 
     // A colleague with nothing assigned can't touch the plan
     asPortal(ctx.linaTeam[2]);
-    expect((await setActionPlanTaskStatus(ctx.linaTask1, "PENDING")).error).toBe("You can't update this task");
+    expect((await setActionPlanTaskStatus(ctx.linaTask1, "PENDING")).error).toBe("No puedes actualizar esta tarea");
   });
 
   it("tracks process indicators and completes the plan with a closing note", async () => {
@@ -531,11 +531,11 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     const m = await addProcessMeasure(ctx.linaPlan, { name: "Pausas realizadas", unit: "sesiones", baselineValue: 0, targetValue: 8 });
     expect(m.success).toBe(true);
     expect((await recordMeasureValue(m.data!.id, 3, "Semana 3")).success).toBe(true);
-    expect((await recordMeasureValue(m.data!.id, Number.NaN)).error).toBe("Value must be a number");
+    expect((await recordMeasureValue(m.data!.id, Number.NaN)).error).toBe("«Valor» debe ser un número");
 
-    expect((await completeActionPlan(ctx.linaPlan, "Listo")).error).toBe("Finish or cancel every task before completing the plan");
+    expect((await completeActionPlan(ctx.linaPlan, "Listo")).error).toBe("Termina o cancela todas las tareas antes de completar el plan");
     expect((await setActionPlanTaskStatus(ctx.linaTask2, "DONE")).success).toBe(true);
-    expect((await completeActionPlan(ctx.linaPlan, "   ")).error).toBe("Closing note is required");
+    expect((await completeActionPlan(ctx.linaPlan, "   ")).error).toBe("Completa el campo «Cierre del plan»");
 
     state.emails = [];
     expect((await completeActionPlan(ctx.linaPlan, "Se hicieron 8 pausas y se redistribuyó la carga.")).success).toBe(true);
@@ -546,7 +546,7 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     expect(plan.progress).toEqual({ done: 2, total: 2, pct: 100 });
     expect(plan.measures.find((x) => x.kind === "PROCESS")!.currentValue).toBe(3);
     expect(plan.updates.length).toBeGreaterThanOrEqual(5);
-    expect((await addActionPlanTask(ctx.linaPlan, { title: "Tarde", dueDate: dateIn(3) })).error).toBe("This plan is closed");
+    expect((await addActionPlanTask(ctx.linaPlan, { title: "Tarde", dueDate: dateIn(3) })).error).toBe("Este plan está cerrado");
   });
 
   // =========================================================================
@@ -569,14 +569,14 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     expect(team.success).toBe(true);
     ctx.teamPlan = team.data!.id;
 
-    expect((await createActionPlan({ ...base, dimensionId: ctx.dims.CVI, scope: "DEPARTMENT", scopeRefId: "nope", ownerEmployeeId: ctx.marco.id })).error).toBe("Group not found");
-    expect((await createActionPlan({ ...base, dimensionId: ctx.dims.CVI, scope: "LEADER", scopeRefId: ctx.nora.id })).error).toContain("fewer than 5 responses");
+    expect((await createActionPlan({ ...base, dimensionId: ctx.dims.CVI, scope: "DEPARTMENT", scopeRefId: "nope", ownerEmployeeId: ctx.marco.id })).error).toBe("No encontramos el grupo");
+    expect((await createActionPlan({ ...base, dimensionId: ctx.dims.CVI, scope: "LEADER", scopeRefId: ctx.nora.id })).error).toContain("menos de 5 respuestas");
     expect((await createActionPlan({ ...base, dimensionId: ctx.dims.CVI, scope: "ORGANIZATION" })).success).toBe(true); // owner defaults to the admin's employee
-    expect((await createActionPlan({ ...base, dimensionId: "not-a-dimension", scope: "ORGANIZATION", ownerEmployeeId: ctx.adminEmployee.id })).error).toContain("isn't part of the validated instrument");
+    expect((await createActionPlan({ ...base, dimensionId: "not-a-dimension", scope: "ORGANIZATION", ownerEmployeeId: ctx.adminEmployee.id })).error).toContain("no hace parte del instrumento validado");
 
-    expect((await cancelActionPlan(ctx.deptPlan, "")).error).toBe("Reason is required");
+    expect((await cancelActionPlan(ctx.deptPlan, "")).error).toBe("Completa el campo «Motivo de cancelación»");
     expect((await cancelActionPlan(ctx.deptPlan, "Se unifica con el plan organizacional")).success).toBe(true);
-    expect((await retractSurveyResults(ctx.surveyA)).error).toBe("Leaders already submitted plans for these results");
+    expect((await retractSurveyResults(ctx.surveyA)).error).toBe("Los líderes ya enviaron planes para estos resultados");
 
     // Admin submits the org plan with one task so it's evaluated later
     expect((await addActionPlanTask(ctx.orgPlan, { title: "Programa de bienestar", dueDate: dateIn(30) })).success).toBe(true);
@@ -607,8 +607,8 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
   it("isolates tenants", async () => {
     asAdmin(ctx.otherCompanyId, ctx.otherAdminUserId, null);
     expect(await getPlanDetail(ctx.linaPlan, ctx.otherCompanyId)).toBeNull();
-    expect((await cancelActionPlan(ctx.orgPlan, "x")).error).toBe("Plan not found");
-    expect((await releaseSurveyResults(ctx.surveyA)).error).toBe("Survey not found");
+    expect((await cancelActionPlan(ctx.orgPlan, "x")).error).toBe("No encontramos el plan");
+    expect((await releaseSurveyResults(ctx.surveyA)).error).toBe("No encontramos la encuesta");
   });
 
   it("reports storage as unavailable rather than failing when it isn't configured", async () => {
@@ -617,14 +617,14 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     fd.append("file", new File(["%PDF-1.4"], "acta.pdf", { type: "application/pdf" }));
     const res = await uploadTaskEvidence(ctx.linaTask1, fd);
     // Plan is completed → closed; uploads to closed plans are rejected first
-    expect(res.error).toBe("This plan is closed");
+    expect(res.error).toBe("Este plan está cerrado");
     const exe = new FormData();
     exe.append("file", new File(["MZ"], "virus.exe", { type: "application/x-msdownload" }));
     const orgTask = (await getPlanDetail(ctx.orgPlan, ctx.companyId))!.tasks[0];
-    expect((await uploadTaskEvidence(orgTask.id, exe)).error).toBe("Only PNG, JPG, WEBP or PDF files are allowed");
+    expect((await uploadTaskEvidence(orgTask.id, exe)).error).toBe("Solo se permiten archivos PNG, JPG, WEBP o PDF");
     const big = new FormData();
     big.append("file", new File([new Uint8Array(11 * 1024 * 1024)], "huge.pdf", { type: "application/pdf" }));
-    expect((await uploadTaskEvidence(orgTask.id, big)).error).toBe("Files can be at most 10 MB");
+    expect((await uploadTaskEvidence(orgTask.id, big)).error).toBe("Los archivos pueden pesar máximo 10 MB");
     expect((await uploadTaskEvidence(orgTask.id, fd)).error).toBe("File storage isn't configured");
   });
 

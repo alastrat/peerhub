@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import {
   ClipboardList,
   Users,
@@ -12,6 +13,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { getPortalSession } from "@/lib/auth/portal-session";
+import { getPortalLocale } from "@/lib/auth/portal-locale";
 import { getPortalDashboard } from "@/lib/actions/portal";
 import { prisma } from "@/lib/db/prisma";
 import { PageHeader } from "@/components/design-system/page-header";
@@ -24,7 +26,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, daysUntil, isDateInPast } from "@/lib/utils/dates";
-import { REVIEWER_TYPE_LABELS } from "@/lib/constants/roles";
+import { getReviewerTypeLabel } from "@/lib/constants/roles";
+import { getClimateSurveyTypeLabel } from "@/lib/constants/climate-survey";
 import type { ReviewerType } from "@prisma/client";
 import { PortalHomeClimateSection } from "@/components/climate/plans/portal-home-climate-section";
 
@@ -47,20 +50,29 @@ async function DashboardContent() {
     redirect("/portal");
   }
 
-  const [dashboard, employee] = await Promise.all([
+  const [dashboard, employee, locale] = await Promise.all([
     getPortalDashboard(session.employeeId),
     prisma.employee.findUnique({
       where: { id: session.employeeId },
       select: { name: true },
     }),
+    getPortalLocale(),
   ]);
-  const firstName = employee?.name?.split(" ")[0] || "there";
+  const t = await getTranslations({ locale, namespace: "portal.home" });
+  const firstName = employee?.name?.split(" ")[0];
+
+  const dueLabel = (dueDate: string, isOverdue: boolean, daysLeft: number) =>
+    isOverdue
+      ? t("overdue")
+      : daysLeft <= 3
+        ? t("days_left", { count: daysLeft })
+        : t("due_on", { date: formatDate(dueDate, undefined, locale) });
 
   return (
     <div className="space-y-8">
       <PageHeader
-        title={`Welcome, ${firstName}`}
-        description="Here's an overview of your pending items and feedback"
+        title={firstName ? t("welcome", { name: firstName }) : t("welcome_no_name")}
+        description={t("description")}
       />
 
       <PortalHomeClimateSection employeeId={session.employeeId} companyId={session.companyId} />
@@ -70,11 +82,11 @@ async function DashboardContent() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <ClipboardList className="h-5 w-5 text-primary" />
-            Pending Reviews
+            {t("reviews.title")}
           </h2>
           {dashboard.pendingReviews.length > 0 && (
             <Badge variant="secondary">
-              {dashboard.pendingReviews.length} pending
+              {t("pending_count", { count: dashboard.pendingReviews.length })}
             </Badge>
           )}
         </div>
@@ -82,8 +94,8 @@ async function DashboardContent() {
         {dashboard.pendingReviews.length === 0 ? (
           <EmptyState
             icon={<CheckCircle2 className="h-8 w-8 text-muted-foreground" />}
-            title="All caught up!"
-            description="You have no pending reviews at the moment. Check back later for new feedback requests."
+            title={t("reviews.empty_title")}
+            description={t("reviews.empty_description")}
             className="py-10"
           />
         ) : (
@@ -106,11 +118,11 @@ async function DashboardContent() {
                         <div className="flex items-center gap-2">
                           <p className="font-medium truncate">
                             {review.reviewerType === "SELF"
-                              ? "Self Review"
-                              : `Review for ${review.revieweeName}`}
+                              ? t("reviews.self_review")
+                              : t("reviews.review_for", { name: review.revieweeName })}
                           </p>
                           <Badge variant="outline">
-                            {REVIEWER_TYPE_LABELS[review.reviewerType as ReviewerType]}
+                            {getReviewerTypeLabel(review.reviewerType as ReviewerType, locale)}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground truncate">
@@ -125,13 +137,9 @@ async function DashboardContent() {
                               : "text-muted-foreground"
                           }`}
                         >
-                          {isOverdue
-                            ? "Overdue"
-                            : daysLeft <= 3
-                              ? `${daysLeft} day${daysLeft !== 1 ? "s" : ""} left`
-                              : `Due ${formatDate(review.dueDate)}`}
+                          {dueLabel(review.dueDate, isOverdue, daysLeft)}
                         </p>
-                        <Button size="sm">Start</Button>
+                        <Button size="sm">{t("reviews.start")}</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -147,11 +155,11 @@ async function DashboardContent() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-emerald-600" />
-            Encuestas de Clima
+            {t("climate.title")}
           </h2>
           {dashboard.pendingClimateSurveys.length > 0 && (
             <Badge variant="secondary">
-              {dashboard.pendingClimateSurveys.length} pendiente{dashboard.pendingClimateSurveys.length !== 1 ? "s" : ""}
+              {t("pending_count", { count: dashboard.pendingClimateSurveys.length })}
             </Badge>
           )}
         </div>
@@ -159,8 +167,8 @@ async function DashboardContent() {
         {dashboard.pendingClimateSurveys.length === 0 ? (
           <EmptyState
             icon={<CheckCircle2 className="h-8 w-8 text-muted-foreground" />}
-            title="Sin encuestas pendientes"
-            description="Cuando tu organización lance una encuesta de clima, aparecerá aquí."
+            title={t("climate.empty_title")}
+            description={t("climate.empty_description")}
             className="py-10"
           />
         ) : (
@@ -182,10 +190,10 @@ async function DashboardContent() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-medium truncate">{survey.surveyName}</p>
-                          <Badge variant="outline">{survey.surveyType}</Badge>
+                          <Badge variant="outline">{getClimateSurveyTypeLabel(survey.surveyType, locale)}</Badge>
                           {survey.isAnonymous && (
                             <Badge variant="secondary" className="text-xs">
-                              Anónima
+                              {t("climate.anonymous")}
                             </Badge>
                           )}
                         </div>
@@ -198,13 +206,9 @@ async function DashboardContent() {
                               : "text-muted-foreground"
                           }`}
                         >
-                          {isOverdue
-                            ? "Vencida"
-                            : daysLeft <= 3
-                              ? `${daysLeft} día${daysLeft !== 1 ? "s" : ""}`
-                              : `Hasta ${formatDate(survey.dueDate)}`}
+                          {dueLabel(survey.dueDate, isOverdue, daysLeft)}
                         </p>
-                        <Button size="sm">Responder</Button>
+                        <Button size="sm">{t("climate.respond")}</Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -220,11 +224,11 @@ async function DashboardContent() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <UserCheck className="h-5 w-5 text-purple-500" />
-            Peer Nominations
+            {t("nominations.title")}
           </h2>
           {dashboard.pendingNominations.length > 0 && (
             <Badge variant="secondary">
-              {dashboard.pendingNominations.length} open
+              {t("nominations.open_count", { count: dashboard.pendingNominations.length })}
             </Badge>
           )}
         </div>
@@ -232,8 +236,8 @@ async function DashboardContent() {
         {dashboard.pendingNominations.length === 0 ? (
           <EmptyState
             icon={<Users className="h-8 w-8 text-muted-foreground" />}
-            title="No open nominations"
-            description="When a review cycle opens for peer nominations, you'll see it here."
+            title={t("nominations.empty_title")}
+            description={t("nominations.empty_description")}
             className="py-10"
           />
         ) : (
@@ -253,15 +257,13 @@ async function DashboardContent() {
                         {nomination.cycleName}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Select {nomination.minPeers}
                         {nomination.maxPeers > nomination.minPeers
-                          ? ` to ${nomination.maxPeers}`
-                          : ""}{" "}
-                        peer{nomination.maxPeers !== 1 ? "s" : ""}
+                          ? t("nominations.select_range", { min: nomination.minPeers, max: nomination.maxPeers })
+                          : t("nominations.select_exact", { count: nomination.minPeers })}
                       </p>
                     </div>
                     <Button size="sm" variant="outline">
-                      Nominate Peers
+                      {t("nominations.nominate")}
                       <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                   </CardContent>
@@ -277,11 +279,11 @@ async function DashboardContent() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <FileText className="h-5 w-5 text-blue-500" />
-            Feedback Reports
+            {t("reports.title")}
           </h2>
           {dashboard.releasedReports.length > 0 && (
             <Badge variant="secondary">
-              {dashboard.releasedReports.length} available
+              {t("reports.available_count", { count: dashboard.releasedReports.length })}
             </Badge>
           )}
         </div>
@@ -289,8 +291,8 @@ async function DashboardContent() {
         {dashboard.releasedReports.length === 0 ? (
           <EmptyState
             icon={<FileText className="h-8 w-8 text-muted-foreground" />}
-            title="No reports yet"
-            description="Your feedback reports will appear here once they are released by your HR team."
+            title={t("reports.empty_title")}
+            description={t("reports.empty_description")}
             className="py-10"
           />
         ) : (
@@ -311,7 +313,7 @@ async function DashboardContent() {
                       </p>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Calendar className="h-3.5 w-3.5" />
-                        <span>Released {formatDate(report.releasedAt)}</span>
+                        <span>{t("reports.released_on", { date: formatDate(report.releasedAt, undefined, locale) })}</span>
                       </div>
                     </div>
                     <ArrowRight className="h-5 w-5 text-muted-foreground shrink-0" />

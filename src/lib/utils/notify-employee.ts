@@ -26,7 +26,7 @@ export async function notifyEmployee(
   // Fetch employee with companyUser relation
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
-    include: { companyUser: true },
+    include: { companyUser: true, company: { select: { locale: true } } },
   });
 
   if (!employee) {
@@ -57,6 +57,6 @@ export async function notifyEmployee(
     });
 
     const magicLinkUrl = `${APP_URL}/portal/verify/${token}`;
-    await sendPortalMagicLinkEmail(employee.email, employee.name, magicLinkUrl);
+    await sendPortalMagicLinkEmail(employee.email, employee.name, magicLinkUrl, employee.company?.locale);
   }
 }

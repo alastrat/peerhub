@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Mail, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Logo } from "@/components/design-system/logo";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import {
 import { requestPortalAccess } from "@/lib/actions/portal";
 
 export default function PortalLoginPage() {
+  const t = useTranslations("portal.sign_in");
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
   const redirectTo = searchParams.get("redirect");
@@ -25,7 +27,7 @@ export default function PortalLoginPage() {
   const [sent, setSent] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(
-    error === "invalid-token" ? "That link is invalid or has expired. Please request a new one." : null
+    error === "invalid-token" ? t("invalid_link") : null
   );
 
   function handleSubmit(e: React.FormEvent) {
@@ -33,7 +35,7 @@ export default function PortalLoginPage() {
     setFormError(null);
 
     if (!email.trim()) {
-      setFormError("Please enter your email address");
+      setFormError(t("email_required"));
       return;
     }
 
@@ -46,7 +48,8 @@ export default function PortalLoginPage() {
       if (result.success) {
         setSent(true);
       } else {
-        setFormError(result.error || "Something went wrong. Please try again.");
+        // The action's only error is a generic server failure
+        setFormError(t("generic_error"));
       }
     });
   }
@@ -58,10 +61,8 @@ export default function PortalLoginPage() {
           <div className="flex justify-center mb-4">
             <Logo />
           </div>
-          <CardTitle className="text-2xl">Employee Portal</CardTitle>
-          <CardDescription>
-            Access your reviews, nominations, and feedback reports
-          </CardDescription>
+          <CardTitle className="text-2xl">{t("title")}</CardTitle>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
         <CardContent>
           {sent ? (
@@ -70,10 +71,12 @@ export default function PortalLoginPage() {
                 <CheckCircle2 className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-lg mb-1">Check your email</h3>
+                <h3 className="font-semibold text-lg mb-1">{t("check_email_title")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  We sent a magic link to <strong>{email}</strong>. Click the
-                  link in the email to sign in.
+                  {t.rich("check_email_body", {
+                    email,
+                    strong: (chunks) => <strong>{chunks}</strong>,
+                  })}
                 </p>
               </div>
               <Button
@@ -85,7 +88,7 @@ export default function PortalLoginPage() {
                   setEmail("");
                 }}
               >
-                Use a different email
+                {t("use_different_email")}
               </Button>
             </div>
           ) : (
@@ -98,13 +101,13 @@ export default function PortalLoginPage() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Work email address</Label>
+                <Label htmlFor="email">{t("email_label")}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="you@company.com"
+                    placeholder={t("email_placeholder")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
@@ -118,16 +121,15 @@ export default function PortalLoginPage() {
                 {isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Sending...
+                    {t("sending")}
                   </>
                 ) : (
-                  "Send Magic Link"
+                  t("submit")
                 )}
               </Button>
 
               <p className="text-xs text-center text-muted-foreground">
-                You'll receive an email with a secure link to sign in. No
-                password required.
+                {t("hint")}
               </p>
             </form>
           )}
