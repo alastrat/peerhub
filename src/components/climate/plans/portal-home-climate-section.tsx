@@ -4,7 +4,7 @@ import { ArrowRight, BarChart3, ClipboardCheck, ListChecks } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getMyPlans, getMyTasks, listLeaderSurveys } from "@/lib/queries/action-plans";
-import { formatDay } from "./plan-ui";
+import { formatDay } from "@/lib/constants/business-time";
 
 /** Portal home: team results for leaders, plus their plans and tasks. */
 export async function PortalHomeClimateSection({ employeeId, companyId }: { employeeId: string; companyId: string }) {
