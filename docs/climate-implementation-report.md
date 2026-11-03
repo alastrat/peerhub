@@ -213,3 +213,34 @@ PORT=4999 npm run dev
 - In dev mode, leader and task-owner magic links are printed in the server log (`EMAIL_DEV_MODE=true`).
 
 > This worktree used its own scratch database `peerhub_climate` on the local Postgres and its own `node_modules`. Your `peerhub` database, the main checkout and production weren't touched.
+
+---
+
+## Addendum — 2026-11-03 (second round)
+
+**Review fixes** (CodeRabbit on PR #38), commits `e3decdb` and `c68cc8a`:
+- **"Today" uses a business time zone** (`NEXT_PUBLIC_BUSINESS_TIME_ZONE`, default `America/Bogota`): overdue tasks, reminders and default deadlines no longer depend on the server's time zone.
+- **Releasing results is atomic**, so it can't release or email twice.
+- **Follow-up emails** go only to active company members.
+- **Impact emails** are sent only when a result is new or changed.
+- **Plan foreign keys are `NO ACTION`**, so deleting a company cascades through its plans.
+- **The portal home** skips surveys the employee doesn't lead before loading any scores.
+
+**New in this round:**
+- **Demographic segments.** `Employee.gender` and `Employee.birthDate` come in a new migration, `20261103150000_employee_demographics`.
+  - They can be captured in the People forms and in CSV import.
+  - Responses snapshot gender, generation and tenure.
+  - The Análisis tab adds heatmaps by gender, generation and tenure, with small groups hidden, and includes those groups in "Puntos de atención". ([11](climate-implementation-report/11-demographic-heatmaps.jpg), [13](climate-implementation-report/13-people-demographics.jpg))
+- **Fixed: editing and deactivating people always failed.** The People edit page passed an Employee id to actions that expect a CompanyUser id. New `updateEmployee` and `deactivateEmployee` actions take the Employee id.
+- **Scheduled reminders.** `vercel.json` runs `/api/cron/climate-plans` daily at 13:00 UTC. It needs `CRON_SECRET` set in Vercel.
+- **Demo tooling:**
+  - `scripts/seed-climate-demo.ts` adds demographics and a closed 2025 survey with three leader plans.
+  - `scripts/demo-links.ts` prints sign-in links.
+  - Both refuse to run against non-local databases.
+  - Closing the 2026 survey shows the impact: 2 improved, 1 worsened ([12](climate-implementation-report/12-impact-evaluated.jpg)).
+  - Walkthrough: [climate-demo-guide.md](climate-demo-guide.md).
+
+**Tests:**
+- Unit and integration: 1,560 pass (+46 since the first round).
+- Real-database e2e: 20/20.
+- `next build` passes.

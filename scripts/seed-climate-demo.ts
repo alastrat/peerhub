@@ -45,8 +45,18 @@ function answer(target: number) {
   return Math.min(4, Math.max(1, v));
 }
 
+/** Demo data must never touch a shared database. */
+function assertLocalDatabase() {
+  const url = process.env.DATABASE_URL ?? "";
+  const host = url.match(/@([^:/?]+)/)?.[1] ?? "";
+  if (!["localhost", "127.0.0.1", "::1", "host.docker.internal"].includes(host)) {
+    throw new Error(`Refusing to run against a non-local database (${host || "unknown host"})`);
+  }
+}
+
 async function main() {
   if (process.env.NODE_ENV === "production") throw new Error("Refusing to run in production");
+  assertLocalDatabase();
   const company = await prisma.company.findUnique({ where: { slug: "kultiva-demo" } });
   if (!company) throw new Error("Run `prisma db seed` first");
   const template = await prisma.climateSurveyTemplate.findFirst({

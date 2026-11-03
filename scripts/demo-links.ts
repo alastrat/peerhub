@@ -28,8 +28,18 @@ async function portalLink(email: string, redirect: string) {
   return { name: employee.name, url: `${APP_URL}/portal/verify/${token}?redirect=${encodeURIComponent(redirect)}` };
 }
 
+/** Demo data must never touch a shared database. */
+function assertLocalDatabase() {
+  const url = process.env.DATABASE_URL ?? "";
+  const host = url.match(/@([^:/?]+)/)?.[1] ?? "";
+  if (!["localhost", "127.0.0.1", "::1", "host.docker.internal"].includes(host)) {
+    throw new Error(`Refusing to run against a non-local database (${host || "unknown host"})`);
+  }
+}
+
 async function main() {
   if (process.env.NODE_ENV === "production") throw new Error("Refusing to run in production");
+  assertLocalDatabase();
   const survey = await prisma.climateSurvey.findFirst({
     where: { name: "Clima organizacional 2026 (demo)" },
     select: { id: true },
