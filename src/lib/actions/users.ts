@@ -130,9 +130,10 @@ export async function inviteUser(
     try {
       await sendInvitationEmail({
         to: input.email,
-        inviterName: session.user.name || "Your admin",
-        companyName: company?.name || "Your company",
+        inviterName: session.user.name,
+        companyName: company?.name,
         inviteUrl,
+        locale: company?.locale,
       });
     } catch (emailError) {
       await prisma.invitation.delete({ where: { id: invitation.id } });

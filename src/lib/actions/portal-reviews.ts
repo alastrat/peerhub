@@ -5,6 +5,7 @@ import { getPortalSession } from "@/lib/auth/portal-session";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/types";
 import { Prisma } from "@prisma/client";
+import { actionError, unexpectedActionError } from "@/lib/auth/action-locale";
 
 interface ReviewResponseInput {
   questionId: string;
@@ -20,7 +21,7 @@ export async function savePortalReviewProgress(
   try {
     const session = await getPortalSession();
     if (!session) {
-      return { success: false, error: "Unauthorized" };
+      return actionError("unauthorized");
     }
 
     // Get assignment and verify the portal user is the reviewer
@@ -32,11 +33,11 @@ export async function savePortalReviewProgress(
     });
 
     if (!assignment) {
-      return { success: false, error: "Review assignment not found" };
+      return actionError("review_not_found");
     }
 
     if (assignment.status === "COMPLETED") {
-      return { success: false, error: "Review already submitted" };
+      return actionError("review_already_submitted");
     }
 
     await prisma.reviewAssignment.update({
@@ -52,7 +53,7 @@ export async function savePortalReviewProgress(
     return { success: true };
   } catch (error) {
     console.error("Failed to save portal review progress:", error);
-    return { success: false, error: "Failed to save progress" };
+    return unexpectedActionError(error, "failed_save_progress");
   }
 }
 
@@ -63,7 +64,7 @@ export async function submitPortalReview(
   try {
     const session = await getPortalSession();
     if (!session) {
-      return { success: false, error: "Unauthorized" };
+      return actionError("unauthorized");
     }
 
     // Get assignment and verify access
@@ -90,11 +91,11 @@ export async function submitPortalReview(
     });
 
     if (!assignment) {
-      return { success: false, error: "Review assignment not found" };
+      return actionError("review_not_found");
     }
 
     if (assignment.status === "COMPLETED") {
-      return { success: false, error: "Review already submitted" };
+      return actionError("review_already_submitted");
     }
 
     // Validate required questions
@@ -109,7 +110,7 @@ export async function submitPortalReview(
     );
 
     if (missingRequired.length > 0) {
-      return { success: false, error: "Please answer all required questions" };
+      return actionError("review_missing_required");
     }
 
     // Save responses and complete assignment in a transaction
@@ -142,6 +143,6 @@ export async function submitPortalReview(
     return { success: true };
   } catch (error) {
     console.error("Failed to submit portal review:", error);
-    return { success: false, error: "Failed to submit review" };
+    return unexpectedActionError(error, "failed_submit_review");
   }
 }

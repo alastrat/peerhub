@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db/prisma";
 import { randomUUID } from "crypto";
 import { sendPortalMagicLinkEmail } from "@/lib/email/portal-templates";
+import { toSupportedLocale } from "@/i18n/translator";
+import type { SupportedLocale } from "@/i18n/routing";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -9,8 +11,8 @@ interface NotifyEmployeeOptions {
   subject: string;
   /** For members (has CompanyUser): the dashboard path to link to (e.g. "/my-reviews") */
   dashboardUrl: string;
-  /** Custom email sender for members — receives the full absolute URL */
-  sendMemberEmail: (email: string, name: string, url: string) => Promise<void>;
+  /** Custom email sender for members — receives the full absolute URL and the company's locale */
+  sendMemberEmail: (email: string, name: string, url: string, locale: SupportedLocale) => Promise<void>;
 }
 
 /**
@@ -39,7 +41,7 @@ export async function notifyEmployee(
     const fullUrl = dashboardUrl.startsWith("http")
       ? dashboardUrl
       : `${APP_URL}${dashboardUrl}`;
-    await sendMemberEmail(employee.email, employee.name, fullUrl);
+    await sendMemberEmail(employee.email, employee.name, fullUrl, toSupportedLocale(employee.company?.locale));
   } else {
     // Employee does NOT have platform access — create portal magic link
     const token = randomUUID();

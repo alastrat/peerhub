@@ -1,9 +1,10 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import type { ReviewerType } from "@prisma/client";
-import { REVIEWER_TYPE_LABELS } from "@/lib/constants/roles";
+import { getReviewerTypeLabel } from "@/lib/constants/roles";
 
 interface RatingSummaryProps {
   overallScore: number | null;
@@ -22,6 +23,8 @@ export function RatingSummary({
   byReviewerType,
   maxRating = 5,
 }: RatingSummaryProps) {
+  const t = useTranslations("feedback_report");
+  const locale = useLocale();
   const visibleTypes = Object.entries(byReviewerType).filter(
     ([, data]) => data !== null
   ) as [ReviewerType, { average: number; count: number }][];
@@ -30,11 +33,11 @@ export function RatingSummary({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Rating Summary</CardTitle>
+          <CardTitle>{t("summary_title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-4">
-            Not enough responses to display ratings
+            {t("summary_not_enough")}
           </p>
         </CardContent>
       </Card>
@@ -44,13 +47,13 @@ export function RatingSummary({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Rating Summary</CardTitle>
+        <CardTitle>{t("summary_title")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {overallScore !== null && (
           <div className="p-4 bg-primary/5 rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <span className="font-medium">Overall Score</span>
+              <span className="font-medium">{t("overall_score")}</span>
               <span className="text-2xl font-bold text-primary">
                 {overallScore.toFixed(2)}
               </span>
@@ -67,12 +70,12 @@ export function RatingSummary({
             <div key={type}>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm text-muted-foreground">
-                  {REVIEWER_TYPE_LABELS[type]}
+                  {getReviewerTypeLabel(type, locale)}
                 </span>
                 <span className="text-sm font-medium">
                   {data.average.toFixed(2)}
                   <span className="text-muted-foreground ml-1">
-                    ({data.count} review{data.count !== 1 ? "s" : ""})
+                    {t("reviews_count", { count: data.count })}
                   </span>
                 </span>
               </div>

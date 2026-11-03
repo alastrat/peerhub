@@ -23,7 +23,15 @@ export interface GuardQuestionInput {
 
 export type GuardResult<Q> =
   | { ok: true; questions: Q[]; instrumentVersion: string | null }
-  | { ok: false; error: string };
+  // `code` + `values` name the translated message (action_errors.instrument.*)
+  | { ok: false; error: string; code: GuardErrorCode; values?: Record<string, string> };
+
+export type GuardErrorCode =
+  | "unknown_item"
+  | "duplicate_item"
+  | "not_installed"
+  | "incomplete_dimension"
+  | "custom_in_instrument";
 
 const ITEMS = new Map(
   INSTRUMENT_DIMENSIONS.flatMap((d) => d.items.map((i) => [i.code, { ...i, dimensionCode: d.code }] as const)),
@@ -56,11 +64,13 @@ export function applyInstrumentRules<Q extends GuardQuestionInput>(
       continue;
     }
     const item = ITEMS.get(code);
-    if (!item) return { ok: false, error: `Unknown instrument item ${code}` };
-    if (seen.has(code)) return { ok: false, error: `Instrument item ${code} appears twice` };
+    if (!item) return { ok: false, error: `Unknown instrument item ${code}`, code: "unknown_item", values: { code } };
+    if (seen.has(code)) {
+      return { ok: false, error: `Instrument item ${code} appears twice`, code: "duplicate_item", values: { code } };
+    }
     seen.add(code);
     const dimensionId = dimensionIdByCode.get(item.dimensionCode);
-    if (!dimensionId) return { ok: false, error: "The validated instrument is not installed" };
+    if (!dimensionId) return { ok: false, error: "The validated instrument is not installed", code: "not_installed" };
     out.push({
       ...q,
       text: item.text,
@@ -81,6 +91,8 @@ export function applyInstrumentRules<Q extends GuardQuestionInput>(
       return {
         ok: false,
         error: `Instrument dimension "${dim.name}" must include all of its items (missing ${missing.join(", ")})`,
+        code: "incomplete_dimension",
+        values: { dimension: dim.name, missing: missing.join(", ") },
       };
     }
   }
@@ -94,6 +106,7 @@ export function applyInstrumentRules<Q extends GuardQuestionInput>(
     return {
       ok: false,
       error: "Custom questions can't be added to a validated instrument dimension; use another dimension",
+      code: "custom_in_instrument",
     };
   }
 

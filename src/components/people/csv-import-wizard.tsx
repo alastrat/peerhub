@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import {
@@ -36,6 +36,8 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { isValidBirthDate, parseGender } from "@/lib/constants/demographics";
+import { getRoleLabel } from "@/lib/constants/roles";
+import type { CompanyRole } from "@prisma/client";
 
 interface ParsedRow {
   email?: string;
@@ -56,6 +58,7 @@ interface ValidationResult {
 const REQUIRED_COLUMNS = ["email", "name"];
 const OPTIONAL_COLUMNS = ["title", "department", "managerEmail", "role", "startDate", "gender", "birthDate"];
 const ALL_COLUMNS = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS];
+const ROLES = ["ADMIN", "MANAGER", "MEMBER"];
 
 type WizardStep = "upload" | "mapping" | "review" | "importing" | "complete";
 
@@ -81,6 +84,7 @@ function parseCSVLine(line: string): string[] {
 
 export function CSVImportWizard() {
   const t = useTranslations("people_import");
+  const locale = useLocale();
   const router = useRouter();
   const columnLabel = (col: string) => t(`columns.${col}`);
 
@@ -157,10 +161,12 @@ export function CSVImportWizard() {
       const errors: string[] = [];
       const data: ParsedRow = {};
 
-      // Extract mapped data
+      // Extract mapped data. Blank cells are left out: the API rejects ""
+      // for optional columns such as managerEmail.
       Object.entries(columnMapping).forEach(([field, colIndex]) => {
         if (colIndex !== "" && colIndex !== undefined) {
-          data[field] = row[parseInt(colIndex)]?.trim() || "";
+          const value = row[parseInt(colIndex)]?.trim();
+          if (value) data[field] = value;
         }
       });
 
@@ -175,9 +181,10 @@ export function CSVImportWizard() {
         errors.push(t("errors.name_too_short"));
       }
 
-      // Validate role if provided
-      if (data.role && !["ADMIN", "MANAGER", "MEMBER"].includes(data.role.toUpperCase())) {
-        errors.push(t("errors.role_invalid"));
+      // Validate role if provided; the API only accepts the uppercase value
+      if (data.role) {
+        if (ROLES.includes(data.role.toUpperCase())) data.role = data.role.toUpperCase();
+        else errors.push(t("errors.role_invalid"));
       }
 
       if (data.gender && !parseGender(data.gender)) {
@@ -260,8 +267,8 @@ export function CSVImportWizard() {
   function downloadTemplate() {
     const csvContent = [
       ["email", "name", "title", "department", "managerEmail", "role", "startDate", "gender", "birthDate"].join(","),
-      ["john@example.com", "John Doe", "Software Engineer", "Engineering", "manager@example.com", "Employee", "2022-03-01", "M", "1990-06-15"].join(","),
-      ["jane@example.com", "Jane Smith", "Product Manager", "Product", "", "Manager", "2019-08-12", "F", "1985-01-20"].join(","),
+      ["john@example.com", "John Doe", "Software Engineer", "Engineering", "manager@example.com", "MEMBER", "2022-03-01", "M", "1990-06-15"].join(","),
+      ["jane@example.com", "Jane Smith", "Product Manager", "Product", "", "MANAGER", "2019-08-12", "F", "1985-01-20"].join(","),
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv" });
@@ -517,7 +524,11 @@ export function CSVImportWizard() {
                       <TableCell>{result.data.name || "-"}</TableCell>
                       <TableCell>{result.data.title || "-"}</TableCell>
                       <TableCell>{result.data.department || "-"}</TableCell>
-                      <TableCell>{result.data.role || t("review.default_role")}</TableCell>
+                      <TableCell>
+                        {result.data.role
+                          ? getRoleLabel(result.data.role as CompanyRole, locale)
+                          : t("review.default_role")}
+                      </TableCell>
                       <TableCell className="text-destructive text-sm">
                         {result.errors.join(", ")}
                       </TableCell>

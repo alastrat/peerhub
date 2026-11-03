@@ -269,14 +269,14 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     const qs = await prisma.surveyQuestion.findMany({ where: { surveyId: ctx.surveyA } });
     const locked = qs.find((q) => (q.config as { locked?: boolean })?.locked)!;
     const custom = qs.find((q) => q.type === "TEXT")!;
-    expect((await updateClimateSurveyQuestion(ctx.surveyA, locked.id, { text: "Nuevo" })).error).toContain("can't be edited");
+    expect((await updateClimateSurveyQuestion(ctx.surveyA, locked.id, { text: "Nuevo" })).error).toContain("no se pueden editar");
     expect((await updateClimateSurveyQuestion(ctx.surveyA, custom.id, { text: "¿Qué cambiarías?" })).success).toBe(true);
   });
 
   it("validates plan settings", async () => {
     asAdmin();
-    expect((await updateSurveySettings(ctx.surveyA, { goalBand: "GOOD" as never })).error).toBe("Invalid goal band");
-    expect((await updateSurveySettings(ctx.surveyA, { followUpUserIds: [ctx.otherAdminUserId] })).error).toBe("Unknown follow-up user");
+    expect((await updateSurveySettings(ctx.surveyA, { goalBand: "GOOD" as never })).error).toBe("Nivel meta inválido");
+    expect((await updateSurveySettings(ctx.surveyA, { followUpUserIds: [ctx.otherAdminUserId] })).error).toBe("Uno de los usuarios de seguimiento no pertenece a la empresa");
     const ok = await updateSurveySettings(ctx.surveyA, { goalBand: "FAVORABLE", planMinPerLeader: 1, followUpUserIds: [ctx.adminUserId] });
     expect(ok.success).toBe(true);
   });
@@ -292,7 +292,7 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
 
     // Out of range on the 1–4 scale
     const bad = await respond(ctx.surveyA, ctx.linaTeam[0], { LID: 5, CVI: 2, SPS: 3 });
-    expect(bad.error).toContain("outside the question's scale");
+    expect(bad.error).toContain("fuera de la escala de la pregunta");
 
     // Lina's team: Liderazgo 4, Calidad de vida 2, Seguridad psicológica 3
     for (const p of ctx.linaTeam) expect((await respond(ctx.surveyA, p, { LID: 4, CVI: 2, SPS: 3 }, { nps: 10 })).success).toBe(true);
@@ -302,7 +302,7 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     for (const p of ctx.noraTeam) expect((await respond(ctx.surveyA, p, { LID: 1, CVI: 1, SPS: 1 })).success).toBe(true);
 
     const again = await respond(ctx.surveyA, ctx.linaTeam[0], { LID: 4, CVI: 2, SPS: 3 });
-    expect(again.error).toBe("Survey already submitted");
+    expect(again.error).toBe("Ya enviaste esta encuesta");
 
     const snap = await prisma.surveyResponse.findFirstOrThrow({
       where: { employeeId: ctx.linaTeam[0].id, distribution: { surveyId: ctx.surveyA } },
@@ -625,7 +625,7 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     const big = new FormData();
     big.append("file", new File([new Uint8Array(11 * 1024 * 1024)], "huge.pdf", { type: "application/pdf" }));
     expect((await uploadTaskEvidence(orgTask.id, big)).error).toBe("Los archivos pueden pesar máximo 10 MB");
-    expect((await uploadTaskEvidence(orgTask.id, fd)).error).toBe("File storage isn't configured");
+    expect((await uploadTaskEvidence(orgTask.id, fd)).error).toBe("El almacenamiento de archivos no está configurado");
   });
 
   // =========================================================================

@@ -3,12 +3,13 @@
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/config";
 import { revalidatePath } from "next/cache";
-import { getTranslations } from "next-intl/server";
 import type { ActionResult } from "@/types";
 import { Prisma, type ClimateSurvey, type SurveyQuestion, type SurveyQuestionType } from "@prisma/client";
 import { applyInstrumentRules, instrumentDimensionCodes } from "@/lib/utils/climate-instrument-guard";
 import { isLockedQuestion } from "@/lib/constants/climate-instrument";
 import { isClimateBand, type ClimateBand } from "@/lib/utils/climate-scoring";
+import { getTranslator } from "@/i18n/translator";
+import { actionError, getActionLocale, unexpectedActionError } from "@/lib/auth/action-locale";
 
 /** Canonicalize instrument items and enforce whole-dimension rules. */
 async function guardInstrumentQuestions<Q extends SurveyQuestionInput>(questions: Q[]) {
@@ -84,14 +85,14 @@ export async function createClimateSurvey(
     const { companyId } = await requireCompanyAdmin();
 
     const name = input.name.trim();
-    if (!name) return { success: false, error: "Name is required" };
+    if (!name) return actionError("name_required");
 
     if (!input.questions || input.questions.length === 0) {
-      return { success: false, error: "At least one question is required" };
+      return actionError("question_required");
     }
 
     const guarded = await guardInstrumentQuestions(input.questions);
-    if (!guarded.ok) return { success: false, error: guarded.error };
+    if (!guarded.ok) return actionError(`instrument.${guarded.code}`, guarded.values);
     const questions = guarded.questions;
 
     const survey = await prisma.climateSurvey.create({
@@ -141,13 +142,7 @@ export async function createClimateSurvey(
   } catch (error) {
     console.error("Failed to create climate survey:", error);
     // Surface the underlying Prisma/DB error so the UI can show what's wrong
-    const msg =
-      error instanceof Prisma.PrismaClientKnownRequestError
-        ? `${error.code}: ${error.message.split("\n").pop() ?? error.message}`
-        : error instanceof Error
-          ? error.message
-          : "Failed to create survey";
-    return { success: false, error: msg };
+    return unexpectedActionError(error, "failed_create_survey", { withDetail: true });
   }
 }
 
@@ -162,7 +157,7 @@ export async function updateClimateSurvey(
       where: { id: surveyId, companyId },
     });
     if (!existing) {
-      return { success: false, error: "Survey not found" };
+      return actionError("survey_not_found");
     }
 
     const isDraft = existing.status === "DRAFT";
@@ -170,18 +165,9 @@ export async function updateClimateSurvey(
     // Non-draft surveys: block structural changes (questions, name, type, frequency)
     if (!isDraft) {
       if (input.questions) {
-        // The error is surfaced verbatim in the wizard. We prefer the
-        // translated message at runtime but fall back to the canonical
-        // English string when next-intl's request context isn't available
-        // (e.g. integration tests run outside a request lifecycle).
-        let error = "Questions cannot be changed after the survey has been sent";
-        try {
-          const t = await getTranslations("dashboard.climate.edit_page");
-          error = t("questions_locked_after_send");
-        } catch {
-          // intentionally fall back to the English baseline above
-        }
-        return { success: false, error };
+        // The error is surfaced verbatim in the wizard
+        const t = getTranslator(await getActionLocale(), "dashboard.climate.edit_page");
+        return { success: false, error: t("questions_locked_after_send") };
       }
       // Strip structural fields — only allow presentation updates
       input = {
@@ -201,7 +187,7 @@ export async function updateClimateSurvey(
 
     // Reject empty questions array
     if (input.questions && input.questions.length === 0) {
-      return { success: false, error: "At least one question is required" };
+      return actionError("question_required");
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -237,7 +223,7 @@ export async function updateClimateSurvey(
     // If questions are provided, delete and recreate atomically in a transaction
     if (input.questions) {
       const guarded = await guardInstrumentQuestions(input.questions);
-      if (!guarded.ok) return { success: false, error: guarded.error };
+      if (!guarded.ok) return actionError(`instrument.${guarded.code}`, guarded.values);
       input = { ...input, questions: guarded.questions };
       updateData.instrumentVersion = guarded.instrumentVersion;
       const survey = await prisma.$transaction(async (tx) => {
@@ -275,13 +261,7 @@ export async function updateClimateSurvey(
     return { success: true, data: survey };
   } catch (error) {
     console.error("Failed to update climate survey:", error);
-    const msg =
-      error instanceof Prisma.PrismaClientKnownRequestError
-        ? `${error.code}: ${error.message.split("\n").pop() ?? error.message}`
-        : error instanceof Error
-          ? error.message
-          : "Failed to update survey";
-    return { success: false, error: msg };
+    return unexpectedActionError(error, "failed_update_survey", { withDetail: true });
   }
 }
 
@@ -294,7 +274,7 @@ export async function deleteClimateSurvey(surveyId: string): Promise<ActionResul
       include: { _count: { select: { distributions: true } } },
     });
     if (!existing) {
-      return { success: false, error: "Survey not found" };
+      return actionError("survey_not_found");
     }
 
     if (existing._count.distributions > 0) {
@@ -311,7 +291,7 @@ export async function deleteClimateSurvey(surveyId: string): Promise<ActionResul
     return { success: true };
   } catch (error) {
     console.error("Failed to delete climate survey:", error);
-    return { success: false, error: "Failed to delete survey" };
+    return unexpectedActionError(error, "failed_delete_survey");
   }
 }
 
@@ -328,7 +308,7 @@ export async function duplicateClimateSurvey(
       },
     });
     if (!original) {
-      return { success: false, error: "Survey not found" };
+      return actionError("survey_not_found");
     }
 
     const survey = await prisma.climateSurvey.create({
@@ -377,7 +357,7 @@ export async function duplicateClimateSurvey(
     return { success: true, data: survey };
   } catch (error) {
     console.error("Failed to duplicate climate survey:", error);
-    return { success: false, error: "Failed to duplicate survey" };
+    return unexpectedActionError(error, "failed_duplicate_survey");
   }
 }
 
@@ -412,7 +392,7 @@ export async function updateSurveySettings(
       where: { id: surveyId, companyId },
     });
     if (!existing) {
-      return { success: false, error: "Survey not found" };
+      return actionError("survey_not_found");
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -420,7 +400,7 @@ export async function updateSurveySettings(
 
     if (input.name !== undefined) {
       const name = input.name.trim();
-      if (!name) return { success: false, error: "Name is required" };
+      if (!name) return actionError("name_required");
       data.name = name;
     }
     if (input.description !== undefined) data.description = input.description?.trim() || null;
@@ -438,16 +418,16 @@ export async function updateSurveySettings(
     if (input.accessEndDate !== undefined)
       data.accessEndDate = input.accessEndDate ? new Date(input.accessEndDate) : null;
     if (input.goalBand !== undefined) {
-      if (!isClimateBand(input.goalBand)) return { success: false, error: "Invalid goal band" };
+      if (!isClimateBand(input.goalBand)) return actionError("invalid_goal_band");
       data.goalBand = input.goalBand;
     }
     if (input.planMinPerLeader !== undefined) {
-      if (!Number.isFinite(input.planMinPerLeader)) return { success: false, error: "Invalid plan minimum" };
+      if (!Number.isFinite(input.planMinPerLeader)) return actionError("invalid_plan_minimum");
       data.planMinPerLeader = Math.min(12, Math.max(0, Math.trunc(input.planMinPerLeader)));
     }
     if (input.planDueDate !== undefined) {
       const due = input.planDueDate ? new Date(input.planDueDate) : null;
-      if (due && Number.isNaN(due.getTime())) return { success: false, error: "Invalid plan due date" };
+      if (due && Number.isNaN(due.getTime())) return actionError("invalid_plan_due_date");
       data.planDueDate = due;
     }
     if (input.followUpUserIds !== undefined) {
@@ -459,7 +439,7 @@ export async function updateSurveySettings(
             select: { userId: true },
           })
         : [];
-      if (valid.length !== ids.length) return { success: false, error: "Unknown follow-up user" };
+      if (valid.length !== ids.length) return actionError("unknown_follow_up_user");
       data.followUpUserIds = ids;
     }
 
@@ -477,13 +457,7 @@ export async function updateSurveySettings(
     return { success: true };
   } catch (error) {
     console.error("Failed to update survey settings:", error);
-    const msg =
-      error instanceof Prisma.PrismaClientKnownRequestError
-        ? `${error.code}: ${error.message.split("\n").pop() ?? error.message}`
-        : error instanceof Error
-          ? error.message
-          : "Failed to update settings";
-    return { success: false, error: msg };
+    return unexpectedActionError(error, "failed_update_settings", { withDetail: true });
   }
 }
 
@@ -519,11 +493,11 @@ export async function updateClimateSurveyQuestion(
       select: { id: true, status: true },
     });
     if (!survey) {
-      return { success: false, error: "Survey not found" };
+      return actionError("survey_not_found");
     }
 
     if (survey.status === "ARCHIVED") {
-      return { success: false, error: "Archived surveys cannot be edited" };
+      return actionError("archived_not_editable");
     }
 
     const question = await prisma.surveyQuestion.findFirst({
@@ -531,15 +505,15 @@ export async function updateClimateSurveyQuestion(
       select: { id: true, config: true },
     });
     if (!question) {
-      return { success: false, error: "Question not found" };
+      return actionError("question_not_found");
     }
     if (isLockedQuestion(question.config)) {
-      return { success: false, error: "Validated instrument items can't be edited" };
+      return actionError("instrument_item_locked");
     }
 
     const trimmedText = input.text?.trim();
     if (!trimmedText) {
-      return { success: false, error: "Question text is required" };
+      return actionError("question_text_required");
     }
 
     const isDraft = survey.status === "DRAFT";
@@ -569,7 +543,7 @@ export async function updateClimateSurveyQuestion(
             select: { id: true },
           });
           if (!dim) {
-            return { success: false, error: "Dimension not found" };
+            return actionError("dimension_not_found");
           }
           data.dimension = { connect: { id: dim.id } };
         } else {
@@ -586,9 +560,7 @@ export async function updateClimateSurveyQuestion(
     revalidatePath(`/surveys/climate/${surveyId}`);
     return { success: true };
   } catch (error) {
-    const msg =
-      error instanceof Error ? error.message : "Failed to update question";
-    return { success: false, error: msg };
+    return unexpectedActionError(error, "failed_update_question", { withDetail: true });
   }
 }
 
@@ -621,26 +593,20 @@ export async function uploadSurveyLogo(
       select: { id: true },
     });
     if (!survey) {
-      return { success: false, error: "Survey not found" };
+      return actionError("survey_not_found");
     }
 
     const file = formData.get("file");
     if (!(file instanceof File)) {
-      return { success: false, error: "No file provided" };
+      return actionError("no_file");
     }
 
     if (!ALLOWED_LOGO_MIME.has(file.type)) {
-      return {
-        success: false,
-        error: "Unsupported file type. Use PNG, JPEG, SVG or WebP.",
-      };
+      return actionError("image_type");
     }
 
     if (file.size > MAX_LOGO_BYTES) {
-      return {
-        success: false,
-        error: "File is too large. Maximum size is 2MB.",
-      };
+      return actionError("image_too_large");
     }
 
     const { createSupabaseStorageClient, SURVEY_ASSETS_BUCKET } = await import(
@@ -660,10 +626,7 @@ export async function uploadSurveyLogo(
       });
 
     if (uploadError) {
-      return {
-        success: false,
-        error: `Upload failed: ${uploadError.message}`,
-      };
+      return actionError("upload_failed", { reason: uploadError.message });
     }
 
     const { data: publicUrl } = supabase.storage
@@ -672,9 +635,7 @@ export async function uploadSurveyLogo(
 
     return { success: true, data: { url: publicUrl.publicUrl } };
   } catch (error) {
-    const msg =
-      error instanceof Error ? error.message : "Failed to upload logo";
-    return { success: false, error: msg };
+    return unexpectedActionError(error, "failed_upload_logo", { withDetail: true });
   }
 }
 
@@ -693,19 +654,13 @@ export async function uploadSurveyWallpaper(
 
     const file = formData.get("file");
     if (!(file instanceof File)) {
-      return { success: false, error: "No file provided" };
+      return actionError("no_file");
     }
     if (!ALLOWED_LOGO_MIME.has(file.type)) {
-      return {
-        success: false,
-        error: "Unsupported file type. Use PNG, JPEG, SVG or WebP.",
-      };
+      return actionError("image_type");
     }
     if (file.size > MAX_LOGO_BYTES) {
-      return {
-        success: false,
-        error: "File is too large. Maximum size is 2MB.",
-      };
+      return actionError("image_too_large");
     }
 
     const { createSupabaseStorageClient, SURVEY_ASSETS_BUCKET } = await import(
@@ -725,10 +680,7 @@ export async function uploadSurveyWallpaper(
       });
 
     if (uploadError) {
-      return {
-        success: false,
-        error: `Upload failed: ${uploadError.message}`,
-      };
+      return actionError("upload_failed", { reason: uploadError.message });
     }
 
     const { data: publicUrl } = supabase.storage
@@ -737,8 +689,6 @@ export async function uploadSurveyWallpaper(
 
     return { success: true, data: { url: publicUrl.publicUrl } };
   } catch (error) {
-    const msg =
-      error instanceof Error ? error.message : "Failed to upload wallpaper";
-    return { success: false, error: msg };
+    return unexpectedActionError(error, "failed_upload_wallpaper", { withDetail: true });
   }
 }

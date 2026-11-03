@@ -173,12 +173,12 @@ export function PortalClimateSurveyForm({
       setIsSaving(false);
       if (result.success) {
         setLastSaved(new Date());
-        if (!silent) toast.success("Progreso guardado");
+        if (!silent) toast.success(t("progress_saved"));
       } else if (!silent) {
-        toast.error(result.error || "No se pudo guardar");
+        toast.error(result.error || t("save_failed"));
       }
     },
-    [answers, distributionId, previewMode]
+    [answers, distributionId, previewMode, t]
   );
 
   // Debounced autosave — saves 2s after the last answer change so
@@ -233,12 +233,12 @@ export function PortalClimateSurveyForm({
         if (onSubmitted) {
           onSubmitted();
         } else {
-          toast.success("¡Gracias! Tu encuesta fue enviada.");
+          toast.success(t("submitted_toast"));
           router.push("/portal/home");
           router.refresh();
         }
       } else {
-        toast.error(result.error || "No se pudo enviar la encuesta");
+        toast.error(result.error || t("submit_failed"));
       }
     });
   };
@@ -254,7 +254,7 @@ export function PortalClimateSurveyForm({
               type="button"
               onClick={onBackToWelcome}
               className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md hover:bg-muted"
-              aria-label="Volver al inicio"
+              aria-label={t("back_to_welcome")}
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
@@ -277,12 +277,12 @@ export function PortalClimateSurveyForm({
             )}
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>
-                {totalAnswered} de {questions.length} respondidas
+                {t("answered_count", { answered: totalAnswered, total: questions.length })}
               </span>
               {dueDateLabel && dueDateLabel !== "—" && (
                 <>
                   <span aria-hidden>·</span>
-                  <span className="truncate">Vence el {dueDateLabel}</span>
+                  <span className="truncate">{t("due_on", { date: dueDateLabel })}</span>
                 </>
               )}
             </div>
@@ -294,7 +294,7 @@ export function PortalClimateSurveyForm({
               {lastSaved && !isSaving && (
                 <>
                   <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-                  Guardado
+                  {t("saved")}
                 </>
               )}
             </span>
@@ -334,10 +334,10 @@ export function PortalClimateSurveyForm({
             disabled={currentPage === 0}
           >
             <ArrowLeft className="mr-1 h-4 w-4" />
-            Anterior
+            {t("previous")}
           </Button>
           <span className="text-xs font-medium text-muted-foreground">
-            Página {currentPage + 1} de {totalPages}
+            {t("page_of", { page: currentPage + 1, total: totalPages })}
           </span>
           <Button
             type="button"
@@ -346,7 +346,7 @@ export function PortalClimateSurveyForm({
             onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
             disabled={currentPage >= totalPages - 1}
           >
-            Siguiente
+            {t("next")}
             <ArrowRight className="ml-1 h-4 w-4" />
           </Button>
         </div>
@@ -365,7 +365,7 @@ export function PortalClimateSurveyForm({
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Pregunta {i + 1} de {questions.length}
+                    {t("question_of", { index: i + 1, total: questions.length })}
                   </p>
                   <CardTitle className="mt-2 text-xl font-semibold leading-snug sm:text-2xl">
                     {q.text}
@@ -464,7 +464,7 @@ export function PortalClimateSurveyForm({
                   onChange={(e) =>
                     setAnswer(q.id, { textValue: e.target.value })
                   }
-                  placeholder="Escribe tu respuesta..."
+                  placeholder={t("text_placeholder")}
                   rows={4}
                 />
               )}
@@ -490,7 +490,7 @@ export function PortalClimateSurveyForm({
               ) : (
                 <Save className="h-4 w-4 mr-2" />
               )}
-              Guardar borrador
+              {t("save_draft")}
             </Button>
 
             <div className="flex items-center gap-2">
@@ -501,7 +501,7 @@ export function PortalClimateSurveyForm({
                   onClick={() => setCurrentPage(currentPage - 1)}
                 >
                   <ArrowLeft className="h-4 w-4 mr-1" />
-                  Anterior
+                  {t("previous")}
                 </Button>
               )}
 
@@ -512,7 +512,7 @@ export function PortalClimateSurveyForm({
                   style={{ backgroundColor: accent }}
                   onClick={() => setCurrentPage(currentPage + 1)}
                 >
-                  Siguiente
+                  {t("next")}
                   <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
               ) : (
@@ -525,22 +525,19 @@ export function PortalClimateSurveyForm({
                       style={{ backgroundColor: accent }}
                     >
                       <Send className="h-4 w-4 mr-2" />
-                      Enviar encuesta
+                      {t("submit")}
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>¿Enviar tus respuestas?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Una vez enviada, no podrás modificar tus respuestas. Asegúrate
-                        de haber revisado todo antes de continuar.
-                      </AlertDialogDescription>
+                      <AlertDialogTitle>{t("confirm_title")}</AlertDialogTitle>
+                      <AlertDialogDescription>{t("confirm_body")}</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                       <AlertDialogAction onClick={handleSubmit} disabled={isPending}>
                         {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                        Confirmar envío
+                        {t("confirm_submit")}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -554,9 +551,7 @@ export function PortalClimateSurveyForm({
       {missingRequired.length > 0 && (
         <div className="flex justify-end">
           <p className="rounded-md bg-white/90 px-3 py-1 text-sm text-muted-foreground shadow-sm backdrop-blur">
-            Faltan {missingRequired.length} pregunta
-            {missingRequired.length !== 1 ? "s" : ""} obligatoria
-            {missingRequired.length !== 1 ? "s" : ""} por responder
+            {t("missing_required", { count: missingRequired.length })}
           </p>
         </div>
       )}

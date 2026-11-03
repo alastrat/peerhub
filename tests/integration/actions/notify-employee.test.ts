@@ -68,7 +68,8 @@ describe("notifyEmployee", () => {
     expect(sendMemberEmail).toHaveBeenCalledWith(
       "member@acme.com",
       "John Member",
-      "http://localhost:4999/my-reviews"
+      "http://localhost:4999/my-reviews",
+      "es"
     );
     expect(sendPortalMagicLinkEmail).not.toHaveBeenCalled();
     expect(mockPrisma.accessToken.create).not.toHaveBeenCalled();
@@ -119,6 +120,7 @@ describe("notifyEmployee", () => {
       name: "John",
       companyId: "company-1",
       companyUser: { id: "cu-1" },
+      company: { locale: "en" },
     });
 
     const sendMemberEmail = vi.fn();
@@ -133,7 +135,8 @@ describe("notifyEmployee", () => {
     expect(sendMemberEmail).toHaveBeenCalledWith(
       "member@acme.com",
       "John",
-      "https://custom.domain.com/reviews"
+      "https://custom.domain.com/reviews",
+      "en"
     );
   });
 });

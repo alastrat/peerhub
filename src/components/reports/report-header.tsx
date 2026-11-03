@@ -1,13 +1,13 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { getInitials } from "@/lib/utils/formatting";
-import { formatDate } from "@/lib/utils/dates";
 import { CheckCircle2, Clock } from "lucide-react";
 import type { ReviewerType } from "@prisma/client";
-import { REVIEWER_TYPE_LABELS } from "@/lib/constants/roles";
+import { getReviewerTypeLabel } from "@/lib/constants/roles";
 
 interface ReportHeaderProps {
   participantName: string;
@@ -30,6 +30,8 @@ export function ReportHeader({
   releasedAt,
   maxRating = 5,
 }: ReportHeaderProps) {
+  const t = useTranslations("feedback_report");
+  const locale = useLocale();
   const totalResponses = Object.values(responseCounts).reduce((a, b) => a + b, 0);
 
   return (
@@ -49,12 +51,12 @@ export function ReportHeader({
               {releasedAt ? (
                 <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20">
                   <CheckCircle2 className="h-3 w-3 mr-1" />
-                  Released
+                  {t("released")}
                 </Badge>
               ) : (
                 <Badge variant="secondary">
                   <Clock className="h-3 w-3 mr-1" />
-                  Not Released
+                  {t("not_released")}
                 </Badge>
               )}
             </div>
@@ -70,28 +72,28 @@ export function ReportHeader({
                 {overallScore.toFixed(1)}
               </p>
               <p className="text-sm text-muted-foreground">
-                out of {maxRating}
+                {t("out_of", { max: maxRating })}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Overall Score
+                {t("overall_score")}
               </p>
             </div>
           )}
         </div>
 
         <div className="mt-6 pt-6 border-t">
-          <p className="text-sm font-medium mb-3">Feedback Sources</p>
+          <p className="text-sm font-medium mb-3">{t("sources")}</p>
           <div className="flex flex-wrap gap-2">
             {Object.entries(responseCounts).map(([type, count]) => {
               if (count === 0) return null;
               return (
                 <Badge key={type} variant="outline">
-                  {REVIEWER_TYPE_LABELS[type as ReviewerType]}: {count}
+                  {getReviewerTypeLabel(type as ReviewerType, locale)}: {count}
                 </Badge>
               );
             })}
             <Badge variant="secondary" className="font-medium">
-              Total: {totalResponses}
+              {t("total", { count: totalResponses })}
             </Badge>
           </div>
         </div>
