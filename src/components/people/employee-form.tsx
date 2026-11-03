@@ -29,6 +29,7 @@ import { createUserSchema, type CreateUserInput } from "@/lib/validations/user";
 import { inviteUser, createUser } from "@/lib/actions/users";
 import { ROLE_LABELS } from "@/lib/constants/roles";
 import type { Department, Employee, Hub } from "@prisma/client";
+import { DemographicFields } from "./demographic-fields";
 
 interface EmployeeFormProps {
   departments: Department[];
@@ -266,6 +267,8 @@ export function EmployeeForm({
             />
           )}
         </div>
+
+        <DemographicFields control={form.control} />
 
         <div className="flex justify-end gap-4">
           <Button

@@ -23,6 +23,12 @@ import {
   type SegmentScope,
   type SegmentSnapshot,
 } from "@/lib/utils/climate-segments";
+import { GENDERS, GENERATIONS, TENURES } from "@/lib/constants/demographics";
+
+/** Demographic segments in their natural order instead of alphabetical. */
+function inOrder(list: SegmentResult[], order: readonly string[]): SegmentResult[] {
+  return [...list].sort((a, b) => order.indexOf(a.segmentId) - order.indexOf(b.segmentId));
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -67,7 +73,7 @@ export interface SegmentResult {
   dimensions: SegmentDimensionCell[];
 }
 
-export type SegmentType = "department" | "team" | "hub" | "leader";
+export type SegmentType = "department" | "team" | "hub" | "leader" | "gender" | "generation" | "tenure";
 
 export interface AttentionSegment {
   type: SegmentType;
@@ -100,6 +106,10 @@ export interface SurveyResults {
   teamBreakdown: SegmentResult[];
   hubBreakdown: SegmentResult[];
   leaderBreakdown: SegmentResult[];
+  /** Demographic breakdowns; segmentId/segmentName are the group keys (e.g. "GEN_Z"). */
+  genderBreakdown: SegmentResult[];
+  generationBreakdown: SegmentResult[];
+  tenureBreakdown: SegmentResult[];
   /** Company-wide instrument dimensions below the goal band, lowest first. */
   gaps: DimensionResult[];
   /** Segments (n ≥ minimum) whose Índice de Clima is below the goal band, lowest first. */
@@ -115,6 +125,9 @@ const responseEmployeeSelect = {
   hubId: true,
   managerId: true,
   teamMemberships: { select: { teamId: true } },
+  gender: true,
+  birthDate: true,
+  startDate: true,
 } as const;
 
 export interface ScoringSurvey {
@@ -329,6 +342,21 @@ export async function getSurveyResults(surveyId: string, companyId: string): Pro
       : [],
   );
 
+  const genderBreakdown = inOrder(
+    toSegmentResults(survey, (r) => (r.segments.gender ? [{ id: r.segments.gender, name: r.segments.gender }] : [])),
+    GENDERS,
+  );
+  const generationBreakdown = inOrder(
+    toSegmentResults(survey, (r) =>
+      r.segments.generation ? [{ id: r.segments.generation, name: r.segments.generation }] : [],
+    ),
+    GENERATIONS,
+  );
+  const tenureBreakdown = inOrder(
+    toSegmentResults(survey, (r) => (r.segments.tenure ? [{ id: r.segments.tenure, name: r.segments.tenure }] : [])),
+    TENURES,
+  );
+
   const dimensionScores = suppressed ? [] : toDimensionResults(company, survey);
   const gaps = isInstrument ? (findGaps(dimensionScores, survey.goalBand) as DimensionResult[]) : [];
 
@@ -352,6 +380,9 @@ export async function getSurveyResults(surveyId: string, companyId: string): Pro
     collect("hub", hubBreakdown);
     collect("team", teamBreakdown);
     collect("leader", leaderBreakdown);
+    collect("gender", genderBreakdown);
+    collect("generation", generationBreakdown);
+    collect("tenure", tenureBreakdown);
     attentionSegments.sort((a, b) => a.mean - b.mean);
   }
 
@@ -375,6 +406,9 @@ export async function getSurveyResults(surveyId: string, companyId: string): Pro
     teamBreakdown,
     hubBreakdown,
     leaderBreakdown,
+    genderBreakdown,
+    generationBreakdown,
+    tenureBreakdown,
     gaps,
     attentionSegments,
   };

@@ -2742,7 +2742,10 @@
       "department": "Departamento",
       "team": "Equipo",
       "hub": "Sede",
-      "leader": "Líder"
+      "leader": "Líder",
+      "gender": "Género",
+      "generation": "Generación",
+      "tenure": "Antigüedad"
     },
     "heatmap_department": "Mapa de calor por departamento",
     "heatmap_team": "Mapa de calor por equipo",
@@ -2756,7 +2759,10 @@
     "instrument_section_hint": "Ítems del instrumento validado: no se pueden editar ni quitar uno por uno. Puedes quitar la dimensión completa.",
     "scale_label": "Escala",
     "scale_FREQ_4": "Frecuencia (Nunca–Siempre, 1–4)",
-    "scale_AGREE_5": "Acuerdo (1–5)"
+    "scale_AGREE_5": "Acuerdo (1–5)",
+    "heatmap_gender": "Mapa de calor por género",
+    "heatmap_generation": "Mapa de calor por generación",
+    "heatmap_tenure": "Mapa de calor por antigüedad"
   },
   "climate_plans": {
     "tab_label": "Planes de acción",
@@ -2981,6 +2987,34 @@
       "save": "Guardar",
       "saved": "Configuración guardada",
       "error": "No se pudo guardar"
+    }
+  },
+  "demographics": {
+    "gender": {
+      "FEMALE": "Femenino",
+      "MALE": "Masculino",
+      "NON_BINARY": "No binario",
+      "PREFER_NOT_TO_SAY": "Prefiere no decirlo"
+    },
+    "generation": {
+      "GEN_Z": "Generación Z (1997+)",
+      "MILLENNIALS": "Millennials (1981–1996)",
+      "GEN_X": "Generación X (1965–1980)",
+      "BABY_BOOMERS": "Baby Boomers (hasta 1964)"
+    },
+    "tenure": {
+      "UP_TO_1": "Hasta 1 año",
+      "1_TO_3": "De 1 a 3 años",
+      "3_TO_5": "De 3 a 5 años",
+      "OVER_5": "Más de 5 años"
+    },
+    "fields": {
+      "gender": "Género",
+      "birth_date": "Fecha de nacimiento",
+      "start_date": "Fecha de ingreso",
+      "not_set": "Sin especificar",
+      "section_title": "Datos demográficos",
+      "privacy_hint": "Se usan solo para resultados agregados de clima (grupos de al menos el mínimo de respuestas); nunca se muestran por persona."
     }
   }
 }

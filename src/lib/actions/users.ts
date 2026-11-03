@@ -4,7 +4,8 @@ import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/config";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/types";
-import type { CompanyUser, CompanyRole } from "@prisma/client";
+import type { CompanyUser, CompanyRole, Gender, Prisma } from "@prisma/client";
+import { updateEmployeeSchema, type UpdateEmployeeInput } from "@/lib/validations/user";
 import { sendInvitationEmail } from "@/lib/email/templates";
 import { EmailDeliveryError } from "@/lib/email/resend";
 import { generateInviteToken, getExpiryDate } from "@/lib/utils";
@@ -17,8 +18,10 @@ interface CreateUserInput {
   departmentId?: string;
   managerId?: string;
   hubId?: string;
-  startDate?: string | Date;
+  startDate?: string | Date | null;
   role?: CompanyRole;
+  gender?: Gender | null;
+  birthDate?: string | Date | null;
 }
 
 interface InviteUserInput {
@@ -210,6 +213,8 @@ export async function createUser(
         managerId: input.managerId,
         hubId: hubId || undefined,
         startDate: input.startDate ? new Date(input.startDate) : undefined,
+        gender: input.gender ?? undefined,
+        birthDate: input.birthDate ? new Date(input.birthDate) : undefined,
       },
     });
 
@@ -322,5 +327,96 @@ export async function deleteUser(userId: string): Promise<ActionResult> {
   } catch (error) {
     console.error("Failed to delete user:", error);
     return { success: false, error: "Failed to delete user" };
+  }
+}
+
+function validBirthDate(d: Date | null | undefined): boolean {
+  if (!d) return true;
+  const year = d.getUTCFullYear();
+  return year >= 1900 && d <= new Date();
+}
+
+/**
+ * Update an employee from the People edit page, by Employee id. Unlike
+ * updateUser (CompanyUser id), this also works for people without platform
+ * access, and covers demographic fields.
+ */
+export async function updateEmployee(employeeId: string, input: UpdateEmployeeInput): Promise<ActionResult> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id || session.companyUser?.role !== "ADMIN") {
+      return { success: false, error: "Unauthorized" };
+    }
+    const companyId = session.companyUser.companyId;
+
+    const parsed = updateEmployeeSchema.safeParse(input);
+    if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid data" };
+    const data = parsed.data;
+
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, companyId },
+      select: { id: true, companyUser: { select: { id: true } } },
+    });
+    if (!employee) return { success: false, error: "Employee not found" };
+    if (data.managerId && data.managerId === employeeId) {
+      return { success: false, error: "An employee can't be their own manager" };
+    }
+    if (!validBirthDate(data.birthDate)) return { success: false, error: "Invalid date of birth" };
+
+    const employeeData: Prisma.EmployeeUncheckedUpdateInput = {};
+    if (data.name !== undefined) employeeData.name = data.name;
+    if (data.title !== undefined) employeeData.title = data.title;
+    if (data.departmentId !== undefined) employeeData.departmentId = data.departmentId;
+    if (data.managerId !== undefined) employeeData.managerId = data.managerId;
+    if (data.hubId !== undefined) employeeData.hubId = data.hubId;
+    if (data.isActive !== undefined) employeeData.isActive = data.isActive;
+    if (data.startDate !== undefined) employeeData.startDate = data.startDate;
+    if (data.gender !== undefined) employeeData.gender = data.gender;
+    if (data.birthDate !== undefined) employeeData.birthDate = data.birthDate;
+
+    await prisma.employee.update({ where: { id: employee.id }, data: employeeData });
+
+    if (employee.companyUser && (data.role !== undefined || data.isActive !== undefined)) {
+      await prisma.companyUser.update({
+        where: { id: employee.companyUser.id },
+        data: {
+          ...(data.role !== undefined && { role: data.role }),
+          ...(data.isActive !== undefined && { isActive: data.isActive }),
+        },
+      });
+    }
+
+    revalidatePath("/people");
+    revalidatePath(`/people/${employeeId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update employee:", error);
+    return { success: false, error: "Failed to update employee" };
+  }
+}
+
+/** Deactivate an employee (and their platform access, if any), by Employee id. */
+export async function deactivateEmployee(employeeId: string): Promise<ActionResult> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id || session.companyUser?.role !== "ADMIN") {
+      return { success: false, error: "Unauthorized" };
+    }
+    const companyId = session.companyUser.companyId;
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, companyId },
+      select: { id: true, companyUser: { select: { id: true } } },
+    });
+    if (!employee) return { success: false, error: "Employee not found" };
+
+    await prisma.employee.update({ where: { id: employee.id }, data: { isActive: false } });
+    if (employee.companyUser) {
+      await prisma.companyUser.update({ where: { id: employee.companyUser.id }, data: { isActive: false } });
+    }
+    revalidatePath("/people");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to deactivate employee:", error);
+    return { success: false, error: "Failed to deactivate employee" };
   }
 }

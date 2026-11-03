@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
 import { csvImportRowSchema } from "@/lib/validations/user";
+import { parseGender } from "@/lib/constants/demographics";
 
 export async function POST(request: NextRequest) {
   try {
@@ -75,6 +76,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Optional demographics (climate segments). Unknown values are rejected
+    // so a typo doesn't silently drop someone out of every segment.
+    const gender = data.gender ? parseGender(data.gender) : null;
+    if (data.gender && !gender) {
+      return NextResponse.json({ message: `Unknown gender "${data.gender}"` }, { status: 400 });
+    }
+    const birthDate = data.birthDate ? new Date(data.birthDate) : null;
+    if (birthDate && (Number.isNaN(birthDate.getTime()) || birthDate.getUTCFullYear() < 1900 || birthDate > new Date())) {
+      return NextResponse.json({ message: `Invalid birth date "${data.birthDate}"` }, { status: 400 });
+    }
+    const startDate = data.startDate ? new Date(data.startDate) : null;
+    if (startDate && Number.isNaN(startDate.getTime())) {
+      return NextResponse.json({ message: `Invalid start date "${data.startDate}"` }, { status: 400 });
+    }
+
     // Create the Employee record
     const employee = await prisma.employee.create({
       data: {
@@ -85,7 +101,9 @@ export async function POST(request: NextRequest) {
         employeeCode: data.employeeCode || null,
         departmentId,
         managerId,
-        startDate: data.startDate ? new Date(data.startDate) : null,
+        startDate,
+        gender,
+        birthDate,
       },
       include: {
         department: true,

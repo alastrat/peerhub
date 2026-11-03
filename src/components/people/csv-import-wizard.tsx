@@ -34,6 +34,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { parseGender } from "@/lib/constants/demographics";
 
 interface Department {
   id: string;
@@ -61,7 +62,7 @@ interface ValidationResult {
 }
 
 const REQUIRED_COLUMNS = ["email", "name"];
-const OPTIONAL_COLUMNS = ["title", "department", "managerEmail", "role"];
+const OPTIONAL_COLUMNS = ["title", "department", "managerEmail", "role", "startDate", "gender", "birthDate"];
 const ALL_COLUMNS = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS];
 
 const COLUMN_LABELS: Record<string, string> = {
@@ -71,6 +72,9 @@ const COLUMN_LABELS: Record<string, string> = {
   department: "Department",
   managerEmail: "Manager Email",
   role: "Role",
+  startDate: "Start Date (YYYY-MM-DD)",
+  gender: "Gender (F / M / No binario)",
+  birthDate: "Date of Birth (YYYY-MM-DD)",
 };
 
 type WizardStep = "upload" | "mapping" | "review" | "importing" | "complete";
@@ -195,6 +199,15 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
         errors.push("Role must be Admin, Manager, or Member");
       }
 
+      if (data.gender && !parseGender(data.gender)) {
+        errors.push(`Unknown gender "${data.gender}" (use F, M, No binario or Prefiero no decirlo)`);
+      }
+      for (const key of ["startDate", "birthDate"] as const) {
+        if (data[key] && Number.isNaN(new Date(data[key]!).getTime())) {
+          errors.push(`${COLUMN_LABELS[key]}: invalid date "${data[key]}"`);
+        }
+      }
+
       results.push({
         row: index + 2, // 1-indexed, accounting for header
         errors,
@@ -261,9 +274,9 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
 
   function downloadTemplate() {
     const csvContent = [
-      ["email", "name", "title", "department", "managerEmail", "role"].join(","),
-      ["john@example.com", "John Doe", "Software Engineer", "Engineering", "manager@example.com", "Employee"].join(","),
-      ["jane@example.com", "Jane Smith", "Product Manager", "Product", "", "Manager"].join(","),
+      ["email", "name", "title", "department", "managerEmail", "role", "startDate", "gender", "birthDate"].join(","),
+      ["john@example.com", "John Doe", "Software Engineer", "Engineering", "manager@example.com", "Employee", "2022-03-01", "M", "1990-06-15"].join(","),
+      ["jane@example.com", "Jane Smith", "Product Manager", "Product", "", "Manager", "2019-08-12", "F", "1985-01-20"].join(","),
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv" });

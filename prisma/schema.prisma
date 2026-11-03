@@ -105,6 +105,13 @@ enum TeamRole {
   MEMBER
 }
 
+enum Gender {
+  FEMALE
+  MALE
+  NON_BINARY
+  PREFER_NOT_TO_SAY
+}
+
 // Interpretation bands of the validated climate instrument (mean on 1–4)
 enum ClimateBand {
   MUY_DESFAVORABLE
@@ -230,6 +237,9 @@ model Employee {
   departmentId String?
   startDate    DateTime?
   isActive     Boolean   @default(true)
+  // Demographics for climate segments (optional; never shown per person)
+  gender       Gender?
+  birthDate    DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 

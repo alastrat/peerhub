@@ -2694,7 +2694,10 @@
       "department": "Department",
       "team": "Team",
       "hub": "Hub",
-      "leader": "Leader"
+      "leader": "Leader",
+      "gender": "Gender",
+      "generation": "Generation",
+      "tenure": "Tenure"
     },
     "heatmap_department": "Heatmap by department",
     "heatmap_team": "Heatmap by team",
@@ -2708,7 +2711,10 @@
     "instrument_section_hint": "Validated instrument items: they can't be edited or removed one by one. You can remove the whole dimension.",
     "scale_label": "Scale",
     "scale_FREQ_4": "Frequency (Never–Always, 1–4)",
-    "scale_AGREE_5": "Agreement (1–5)"
+    "scale_AGREE_5": "Agreement (1–5)",
+    "heatmap_gender": "Heatmap by gender",
+    "heatmap_generation": "Heatmap by generation",
+    "heatmap_tenure": "Heatmap by tenure"
   },
   "climate_plans": {
     "tab_label": "Action plans",
@@ -2933,6 +2939,34 @@
       "save": "Save",
       "saved": "Settings saved",
       "error": "Couldn't save"
+    }
+  },
+  "demographics": {
+    "gender": {
+      "FEMALE": "Female",
+      "MALE": "Male",
+      "NON_BINARY": "Non-binary",
+      "PREFER_NOT_TO_SAY": "Prefer not to say"
+    },
+    "generation": {
+      "GEN_Z": "Gen Z (1997+)",
+      "MILLENNIALS": "Millennials (1981–1996)",
+      "GEN_X": "Gen X (1965–1980)",
+      "BABY_BOOMERS": "Baby Boomers (up to 1964)"
+    },
+    "tenure": {
+      "UP_TO_1": "Up to 1 year",
+      "1_TO_3": "1 to 3 years",
+      "3_TO_5": "3 to 5 years",
+      "OVER_5": "More than 5 years"
+    },
+    "fields": {
+      "gender": "Gender",
+      "birth_date": "Date of birth",
+      "start_date": "Start date",
+      "not_set": "Not set",
+      "section_title": "Demographics",
+      "privacy_hint": "Used only for aggregated climate results (groups with at least the minimum number of responses); never shown per person."
     }
   }
 }

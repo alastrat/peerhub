@@ -552,6 +552,9 @@ describe("climate response actions", () => {
         hubId: "hub-1",
         managerId: "emp-boss",
         teamMemberships: [{ teamId: "team-1" }, { teamId: "team-2" }],
+        gender: "FEMALE",
+        birthDate: new Date("1990-05-02"),
+        startDate: new Date("2020-01-15"),
       });
 
       const result = await submitSurveyResponse({ distributionId: "dist-1", answers: sampleAnswers });
@@ -566,6 +569,9 @@ describe("climate response actions", () => {
               hubId: "hub-1",
               teamIds: ["team-1", "team-2"],
               leaderEmployeeId: "emp-boss",
+              gender: "FEMALE",
+              generation: "MILLENNIALS",
+              tenure: expect.any(String),
             },
           }),
         }),

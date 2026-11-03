@@ -187,6 +187,9 @@ export async function submitSurveyResponse(input: {
         hubId: true,
         managerId: true,
         teamMemberships: { select: { teamId: true } },
+        gender: true,
+        birthDate: true,
+        startDate: true,
       },
     });
 
