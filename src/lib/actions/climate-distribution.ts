@@ -179,6 +179,16 @@ export async function closeSurvey(surveyId: string): Promise<ActionResult> {
       data: { status: "CLOSED" },
     });
 
+    // A closed instrument survey is the follow-up for earlier action plans
+    if (survey.instrumentVersion) {
+      try {
+        const { evaluateAndNotifyPlanOutcomes } = await import("@/lib/queries/action-plans");
+        await evaluateAndNotifyPlanOutcomes(surveyId, companyId);
+      } catch (e) {
+        console.error("Impact evaluation after close failed:", e);
+      }
+    }
+
     revalidatePath("/surveys/climate");
     revalidatePath(`/surveys/climate/${surveyId}`);
     return { success: true };

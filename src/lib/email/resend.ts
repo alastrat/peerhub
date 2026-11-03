@@ -28,6 +28,7 @@ interface SendEmailOptions {
   subject: string;
   html: string;
   text?: string;
+  cc?: string[];
 }
 
 export interface SendEmailResult {
@@ -44,6 +45,7 @@ export async function sendEmail({
   subject,
   html,
   text,
+  cc,
 }: SendEmailOptions): Promise<SendEmailResult> {
   const recipients = Array.isArray(to) ? to : [to];
 
@@ -52,6 +54,7 @@ export async function sendEmail({
     console.log("📧 EMAIL (Dev Mode)");
     console.log("========================================");
     console.log(`To: ${recipients.join(", ")}`);
+    if (cc?.length) console.log(`Cc: ${cc.join(", ")}`);
     console.log(`Subject: ${subject}`);
     console.log("----------------------------------------");
     console.log(text || html.replace(/<[^>]*>/g, ""));
@@ -66,6 +69,7 @@ export async function sendEmail({
       subject,
       html,
       text,
+      ...(cc?.length ? { cc } : {}),
     });
 
     if (error) {
