@@ -872,7 +872,8 @@ model SurveyAnswer {
   updatedAt   DateTime @updatedAt
 
   response SurveyResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
-  question SurveyQuestion @relation(fields: [questionId], references: [id])
+  // Cascade so deleting a survey (or its company) with answers doesn't fail
+  question SurveyQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@unique([responseId, questionId])
   @@index([responseId])

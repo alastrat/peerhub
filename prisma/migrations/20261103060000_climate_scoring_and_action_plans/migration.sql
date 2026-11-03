@@ -223,6 +223,11 @@ ALTER TABLE "LeaderSurveyContext" ADD CONSTRAINT "LeaderSurveyContext_surveyId_f
 ALTER TABLE "LeaderSurveyContext" ADD CONSTRAINT "LeaderSurveyContext_leaderEmployeeId_fkey" FOREIGN KEY ("leaderEmployeeId") REFERENCES "Employee"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 
+-- SurveyAnswer.question cascades: deleting a survey or company with answers
+-- used to fail on this constraint.
+ALTER TABLE "SurveyAnswer" DROP CONSTRAINT "SurveyAnswer_questionId_fkey";
+ALTER TABLE "SurveyAnswer" ADD CONSTRAINT "SurveyAnswer_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "SurveyQuestion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
 -- Data: stamp every existing LIKERT question with the scale it was answered on.
 -- The portal has shown LIKERT as Nunca…Siempre (1–4) since 2026-04-16; a
 -- question with any answer above 4 was answered on the older 1–5 scale.
