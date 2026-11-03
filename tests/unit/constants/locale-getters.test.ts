@@ -154,9 +154,9 @@ describe("climate-survey locale-aware getters", () => {
   });
 
   it("getSurveyQuestionTypeLabel — both locales", () => {
-    expect(getSurveyQuestionTypeLabel("LIKERT")).toBe("Escala Likert (1-5)");
+    expect(getSurveyQuestionTypeLabel("LIKERT")).toBe("Escala Likert");
     expect(getSurveyQuestionTypeLabel("LIKERT", "en")).toBe(
-      "Likert Scale (1-5)",
+      "Likert Scale",
     );
   });
 

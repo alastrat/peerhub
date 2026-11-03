@@ -22,8 +22,15 @@ describe("isTaskOverdue", () => {
   const now = new Date(2026, 10, 3, 15, 0);
 
   it("is overdue only from the day after the due date", () => {
-    expect(isTaskOverdue({ dueDate: new Date(2026, 10, 3, 0, 0), status: "PENDING" }, now)).toBe(false);
-    expect(isTaskOverdue({ dueDate: new Date(2026, 10, 2, 23, 59), status: "PENDING" }, now)).toBe(true);
+    // Due dates come from <input type="date"> → UTC midnight of that day
+    expect(isTaskOverdue({ dueDate: new Date("2026-11-03"), status: "PENDING" }, now)).toBe(false);
+    expect(isTaskOverdue({ dueDate: new Date("2026-11-04"), status: "PENDING" }, now)).toBe(false);
+    expect(isTaskOverdue({ dueDate: new Date("2026-11-02"), status: "PENDING" }, now)).toBe(true);
+  });
+
+  it("does not flag a task due today late in the evening (UTC−5 user)", () => {
+    const evening = new Date(2026, 10, 3, 23, 30);
+    expect(isTaskOverdue({ dueDate: new Date("2026-11-03"), status: "PENDING" }, evening)).toBe(false);
   });
 
   it("never flags done or cancelled tasks", () => {

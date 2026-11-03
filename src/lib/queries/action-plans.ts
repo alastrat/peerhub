@@ -35,8 +35,19 @@ export function startOfToday(now = new Date()): Date {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
+function localDay(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+/**
+ * Due dates are calendar days (stored as UTC midnight from a date input), so
+ * compare day strings: a task due today is never overdue, whatever the timezone.
+ */
 export function isTaskOverdue(task: { dueDate: Date; status: ActionTaskStatus }, now = new Date()): boolean {
-  return !CLOSED_TASK_STATUSES.includes(task.status) && task.dueDate < startOfToday(now);
+  if (CLOSED_TASK_STATUSES.includes(task.status)) return false;
+  return new Date(task.dueDate).toISOString().slice(0, 10) < localDay(now);
 }
 
 export function planProgress(tasks: { status: ActionTaskStatus }[]) {

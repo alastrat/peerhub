@@ -766,6 +766,8 @@ model ClimateSurvey {
   resultsReleasedAt DateTime?
   // User ids notified about plans (HR / seguimiento)
   followUpUserIds   String[]    @default([])
+  // Last "plans due soon" reminder sent to leaders (once per survey)
+  planReminderSentAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -940,6 +942,8 @@ model ActionPlanTask {
   order               Int              @default(0)
   // Set when picked from the suggested-actions library
   suggestedActionCode String?
+  // Last due-soon/overdue reminder (at most one per day)
+  reminderSentAt      DateTime?
   createdAt           DateTime         @default(now())
   updatedAt           DateTime         @updatedAt
 

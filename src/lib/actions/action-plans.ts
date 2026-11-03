@@ -375,7 +375,7 @@ export async function submitActionPlan(planId: string): Promise<ActionResult> {
     if (plan.tasks.filter((t) => t.status !== "CANCELLED").length === 0) fail("Add at least one task before submitting");
 
     await prisma.actionPlan.update({ where: { id: plan.id }, data: { status: "ACTIVE", submittedAt: new Date() } });
-    await logUpdate(actor, { planId: plan.id, note: "Plan enviado", statusFrom: "DRAFT", statusTo: "ACTIVE" });
+    await logUpdate(actor, { planId: plan.id, note: "", statusFrom: "DRAFT", statusTo: "ACTIVE" });
 
     await safely("plan submitted email", () =>
       emailUsersViaDashboard(

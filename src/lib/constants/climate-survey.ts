@@ -23,7 +23,7 @@ export const CLIMATE_SURVEY_STATUS_COLORS: Record<string, string> = {
 };
 
 export const SURVEY_QUESTION_TYPE_LABELS: Record<string, string> = {
-  LIKERT: "Escala Likert (1-5)",
+  LIKERT: "Escala Likert",
   TEXT: "Texto Abierto",
   NPS: "NPS (0-10)",
   RATING: "Calificación Numérica",
@@ -83,7 +83,7 @@ const CLIMATE_SURVEY_STATUS_LABELS_I18N: Record<string, Record<string, string>> 
 
 const SURVEY_QUESTION_TYPE_LABELS_I18N: Record<string, Record<string, string>> = {
   es: SURVEY_QUESTION_TYPE_LABELS,
-  en: { LIKERT: "Likert Scale (1-5)", TEXT: "Open Text", NPS: "NPS (0-10)", RATING: "Numeric Rating" },
+  en: { LIKERT: "Likert Scale", TEXT: "Open Text", NPS: "NPS (0-10)", RATING: "Numeric Rating" },
 };
 
 const SURVEY_FREQUENCY_LABELS_I18N: Record<string, Record<string, string>> = {

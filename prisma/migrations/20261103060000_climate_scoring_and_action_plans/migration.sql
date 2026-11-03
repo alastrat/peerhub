@@ -18,6 +18,7 @@ ALTER TABLE "ClimateDimension" ADD COLUMN     "code" TEXT;
 
 -- AlterTable
 ALTER TABLE "ClimateSurvey" ADD COLUMN     "followUpUserIds" TEXT[] DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN     "planReminderSentAt" TIMESTAMP(3),
 ADD COLUMN     "goalBand" "ClimateBand" NOT NULL DEFAULT 'FAVORABLE',
 ADD COLUMN     "instrumentVersion" TEXT,
 ADD COLUMN     "planDueDate" TIMESTAMP(3),
@@ -74,6 +75,7 @@ CREATE TABLE "ActionPlanTask" (
     "completedAt" TIMESTAMP(3),
     "order" INTEGER NOT NULL DEFAULT 0,
     "suggestedActionCode" TEXT,
+    "reminderSentAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

@@ -98,6 +98,7 @@ export default async function EditClimateSurveyPage({ params }: PageProps) {
       type: q.type as "LIKERT" | "TEXT" | "NPS" | "RATING",
       dimensionId: q.dimensionId ?? "",
       isRequired: q.isRequired,
+      config: (q.config as Record<string, unknown> | null) ?? null,
     })),
   };
 
@@ -113,6 +114,7 @@ export default async function EditClimateSurveyPage({ params }: PageProps) {
       type: q.type as "LIKERT" | "TEXT" | "NPS" | "RATING",
       dimensionId: q.dimensionId ?? "",
       isRequired: q.isRequired,
+      config: (q.config as Record<string, unknown> | null) ?? null,
     })),
   }));
 

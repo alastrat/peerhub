@@ -75,6 +75,7 @@ export default async function NewSurveyPage() {
       type: q.type as "LIKERT" | "TEXT" | "NPS" | "RATING",
       dimensionId: q.dimensionId ?? "",
       isRequired: q.isRequired,
+      config: (q.config as Record<string, unknown> | null) ?? null,
     })),
   }));
 
