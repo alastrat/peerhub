@@ -55,6 +55,7 @@ interface QuestionData {
   isRequired: boolean;
   dimensionId: string | null;
   dimensionName: string | null;
+  config?: unknown;
 }
 
 type Filter = "all" | "pending" | "completed";

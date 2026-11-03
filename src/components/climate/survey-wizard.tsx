@@ -49,6 +49,7 @@ interface QuestionRow {
   type: QuestionType;
   dimensionId: string;
   isRequired: boolean;
+  config?: Record<string, unknown> | null;
 }
 
 export interface TemplateOption {
@@ -335,6 +336,7 @@ export function SurveyWizard({
         dimensionId: q.dimensionId || undefined,
         order: i,
         isRequired: q.isRequired,
+        ...(q.config ? { config: q.config } : {}),
       })),
     };
   };

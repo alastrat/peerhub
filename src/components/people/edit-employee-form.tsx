@@ -26,8 +26,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { updateUserSchema, type UpdateUserInput } from "@/lib/validations/user";
-import { updateUser, deleteUser } from "@/lib/actions/users";
+import { updateEmployeeSchema, type UpdateEmployeeInput } from "@/lib/validations/user";
+import { updateEmployee, deactivateEmployee } from "@/lib/actions/users";
+import { DemographicFields } from "./demographic-fields";
 import { ROLE_LABELS } from "@/lib/constants/roles";
 import {
   AlertDialog,
@@ -67,9 +68,9 @@ export function EditEmployeeForm({
   const [isPending, startTransition] = useTransition();
   const t = useTranslations("dashboard.editEmployeeForm");
 
-  const form = useForm<UpdateUserInput>({
+  const form = useForm<UpdateEmployeeInput>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(updateUserSchema) as any,
+    resolver: zodResolver(updateEmployeeSchema) as any,
     defaultValues: {
       name: employee.name || "",
       title: employee.title || "",
@@ -78,10 +79,13 @@ export function EditEmployeeForm({
       managerId: employee.managerId || undefined,
       hubId: employee.hubId || undefined,
       isActive: employee.isActive,
-    },
+      gender: employee.gender ?? "none",
+      birthDate: employee.birthDate ? employee.birthDate.toISOString().slice(0, 10) : "",
+      startDate: employee.startDate ? employee.startDate.toISOString().slice(0, 10) : "",
+    } as UpdateEmployeeInput,
   });
 
-  function onSubmit(data: UpdateUserInput) {
+  function onSubmit(data: UpdateEmployeeInput) {
     startTransition(async () => {
       // Clean up "none" values
       const cleanedData = {
@@ -91,7 +95,7 @@ export function EditEmployeeForm({
         hubId: data.hubId === "none" ? null : data.hubId,
       };
 
-      const result = await updateUser(employee.id, cleanedData);
+      const result = await updateEmployee(employee.id, cleanedData);
 
       if (result.success) {
         toast.success(t("employeeUpdated"));
@@ -105,7 +109,7 @@ export function EditEmployeeForm({
 
   function handleDeactivate() {
     startTransition(async () => {
-      const result = await deleteUser(employee.id);
+      const result = await deactivateEmployee(employee.id);
 
       if (result.success) {
         toast.success(t("employeeDeactivated"));
@@ -281,6 +285,8 @@ export function EditEmployeeForm({
             />
           )}
         </div>
+
+        <DemographicFields control={form.control} />
 
         <FormField
           control={form.control}

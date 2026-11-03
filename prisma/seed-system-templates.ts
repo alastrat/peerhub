@@ -149,6 +149,86 @@ async function seedClimateTemplates() {
 }
 
 // ---------------------------------------------------------------------------
+// Validated Kultiva instrument (12 dimensions × 5 locked items, FREQ_4)
+// ---------------------------------------------------------------------------
+
+export async function seedClimateInstrument() {
+  console.log("Seeding Kultiva climate instrument...");
+  const {
+    INSTRUMENT_DIMENSIONS,
+    INSTRUMENT_TEMPLATE_NAME,
+    INSTRUMENT_VERSION,
+    instrumentItemConfig,
+  } = await import("../src/lib/constants/climate-instrument");
+
+  // Dimensions: match by code, else adopt a code-less system dimension with
+  // the same name (e.g. the default "Liderazgo"), else create.
+  const dimensionIds = new Map<string, string>();
+  for (const [index, dim] of INSTRUMENT_DIMENSIONS.entries()) {
+    const byCode = await prisma.climateDimension.findUnique({ where: { code: dim.code } });
+    if (byCode) {
+      dimensionIds.set(dim.code, byCode.id);
+      continue;
+    }
+    const byName = await prisma.climateDimension.findFirst({
+      where: { name: dim.name, companyId: null, code: null },
+    });
+    if (byName) {
+      await prisma.climateDimension.update({ where: { id: byName.id }, data: { code: dim.code } });
+      dimensionIds.set(dim.code, byName.id);
+      console.log(`  🔗 Linked dimension "${dim.name}" → ${dim.code}`);
+      continue;
+    }
+    const created = await prisma.climateDimension.create({
+      data: {
+        name: dim.name,
+        description: dim.description,
+        code: dim.code,
+        companyId: null,
+        isDefault: true,
+        order: 100 + index,
+      },
+    });
+    dimensionIds.set(dim.code, created.id);
+    console.log(`  ✅ Created dimension "${dim.name}" (${dim.code})`);
+  }
+
+  const existing = await prisma.climateSurveyTemplate.findFirst({
+    where: { companyId: null, instrumentVersion: INSTRUMENT_VERSION },
+  });
+  if (existing) {
+    console.log(`  ⏭  Skipping "${INSTRUMENT_TEMPLATE_NAME}" (${INSTRUMENT_VERSION} already exists)`);
+    return;
+  }
+
+  let order = 0;
+  await prisma.climateSurveyTemplate.create({
+    data: {
+      name: INSTRUMENT_TEMPLATE_NAME,
+      description:
+        "Instrumento validado de Kultiva: 12 dimensiones × 5 ítems en escala de frecuencia de 4 puntos (Nunca, Casi nunca, Casi siempre, Siempre). Elige las dimensiones a aplicar; los ítems no se pueden editar.",
+      type: "CLIMATE",
+      companyId: null,
+      isDefault: true,
+      instrumentVersion: INSTRUMENT_VERSION,
+      questions: {
+        create: INSTRUMENT_DIMENSIONS.flatMap((dim) =>
+          dim.items.map((item) => ({
+            text: item.text,
+            type: "LIKERT" as const,
+            dimensionId: dimensionIds.get(dim.code)!,
+            order: ++order,
+            isRequired: true,
+            config: instrumentItemConfig(item.code),
+          })),
+        ),
+      },
+    },
+  });
+  console.log(`  ✅ Created "${INSTRUMENT_TEMPLATE_NAME}" (${INSTRUMENT_VERSION}, ${order} items)`);
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -157,6 +237,8 @@ export async function seedSystemTemplates() {
   await seed360Templates();
   console.log("");
   await seedClimateTemplates();
+  console.log("");
+  await seedClimateInstrument();
   console.log("\n✅ System templates seeded successfully!\n");
 }
 

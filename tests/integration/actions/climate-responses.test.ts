@@ -78,9 +78,10 @@ const sampleDistribution = {
   surveyId: "survey-1",
   survey: {
     id: "survey-1",
+    companyId: "company-1",
     questions: [
-      { id: "q-1", isRequired: true },
-      { id: "q-2", isRequired: true },
+      { id: "q-1", type: "LIKERT", config: { scale: "AGREE_5" }, isRequired: true },
+      { id: "q-2", type: "TEXT", config: null, isRequired: true },
     ],
   },
 };
@@ -94,6 +95,8 @@ describe("climate response actions", () => {
     vi.clearAllMocks();
     mockPrisma = createMockPrisma();
     mockSession = createAdminSession();
+    // Answers are validated against the distribution's survey
+    mockPrisma.surveyDistribution.findUnique.mockResolvedValue(sampleDistribution);
   });
 
   // =========================================================================
@@ -392,7 +395,8 @@ describe("climate response actions", () => {
         ...sampleDistribution,
         survey: {
           id: "survey-1",
-          questions: [{ id: "q-1", isRequired: true }],
+          companyId: "company-1",
+          questions: [{ id: "q-1", type: "LIKERT", config: { scale: "AGREE_5" }, isRequired: true }],
         },
       });
       mockPrisma.surveyResponse.findFirst.mockResolvedValue(sampleResponse);
@@ -492,10 +496,86 @@ describe("climate response actions", () => {
         where: { id: "dist-1" },
         include: {
           survey: {
-            include: { questions: { where: { isRequired: true } } },
+            include: { questions: true },
           },
         },
       });
+    });
+
+    it("rejects a distribution from another company", async () => {
+      mockEmployeeLookup();
+      mockPrisma.surveyDistribution.findUnique.mockResolvedValue({
+        ...sampleDistribution,
+        survey: { ...sampleDistribution.survey, companyId: "company-2" },
+      });
+
+      const result = await submitSurveyResponse({ distributionId: "dist-1", answers: sampleAnswers });
+
+      expect(result).toEqual({ success: false, error: "Survey not found" });
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it("rejects answers to questions outside the survey", async () => {
+      mockEmployeeLookup();
+      const result = await submitSurveyResponse({
+        distributionId: "dist-1",
+        answers: [...sampleAnswers, { questionId: "q-other", ratingValue: 3 }],
+      });
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("not part of this survey");
+    });
+
+    it("rejects ratings outside the question's scale", async () => {
+      mockEmployeeLookup();
+      mockPrisma.surveyDistribution.findUnique.mockResolvedValue({
+        ...sampleDistribution,
+        survey: {
+          ...sampleDistribution.survey,
+          questions: [{ id: "q-1", type: "LIKERT", config: { scale: "FREQ_4" }, isRequired: true }],
+        },
+      });
+      for (const ratingValue of [0, 5, 2.5]) {
+        const result = await submitSurveyResponse({
+          distributionId: "dist-1",
+          answers: [{ questionId: "q-1", ratingValue }],
+        });
+        expect(result.error).toContain("outside the question's scale");
+      }
+    });
+
+    it("stores the respondent's segment snapshot on submit", async () => {
+      mockEmployeeLookup();
+      mockPrisma.surveyResponse.findFirst.mockResolvedValue(sampleResponse);
+      mockPrisma.$transaction.mockResolvedValue([]);
+      mockPrisma.employee.findUnique.mockResolvedValue({
+        departmentId: "dept-1",
+        hubId: "hub-1",
+        managerId: "emp-boss",
+        teamMemberships: [{ teamId: "team-1" }, { teamId: "team-2" }],
+        gender: "FEMALE",
+        birthDate: new Date("1990-05-02"),
+        startDate: new Date("2020-01-15"),
+      });
+
+      const result = await submitSurveyResponse({ distributionId: "dist-1", answers: sampleAnswers });
+
+      expect(result.success).toBe(true);
+      expect(mockPrisma.surveyResponse.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            isComplete: true,
+            segmentSnapshot: {
+              departmentId: "dept-1",
+              hubId: "hub-1",
+              teamIds: ["team-1", "team-2"],
+              leaderEmployeeId: "emp-boss",
+              gender: "FEMALE",
+              generation: "MILLENNIALS",
+              tenure: expect.any(String),
+            },
+          }),
+        }),
+      );
     });
 
     it("works with member session (employees can submit surveys)", async () => {
@@ -511,7 +591,8 @@ describe("climate response actions", () => {
         ...sampleDistribution,
         survey: {
           id: "survey-1",
-          questions: [{ id: "q-1", isRequired: true }],
+          companyId: "company-1",
+          questions: [{ id: "q-1", type: "LIKERT", config: { scale: "AGREE_5" }, isRequired: true }],
         },
       });
       mockPrisma.surveyResponse.findFirst.mockResolvedValue(null);
@@ -535,7 +616,8 @@ describe("climate response actions", () => {
         ...sampleDistribution,
         survey: {
           id: "survey-1",
-          questions: [], // No required questions returned by the filter
+          companyId: "company-1",
+          questions: [], // No questions at all
         },
       });
       mockPrisma.surveyResponse.findFirst.mockResolvedValue(sampleResponse);

@@ -26,6 +26,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, daysUntil, isDateInPast } from "@/lib/utils/dates";
 import { REVIEWER_TYPE_LABELS } from "@/lib/constants/roles";
 import type { ReviewerType } from "@prisma/client";
+import { PortalHomeClimateSection } from "@/components/climate/plans/portal-home-climate-section";
 
 function DashboardLoading() {
   return (
@@ -61,6 +62,8 @@ async function DashboardContent() {
         title={`Welcome, ${firstName}`}
         description="Here's an overview of your pending items and feedback"
       />
+
+      <PortalHomeClimateSection employeeId={session.employeeId} companyId={session.companyId} />
 
       {/* Pending Reviews */}
       <section className="space-y-4">

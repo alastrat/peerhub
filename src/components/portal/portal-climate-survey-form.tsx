@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { toast } from "sonner";
 import { Loader2, Save, Send, CheckCircle2, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ import {
   submitSurveyResponse,
 } from "@/lib/actions/climate-responses";
 import type { SurveyQuestionType } from "@prisma/client";
+import { getQuestionScale, getScaleValues, getScaleAnchor } from "@/lib/constants/climate-scales";
 
 interface Question {
   id: string;
@@ -70,13 +71,6 @@ interface PortalClimateSurveyFormProps {
   onBackToWelcome?: () => void;
 }
 
-// 4-point Spanish Likert scale per brochure
-const LIKERT_OPTIONS = [
-  { value: 1, label: "Nunca" },
-  { value: 2, label: "Casi nunca" },
-  { value: 3, label: "Casi siempre" },
-  { value: 4, label: "Siempre" },
-];
 
 function isAnswered(a: { ratingValue?: number; textValue?: string } | undefined) {
   if (!a) return false;
@@ -104,6 +98,7 @@ export function PortalClimateSurveyForm({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const t = useTranslations("portal.climate_survey");
+  const locale = useLocale();
   const accent = accentColor || DEFAULT_ACCENT;
 
   // Pagination — the active page is reflected in the URL (?page=N, 1-indexed)
@@ -393,8 +388,16 @@ export function PortalClimateSurveyForm({
             </CardHeader>
             <CardContent>
               {q.type === "LIKERT" && (
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {LIKERT_OPTIONS.map((opt) => (
+                <div
+                  className={cn(
+                    "grid grid-cols-2 gap-2",
+                    getScaleValues(getQuestionScale(q)!).length === 5 ? "sm:grid-cols-5" : "sm:grid-cols-4"
+                  )}
+                >
+                  {getScaleValues(getQuestionScale(q)!).map((value) => ({
+                    value,
+                    label: getScaleAnchor(getQuestionScale(q)!, value, locale) ?? String(value),
+                  })).map((opt) => (
                     <button
                       key={opt.value}
                       type="button"

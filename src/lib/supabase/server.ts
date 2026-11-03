@@ -27,3 +27,4 @@ export function createSupabaseStorageClient() {
 }
 
 export const SURVEY_ASSETS_BUCKET = "survey-assets";
+export const CLIMATE_EVIDENCE_BUCKET = process.env.CLIMATE_EVIDENCE_BUCKET || "climate-evidence";

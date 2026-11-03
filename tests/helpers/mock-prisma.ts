@@ -69,6 +69,12 @@ export type MockPrismaClient = {
     | "surveyResponse"
     | "surveyAnswer"
     | "companyRoleConfig"
+    | "actionPlan"
+    | "actionPlanTask"
+    | "actionPlanMeasure"
+    | "actionPlanUpdate"
+    | "actionPlanEvidence"
+    | "leaderSurveyContext"
   >]: MockPrismaModel;
 } & {
   $transaction: ReturnType<typeof vi.fn>;
@@ -106,6 +112,12 @@ export function createMockPrisma(): MockPrismaClient {
     surveyResponse: createMockModel(),
     surveyAnswer: createMockModel(),
     companyRoleConfig: createMockModel(),
+    actionPlan: createMockModel(),
+    actionPlanTask: createMockModel(),
+    actionPlanMeasure: createMockModel(),
+    actionPlanUpdate: createMockModel(),
+    actionPlanEvidence: createMockModel(),
+    leaderSurveyContext: createMockModel(),
     $transaction: vi.fn((fn: (tx: MockPrismaClient) => Promise<unknown>) => {
       // By default, $transaction passes itself as the transactional client
       const txClient = createMockPrisma();

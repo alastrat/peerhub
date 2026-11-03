@@ -1,4 +1,12 @@
 import { z } from "zod";
+import { GENDERS } from "@/lib/constants/demographics";
+
+// Empty form values ("" / "none") clear the field
+const genderSchema = z.preprocess(
+  (v) => (v === "" || v === "none" ? null : v),
+  z.enum(GENDERS).nullable().optional(),
+);
+const optionalDateSchema = z.preprocess((v) => (v === "" ? null : v), z.coerce.date().nullable().optional());
 
 // Employee-specific fields (org-chart data on the Employee model)
 export const employeeFieldsSchema = z.object({
@@ -21,7 +29,25 @@ export const createUserSchema = z.object({
   departmentId: z.string().optional(),
   managerId: z.string().optional(),
   hubId: z.string().optional(),
-  startDate: z.coerce.date().optional(),
+  startDate: optionalDateSchema,
+  gender: genderSchema,
+  birthDate: optionalDateSchema,
+});
+
+// Update an employee from the People edit page (by Employee id). Works for
+// people with and without platform access; role/isActive also update the
+// linked CompanyUser when there is one.
+export const updateEmployeeSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").optional(),
+  role: z.enum(["ADMIN", "MANAGER", "MEMBER"]).optional(),
+  isActive: z.boolean().optional(),
+  title: z.string().optional().nullable(),
+  departmentId: z.string().optional().nullable(),
+  managerId: z.string().optional().nullable(),
+  hubId: z.string().optional().nullable(),
+  startDate: optionalDateSchema,
+  gender: genderSchema,
+  birthDate: optionalDateSchema,
 });
 
 // Update user: CompanyUser fields (role, isActive) + Employee fields (title, dept, etc.)
@@ -68,10 +94,13 @@ export const csvImportRowSchema = z.object({
   employeeCode: z.string().optional(),
   role: z.enum(["ADMIN", "MANAGER", "MEMBER"]).optional(),
   startDate: z.string().optional(),
+  gender: z.string().optional(),
+  birthDate: z.string().optional(),
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+export type UpdateEmployeeInput = z.input<typeof updateEmployeeSchema>;
 export type UpdateEmployeeDetailsInput = z.infer<typeof updateEmployeeDetailsSchema>;
 export type EmployeeFields = z.infer<typeof employeeFieldsSchema>;
 export type InviteUserInput = z.infer<typeof inviteUserSchema>;

@@ -11,6 +11,7 @@ import {
   Settings,
   BarChart3,
   Users,
+  ClipboardCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,9 +38,14 @@ import { SurveyQuestionsTab } from "@/components/climate/survey-questions-tab";
 import { SurveySettingsTab } from "@/components/climate/survey-settings-tab";
 import { SurveyInsightsTab } from "@/components/climate/survey-insights-tab";
 import { getSurveyResults } from "@/lib/queries/climate-reports";
+import { getSurveyPlansOverview } from "@/lib/queries/action-plans";
+import { isLockedQuestion } from "@/lib/constants/climate-instrument";
+import { SurveyPlansTab } from "@/components/climate/plans/survey-plans-tab";
+import { PlanSettingsCard } from "@/components/climate/plans/plan-settings-card";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ tab?: string }>;
 }
 
 async function getSurvey(companyId: string, surveyId: string) {
@@ -85,13 +91,15 @@ async function getSurvey(companyId: string, surveyId: string) {
   });
 }
 
-export default async function SurveyDetailPage({ params }: PageProps) {
+export default async function SurveyDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const requestedTab = (await searchParams)?.tab;
   const session = await auth();
   if (!session?.companyUser || session.companyUser.role !== "ADMIN") {
     redirect("/overview");
   }
   const t = await getTranslations("dashboard.climate.detail");
+  const tp = await getTranslations("climate_plans");
 
   const companyId = session.companyUser.companyId;
   const survey = await getSurvey(companyId, id);
@@ -150,9 +158,55 @@ export default async function SurveyDetailPage({ params }: PageProps) {
     : [[], [], [], [], null];
 
   // Fetch insights data for active/closed surveys
-  const results = isActiveOrClosed
-    ? await getSurveyResults(id, companyId)
+  const [results, insightsCompany] = isActiveOrClosed
+    ? await Promise.all([
+        getSurveyResults(id, companyId),
+        prisma.company.findUnique({ where: { id: companyId }, select: { featureHubs: true } }),
+      ])
+    : [null, null];
+
+  // Action plans (instrument surveys that have been sent)
+  const showPlans = isActiveOrClosed && !!survey.instrumentVersion;
+  const plansData = showPlans
+    ? await (async () => {
+        const [overview, deptRows, hubRows, teamRows, employeeRows] = await Promise.all([
+          getSurveyPlansOverview(id, companyId),
+          prisma.department.findMany({ where: { companyId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+          insightsCompany?.featureHubs
+            ? prisma.hub.findMany({ where: { companyId, isActive: true }, select: { id: true, name: true }, orderBy: { name: "asc" } })
+            : Promise.resolve([]),
+          prisma.team.findMany({ where: { companyId, isActive: true }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+          prisma.employee.findMany({ where: { companyId, isActive: true }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+        ]);
+        if (!overview) return null;
+        return {
+          overview,
+          employees: employeeRows,
+          groups: {
+            DEPARTMENT: deptRows,
+            HUB: hubRows,
+            TEAM: teamRows,
+            LEADER: overview.leaders.filter((l) => !l.suppressed).map((l) => ({ id: l.leaderEmployeeId, name: l.name })),
+          },
+          dimensions: (results?.dimensionScores ?? [])
+            .filter((d) => d.isInstrument && d.band != null)
+            .map((d) => ({ dimensionId: d.dimensionId, dimensionName: d.dimensionName, mean: d.mean, band: d.band })),
+        };
+      })()
     : null;
+  // Company admins can follow up on action plans
+  const followUpCandidates = survey.instrumentVersion
+    ? (
+        await prisma.companyUser.findMany({
+          where: { companyId, isActive: true, role: "ADMIN" },
+          select: { user: { select: { id: true, name: true, email: true } } },
+        })
+      ).map((cu) => cu.user)
+    : [];
+  const defaultTab =
+    requestedTab && ["insights", "answers", "participants", "questions", "settings", "plans"].includes(requestedTab)
+      ? requestedTab
+      : "insights";
 
   // Flatten all responses for the Answers tab
   const allResponses = survey.distributions.flatMap((d) =>
@@ -207,6 +261,7 @@ export default async function SurveyDetailPage({ params }: PageProps) {
     isRequired: q.isRequired,
     dimensionId: q.dimensionId,
     dimensionName: q.dimension?.name ?? null,
+    config: q.config,
   }));
 
   return (
@@ -308,7 +363,7 @@ export default async function SurveyDetailPage({ params }: PageProps) {
 
       {/* Tabs — Análisis first so admins land on results, not the raw
           response feed, when opening an active or closed survey. */}
-      <Tabs defaultValue="insights">
+      <Tabs defaultValue={defaultTab}>
         <TabsList>
           <TabsTrigger value="insights" className="gap-1.5">
             <BarChart3 className="h-4 w-4" />
@@ -326,11 +381,28 @@ export default async function SurveyDetailPage({ params }: PageProps) {
             <FileText className="h-4 w-4" />
             {t("tabs.questions")}
           </TabsTrigger>
+          {plansData && (
+            <TabsTrigger value="plans" className="gap-1.5">
+              <ClipboardCheck className="h-4 w-4" />
+              {tp("tab_label")}
+            </TabsTrigger>
+          )}
           <TabsTrigger value="settings" className="gap-1.5">
             <Settings className="h-4 w-4" />
             {t("tabs.settings")}
           </TabsTrigger>
         </TabsList>
+
+        {plansData && (
+          <TabsContent value="plans">
+            <SurveyPlansTab
+              overview={plansData.overview}
+              dimensions={plansData.dimensions}
+              groups={plansData.groups}
+              employees={plansData.employees}
+            />
+          </TabsContent>
+        )}
 
         {/* Answers Tab */}
         <TabsContent value="answers">
@@ -395,13 +467,14 @@ export default async function SurveyDetailPage({ params }: PageProps) {
               dimension: q.dimension
                 ? { id: q.dimension.id, name: q.dimension.name }
                 : null,
+              locked: isLockedQuestion(q.config),
             }))}
             dimensions={dimensions}
           />
         </TabsContent>
 
         {/* Settings Tab */}
-        <TabsContent value="settings">
+        <TabsContent value="settings" className="space-y-6">
           <SurveySettingsTab
             surveyId={survey.id}
             initialValues={{
@@ -426,6 +499,18 @@ export default async function SurveyDetailPage({ params }: PageProps) {
                 .length,
             }))}
           />
+          {survey.instrumentVersion && (
+            <PlanSettingsCard
+              surveyId={survey.id}
+              initial={{
+                goalBand: survey.goalBand,
+                planMinPerLeader: survey.planMinPerLeader,
+                planDueDate: survey.planDueDate,
+                followUpUserIds: survey.followUpUserIds,
+              }}
+              users={followUpCandidates}
+            />
+          )}
         </TabsContent>
 
         {/* Insights Tab */}
@@ -436,6 +521,7 @@ export default async function SurveyDetailPage({ params }: PageProps) {
               totalInvited={totalResponses}
               totalCompleted={completedResponses}
               totalPending={pendingResponses}
+              featureHubs={insightsCompany?.featureHubs ?? false}
             />
           ) : (
             <Card>

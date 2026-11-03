@@ -6,6 +6,30 @@ import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import type { ActionResult } from "@/types";
 import { Prisma, type ClimateSurvey, type SurveyQuestion, type SurveyQuestionType } from "@prisma/client";
+import { applyInstrumentRules, instrumentDimensionCodes } from "@/lib/utils/climate-instrument-guard";
+import { isLockedQuestion } from "@/lib/constants/climate-instrument";
+import { isClimateBand, type ClimateBand } from "@/lib/utils/climate-scoring";
+
+/** Canonicalize instrument items and enforce whole-dimension rules. */
+async function guardInstrumentQuestions<Q extends SurveyQuestionInput>(questions: Q[]) {
+  const codes = instrumentDimensionCodes(questions);
+  const dims = codes.length
+    ? ((await prisma.climateDimension.findMany({
+        where: { code: { in: codes } },
+        select: { id: true, code: true },
+      })) ?? [])
+    : [];
+  const byCode = new Map(dims.filter((d) => d.code).map((d) => [d.code!, d.id]));
+  // Every instrument dimension id, so custom questions can be kept out of them
+  if (codes.length) {
+    const all = (await prisma.climateDimension.findMany({
+      where: { code: { not: null }, companyId: null },
+      select: { id: true, code: true },
+    })) ?? [];
+    for (const d of all) if (d.code && !byCode.has(d.code)) byCode.set(d.code, d.id);
+  }
+  return applyInstrumentRules(questions, byCode);
+}
 
 async function requireCompanyAdmin() {
   const session = await auth();
@@ -66,10 +90,15 @@ export async function createClimateSurvey(
       return { success: false, error: "At least one question is required" };
     }
 
+    const guarded = await guardInstrumentQuestions(input.questions);
+    if (!guarded.ok) return { success: false, error: guarded.error };
+    const questions = guarded.questions;
+
     const survey = await prisma.climateSurvey.create({
       data: {
         companyId,
         name,
+        instrumentVersion: guarded.instrumentVersion,
         description: input.description?.trim() || null,
         type: input.type,
         frequency: (input.frequency as Prisma.EnumSurveyFrequencyFieldUpdateOperationsInput["set"]) || "ONCE",
@@ -90,7 +119,7 @@ export async function createClimateSurvey(
         colorConfig: input.colorConfig ? (input.colorConfig as Prisma.InputJsonValue) : Prisma.JsonNull,
         questionsPerPage: input.questionsPerPage ?? null,
         questions: {
-          create: input.questions.map((q) => ({
+          create: questions.map((q) => ({
             text: q.text,
             type: q.type,
             dimensionId: q.dimensionId || null,
@@ -207,6 +236,10 @@ export async function updateClimateSurvey(
 
     // If questions are provided, delete and recreate atomically in a transaction
     if (input.questions) {
+      const guarded = await guardInstrumentQuestions(input.questions);
+      if (!guarded.ok) return { success: false, error: guarded.error };
+      input = { ...input, questions: guarded.questions };
+      updateData.instrumentVersion = guarded.instrumentVersion;
       const survey = await prisma.$transaction(async (tx) => {
         await tx.surveyQuestion.deleteMany({ where: { surveyId } });
         return tx.climateSurvey.update({
@@ -320,6 +353,10 @@ export async function duplicateClimateSurvey(
         thankYouBody: original.thankYouBody,
         thankYouCtaText: original.thankYouCtaText,
         questionsPerPage: original.questionsPerPage,
+        instrumentVersion: original.instrumentVersion,
+        goalBand: original.goalBand,
+        planMinPerLeader: original.planMinPerLeader,
+        followUpUserIds: original.followUpUserIds,
         questions: {
           create: original.questions.map((q) => ({
             text: q.text,
@@ -358,6 +395,10 @@ export interface SurveySettingsInput {
   logoUrl?: string | null;
   accessStartDate?: Date | string | null;
   accessEndDate?: Date | string | null;
+  goalBand?: ClimateBand;
+  planMinPerLeader?: number;
+  planDueDate?: Date | string | null;
+  followUpUserIds?: string[];
 }
 
 export async function updateSurveySettings(
@@ -396,6 +437,31 @@ export async function updateSurveySettings(
       data.accessStartDate = input.accessStartDate ? new Date(input.accessStartDate) : null;
     if (input.accessEndDate !== undefined)
       data.accessEndDate = input.accessEndDate ? new Date(input.accessEndDate) : null;
+    if (input.goalBand !== undefined) {
+      if (!isClimateBand(input.goalBand)) return { success: false, error: "Invalid goal band" };
+      data.goalBand = input.goalBand;
+    }
+    if (input.planMinPerLeader !== undefined) {
+      if (!Number.isFinite(input.planMinPerLeader)) return { success: false, error: "Invalid plan minimum" };
+      data.planMinPerLeader = Math.min(12, Math.max(0, Math.trunc(input.planMinPerLeader)));
+    }
+    if (input.planDueDate !== undefined) {
+      const due = input.planDueDate ? new Date(input.planDueDate) : null;
+      if (due && Number.isNaN(due.getTime())) return { success: false, error: "Invalid plan due date" };
+      data.planDueDate = due;
+    }
+    if (input.followUpUserIds !== undefined) {
+      // Only active users of this company can follow up
+      const ids = [...new Set(input.followUpUserIds)];
+      const valid = ids.length
+        ? await prisma.companyUser.findMany({
+            where: { companyId, userId: { in: ids }, isActive: true },
+            select: { userId: true },
+          })
+        : [];
+      if (valid.length !== ids.length) return { success: false, error: "Unknown follow-up user" };
+      data.followUpUserIds = ids;
+    }
 
     if (Object.keys(data).length === 0) {
       return { success: true };
@@ -462,10 +528,13 @@ export async function updateClimateSurveyQuestion(
 
     const question = await prisma.surveyQuestion.findFirst({
       where: { id: questionId, surveyId },
-      select: { id: true },
+      select: { id: true, config: true },
     });
     if (!question) {
       return { success: false, error: "Question not found" };
+    }
+    if (isLockedQuestion(question.config)) {
+      return { success: false, error: "Validated instrument items can't be edited" };
     }
 
     const trimmedText = input.text?.trim();

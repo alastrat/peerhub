@@ -30,6 +30,9 @@ import {
 import { cn } from "@/lib/utils";
 import { SURVEY_QUESTION_TYPE_LABELS } from "@/lib/constants/climate-survey";
 import { DimensionCombobox, type DimensionOption } from "./dimension-combobox";
+import { getInstrumentItemCode, isLockedQuestion } from "@/lib/constants/climate-instrument";
+import { getQuestionScale, SELECTABLE_LIKERT_SCALES, type ScaleKey } from "@/lib/constants/climate-scales";
+import { Lock } from "lucide-react";
 
 export type QuestionType = "LIKERT" | "TEXT" | "NPS" | "RATING";
 
@@ -38,6 +41,8 @@ export interface QuestionRow {
   type: QuestionType;
   dimensionId: string;
   isRequired: boolean;
+  /** Scale and instrument metadata (config.scale, config.itemCode, config.locked). */
+  config?: Record<string, unknown> | null;
 }
 
 interface SectionState {
@@ -106,6 +111,7 @@ export function SurveyQuestionsBuilder({
   footerExtras,
 }: Props) {
   const t = useTranslations("dashboard.climate.wizard.questions_step");
+  const ts = useTranslations("climate_scoring");
 
   const [sections, setSections] = useState<SectionState[]>(() =>
     deriveSections(questions),
@@ -275,6 +281,10 @@ export function SurveyQuestionsBuilder({
           dimensions.find((d) => d.id === section.dimensionId)?.name;
         const isExpanded = expanded.has(section.uid);
         const isUnresolved = !section.dimensionId;
+        // Validated instrument dimension: items are locked; only the whole
+        // dimension can be removed.
+        const isLocked =
+          section.questions.length > 0 && section.questions.every((q) => isLockedQuestion(q.config));
         return (
           <Card
             key={section.uid}
@@ -310,6 +320,12 @@ export function SurveyQuestionsBuilder({
                         {t("needs_dimension")}
                       </Badge>
                     )}
+                    {isLocked && (
+                      <Badge variant="outline" className="gap-1 text-xs">
+                        <Lock className="h-3 w-3" />
+                        {ts("instrument_badge")}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </button>
@@ -325,7 +341,21 @@ export function SurveyQuestionsBuilder({
               </Button>
             </div>
 
-            {isExpanded && (
+            {isExpanded && isLocked && (
+              <div className="space-y-2 border-t bg-muted/20 px-4 py-4">
+                <p className="text-xs text-muted-foreground">{ts("instrument_section_hint")}</p>
+                {section.questions.map((q, qi) => (
+                  <div key={qi} className="flex items-start gap-2 rounded-lg border bg-background p-3 text-sm">
+                    <Badge variant="secondary" className="shrink-0 text-[10px]">
+                      {getInstrumentItemCode(q.config)}
+                    </Badge>
+                    <span>{q.text}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {isExpanded && !isLocked && (
               <div className="space-y-4 border-t bg-muted/20 px-4 py-4">
                 <div className="space-y-1.5">
                   <Label className="text-xs">{t("section_dimension_label")}</Label>
@@ -418,6 +448,30 @@ export function SurveyQuestionsBuilder({
                               </SelectContent>
                             </Select>
                           </div>
+                          {q.type === "LIKERT" && (
+                            <div className="space-y-1">
+                              <Label className="text-xs">{ts("scale_label")}</Label>
+                              <Select
+                                value={getQuestionScale(q)!.key}
+                                onValueChange={(v) =>
+                                  updateQuestion(section.uid, qi, {
+                                    config: { ...(q.config ?? {}), scale: v as ScaleKey },
+                                  })
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {SELECTABLE_LIKERT_SCALES.map((key) => (
+                                    <SelectItem key={key} value={key}>
+                                      {ts(`scale_${key}`)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
                           <div className="flex items-end gap-2 pb-1">
                             <Switch
                               checked={q.isRequired}
