@@ -1,6 +1,6 @@
 # Spec: Climate Survey Scoring & Action Plans
 
-**Status**: Draft — pending answers to the open questions in §7
+**Status**: Implemented (2026-11-03) using the default answer for every open question in §7 — see [climate-implementation-report.md](climate-implementation-report.md)
 **Date**: 2026-11-03
 **Module**: Clima Laboral (`/surveys/climate`, portal `/portal/climate-survey`)
 
@@ -81,7 +81,7 @@ interface ScaleDefinition {
 | `NPS_11` | 0–10 | — | n/a (eNPS uses promoter/detractor) |
 
 - **Where it's stored:** on the question as `config.scale` (both `SurveyQuestion` and `ClimateSurveyTemplateQuestion`). `SurveyQuestionType.LIKERT` stays; the scale key says which Likert.
-- **Existing data:** LIKERT questions with no `config.scale` are read as `AGREE_5`, so existing surveys keep scoring the same way.
+- **Existing data:** the portal has rendered LIKERT as Nunca…Siempre (1–4) since 2026-04-16, so LIKERT questions with no `config.scale` are read as `FREQ_4`. The migration stamps every existing LIKERT question with the scale it was really answered on (`AGREE_5` if any answer is above 4, else `FREQ_4`).
 - **No freezing needed:** questions are already copied per survey, and scale keys never change, so a survey's scale is fixed the moment it's created.
 - **Portal:** renders options from the scale definition instead of the hardcoded 1–5 arrays in [portal-climate-survey-form.tsx](../src/components/portal/portal-climate-survey-form.tsx) (`LIKERT_OPTIONS`, line 74; RATING, line 418).
 - **Frequency scales don't use mood emojis.** The POC's 😠→😄 set implies agreement or feeling, not frequency.
@@ -465,6 +465,7 @@ These are bugs or gaps in code that's already live. Fix them before or with Phas
 4. **The minimum group size is never applied.** No climate breakdown reads `anonymityThreshold` (§3.6).
 5. **Segments are looked up live** instead of from a snapshot (§3.5).
 6. **The portal hardcodes 1–5** for LIKERT and RATING (§3.1).
+7. **Deleting a survey or company with answers fails**: `SurveyAnswer → SurveyQuestion` had no cascade. Found while testing; fixed in the same migration.
 
 ## 6. Phasing
 
@@ -482,7 +483,7 @@ These are bugs or gaps in code that's already live. Fix them before or with Phas
 
 ## 7. Open questions
 
-Each question lists an owner and the **default this spec assumes** until it's answered.
+Each question lists an owner and the **default this spec assumes** until it's answered. The implementation uses every default; changing one is a settings or constant change unless noted in the report.
 
 | ID | Question | Owner | Default assumed |
 |----|----------|-------|-----------------|
