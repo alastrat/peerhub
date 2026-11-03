@@ -3016,5 +3016,28 @@
       "section_title": "Datos demográficos",
       "privacy_hint": "Se usan solo para resultados agregados de clima (grupos de al menos el mínimo de respuestas); nunca se muestran por persona."
     }
+  },
+  "climate_distribute": {
+    "title": "Enviar encuesta",
+    "description": "Elige quién debe recibir <strong>{name}</strong>. Al enviarla, la encuesta queda activa y empieza a recibir respuestas.",
+    "send_to": "Enviar a",
+    "target_all": "Todos los colaboradores activos",
+    "target_hubs": "Sedes específicas",
+    "target_departments": "Departamentos específicos",
+    "target_teams": "Equipos específicos",
+    "target_employees": "Personas específicas",
+    "select_hub": "Elige las sedes",
+    "select_department": "Elige los departamentos",
+    "select_team": "Elige los equipos",
+    "no_options": "No hay opciones disponibles.",
+    "select_employees": "Elige las personas",
+    "search_placeholder": "Buscar por nombre o correo…",
+    "no_matches": "Nadie coincide con la búsqueda.",
+    "selected_count": "{count, plural, one {# persona seleccionada} other {# personas seleccionadas}}",
+    "due_date": "Fecha límite",
+    "cancel": "Cancelar",
+    "send": "Enviar encuesta",
+    "send_failed": "No se pudo enviar la encuesta",
+    "sent_toast": "\"{name}\" fue enviada. Se enviaron las invitaciones por correo."
   }
 }

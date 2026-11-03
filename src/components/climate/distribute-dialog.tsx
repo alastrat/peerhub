@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Loader2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +60,7 @@ export function DistributeDialog({
   trigger,
 }: DistributeDialogProps) {
   const router = useRouter();
+  const t = useTranslations("climate_distribute");
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -92,13 +94,13 @@ export function DistributeDialog({
         dueDate: new Date(dueDate),
       });
       if (!result.success) {
-        toast.error(result.error || "Could not send survey");
+        toast.error(result.error || t("send_failed"));
         return;
       }
       if (result.warning) {
         toast.warning(result.warning);
       } else {
-        toast.success(`"${surveyName}" has been sent. Email invitations delivered.`);
+        toast.success(t("sent_toast", { name: surveyName }));
       }
       setOpen(false);
       router.refresh();
@@ -134,30 +136,29 @@ export function DistributeDialog({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Send survey to members</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>
-            Choose who should receive <strong>{surveyName}</strong>. Once sent,
-            the survey becomes active and responses start being collected.
+            {t.rich("description", { name: surveyName, strong: (chunks) => <strong>{chunks}</strong> })}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Send to</Label>
+            <Label>{t("send_to")}</Label>
             <Select value={targetType} onValueChange={handleTargetTypeChange}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ALL">All active employees</SelectItem>
+                <SelectItem value="ALL">{t("target_all")}</SelectItem>
                 {featureHubs && hubs.length > 0 && (
-                  <SelectItem value="HUB">Specific hubs</SelectItem>
+                  <SelectItem value="HUB">{t("target_hubs")}</SelectItem>
                 )}
                 {departments.length > 0 && (
-                  <SelectItem value="DEPARTMENT">Specific departments</SelectItem>
+                  <SelectItem value="DEPARTMENT">{t("target_departments")}</SelectItem>
                 )}
-                {teams.length > 0 && <SelectItem value="TEAM">Specific teams</SelectItem>}
-                <SelectItem value="CUSTOM">Specific employees</SelectItem>
+                {teams.length > 0 && <SelectItem value="TEAM">{t("target_teams")}</SelectItem>}
+                <SelectItem value="CUSTOM">{t("target_employees")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -167,13 +168,10 @@ export function DistributeDialog({
             targetType === "DEPARTMENT" ||
             targetType === "TEAM") && (
             <div className="space-y-2">
-              <Label>
-                Select {targetType.toLowerCase()}
-                {optionsForTarget.length !== 1 ? "s" : ""}
-              </Label>
+              <Label>{t(`select_${targetType.toLowerCase()}`)}</Label>
               <div className="max-h-52 space-y-1 overflow-y-auto rounded-md border p-2">
                 {optionsForTarget.length === 0 ? (
-                  <p className="p-2 text-sm text-muted-foreground">No options available.</p>
+                  <p className="p-2 text-sm text-muted-foreground">{t("no_options")}</p>
                 ) : (
                   optionsForTarget.map((opt) => (
                     <label
@@ -195,17 +193,15 @@ export function DistributeDialog({
           {/* Custom employee list with search */}
           {targetType === "CUSTOM" && (
             <div className="space-y-2">
-              <Label>Select employees</Label>
+              <Label>{t("select_employees")}</Label>
               <Input
-                placeholder="Search by name or email..."
+                placeholder={t("search_placeholder")}
                 value={employeeSearch}
                 onChange={(e) => setEmployeeSearch(e.target.value)}
               />
               <div className="max-h-60 space-y-1 overflow-y-auto rounded-md border p-2">
                 {filteredEmployees.length === 0 ? (
-                  <p className="p-2 text-sm text-muted-foreground">
-                    No employees match your search.
-                  </p>
+                  <p className="p-2 text-sm text-muted-foreground">{t("no_matches")}</p>
                 ) : (
                   filteredEmployees.map((emp) => (
                     <label
@@ -227,16 +223,13 @@ export function DistributeDialog({
                 )}
               </div>
               {selectedIds.length > 0 && (
-                <p className="text-xs text-muted-foreground">
-                  {selectedIds.length} employee{selectedIds.length !== 1 ? "s" : ""}{" "}
-                  selected
-                </p>
+                <p className="text-xs text-muted-foreground">{t("selected_count", { count: selectedIds.length })}</p>
               )}
             </div>
           )}
 
           <div className="space-y-2">
-            <Label>Due date</Label>
+            <Label>{t("due_date")}</Label>
             <Input
               type="date"
               value={dueDate}
@@ -252,7 +245,7 @@ export function DistributeDialog({
             onClick={() => setOpen(false)}
             disabled={isPending}
           >
-            Cancel
+            {t("cancel")}
           </Button>
           <Button onClick={handleSubmit} disabled={!canSubmit() || isPending}>
             {isPending ? (
@@ -260,7 +253,7 @@ export function DistributeDialog({
             ) : (
               <Send className="mr-2 h-4 w-4" />
             )}
-            Send survey
+            {t("send")}
           </Button>
         </DialogFooter>
       </DialogContent>

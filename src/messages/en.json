@@ -2968,5 +2968,28 @@
       "section_title": "Demographics",
       "privacy_hint": "Used only for aggregated climate results (groups with at least the minimum number of responses); never shown per person."
     }
+  },
+  "climate_distribute": {
+    "title": "Send survey to members",
+    "description": "Choose who should receive <strong>{name}</strong>. Once sent, the survey becomes active and responses start being collected.",
+    "send_to": "Send to",
+    "target_all": "All active employees",
+    "target_hubs": "Specific hubs",
+    "target_departments": "Specific departments",
+    "target_teams": "Specific teams",
+    "target_employees": "Specific employees",
+    "select_hub": "Select hubs",
+    "select_department": "Select departments",
+    "select_team": "Select teams",
+    "no_options": "No options available.",
+    "select_employees": "Select employees",
+    "search_placeholder": "Search by name or email...",
+    "no_matches": "No employees match your search.",
+    "selected_count": "{count, plural, one {# employee selected} other {# employees selected}}",
+    "due_date": "Due date",
+    "cancel": "Cancel",
+    "send": "Send survey",
+    "send_failed": "Could not send survey",
+    "sent_toast": "\"{name}\" has been sent. Email invitations delivered."
   }
 }
