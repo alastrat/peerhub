@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generationOf, tenureOf, parseGender, isGender } from "@/lib/constants/demographics";
+import { generationOf, tenureOf, parseGender, isGender, isValidBirthDate } from "@/lib/constants/demographics";
 import { buildSegmentSnapshot, parseSegmentSnapshot, resolveSegments } from "@/lib/utils/climate-segments";
 
 describe("generationOf", () => {
@@ -18,6 +18,20 @@ describe("generationOf", () => {
   it("returns null without a birth date", () => {
     expect(generationOf(null)).toBeNull();
     expect(generationOf(new Date("nope"))).toBeNull();
+  });
+});
+
+describe("isValidBirthDate", () => {
+  const today = new Date("2026-11-03T12:00:00Z");
+  it("accepts dates from 1900 up to today", () => {
+    expect(isValidBirthDate(new Date("1900-01-01"), today)).toBe(true);
+    expect(isValidBirthDate(new Date("1990-05-02"), today)).toBe(true);
+    expect(isValidBirthDate(new Date("2026-11-03"), today)).toBe(true);
+  });
+  it("rejects future, pre-1900 and unparseable dates", () => {
+    expect(isValidBirthDate(new Date("2027-01-01"), today)).toBe(false);
+    expect(isValidBirthDate(new Date("1899-12-31"), today)).toBe(false);
+    expect(isValidBirthDate(new Date("not a date"), today)).toBe(false);
   });
 });
 
@@ -105,5 +119,11 @@ describe("segment snapshot demographics", () => {
   it("falls back to the employee's current data for responses without a snapshot", () => {
     expect(resolveSegments(null, employee)).toMatchObject({ gender: "FEMALE", generation: "MILLENNIALS" });
     expect(resolveSegments(null, null)).toMatchObject({ gender: null, generation: null, tenure: null });
+  });
+
+  it("measures fallback tenure at submission, not at report time", () => {
+    // Started 2020-01-15: 1 full year when answering in 2021, over 5 years by 2026
+    expect(resolveSegments(null, employee, new Date("2021-06-01")).tenure).toBe("1_TO_3");
+    expect(resolveSegments(null, employee, null).tenure).toBe("OVER_5");
   });
 });

@@ -34,7 +34,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { parseGender } from "@/lib/constants/demographics";
+import { isValidBirthDate, parseGender } from "@/lib/constants/demographics";
 
 interface Department {
   id: string;
@@ -206,6 +206,10 @@ export function CSVImportWizard({ departments }: CSVImportWizardProps) {
         if (data[key] && Number.isNaN(new Date(data[key]!).getTime())) {
           errors.push(`${COLUMN_LABELS[key]}: invalid date "${data[key]}"`);
         }
+      }
+      // Same limits as /api/people/import, so these rows fail here, not mid-import
+      if (data.birthDate && !Number.isNaN(new Date(data.birthDate).getTime()) && !isValidBirthDate(new Date(data.birthDate))) {
+        errors.push(`${COLUMN_LABELS.birthDate}: must be between 1900 and today`);
       }
 
       results.push({

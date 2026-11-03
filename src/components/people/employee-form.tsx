@@ -268,7 +268,8 @@ export function EmployeeForm({
           )}
         </div>
 
-        <DemographicFields control={form.control} />
+        {/* Invitations don't store demographics; they're filled in on the edit page */}
+        {mode === "create" && <DemographicFields control={form.control} />}
 
         <div className="flex justify-end gap-4">
           <Button

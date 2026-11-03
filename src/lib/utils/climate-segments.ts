@@ -71,12 +71,17 @@ export function parseSegmentSnapshot(json: unknown): SegmentSnapshot | null {
 
 /**
  * The snapshot when there is one, else the employee's current position
- * (responses submitted before snapshots existed).
+ * (responses submitted before snapshots existed), with tenure measured at
+ * `submittedAt` so old results don't drift as time passes.
  */
-export function resolveSegments(snapshot: unknown, employee: SnapshotEmployee | null): SegmentSnapshot {
+export function resolveSegments(
+  snapshot: unknown,
+  employee: SnapshotEmployee | null,
+  submittedAt?: Date | null,
+): SegmentSnapshot {
   const parsed = parseSegmentSnapshot(snapshot);
   if (parsed) return parsed;
-  if (employee) return buildSegmentSnapshot(employee);
+  if (employee) return buildSegmentSnapshot(employee, submittedAt ?? undefined);
   return {
     departmentId: null,
     hubId: null,

@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/types";
 import type { CompanyUser, CompanyRole, Gender, Prisma } from "@prisma/client";
 import { updateEmployeeSchema, type UpdateEmployeeInput } from "@/lib/validations/user";
+import { isValidBirthDate } from "@/lib/constants/demographics";
 import { sendInvitationEmail } from "@/lib/email/templates";
 import { EmailDeliveryError } from "@/lib/email/resend";
 import { generateInviteToken, getExpiryDate } from "@/lib/utils";
@@ -164,6 +165,10 @@ export async function createUser(
 
     const companyId = session.companyUser.companyId;
 
+    // Same rule as the edit page and CSV import, checked before anything is written
+    const birthDate = input.birthDate ? new Date(input.birthDate) : undefined;
+    if (birthDate && !isValidBirthDate(birthDate)) return { success: false, error: "Invalid date of birth" };
+
     // Check if user email exists
     let user = await prisma.user.findUnique({
       where: { email: input.email },
@@ -214,7 +219,7 @@ export async function createUser(
         hubId: hubId || undefined,
         startDate: input.startDate ? new Date(input.startDate) : undefined,
         gender: input.gender ?? undefined,
-        birthDate: input.birthDate ? new Date(input.birthDate) : undefined,
+        birthDate,
       },
     });
 
@@ -330,12 +335,6 @@ export async function deleteUser(userId: string): Promise<ActionResult> {
   }
 }
 
-function validBirthDate(d: Date | null | undefined): boolean {
-  if (!d) return true;
-  const year = d.getUTCFullYear();
-  return year >= 1900 && d <= new Date();
-}
-
 /**
  * Update an employee from the People edit page, by Employee id. Unlike
  * updateUser (CompanyUser id), this also works for people without platform
@@ -361,7 +360,7 @@ export async function updateEmployee(employeeId: string, input: UpdateEmployeeIn
     if (data.managerId && data.managerId === employeeId) {
       return { success: false, error: "An employee can't be their own manager" };
     }
-    if (!validBirthDate(data.birthDate)) return { success: false, error: "Invalid date of birth" };
+    if (data.birthDate && !isValidBirthDate(data.birthDate)) return { success: false, error: "Invalid date of birth" };
 
     const employeeData: Prisma.EmployeeUncheckedUpdateInput = {};
     if (data.name !== undefined) employeeData.name = data.name;
@@ -374,17 +373,19 @@ export async function updateEmployee(employeeId: string, input: UpdateEmployeeIn
     if (data.gender !== undefined) employeeData.gender = data.gender;
     if (data.birthDate !== undefined) employeeData.birthDate = data.birthDate;
 
-    await prisma.employee.update({ where: { id: employee.id }, data: employeeData });
-
-    if (employee.companyUser && (data.role !== undefined || data.isActive !== undefined)) {
-      await prisma.companyUser.update({
-        where: { id: employee.companyUser.id },
-        data: {
-          ...(data.role !== undefined && { role: data.role }),
-          ...(data.isActive !== undefined && { isActive: data.isActive }),
-        },
-      });
-    }
+    // One transaction, so the employee and their account never disagree on status
+    await prisma.$transaction(async (tx) => {
+      await tx.employee.update({ where: { id: employee.id }, data: employeeData });
+      if (employee.companyUser && (data.role !== undefined || data.isActive !== undefined)) {
+        await tx.companyUser.update({
+          where: { id: employee.companyUser.id },
+          data: {
+            ...(data.role !== undefined && { role: data.role }),
+            ...(data.isActive !== undefined && { isActive: data.isActive }),
+          },
+        });
+      }
+    });
 
     revalidatePath("/people");
     revalidatePath(`/people/${employeeId}`);
@@ -409,10 +410,13 @@ export async function deactivateEmployee(employeeId: string): Promise<ActionResu
     });
     if (!employee) return { success: false, error: "Employee not found" };
 
-    await prisma.employee.update({ where: { id: employee.id }, data: { isActive: false } });
-    if (employee.companyUser) {
-      await prisma.companyUser.update({ where: { id: employee.companyUser.id }, data: { isActive: false } });
-    }
+    // Sign-in checks CompanyUser.isActive, so it must change together with the employee
+    await prisma.$transaction(async (tx) => {
+      await tx.employee.update({ where: { id: employee.id }, data: { isActive: false } });
+      if (employee.companyUser) {
+        await tx.companyUser.update({ where: { id: employee.companyUser.id }, data: { isActive: false } });
+      }
+    });
     revalidatePath("/people");
     return { success: true };
   } catch (error) {

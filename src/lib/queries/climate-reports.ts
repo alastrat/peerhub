@@ -195,7 +195,7 @@ export async function loadSurveyForScoring(surveyId: string, companyId: string):
       .filter((r) => r.isComplete)
       .map((r) => ({
         answers: r.answers,
-        segments: resolveSegments(r.segmentSnapshot, r.employee ?? null),
+        segments: resolveSegments(r.segmentSnapshot, r.employee ?? null, r.submittedAt),
       })),
   };
 }

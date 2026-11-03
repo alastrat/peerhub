@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
 import { csvImportRowSchema } from "@/lib/validations/user";
-import { parseGender } from "@/lib/constants/demographics";
+import { isValidBirthDate, parseGender } from "@/lib/constants/demographics";
 
 export async function POST(request: NextRequest) {
   try {
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: `Unknown gender "${data.gender}"` }, { status: 400 });
     }
     const birthDate = data.birthDate ? new Date(data.birthDate) : null;
-    if (birthDate && (Number.isNaN(birthDate.getTime()) || birthDate.getUTCFullYear() < 1900 || birthDate > new Date())) {
+    if (birthDate && !isValidBirthDate(birthDate)) {
       return NextResponse.json({ message: `Invalid birth date "${data.birthDate}"` }, { status: 400 });
     }
     const startDate = data.startDate ? new Date(data.startDate) : null;

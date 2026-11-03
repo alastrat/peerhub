@@ -26,6 +26,11 @@ export function generationOf(birthDate: Date | null | undefined): GenerationKey 
   return "BABY_BOOMERS";
 }
 
+/** A usable date of birth: a real date, from 1900 up to today. */
+export function isValidBirthDate(date: Date, today: Date = new Date()): boolean {
+  return !Number.isNaN(date.getTime()) && date.getUTCFullYear() >= 1900 && date <= today;
+}
+
 export function tenureOf(startDate: Date | null | undefined, at: Date = new Date()): TenureKey | null {
   if (!startDate) return null;
   const start = new Date(startDate);

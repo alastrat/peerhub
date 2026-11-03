@@ -19,6 +19,8 @@ import { updateEmployee, deactivateEmployee, createUser } from "@/lib/actions/us
 beforeEach(() => {
   vi.clearAllMocks();
   mockPrisma = createMockPrisma();
+  // Run transactions against the same mock so the writes inside them can be asserted
+  mockPrisma.$transaction.mockImplementation((fn: (tx: MockPrismaClient) => Promise<unknown>) => fn(mockPrisma));
   mockSession = createAdminSession();
 });
 
@@ -60,6 +62,7 @@ describe("updateEmployee", () => {
       where: { id: "cu-1" },
       data: { role: "MANAGER", isActive: false },
     });
+    expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
   });
 
   it("rejects invalid input, self-management and other companies' employees", async () => {
@@ -84,6 +87,14 @@ describe("deactivateEmployee", () => {
     expect(await deactivateEmployee("emp-1")).toEqual({ success: true });
     expect(mockPrisma.employee.update).toHaveBeenCalledWith({ where: { id: "emp-1" }, data: { isActive: false } });
     expect(mockPrisma.companyUser.update).toHaveBeenCalledWith({ where: { id: "cu-1" }, data: { isActive: false } });
+    expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
+  });
+
+  it("fails as a whole when the account update fails", async () => {
+    mockPrisma.employee.findFirst.mockResolvedValue({ id: "emp-1", companyUser: { id: "cu-1" } });
+    mockPrisma.companyUser.update.mockRejectedValue(new Error("db down"));
+    expect((await deactivateEmployee("emp-1")).success).toBe(false);
+    expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
   });
 
   it("works for employees without platform access", async () => {
@@ -106,5 +117,16 @@ describe("createUser demographics", () => {
     expect(mockPrisma.employee.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ gender: "FEMALE", birthDate: new Date("1992-03-04") }),
     });
+  });
+
+  it("rejects a future or pre-1900 birth date before writing anything", async () => {
+    for (const birthDate of ["2999-01-01", "1850-06-01"]) {
+      expect(await createUser({ email: "a@b.co", name: "Ana", birthDate })).toEqual({
+        success: false,
+        error: "Invalid date of birth",
+      });
+    }
+    expect(mockPrisma.user.create).not.toHaveBeenCalled();
+    expect(mockPrisma.employee.create).not.toHaveBeenCalled();
   });
 });
