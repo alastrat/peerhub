@@ -80,7 +80,11 @@ export async function emailUsersViaDashboard(
 ): Promise<number> {
   if (userIds.length === 0) return 0;
   const [users, company] = await Promise.all([
-    prisma.user.findMany({ where: { id: { in: userIds } }, select: { email: true, name: true } }),
+    // Only people who still belong to the company (follow-up lists can go stale)
+    prisma.user.findMany({
+      where: { id: { in: userIds }, companies: { some: { companyId, isActive: true } } },
+      select: { email: true, name: true },
+    }),
     prisma.company.findUnique({ where: { id: companyId }, select: { locale: true } }),
   ]);
   const locale = company?.locale ?? "es";

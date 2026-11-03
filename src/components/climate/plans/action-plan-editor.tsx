@@ -50,6 +50,7 @@ import {
   uploadTaskEvidence,
 } from "@/lib/actions/action-plans";
 import type { PlanDetail } from "@/lib/queries/action-plans";
+import { BUSINESS_TIME_ZONE } from "@/lib/constants/business-time";
 import { CLIMATE_BANDS, bandRank, type ClimateBand } from "@/lib/utils/climate-scoring";
 import { BandBadge, formatMean, formatPct } from "../climate-score-ui";
 import {
@@ -556,7 +557,8 @@ export function ActionPlanEditor({ plan, permissions, employees, backHref, after
               return (
                 <li key={u.id} className="border-l-2 pl-3 text-sm">
                   <p className="text-xs text-muted-foreground">
-                    {u.authorName} · {new Date(u.createdAt).toLocaleString(locale === "en" ? "en-US" : "es-CO")}
+                    {u.authorName} ·{" "}
+                    {new Date(u.createdAt).toLocaleString(locale === "en" ? "en-US" : "es-CO", { timeZone: BUSINESS_TIME_ZONE })}
                     {task ? ` · ${task.title}` : ""}
                     {measure ? ` · ${measure.name}` : ""}
                   </p>
@@ -649,10 +651,8 @@ function TaskRow({
 }) {
   const t = useTranslations("climate_plans");
   const [taskNote, setTaskNote] = useState("");
-  const overdue =
-    task.status !== "DONE" &&
-    task.status !== "CANCELLED" &&
-    new Date(task.dueDate).toISOString().slice(0, 10) < new Date().toLocaleDateString("en-CA");
+  // Computed on the server in the business time zone (same as plan.overdueTasks)
+  const overdue = task.overdue;
 
   return (
     <div className="space-y-2 rounded-lg border p-3">

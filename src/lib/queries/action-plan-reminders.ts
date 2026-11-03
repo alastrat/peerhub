@@ -2,6 +2,7 @@
 // /api/cron/climate-plans; safe to run more than once a day.
 
 import { prisma } from "@/lib/db/prisma";
+import { businessDay } from "@/lib/constants/business-time";
 import { emailEmployeeViaPortal, planEmails, safely } from "@/lib/email/climate-plan-emails";
 import { loadSurveyForScoring } from "@/lib/queries/climate-reports";
 import { leaderGaps, leaderIdsOf, SUBMITTED_PLAN_STATUSES } from "@/lib/queries/action-plans";
@@ -34,7 +35,7 @@ export async function sendTaskReminders(now = new Date()) {
   }
 
   let emails = 0;
-  const today = dayKey(now);
+  const today = businessDay(now);
   for (const [employeeId, list] of byOwner) {
     const items = list.map((t) => ({ title: t.title, dueDate: dayKey(t.dueDate), overdue: dayKey(t.dueDate) < today }));
     let sent = false;

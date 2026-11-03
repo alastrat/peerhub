@@ -20,7 +20,8 @@ import {
 import { createActionPlan } from "@/lib/actions/action-plans";
 import { CLIMATE_BANDS, bandRank, nextBand, type ClimateBand } from "@/lib/utils/climate-scoring";
 import { BandBadge, formatMean } from "../climate-score-ui";
-import { NativeSelect, toDateInput } from "./plan-ui";
+import { NativeSelect } from "./plan-ui";
+import { businessDay } from "@/lib/constants/business-time";
 
 type Scope = "LEADER" | "DEPARTMENT" | "HUB" | "TEAM" | "ORGANIZATION";
 
@@ -73,8 +74,9 @@ export function CreatePlanDialog({
   const [targetBand, setTargetBand] = useState<ClimateBand | "">("");
   const [title, setTitle] = useState("");
   const [objective, setObjective] = useState("");
-  const [startDate, setStartDate] = useState(toDateInput(today));
-  const [endDate, setEndDate] = useState(toDateInput(defaultEnd));
+  // Business-day defaults so server and browser renders agree in the evening
+  const [startDate, setStartDate] = useState(businessDay(today));
+  const [endDate, setEndDate] = useState(businessDay(defaultEnd));
 
   const effectiveTarget: ClimateBand | "" = targetBand || (dim?.band ? nextBand(dim.band) : "");
   const targetOptions = useMemo(

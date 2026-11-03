@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { saveLeaderContext } from "@/lib/actions/action-plans";
 import type { LeaderTeamView } from "@/lib/queries/action-plans";
+import { BUSINESS_TIME_ZONE } from "@/lib/constants/business-time";
 import { CLIMATE_SCALES, getScaleAnchor, getScaleValues } from "@/lib/constants/climate-scales";
 import { BandBadge, ScoreBar, SuppressedNote, formatMean, formatPct } from "../climate-score-ui";
 import { CreatePlanDialog } from "./create-plan-dialog";
@@ -43,7 +44,7 @@ export function LeaderResultsView({ view, leaderEmployeeId }: { view: LeaderTeam
       <div className="space-y-1">
         <h1 className="text-2xl font-bold">{t("title", { survey: survey.name })}</h1>
         <p className="text-sm text-muted-foreground">
-          {t("subtitle", { count: gaps.respondents, date: formatDay(survey.releasedAt, locale) })}
+          {t("subtitle", { count: gaps.respondents, date: formatDay(survey.releasedAt, locale, BUSINESS_TIME_ZONE) })}
         </p>
       </div>
 

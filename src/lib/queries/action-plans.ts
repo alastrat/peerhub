@@ -6,7 +6,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db/prisma";
 import { emailEmployeeViaPortal, planEmails, safely } from "@/lib/email/climate-plan-emails";
 import type { SegmentScope } from "@/lib/utils/climate-segments";
-import type { ActionPlanScope, ActionPlanStatus, ActionTaskStatus } from "@prisma/client";
+import { businessDay } from "@/lib/constants/business-time";
+import { Prisma, type ActionPlanScope, type ActionPlanStatus, type ActionTaskStatus } from "@prisma/client";
 import {
   loadSurveyForScoring,
   scoreScope,
@@ -31,23 +32,14 @@ export const OPEN_PLAN_STATUSES: ActionPlanStatus[] = ["DRAFT", "ACTIVE"];
 export const SUBMITTED_PLAN_STATUSES: ActionPlanStatus[] = ["ACTIVE", "COMPLETED"];
 const CLOSED_TASK_STATUSES: ActionTaskStatus[] = ["DONE", "CANCELLED"];
 
-export function startOfToday(now = new Date()): Date {
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-}
-
-function localDay(d: Date): string {
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${m}-${day}`;
-}
-
 /**
  * Due dates are calendar days (stored as UTC midnight from a date input), so
- * compare day strings: a task due today is never overdue, whatever the timezone.
+ * compare them with today's date in the business time zone: a task due today
+ * is never overdue, whatever time zone the server runs in.
  */
 export function isTaskOverdue(task: { dueDate: Date; status: ActionTaskStatus }, now = new Date()): boolean {
   if (CLOSED_TASK_STATUSES.includes(task.status)) return false;
-  return new Date(task.dueDate).toISOString().slice(0, 10) < localDay(now);
+  return new Date(task.dueDate).toISOString().slice(0, 10) < businessDay(now);
 }
 
 export function planProgress(tasks: { status: ActionTaskStatus }[]) {
@@ -255,6 +247,19 @@ export async function listLeaderSurveys(employeeId: string, companyId: string) {
   });
   const out = [];
   for (const s of surveys) {
+    // Cheap check before loading every response: does this employee lead
+    // anyone who answered? (snapshot first, live manager for older responses)
+    const leads = await prisma.surveyResponse.count({
+      where: {
+        isComplete: true,
+        distribution: { surveyId: s.id },
+        OR: [
+          { segmentSnapshot: { path: ["leaderEmployeeId"], equals: employeeId } },
+          { segmentSnapshot: { equals: Prisma.DbNull }, employee: { managerId: employeeId } },
+        ],
+      },
+    });
+    if (leads === 0) continue;
     const survey = await loadSurveyForScoring(s.id, companyId);
     if (!survey) continue;
     const g = leaderGaps(survey, employeeId, s.planMinPerLeader);
@@ -310,6 +315,7 @@ export async function getPlanDetail(planId: string, companyId: string) {
   const outcome = plan.measures.find((m) => m.kind === "OUTCOME");
   return {
     ...plan,
+    tasks: plan.tasks.map((t) => ({ ...t, overdue: isTaskOverdue(t) })),
     scopeName,
     progress: planProgress(plan.tasks),
     overdueTasks: plan.tasks.filter((t) => isTaskOverdue(t)).length,
@@ -477,6 +483,8 @@ export interface EvaluatedOutcome {
   planTitle: string;
   ownerEmployeeId: string;
   impact: ImpactResult;
+  /** First evaluation, a different follow-up, or a different result. */
+  changed: boolean;
 }
 
 /**
@@ -521,6 +529,9 @@ export async function evaluatePlanOutcomes(followUpSurveyId: string, companyId: 
     const { score, dimensions } = scoreScope(followUp, plan.scope as SegmentScope, plan.scopeRefId);
     const dim = score.suppressed ? undefined : dimensions.find((d) => d.dimensionId === plan.dimensionId);
     const evaluable = dim?.mean != null && dim.band != null;
+    const resultBand = evaluable ? (dim!.band as ClimateBand) : null;
+    const changed =
+      !measure.evaluatedAt || measure.followUpSurveyId !== followUpSurveyId || measure.resultBand !== resultBand;
 
     await prisma.actionPlanMeasure.update({
       where: { id: measure.id },
@@ -538,7 +549,8 @@ export async function evaluatePlanOutcomes(followUpSurveyId: string, companyId: 
       planId: plan.id,
       planTitle: plan.title,
       ownerEmployeeId: plan.ownerEmployeeId,
-      impact: classifyImpact(plan.baselineBand as ClimateBand, evaluable ? (dim!.band as ClimateBand) : null),
+      impact: classifyImpact(plan.baselineBand as ClimateBand, resultBand),
+      changed,
     });
   }
   return results;
@@ -552,8 +564,9 @@ const IMPACT_LABELS: Record<ImpactResult, { es: string; en: string }> = {
 };
 
 /**
- * Evaluate plans against a follow-up survey and email each plan owner the
- * result. Used by the admin "evaluate impact" action and by survey closing;
+ * Evaluate plans against a follow-up survey and email each plan owner whose
+ * result is new or changed (re-running never re-sends the same result).
+ * Used by the admin "evaluate impact" action and by survey closing;
  * callers check permissions.
  */
 export async function evaluateAndNotifyPlanOutcomes(surveyId: string, companyId: string): Promise<number> {
@@ -561,7 +574,7 @@ export async function evaluateAndNotifyPlanOutcomes(surveyId: string, companyId:
   if (results.length === 0) return 0;
   const surveyName =
     (await prisma.climateSurvey.findFirst({ where: { id: surveyId, companyId }, select: { name: true } }))?.name ?? "";
-  for (const r of results) {
+  for (const r of results.filter((x) => x.changed)) {
     await safely("impact email", () =>
       emailEmployeeViaPortal(r.ownerEmployeeId, `/portal/climate-plans/${r.planId}`, (locale) =>
         planEmails.impactEvaluated(r.planTitle, surveyName, IMPACT_LABELS[r.impact][locale === "en" ? "en" : "es"])(locale),

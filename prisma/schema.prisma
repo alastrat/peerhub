@@ -920,8 +920,10 @@ model ActionPlan {
 
   company   Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
   survey    ClimateSurvey       @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-  dimension ClimateDimension    @relation(fields: [dimensionId], references: [id])
-  owner     Employee            @relation("ActionPlanOwner", fields: [ownerEmployeeId], references: [id])
+  // NO ACTION (checked at statement end) lets a company delete cascade through
+  // plans, while deleting an employee or dimension that still has plans fails.
+  dimension ClimateDimension    @relation(fields: [dimensionId], references: [id], onDelete: NoAction)
+  owner     Employee            @relation("ActionPlanOwner", fields: [ownerEmployeeId], references: [id], onDelete: NoAction)
   tasks     ActionPlanTask[]
   measures  ActionPlanMeasure[]
   updates   ActionPlanUpdate[]

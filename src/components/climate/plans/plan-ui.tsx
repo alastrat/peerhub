@@ -70,14 +70,19 @@ export function toDateInput(value: Date | string | null | undefined): string {
   return d.toISOString().slice(0, 10);
 }
 
-export function formatDay(value: Date | string | null | undefined, locale: string): string {
+/**
+ * Calendar days (due dates, plan dates) are stored at UTC midnight, so they
+ * format in UTC; pass the business time zone for real instants such as
+ * "released at".
+ */
+export function formatDay(value: Date | string | null | undefined, locale: string, timeZone = "UTC"): string {
   if (!value) return "—";
   const d = new Date(value);
   return d.toLocaleDateString(locale === "en" ? "en-US" : "es-CO", {
     day: "numeric",
     month: "short",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone,
   });
 }
 

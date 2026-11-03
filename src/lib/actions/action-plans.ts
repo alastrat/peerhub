@@ -16,6 +16,7 @@ import {
 } from "@/lib/queries/action-plans";
 import { bandRank, isClimateBand, nextBand, type ClimateBand } from "@/lib/utils/climate-scoring";
 import { emailEmployeeViaPortal, emailUsersViaDashboard, planEmails, safely } from "@/lib/email/climate-plan-emails";
+import { businessDayAsDate } from "@/lib/constants/business-time";
 
 // ---------------------------------------------------------------------------
 // Inputs
@@ -859,8 +860,15 @@ export async function releaseSurveyResults(
     if (meta.resultsReleasedAt) fail("Results were already released");
 
     const releasedAt = new Date();
-    const planDueDate = meta.planDueDate ?? new Date(releasedAt.getTime() + 15 * 24 * 60 * 60 * 1000);
-    await prisma.climateSurvey.update({ where: { id: meta.id }, data: { resultsReleasedAt: releasedAt, planDueDate } });
+    // Default deadline: a calendar day, stored like a date input (UTC midnight)
+    const planDueDate =
+      meta.planDueDate ?? businessDayAsDate(new Date(releasedAt.getTime() + 15 * 24 * 60 * 60 * 1000));
+    // Conditional update: a double click or retry can't release (and email) twice
+    const { count } = await prisma.climateSurvey.updateMany({
+      where: { id: meta.id, resultsReleasedAt: null },
+      data: { resultsReleasedAt: releasedAt, planDueDate },
+    });
+    if (count === 0) fail("Results were already released");
 
     const survey = await loadSurveyForScoring(meta.id, actor.companyId);
     let leadersWithGaps = 0;

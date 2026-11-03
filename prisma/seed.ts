@@ -19,6 +19,7 @@ async function main() {
   await prisma.template.deleteMany();
   await prisma.invitation.deleteMany();
   await prisma.companyUser.deleteMany();
+  await prisma.actionPlan.deleteMany();
   await prisma.employee.deleteMany();
   await prisma.department.deleteMany();
   await prisma.competency.deleteMany();

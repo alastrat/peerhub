@@ -187,10 +187,10 @@ ALTER TABLE "ActionPlan" ADD CONSTRAINT "ActionPlan_companyId_fkey" FOREIGN KEY 
 ALTER TABLE "ActionPlan" ADD CONSTRAINT "ActionPlan_surveyId_fkey" FOREIGN KEY ("surveyId") REFERENCES "ClimateSurvey"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ActionPlan" ADD CONSTRAINT "ActionPlan_dimensionId_fkey" FOREIGN KEY ("dimensionId") REFERENCES "ClimateDimension"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ActionPlan" ADD CONSTRAINT "ActionPlan_dimensionId_fkey" FOREIGN KEY ("dimensionId") REFERENCES "ClimateDimension"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ActionPlan" ADD CONSTRAINT "ActionPlan_ownerEmployeeId_fkey" FOREIGN KEY ("ownerEmployeeId") REFERENCES "Employee"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ActionPlan" ADD CONSTRAINT "ActionPlan_ownerEmployeeId_fkey" FOREIGN KEY ("ownerEmployeeId") REFERENCES "Employee"("id") ON DELETE NO ACTION ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ActionPlanTask" ADD CONSTRAINT "ActionPlanTask_planId_fkey" FOREIGN KEY ("planId") REFERENCES "ActionPlan"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -42,6 +42,7 @@ vi.mock("@/lib/supabase/server", () => ({
   SURVEY_ASSETS_BUCKET: "survey-assets",
 }));
 
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { createClimateSurvey, updateClimateSurveyQuestion, updateSurveySettings } from "@/lib/actions/climate-surveys";
 import { distributeSurvey, closeSurvey } from "@/lib/actions/climate-distribution";
@@ -67,6 +68,8 @@ import {
 import { getSurveyResults } from "@/lib/queries/climate-reports";
 import { getLeaderTeamView, getPlanDetail, getSurveyPlansOverview, getMyTasks, listLeaderSurveys } from "@/lib/queries/action-plans";
 import { sendPlanDeadlineReminders, sendTaskReminders } from "@/lib/queries/action-plan-reminders";
+import { emailUsersViaDashboard, planEmails } from "@/lib/email/climate-plan-emails";
+import { businessDayAsDate } from "@/lib/constants/business-time";
 import { INSTRUMENT_DIMENSIONS, INSTRUMENT_VERSION, instrumentItemConfig } from "@/lib/constants/climate-instrument";
 
 // ---------------------------------------------------------------------------
@@ -208,7 +211,7 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
 
   afterAll(async () => {
     if (!ctx.companyId) return;
-    await prisma.actionPlan.deleteMany({ where: { companyId: { in: [ctx.companyId, ctx.otherCompanyId] } } });
+    // Deleting the company must cascade through its plans (NO ACTION FKs)
     await prisma.company.deleteMany({ where: { id: { in: [ctx.companyId, ctx.otherCompanyId] } } });
     await prisma.user.deleteMany({ where: { id: { in: ctx.userIds } } });
     await prisma.$disconnect();
@@ -371,15 +374,21 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
   it("releases results and emails leaders with gaps", async () => {
     asAdmin();
     state.emails = [];
-    const res = await releaseSurveyResults(ctx.surveyA);
-    expect(res.success).toBe(true);
+    // A double click / retry: only one release (and one email per leader)
+    const [first, second] = await Promise.all([releaseSurveyResults(ctx.surveyA), releaseSurveyResults(ctx.surveyA)]);
+    expect([first.success, second.success].filter(Boolean)).toHaveLength(1);
+    const res = first.success ? first : second;
+    expect((first.success ? second : first).error).toBe("Results were already released");
     expect(res.data).toEqual({ leaders: 3, leadersWithGaps: 2 }); // Lina (CVI, SPS) and Marco (LID); Nora suppressed
     expect(emailsTo(ctx.lina.email)[0].subject).toContain("Resultados de tu equipo");
     expect(emailsTo(ctx.marco.email)).toHaveLength(1);
     expect(emailsTo(ctx.nora.email)).toHaveLength(0);
 
     const survey = await prisma.climateSurvey.findUniqueOrThrow({ where: { id: ctx.surveyA } });
-    expect(survey.planDueDate!.getTime() - survey.resultsReleasedAt!.getTime()).toBeCloseTo(15 * DAY, -4);
+    // Default deadline: the business day 15 days after release, stored at UTC midnight
+    expect(survey.planDueDate!.toISOString()).toBe(
+      businessDayAsDate(new Date(survey.resultsReleasedAt!.getTime() + 15 * DAY)).toISOString(),
+    );
     expect((await releaseSurveyResults(ctx.surveyA)).error).toBe("Results were already released");
   });
 
@@ -397,6 +406,22 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
 
     const list = await listLeaderSurveys(ctx.lina.id, ctx.companyId);
     expect(list).toEqual([expect.objectContaining({ surveyId: ctx.surveyA, gapCount: 2, required: 1, submitted: 0 })]);
+    expect(await listLeaderSurveys(ctx.linaTeam[0].id, ctx.companyId)).toEqual([]); // leads nobody
+
+    // Responses saved before snapshots existed fall back to the live manager
+    const noraResponses = await prisma.surveyResponse.findMany({
+      where: { employeeId: { in: ctx.noraTeam.map((p) => p.id) }, distribution: { surveyId: ctx.surveyA } },
+    });
+    await prisma.surveyResponse.updateMany({
+      where: { id: { in: noraResponses.map((r) => r.id) } },
+      data: { segmentSnapshot: Prisma.DbNull },
+    });
+    expect(await listLeaderSurveys(ctx.nora.id, ctx.companyId)).toEqual([
+      expect.objectContaining({ surveyId: ctx.surveyA, respondents: 2, suppressed: true }),
+    ]);
+    for (const r of noraResponses) {
+      await prisma.surveyResponse.update({ where: { id: r.id }, data: { segmentSnapshot: r.segmentSnapshot as Prisma.InputJsonValue } });
+    }
   });
 
   // =========================================================================
@@ -560,6 +585,25 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     expect((await submitActionPlan(ctx.teamPlan)).success).toBe(true);
   });
 
+  it("emails follow-ups only while they belong to the company", async () => {
+    state.emails = [];
+    const sent = await emailUsersViaDashboard(
+      ctx.companyId,
+      [ctx.adminUserId, ctx.otherAdminUserId],
+      "/surveys/climate",
+      planEmails.planSubmitted("x", "y", "z", "w"),
+    );
+    expect(sent).toBe(1); // the other company's admin is skipped
+    await prisma.companyUser.updateMany({ where: { userId: ctx.adminUserId }, data: { isActive: false } });
+    expect(await emailUsersViaDashboard(ctx.companyId, [ctx.adminUserId], "/", planEmails.planSubmitted("x", "y", "z", "w"))).toBe(0);
+    await prisma.companyUser.updateMany({ where: { userId: ctx.adminUserId }, data: { isActive: true } });
+  });
+
+  it("blocks deleting an employee or dimension that still owns plans", async () => {
+    await expect(prisma.employee.delete({ where: { id: ctx.lina.id } })).rejects.toThrow();
+    await expect(prisma.climateDimension.delete({ where: { id: ctx.dims.CVI } })).rejects.toThrow();
+  });
+
   it("isolates tenants", async () => {
     asAdmin(ctx.otherCompanyId, ctx.otherAdminUserId, null);
     expect(await getPlanDetail(ctx.linaPlan, ctx.otherCompanyId)).toBeNull();
@@ -669,10 +713,12 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     // Draft plans aren't evaluated either
     expect((await getPlanDetail(ctx.marcoPlan, ctx.companyId))!.impact).toBeNull();
 
-    // Re-running for the same follow-up is idempotent
+    // Re-running for the same follow-up is idempotent and doesn't re-send emails
+    state.emails = [];
     const again = await evaluateSurveyImpact(ctx.surveyB);
     expect(again.success).toBe(true);
     expect(again.data!.evaluated).toBeGreaterThanOrEqual(2);
+    expect(state.emails.filter((e) => e.subject.includes("Impacto del plan"))).toHaveLength(0);
     const overview = (await getSurveyPlansOverview(ctx.surveyA, ctx.companyId))!;
     expect(overview.impactSummary.IMPROVED).toBeGreaterThanOrEqual(2);
   });

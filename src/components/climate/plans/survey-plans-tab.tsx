@@ -15,6 +15,7 @@ import {
   retractSurveyResults,
 } from "@/lib/actions/action-plans";
 import type { SurveyPlansOverview } from "@/lib/queries/action-plans";
+import { BUSINESS_TIME_ZONE } from "@/lib/constants/business-time";
 import { BandBadge, formatMean } from "../climate-score-ui";
 import { CreatePlanDialog, type PlanDimensionOption } from "./create-plan-dialog";
 import { ImpactBadge, NativeSelect, PlanStatusBadge, ProgressBar, formatDay } from "./plan-ui";
@@ -79,7 +80,7 @@ export function SurveyPlansTab({ overview, dimensions, groups, employees }: Surv
           <CardDescription>
             {released
               ? t("released_on", {
-                  date: formatDay(survey.resultsReleasedAt, locale),
+                  date: formatDay(survey.resultsReleasedAt, locale, BUSINESS_TIME_ZONE),
                   due: formatDay(survey.planDueDate, locale),
                 })
               : t("release_desc")}
