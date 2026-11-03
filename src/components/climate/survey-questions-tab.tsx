@@ -44,6 +44,8 @@ interface QuestionRow {
   isRequired: boolean;
   dimensionId: string | null;
   dimension: { id: string; name: string } | null;
+  /** Validated instrument item — not editable. */
+  locked?: boolean;
 }
 
 interface DimensionOption {
@@ -252,7 +254,7 @@ function DimensionGroups({
                       )}
                     </div>
                   </div>
-                  {canEditAtAll && (
+                  {canEditAtAll && !q.locked && (
                     <Button
                       type="button"
                       variant="outline"

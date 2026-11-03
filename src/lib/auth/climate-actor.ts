@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/config";
 import { getPortalSession } from "@/lib/auth/portal-session";
@@ -12,11 +13,39 @@ export type ClimateActor =
   | { kind: "admin"; companyId: string; userId: string; employeeId: string | null; name: string }
   | { kind: "employee"; companyId: string; userId: string | null; employeeId: string; name: string };
 
+/** True when the server action was posted from a /portal page. */
+async function calledFromPortal(): Promise<boolean> {
+  try {
+    const referer = (await headers()).get("referer");
+    return !!referer && new URL(referer).pathname.startsWith("/portal");
+  } catch {
+    return false;
+  }
+}
+
+async function portalActor(): Promise<ClimateActor | null> {
+  const portal = await getPortalSession();
+  if (!portal) return null;
+  const employee = await prisma.employee.findUnique({
+    where: { id: portal.employeeId },
+    select: { id: true, name: true, companyId: true, isActive: true },
+  });
+  if (!employee?.isActive) return null;
+  return { kind: "employee", companyId: employee.companyId, userId: null, employeeId: employee.id, name: employee.name };
+}
+
 /**
- * Dashboard admins win over a portal cookie: admin is a superset of every
- * employee permission, so preferring it never locks anyone out.
+ * From portal pages the portal identity wins, so a browser that also holds
+ * an admin dashboard session acts (and is recorded) as the employee.
+ * Elsewhere dashboard admins win: admin is a superset of every employee
+ * permission, so preferring it never locks anyone out.
  */
 export async function getClimateActor(): Promise<ClimateActor | null> {
+  if (await calledFromPortal()) {
+    const fromPortal = await portalActor();
+    if (fromPortal) return fromPortal;
+  }
+
   const session = await auth();
   const cu = session?.companyUser;
   if (session?.user?.id && cu?.companyId) {
@@ -32,16 +61,8 @@ export async function getClimateActor(): Promise<ClimateActor | null> {
     }
   }
 
-  const portal = await getPortalSession();
-  if (portal) {
-    const employee = await prisma.employee.findUnique({
-      where: { id: portal.employeeId },
-      select: { id: true, name: true, companyId: true, isActive: true },
-    });
-    if (employee?.isActive) {
-      return { kind: "employee", companyId: employee.companyId, userId: null, employeeId: employee.id, name: employee.name };
-    }
-  }
+  const fromPortal = await portalActor();
+  if (fromPortal) return fromPortal;
 
   if (session?.user?.id && cu?.companyId && cu.employeeId) {
     const employee = await prisma.employee.findUnique({

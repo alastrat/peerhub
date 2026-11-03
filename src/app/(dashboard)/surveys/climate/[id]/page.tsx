@@ -39,6 +39,7 @@ import { SurveySettingsTab } from "@/components/climate/survey-settings-tab";
 import { SurveyInsightsTab } from "@/components/climate/survey-insights-tab";
 import { getSurveyResults } from "@/lib/queries/climate-reports";
 import { getSurveyPlansOverview } from "@/lib/queries/action-plans";
+import { isLockedQuestion } from "@/lib/constants/climate-instrument";
 import { SurveyPlansTab } from "@/components/climate/plans/survey-plans-tab";
 import { PlanSettingsCard } from "@/components/climate/plans/plan-settings-card";
 
@@ -466,6 +467,7 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
               dimension: q.dimension
                 ? { id: q.dimension.id, name: q.dimension.name }
                 : null,
+              locked: isLockedQuestion(q.config),
             }))}
             dimensions={dimensions}
           />
