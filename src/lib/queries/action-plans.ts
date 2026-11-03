@@ -574,12 +574,14 @@ export async function evaluateAndNotifyPlanOutcomes(surveyId: string, companyId:
   if (results.length === 0) return 0;
   const surveyName =
     (await prisma.climateSurvey.findFirst({ where: { id: surveyId, companyId }, select: { name: true } }))?.name ?? "";
-  for (const r of results.filter((x) => x.changed)) {
-    await safely("impact email", () =>
-      emailEmployeeViaPortal(r.ownerEmployeeId, `/portal/climate-plans/${r.planId}`, (locale) =>
-        planEmails.impactEvaluated(r.planTitle, surveyName, IMPACT_LABELS[r.impact][locale === "en" ? "en" : "es"])(locale),
-      ),
-    );
+  for (const r of results) {
+    if (r.changed) {
+      await safely("impact email", () =>
+        emailEmployeeViaPortal(r.ownerEmployeeId, `/portal/climate-plans/${r.planId}`, (locale) =>
+          planEmails.impactEvaluated(r.planTitle, surveyName, IMPACT_LABELS[r.impact][locale === "en" ? "en" : "es"])(locale),
+        ),
+      );
+    }
     revalidatePath(`/portal/climate-plans/${r.planId}`);
   }
   return results.length;
