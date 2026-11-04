@@ -3,9 +3,8 @@
 import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Bell, LogOut, User, Settings, Search } from "lucide-react";
+import { Bell, LogOut, User, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -17,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getInitials } from "@/lib/utils/formatting";
 import { CompanySwitcher } from "@/components/layout/company-switcher";
+import { GlobalSearch } from "@/components/layout/global-search";
 
 const PAGE_TITLE_KEYS: Record<string, string> = {
   "/overview": "pages.overview",
@@ -66,13 +66,7 @@ export function Header() {
 
       {/* Center: Search */}
       <div className="flex flex-1 justify-center">
-        <div className="relative w-full max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder={t("search_placeholder")}
-            className="h-9 bg-background/60 ps-10 border-transparent focus-visible:border-input focus-visible:bg-background"
-          />
-        </div>
+        <GlobalSearch />
       </div>
 
       {/* Right: Actions */}
