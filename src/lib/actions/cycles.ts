@@ -351,17 +351,16 @@ export async function launchCycle(
               employeeId: employee.id,
               subject: `Nominate your peer reviewers for "${cycle.name}"`,
               dashboardUrl: `/nominations/${cycle.id}`,
-              sendMemberEmail: async (email, name, url) => {
+              sendMemberEmail: async (email, name, url, locale) => {
                 await sendNominationRequestEmail({
                   to: email,
-                  employeeName: name || "there",
+                  employeeName: name,
                   cycleName: cycle.name,
                   minPeers: cycle.minPeers,
                   maxPeers: cycle.maxPeers,
-                  dueDate: cycle.nominationEndDate
-                    ? formatDate(cycle.nominationEndDate)
-                    : formatDate(cycle.reviewStartDate),
+                  dueDate: formatDate(cycle.nominationEndDate ?? cycle.reviewStartDate, undefined, locale),
                   nominationUrl: url,
+                  locale,
                 });
               },
             });
@@ -400,16 +399,17 @@ export async function launchCycle(
                         : reviewee.name || reviewee.email
                     }`,
                     dashboardUrl: `/my-reviews`,
-                    sendMemberEmail: async (email, name, url) => {
+                    sendMemberEmail: async (email, name, url, locale) => {
                       await sendReviewRequestEmail({
                         to: email,
-                        reviewerName: name || "there",
+                        reviewerName: name,
                         revieweeName: assignment.reviewerType === "SELF"
-                          ? "yourself"
+                          ? null
                           : reviewee.name || reviewee.email,
                         cycleName: cycle.name,
-                        dueDate: formatDate(cycle.reviewEndDate),
+                        dueDate: formatDate(cycle.reviewEndDate, undefined, locale),
                         reviewUrl: url,
+                        locale,
                       });
                     },
                   });
@@ -545,7 +545,7 @@ export async function addExternalRater(
     expiresAt.setDate(expiresAt.getDate() + 30); // Token expires in 30 days
 
     // Create everything in a transaction
-    const result = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       // Create review token
       const reviewToken = await tx.reviewToken.create({
         data: {
@@ -585,8 +585,9 @@ export async function addExternalRater(
         revieweeName: reviewee.name || reviewee.email,
         companyName: cycle.company.name,
         cycleName: cycle.name,
-        dueDate: formatDate(cycle.reviewEndDate),
+        dueDate: formatDate(cycle.reviewEndDate, undefined, cycle.company.locale),
         reviewUrl: tokenUrl,
+        locale: cycle.company.locale,
       });
     } catch (emailError) {
       console.error(

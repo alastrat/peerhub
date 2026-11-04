@@ -23,8 +23,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
   try {
     // Get all active cycles
     const activeCycles = await prisma.cycle.findMany({
@@ -123,13 +121,14 @@ export async function GET(request: Request) {
           employeeId: reviewerId,
           subject: `Reminder: ${pendingCount} pending review${pendingCount > 1 ? "s" : ""}`,
           dashboardUrl: `/my-reviews`,
-          sendMemberEmail: async (email, name, url) => {
+          sendMemberEmail: async (email, name, url, locale) => {
             await sendReminderEmail({
               to: email,
-              reviewerName: name || "there",
+              reviewerName: name,
               pendingCount,
-              dueDate: formatDate(data.earliestDueDate),
+              dueDate: formatDate(data.earliestDueDate, undefined, locale),
               dashboardUrl: url,
+              locale,
             });
           },
         });
@@ -185,13 +184,14 @@ export async function GET(request: Request) {
             employeeId: participant.employeeId,
             subject: `Reminder: ${remainingNominations} nomination${remainingNominations > 1 ? "s" : ""} needed`,
             dashboardUrl: `/nominations/${cycle.id}`,
-            sendMemberEmail: async (email, name, url) => {
+            sendMemberEmail: async (email, name, url, locale) => {
               await sendReminderEmail({
                 to: email,
-                reviewerName: name || "there",
+                reviewerName: name,
                 pendingCount: remainingNominations,
-                dueDate: formatDate(cycle.nominationEndDate!),
+                dueDate: formatDate(cycle.nominationEndDate!, undefined, locale),
                 dashboardUrl: url,
+                locale,
               });
             },
           });

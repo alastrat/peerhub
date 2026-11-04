@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 import { Logo } from "@/components/design-system/logo";
 import { getPortalSession } from "@/lib/auth/portal-session";
+import { getPortalLocale } from "@/lib/auth/portal-locale";
 import { prisma } from "@/lib/db/prisma";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
@@ -13,8 +14,9 @@ export default async function PortalLayout({
   children: React.ReactNode;
 }) {
   const session = await getPortalSession();
-  const locale = await getLocale();
-  const messages = await getMessages();
+  const locale = await getPortalLocale();
+  const messages = await getMessages({ locale });
+  const t = await getTranslations({ locale, namespace: "portal.layout" });
 
   let displayName: string | null = null;
   if (session) {
@@ -41,7 +43,7 @@ export default async function PortalLayout({
               <Link href="/portal/sign-out">
                 <Button variant="ghost" size="sm">
                   <LogOut className="h-4 w-4 mr-2" />
-                  Sign out
+                  {t("sign_out")}
                 </Button>
               </Link>
             </div>
@@ -55,7 +57,7 @@ export default async function PortalLayout({
 
       <footer className="border-t bg-background py-6 mt-auto">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>Powered by Kultiva - 360° Performance Feedback Platform</p>
+          <p>{t("powered_by")}</p>
         </div>
       </footer>
     </div>

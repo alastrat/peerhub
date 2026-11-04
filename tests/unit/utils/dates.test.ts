@@ -29,6 +29,12 @@ describe("dates utils", () => {
       const date = new Date("2025-06-15T12:00:00Z");
       expect(formatDate(date, "yyyy-MM-dd")).toBe("2025-06-15");
     });
+
+    it("localizes month names and date order", () => {
+      const date = new Date("2026-11-16T12:00:00Z");
+      expect(formatDate(date, undefined, "es")).toBe("16 nov 2026");
+      expect(formatDate(date, undefined, "en")).toBe("Nov 16, 2026");
+    });
   });
 
   describe("formatDateTime", () => {
@@ -45,6 +51,12 @@ describe("dates utils", () => {
       const date = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // 2 days ago
       const result = formatRelativeTime(date);
       expect(result).toContain("ago");
+    });
+
+    it("uses Spanish when asked", () => {
+      const date = new Date(Date.now() - 7 * 60 * 1000);
+      expect(formatRelativeTime(date, "es")).toBe("hace 7 minutos");
+      expect(formatRelativeTime(date, "en")).toBe("7 minutes ago");
     });
   });
 

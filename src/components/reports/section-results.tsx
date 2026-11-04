@@ -1,7 +1,7 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Collapsible,
@@ -11,7 +11,7 @@ import {
 import { ChevronDown, Lock } from "lucide-react";
 import type { QuestionReport } from "@/types";
 import type { ReviewerType } from "@prisma/client";
-import { REVIEWER_TYPE_LABELS } from "@/lib/constants/roles";
+import { getReviewerTypeLabel } from "@/lib/constants/roles";
 import { useState } from "react";
 
 interface SectionResultsProps {
@@ -25,6 +25,7 @@ export function SectionResults({
   questions,
   maxRating = 5,
 }: SectionResultsProps) {
+  const t = useTranslations("feedback_report");
   const [openQuestions, setOpenQuestions] = useState<Set<string>>(new Set());
 
   const toggleQuestion = (questionId: string) => {
@@ -66,7 +67,10 @@ export function SectionResults({
                           className="h-2 w-32"
                         />
                         <span className="text-sm text-muted-foreground">
-                          {question.overall.average.toFixed(2)} avg ({question.overall.count} responses)
+                          {t("average_responses", {
+                            average: question.overall.average.toFixed(2),
+                            count: question.overall.count,
+                          })}
                         </span>
                       </div>
                     )}
@@ -106,6 +110,8 @@ function RatingBreakdown({
   byReviewerType: QuestionReport["byReviewerType"];
   maxRating: number;
 }) {
+  const t = useTranslations("feedback_report");
+  const locale = useLocale();
   const types: ReviewerType[] = ["SELF", "MANAGER", "PEER", "DIRECT_REPORT", "EXTERNAL"];
 
   return (
@@ -116,7 +122,7 @@ function RatingBreakdown({
 
         return (
           <div key={type} className="p-3 bg-background rounded-lg border">
-            <p className="text-sm font-medium mb-2">{REVIEWER_TYPE_LABELS[type]}</p>
+            <p className="text-sm font-medium mb-2">{getReviewerTypeLabel(type, locale)}</p>
             {result.isVisible && result.rating ? (
               <>
                 <div className="flex items-center gap-2">
@@ -129,13 +135,14 @@ function RatingBreakdown({
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {result.rating.count} response{result.rating.count !== 1 ? "s" : ""}
+                  {t("responses_count", { count: result.rating.count })}
                 </p>
               </>
             ) : (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Lock className="h-4 w-4" />
-                <span className="text-xs">{result.message || "No responses"}</span>
+                {/* `message` is set when the group is below the anonymity threshold */}
+                <span className="text-xs">{result.message ? t("below_threshold") : t("no_responses")}</span>
               </div>
             )}
           </div>
@@ -150,6 +157,7 @@ function TextBreakdown({
 }: {
   byReviewerType: QuestionReport["byReviewerType"];
 }) {
+  const t = useTranslations("feedback_report");
   const allResponses: string[] = [];
   const types: ReviewerType[] = ["SELF", "MANAGER", "PEER", "DIRECT_REPORT", "EXTERNAL"];
 
@@ -164,9 +172,7 @@ function TextBreakdown({
     return (
       <div className="flex items-center gap-2 text-muted-foreground p-4">
         <Lock className="h-4 w-4" />
-        <span className="text-sm">
-          Not enough responses to display (anonymity protection)
-        </span>
+        <span className="text-sm">{t("text_hidden")}</span>
       </div>
     );
   }
