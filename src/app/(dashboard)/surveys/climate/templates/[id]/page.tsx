@@ -2,15 +2,13 @@ import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Edit, Copy, Trash2 } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+import { ArrowLeft, Edit } from "lucide-react";
 import { PageHeader } from "@/components/design-system/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  CLIMATE_SURVEY_TYPE_LABELS,
-  SURVEY_QUESTION_TYPE_LABELS,
-} from "@/lib/constants/climate-survey";
+import { getClimateSurveyTypeLabel, getSurveyQuestionTypeLabel } from "@/lib/constants/climate-survey";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -42,6 +40,8 @@ export default async function ClimateTemplateDetailPage({ params }: PageProps) {
   if (!template) notFound();
 
   const isOwned = template.companyId === companyId;
+  const t = await getTranslations("climate_templates");
+  const locale = await getLocale();
 
   return (
     <div className="space-y-6">
@@ -53,14 +53,14 @@ export default async function ClimateTemplateDetailPage({ params }: PageProps) {
         </Link>
         <PageHeader
           title={template.name}
-          description={template.description || "No description"}
+          description={template.description || t("no_description")}
         />
         {isOwned && (
           <div className="ml-auto flex gap-2">
             <Button variant="outline" asChild>
               <Link href={`/surveys/climate/templates/${id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
-                Edit
+                {t("edit")}
               </Link>
             </Button>
           </div>
@@ -72,21 +72,21 @@ export default async function ClimateTemplateDetailPage({ params }: PageProps) {
         <Card>
           <CardContent className="pt-6">
             <Badge variant="secondary">
-              {CLIMATE_SURVEY_TYPE_LABELS[template.type]}
+              {getClimateSurveyTypeLabel(template.type, locale)}
             </Badge>
-            <p className="mt-1 text-sm text-muted-foreground">Survey Type</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("survey_type")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{template.questions.length}</div>
-            <p className="text-sm text-muted-foreground">Questions</p>
+            <p className="text-sm text-muted-foreground">{t("questions")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{template._count.surveys}</div>
-            <p className="text-sm text-muted-foreground">Surveys Created</p>
+            <p className="text-sm text-muted-foreground">{t("surveys_created")}</p>
           </CardContent>
         </Card>
       </div>
@@ -94,8 +94,8 @@ export default async function ClimateTemplateDetailPage({ params }: PageProps) {
       {/* Questions */}
       <Card>
         <CardHeader>
-          <CardTitle>Questions</CardTitle>
-          <CardDescription>{template.questions.length} questions in this template</CardDescription>
+          <CardTitle>{t("questions")}</CardTitle>
+          <CardDescription>{t("questions_desc", { count: template.questions.length })}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -108,7 +108,7 @@ export default async function ClimateTemplateDetailPage({ params }: PageProps) {
                   <p className="font-medium">{q.text}</p>
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="text-xs">
-                      {SURVEY_QUESTION_TYPE_LABELS[q.type]}
+                      {getSurveyQuestionTypeLabel(q.type, locale)}
                     </Badge>
                     {q.dimension && (
                       <Badge variant="secondary" className="text-xs">
@@ -117,7 +117,7 @@ export default async function ClimateTemplateDetailPage({ params }: PageProps) {
                     )}
                     {q.isRequired && (
                       <Badge variant="secondary" className="text-xs">
-                        Required
+                        {t("required")}
                       </Badge>
                     )}
                   </div>
