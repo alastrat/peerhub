@@ -1868,6 +1868,7 @@
       "overview": "Inicio",
       "people": "Personas",
       "surveys": "Encuestas",
+      "action_plans": "Planes de acción",
       "reports": "Reportes",
       "my_reviews": "Mis Evaluaciones",
       "my_feedback": "Mi Retroalimentación",
@@ -1924,6 +1925,7 @@
         "surveys_climate": "Clima Organizacional",
         "surveys_climate_templates": "Plantillas de Clima",
         "reports": "Reportes",
+        "action_plans": "Planes de acción",
         "settings": "Configuración",
         "my_reviews": "Mis Evaluaciones",
         "my_feedback": "Mi Retroalimentación",
@@ -2954,6 +2956,18 @@
     "heatmap_tenure": "Mapa de calor por antigüedad"
   },
   "climate_plans": {
+    "col_survey": "Encuesta",
+    "all_surveys": "Todas las encuestas",
+    "all": {
+      "title": "Planes de acción",
+      "description": "Todos los planes de acción de las encuestas de clima de tu empresa.",
+      "plans_desc": "Planes de líderes y de la organización, de todas las encuestas.",
+      "stat_total": "Planes",
+      "stat_active": "En curso",
+      "stat_completed": "Completados",
+      "stat_overdue": "En curso con tareas vencidas",
+      "empty": "Todavía no hay planes de acción. Se crean desde la pestaña «Planes de acción» de una encuesta de clima que use el instrumento validado, después de publicar los resultados a los líderes."
+    },
     "tab_label": "Planes de acción",
     "error_generic": "Algo salió mal. Intenta de nuevo.",
     "back": "Volver",

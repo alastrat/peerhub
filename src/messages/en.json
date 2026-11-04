@@ -1822,6 +1822,7 @@
       "overview": "Overview",
       "people": "People",
       "surveys": "Surveys",
+      "action_plans": "Action plans",
       "reports": "Reports",
       "my_reviews": "My Reviews",
       "my_feedback": "My Feedback",
@@ -1878,6 +1879,7 @@
         "surveys_climate": "Org Climate",
         "surveys_climate_templates": "Climate Templates",
         "reports": "Reports",
+        "action_plans": "Action plans",
         "settings": "Settings",
         "my_reviews": "My Reviews",
         "my_feedback": "My Feedback",
@@ -2906,6 +2908,18 @@
     "heatmap_tenure": "Heatmap by tenure"
   },
   "climate_plans": {
+    "col_survey": "Survey",
+    "all_surveys": "All surveys",
+    "all": {
+      "title": "Action plans",
+      "description": "Every action plan from your company's climate surveys.",
+      "plans_desc": "Leader and organization plans from every survey.",
+      "stat_total": "Plans",
+      "stat_active": "Active",
+      "stat_completed": "Completed",
+      "stat_overdue": "Active with overdue tasks",
+      "empty": "No action plans yet. They're created from the “Action plans” tab of a climate survey that uses the validated instrument, after results are released to leaders."
+    },
     "tab_label": "Action plans",
     "error_generic": "Something went wrong. Please try again.",
     "back": "Back",

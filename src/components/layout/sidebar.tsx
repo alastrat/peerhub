@@ -11,6 +11,7 @@ import {
   Settings,
   UsersRound,
   ClipboardCheck,
+  ListChecks,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils/cn";
@@ -28,6 +29,7 @@ const adminNavItems: NavItemDef[] = [
   { href: "/overview", icon: LayoutDashboard, labelKey: "overview" },
   { href: "/people", icon: Users, labelKey: "people" },
   { href: "/surveys", icon: ClipboardCheck, labelKey: "surveys" },
+  { href: "/action-plans", icon: ListChecks, labelKey: "action_plans" },
   { href: "/reports", icon: BarChart3, labelKey: "reports" },
 ];
 

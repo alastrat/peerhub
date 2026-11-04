@@ -374,6 +374,56 @@ export interface LeaderCompliance {
   meetsMinimum: boolean;
 }
 
+const planRowInclude = {
+  dimension: { select: { name: true } },
+  owner: { select: { name: true } },
+  tasks: { select: { status: true, dueDate: true } },
+  measures: { where: { kind: "OUTCOME" as const }, select: { evaluatedAt: true, resultBand: true, resultMean: true } },
+  survey: { select: { id: true, name: true } },
+} satisfies Prisma.ActionPlanInclude;
+
+type PlanWithRowData = Prisma.ActionPlanGetPayload<{ include: typeof planRowInclude }>;
+
+/** One table row per plan: scope name, progress, overdue tasks and impact. */
+async function toPlanRows(plans: PlanWithRowData[], companyId: string) {
+  const scopeNames = new Map<string, string | null>();
+  for (const p of plans) {
+    const key = `${p.scope}:${p.scopeRefId}`;
+    if (!scopeNames.has(key)) scopeNames.set(key, await resolveScopeName(companyId, p.scope, p.scopeRefId));
+  }
+  return plans.map((p) => ({
+    id: p.id,
+    title: p.title,
+    surveyId: p.survey.id,
+    surveyName: p.survey.name,
+    scope: p.scope,
+    scopeName: scopeNames.get(`${p.scope}:${p.scopeRefId}`) ?? null,
+    dimensionId: p.dimensionId,
+    dimensionName: p.dimension.name,
+    ownerName: p.owner.name,
+    status: p.status,
+    baselineBand: p.baselineBand as ClimateBand,
+    baselineMean: p.baselineMean,
+    targetBand: p.targetBand as ClimateBand,
+    endDate: p.endDate,
+    progress: planProgress(p.tasks),
+    overdueTasks: p.tasks.filter((t) => isTaskOverdue(t)).length,
+    impact: planImpact(p.baselineBand as ClimateBand, p.measures[0] as never),
+    resultMean: p.measures[0]?.resultMean ?? null,
+  }));
+}
+
+export type PlanRow = Awaited<ReturnType<typeof toPlanRows>>[number];
+
+function impactSummaryOf(rows: PlanRow[]) {
+  const summary = { IMPROVED: 0, UNCHANGED: 0, WORSENED: 0, NOT_EVALUABLE: 0, PENDING: 0 };
+  for (const p of rows) {
+    if (!SUBMITTED_PLAN_STATUSES.includes(p.status)) continue;
+    summary[p.impact ?? "PENDING"]++;
+  }
+  return summary;
+}
+
 export async function getSurveyPlansOverview(surveyId: string, companyId: string) {
   const meta = await prisma.climateSurvey.findFirst({
     where: { id: surveyId, companyId },
@@ -395,12 +445,7 @@ export async function getSurveyPlansOverview(surveyId: string, companyId: string
     loadSurveyForScoring(surveyId, companyId),
     prisma.actionPlan.findMany({
       where: { surveyId, companyId },
-      include: {
-        dimension: { select: { name: true } },
-        owner: { select: { name: true } },
-        tasks: { select: { status: true, dueDate: true } },
-        measures: { where: { kind: "OUTCOME" }, select: { evaluatedAt: true, resultBand: true, resultMean: true } },
-      },
+      include: planRowInclude,
       orderBy: { createdAt: "desc" },
     }),
   ]);
@@ -433,46 +478,51 @@ export async function getSurveyPlansOverview(surveyId: string, companyId: string
     })
     .sort((a, b) => Number(a.meetsMinimum) - Number(b.meetsMinimum) || b.gapNames.length - a.gapNames.length || a.name.localeCompare(b.name));
 
-  const scopeNames = new Map<string, string | null>();
-  for (const p of plans) {
-    const key = `${p.scope}:${p.scopeRefId}`;
-    if (!scopeNames.has(key)) scopeNames.set(key, await resolveScopeName(companyId, p.scope, p.scopeRefId));
-  }
-
-  const planRows = plans.map((p) => ({
-    id: p.id,
-    title: p.title,
-    scope: p.scope,
-    scopeName: scopeNames.get(`${p.scope}:${p.scopeRefId}`) ?? null,
-    dimensionId: p.dimensionId,
-    dimensionName: p.dimension.name,
-    ownerName: p.owner.name,
-    status: p.status,
-    baselineBand: p.baselineBand as ClimateBand,
-    baselineMean: p.baselineMean,
-    targetBand: p.targetBand as ClimateBand,
-    endDate: p.endDate,
-    progress: planProgress(p.tasks),
-    overdueTasks: p.tasks.filter((t) => isTaskOverdue(t)).length,
-    impact: planImpact(p.baselineBand as ClimateBand, p.measures[0] as never),
-    resultMean: p.measures[0]?.resultMean ?? null,
-  }));
-
-  const impactSummary = { IMPROVED: 0, UNCHANGED: 0, WORSENED: 0, NOT_EVALUABLE: 0, PENDING: 0 };
-  for (const p of planRows) {
-    if (!SUBMITTED_PLAN_STATUSES.includes(p.status)) continue;
-    impactSummary[p.impact ?? "PENDING"]++;
-  }
+  const planRows = await toPlanRows(plans, companyId);
 
   return {
     survey: { ...meta, name: survey.name, isInstrument: !!meta.instrumentVersion },
     leaders,
     plans: planRows,
-    impactSummary,
+    impactSummary: impactSummaryOf(planRows),
   };
 }
 
 export type SurveyPlansOverview = NonNullable<Awaited<ReturnType<typeof getSurveyPlansOverview>>>;
+
+/** Every action plan in the company, across climate surveys, newest first. */
+export async function getCompanyPlans(companyId: string) {
+  const plans = await prisma.actionPlan.findMany({
+    where: { companyId },
+    include: planRowInclude,
+    orderBy: { createdAt: "desc" },
+  });
+  const rows = await toPlanRows(plans, companyId);
+
+  const surveys = new Map<string, string>();
+  const dimensions = new Map<string, string>();
+  for (const p of rows) {
+    surveys.set(p.surveyId, p.surveyName);
+    dimensions.set(p.dimensionId, p.dimensionName);
+  }
+
+  return {
+    plans: rows,
+    surveys: [...surveys].map(([id, name]) => ({ id, name })),
+    dimensions: [...dimensions]
+      .map(([dimensionId, dimensionName]) => ({ dimensionId, dimensionName }))
+      .sort((a, b) => a.dimensionName.localeCompare(b.dimensionName)),
+    summary: {
+      total: rows.length,
+      active: rows.filter((p) => p.status === "ACTIVE").length,
+      completed: rows.filter((p) => p.status === "COMPLETED").length,
+      withOverdueTasks: rows.filter((p) => p.overdueTasks > 0 && p.status === "ACTIVE").length,
+      impact: impactSummaryOf(rows),
+    },
+  };
+}
+
+export type CompanyPlans = Awaited<ReturnType<typeof getCompanyPlans>>;
 
 // ---------------------------------------------------------------------------
 // Impact evaluation (spec §4.4)

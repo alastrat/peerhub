@@ -26,6 +26,7 @@ const PAGE_TITLE_KEYS: Record<string, string> = {
   "/surveys/360/templates": "pages.surveys_360_templates",
   "/surveys/climate": "pages.surveys_climate",
   "/surveys/climate/templates": "pages.surveys_climate_templates",
+  "/action-plans": "pages.action_plans",
   "/reports": "pages.reports",
   "/settings/profile": "pages.settings",
   "/settings/company": "pages.settings",
