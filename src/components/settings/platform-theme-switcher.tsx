@@ -50,13 +50,10 @@ export function PlatformThemeSwitcher({ currentTheme }: { currentTheme: Platform
               aria-checked={isSelected}
               onClick={() => setSelected(theme)}
               disabled={isPending}
-              // border-solid: bizzen/style.css strips <button> borders. Arbitrary
-              // border colors: Bootstrap's .border-primary is !important blue.
+              // border-solid: bizzen/style.css strips <button> borders.
               className={cn(
                 "group rounded-xl border-2 border-solid bg-card p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-70",
-                isSelected
-                  ? "border-[hsl(var(--primary))]"
-                  : "border-border hover:border-[hsl(var(--primary)/0.4)]"
+                isSelected ? "border-primary" : "border-border hover:border-primary/40"
               )}
             >
               <ThemePreview theme={theme} />
@@ -70,7 +67,7 @@ export function PlatformThemeSwitcher({ currentTheme }: { currentTheme: Platform
                     className={cn(
                       "flex h-5 w-5 items-center justify-center rounded-full border-2",
                       isSelected
-                        ? "border-[hsl(var(--primary))] bg-primary text-primary-foreground"
+                        ? "border-primary bg-primary text-primary-foreground"
                         : "border-border"
                     )}
                     aria-hidden

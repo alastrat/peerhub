@@ -508,6 +508,11 @@
   color: hsl(var(--primary)) !important;
 }
 
+/* Only the bare class collides; border-primary/50 etc. aren't Bootstrap classes */
+.border-primary {
+  border-color: hsl(var(--primary)) !important;
+}
+
 .btn-primary {
   background-color: hsl(var(--primary)) !important;
   border-color: hsl(var(--primary)) !important;
