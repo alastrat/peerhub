@@ -263,9 +263,7 @@ html[data-platform-theme="kultiva"] [data-app-shell="auth"] :has(> [data-auth-sh
 html[data-platform-theme="kultiva"] [data-app-shell="onboarding"] main [data-slot="card"] {
   border: none;
   border-radius: var(--k-radius-lg);
-  /* !important: the card carries .shadow-lg, which Bootstrap's utilities
-     mark !important */
-  box-shadow: var(--k-shadow-card) !important;
+  box-shadow: var(--k-shadow-card);
 }
 
 /* ==========================================================================
