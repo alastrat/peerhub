@@ -68,6 +68,7 @@ export function ClimateTemplateWizard({
 }) {
   const router = useRouter();
   const t = useTranslations("dashboard.climate.wizard");
+  const tt = useTranslations("climate_templates");
   const STEPS = STEP_KEYS.map((k) => t(`steps.${k}`));
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -170,7 +171,7 @@ export function ClimateTemplateWizard({
         if (!draftId && result.data?.id) setDraftId(result.data.id);
         toast.success(t("actions.draft_saved"));
       } else {
-        setError(result.error || "Failed to save draft");
+        setError(result.error || tt("save_draft_failed"));
       }
     });
   };
@@ -187,7 +188,7 @@ export function ClimateTemplateWizard({
       if (result.success) {
         router.push("/surveys/climate/templates");
       } else {
-        setError(result.error || "Failed to save template");
+        setError(result.error || tt("save_failed"));
       }
     });
   };
@@ -367,7 +368,7 @@ export function ClimateTemplateWizard({
       {step === 2 && (
         <Card>
           <CardHeader>
-            <CardTitle>Review Template</CardTitle>
+            <CardTitle>{tt("review_title")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">

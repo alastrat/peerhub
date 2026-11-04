@@ -89,9 +89,9 @@ export function Sidebar() {
     <TooltipProvider>
       <aside className="fixed left-0 top-0 z-40 flex h-screen w-16 flex-col items-center bg-muted py-4">
         {/* Logo */}
-        <div className="mb-6">
+        <Link href="/overview" aria-label="Kultiva" className="mb-6 rounded-lg p-1 transition-opacity hover:opacity-80">
           <Logo showText={false} />
-        </div>
+        </Link>
 
         {/* Navigation */}
         <nav className="flex flex-1 flex-col items-center gap-1.5">

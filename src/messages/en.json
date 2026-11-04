@@ -2991,5 +2991,27 @@
     "send": "Send survey",
     "send_failed": "Could not send survey",
     "sent_toast": "\"{name}\" has been sent. Email invitations delivered."
+  },
+  "climate_templates": {
+    "title": "Climate templates",
+    "description": "Reusable survey templates for organizational climate assessments",
+    "create": "Create template",
+    "empty_title": "No templates yet",
+    "empty_desc": "Create reusable survey templates to quickly launch climate assessments.",
+    "built_in": "Built-in",
+    "question_count": "{count, plural, one {# question} other {# questions}}",
+    "survey_count": "{count, plural, one {# survey created} other {# surveys created}}",
+    "no_description": "No description",
+    "edit": "Edit",
+    "survey_type": "Survey type",
+    "questions": "Questions",
+    "surveys_created": "Surveys created",
+    "questions_desc": "{count, plural, one {# question in this template} other {# questions in this template}}",
+    "required": "Required",
+    "edit_title": "Edit: {name}",
+    "edit_desc": "Modify this climate survey template",
+    "review_title": "Review template",
+    "save_draft_failed": "Failed to save draft",
+    "save_failed": "Failed to save template"
   }
 }
