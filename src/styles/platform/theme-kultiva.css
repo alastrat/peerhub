@@ -8,9 +8,10 @@
  * as <html data-platform-theme="…">; "classic" needs no rules.
  *
  * Scope: only pages that render an app shell ([data-app-shell] on the
- * dashboard, portal, auth and external-review layouts). The marketing site
- * never has one, so it keeps its own look under either theme. Tokens sit on
- * <html> so Radix portals (dialogs, popovers, menus) pick them up too.
+ * dashboard, portal, auth, external-review and onboarding layouts). The
+ * marketing site never has one, so it keeps its own look under either theme.
+ * Tokens sit on <html> so Radix portals (dialogs, popovers, menus) pick them
+ * up too.
  *
  * Header and sidebar markup is shared with other work, so they are themed
  * from the layout through structural selectors and scoped tokens only.
@@ -255,6 +256,19 @@ html[data-platform-theme="kultiva"] [data-app-shell="auth"] :has(> [data-auth-sh
 }
 
 /* ==========================================================================
+   ONBOARDING — the profile and company steps float on the backdrop as one
+   white card, under the white logo.
+   ========================================================================== */
+
+html[data-platform-theme="kultiva"] [data-app-shell="onboarding"] main [data-slot="card"] {
+  border: none;
+  border-radius: var(--k-radius-lg);
+  /* !important: the card carries .shadow-lg, which Bootstrap's utilities
+     mark !important */
+  box-shadow: var(--k-shadow-card) !important;
+}
+
+/* ==========================================================================
    COMPONENTS — inside app shells and their portals
    ========================================================================== */
 
@@ -305,6 +319,18 @@ html[data-platform-theme="kultiva"]:has([data-app-shell]) :is([data-slot="input"
 html[data-platform-theme="kultiva"]:has([data-app-shell]) :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]):focus-visible,
 html[data-platform-theme="kultiva"]:has([data-app-shell]) .phone-input:focus-within {
   border-color: var(--k-purple-glow);
+}
+
+/* Fields drawn outside <Input> take the inputs' shape: a bordered wrapper
+   around a borderless input (e.g. behind a URL prefix), and
+   react-phone-number-input (styled in globals.css) */
+html[data-platform-theme="kultiva"]:has([data-app-shell]) .border:has(> [data-slot="input"].border-0),
+html[data-platform-theme="kultiva"]:has([data-app-shell]) .phone-input {
+  border-radius: var(--k-radius-sm);
+}
+
+html[data-platform-theme="kultiva"]:has([data-app-shell]) .phone-input {
+  height: 2.5rem;
 }
 
 /* Tabs: the POC's segmented nav — lavender tray, purple active pill */
