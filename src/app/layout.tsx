@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Kanit, Plus_Jakarta_Sans, Quicksand } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/providers";
+import { getPlatformTheme } from "@/lib/queries/platform-theme";
 
 // Bizzen Template Styles (in correct order - matching template)
 import "@/styles/bizzen/plugins/bootstrap.min.css";
@@ -16,6 +17,9 @@ import "@/styles/kultiva/themes/theme-classic.css";
 import "@/styles/kultiva/themes/theme-brand.css";
 import "@/styles/kultiva/themes/theme-modern.css";
 import "@/styles/kultiva/overrides.css";
+
+// Platform theme (dashboard, portal and auth pages), picked by super admins
+import "@/styles/platform/theme-kultiva.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -219,13 +223,21 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const platformTheme = await getPlatformTheme();
+
   return (
-    <html lang="en" className={`${inter.variable} ${kanit.variable} ${plusJakarta.variable} ${quicksand.variable}`} data-theme="brand" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} ${kanit.variable} ${plusJakarta.variable} ${quicksand.variable}`}
+      data-theme="brand"
+      data-platform-theme={platformTheme}
+      suppressHydrationWarning
+    >
       <head>
         {/* FontAwesome - from template */}
         <link

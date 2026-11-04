@@ -66,6 +66,7 @@ export function AuthCarousel() {
 
   return (
     <div
+      data-auth-showcase
       onMouseEnter={() => {
         pausedRef.current = true;
       }}

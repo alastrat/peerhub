@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { Logo } from "@/components/design-system/logo";
 import { getPortalSession } from "@/lib/auth/portal-session";
+import { getPlatformTheme } from "@/lib/queries/platform-theme";
 import { prisma } from "@/lib/db/prisma";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
@@ -15,6 +16,8 @@ export default async function PortalLayout({
   const session = await getPortalSession();
   const locale = await getLocale();
   const messages = await getMessages();
+  // The Kultiva theme puts this header on the purple backdrop.
+  const platformTheme = await getPlatformTheme();
 
   let displayName: string | null = null;
   if (session) {
@@ -27,11 +30,11 @@ export default async function PortalLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-    <div className="min-h-screen bg-muted/30 flex flex-col">
-      <header className="border-b bg-background">
+    <div data-app-shell="portal" className="min-h-screen bg-muted/30 flex flex-col">
+      <header data-app-header className="border-b bg-background">
         <div className="container mx-auto flex items-center justify-between px-4 py-3">
           <Link href="/portal">
-            <Logo />
+            <Logo variant={platformTheme === "kultiva" ? "white" : "color"} />
           </Link>
           {session && (
             <div className="flex items-center gap-4">
@@ -49,11 +52,11 @@ export default async function PortalLayout({
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+      <main data-app-main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
         {children}
       </main>
 
-      <footer className="border-t bg-background py-6 mt-auto">
+      <footer data-app-footer className="border-t bg-background py-6 mt-auto">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
           <p>Powered by Kultiva - 360° Performance Feedback Platform</p>
         </div>

@@ -1,0 +1,358 @@
+/**
+ * Platform theme: Kultiva
+ *
+ * The look of Kultiva's survey POC (deep purple gradient backdrop, white
+ * rounded surfaces, Quicksand headings over Inter, leaf-green accents, pill
+ * buttons), applied to the app when a super admin picks it in
+ * Configuración → Plataforma → Apariencia. The root layout renders the choice
+ * as <html data-platform-theme="…">; "classic" needs no rules.
+ *
+ * Scope: only pages that render an app shell ([data-app-shell] on the
+ * dashboard, portal, auth and external-review layouts). The marketing site
+ * never has one, so it keeps its own look under either theme. Tokens sit on
+ * <html> so Radix portals (dialogs, popovers, menus) pick them up too.
+ *
+ * Header and sidebar markup is shared with other work, so they are themed
+ * from the layout through structural selectors and scoped tokens only.
+ */
+
+/* ==========================================================================
+   TOKENS
+   ========================================================================== */
+
+html[data-platform-theme="kultiva"]:has([data-app-shell]) {
+  /* POC palette */
+  --k-purple-950: #1c0930;
+  --k-purple-800: #39114f;
+  --k-purple-700: #4d1c68;
+  --k-purple-glow: #7c3584;
+  --k-leaf-500: #8bc34a;
+  --k-leaf-600: #6da233;
+  /* leaf-600, one step deeper so small uppercase labels stay legible on white */
+  --k-leaf-ink: #5c8b27;
+  --k-surface-100: #eef0fb;
+  --k-surface-200: #e2e5f5;
+  --k-ink-900: #241238;
+  --k-ink-700: #4a3960;
+  --k-ink-500: #7a6d8c;
+  --k-white-muted: rgba(255, 255, 255, 0.74);
+  --k-white-faint: rgba(255, 255, 255, 0.5);
+  --k-border: #e4e1ec;
+  --k-radius-lg: 22px;
+  --k-radius-md: 14px;
+  --k-radius-sm: 10px;
+  --k-shadow-card: 0 24px 60px rgba(20, 6, 34, 0.38);
+  --k-backdrop:
+    radial-gradient(1100px 680px at 50% 22%, var(--k-purple-glow), transparent 62%),
+    linear-gradient(165deg, var(--k-purple-800), var(--k-purple-950));
+
+  /* shadcn tokens (HSL triplets) */
+  --background: 0 0% 100%;
+  --foreground: 268 51% 15%; /* ink-900 */
+  --card: 0 0% 100%;
+  --card-foreground: 268 51% 15%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 268 51% 15%;
+  --primary: 279 58% 26%; /* purple-700 */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 231 62% 96%; /* surface-100 */
+  --secondary-foreground: 266 25% 30%; /* ink-700 */
+  --muted: 231 62% 96%;
+  --muted-foreground: 265 13% 44%; /* ink-500, darkened to keep 4.5:1 on surface-100 */
+  --accent: 231 62% 96%;
+  --accent-foreground: 279 58% 26%;
+  --destructive: 4 52% 47%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 256 22% 90%;
+  --input: 256 22% 90%;
+  --ring: 294 43% 36%; /* purple-glow */
+  --radius: 0.875rem;
+  --chart-1: 279 58% 26%;
+  --chart-2: 89 52% 42%;
+  --chart-3: 42 72% 50%;
+  --chart-4: 294 43% 36%;
+  --chart-5: 6 56% 51%;
+
+  /* Template variables behind the base element styles (bizzen/style.css) */
+  --heading-font: var(--font-quicksand), "Quicksand", sans-serif;
+  --body-font: var(--font-display), "Inter", system-ui, sans-serif;
+  --heading-color: var(--k-ink-900);
+  --text-color: var(--k-ink-700);
+
+  background-color: var(--k-purple-950);
+}
+
+html[data-platform-theme="kultiva"] body:has([data-app-shell]) {
+  background: var(--k-backdrop);
+  background-attachment: fixed;
+  background-color: var(--k-purple-950);
+  font-weight: 400;
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell] ::selection {
+  background: var(--k-leaf-500);
+  color: var(--k-purple-950);
+}
+
+/* Shell wrappers let the backdrop through */
+html[data-platform-theme="kultiva"] [data-app-shell] {
+  background: transparent;
+}
+
+/* ==========================================================================
+   CHROME ON THE BACKDROP — dashboard rail + top bar, portal/external header
+   Scoped tokens turn their shadcn content white-on-purple without touching
+   the components themselves.
+   ========================================================================== */
+
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > aside,
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > div > header,
+html[data-platform-theme="kultiva"] [data-app-shell] [data-app-header],
+html[data-platform-theme="kultiva"] [data-app-shell] [data-app-footer] {
+  --foreground: 0 0% 100%;
+  --muted-foreground: 280 30% 86%;
+  --background: 279 52% 19%;
+  --muted: 283 38% 28%;
+  --accent: 283 33% 33%;
+  --accent-foreground: 0 0% 100%;
+  --border: 283 30% 42%;
+  --input: 283 30% 42%;
+  --primary: 88 50% 53%; /* leaf-500: notification dots, focus rings */
+  --primary-foreground: 269 68% 11%;
+  --ring: 88 50% 53%;
+  color: #fff;
+}
+
+/* The rail and the sticky top bar paint the same fixed backdrop as <body>,
+   so content scrolling under the top bar disappears instead of showing
+   through, with no visible seam. */
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > aside,
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > div > header {
+  background: var(--k-backdrop);
+  background-attachment: fixed;
+}
+
+/* Rail items: muted white icons, white pill for the active page */
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > aside a:has(> svg) {
+  color: var(--k-white-muted);
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > aside a:has(> svg):hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > aside a[class*="bg-[#613171]"] {
+  background-color: #fff;
+  /* !important: the link also carries .text-white, which Bootstrap's
+     utilities mark !important */
+  color: var(--k-purple-700) !important;
+  box-shadow: 0 6px 18px rgba(20, 6, 34, 0.35);
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > aside a[class*="bg-[#613171]"]:hover {
+  background-color: #fff;
+}
+
+/* Top bar search: translucent pill like the POC's back button */
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > div > header [data-slot="input"] {
+  border-radius: 999px;
+  border-color: rgba(255, 255, 255, 0.16);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > div > header [data-slot="input"]:focus-visible {
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell] [data-app-header],
+html[data-platform-theme="kultiva"] [data-app-shell] [data-app-footer] {
+  background: transparent;
+  border-color: transparent;
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell] [data-app-footer] {
+  color: var(--k-white-faint);
+}
+
+/* ==========================================================================
+   SURFACES — the white card that holds each page, as in the POC
+   ========================================================================== */
+
+html[data-platform-theme="kultiva"] [data-app-shell] [data-app-main] {
+  background: #fff;
+  color: var(--k-ink-900);
+  border-radius: var(--k-radius-lg);
+  box-shadow: var(--k-shadow-card);
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] [data-app-main] {
+  /* bizzen/style.css gives <main> width: 100%, which the margins would overflow */
+  width: auto;
+  margin: 4px 20px 20px 6px;
+  padding: clamp(20px, 3vw, 36px);
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="portal"] [data-app-main],
+html[data-platform-theme="kultiva"] [data-app-shell="external"] [data-app-main] {
+  width: calc(100% - 2rem);
+  margin-top: 14px;
+  margin-bottom: 32px;
+  padding: clamp(24px, 4vw, 42px);
+}
+
+/* ==========================================================================
+   AUTH — login, signup and invite become one full-bleed brand panel on the
+   backdrop (the POC's home screen); the showcase column is dropped.
+   ========================================================================== */
+
+html[data-platform-theme="kultiva"] [data-app-shell="auth"] [data-auth-showcase] {
+  display: none;
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="auth"] :has(> [data-auth-showcase]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="auth"] :has(> [data-auth-showcase]) > :not([data-auth-showcase]) {
+  /* the panel paints its own gradient inline */
+  background-image: none !important;
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="auth"] :has(> [data-auth-showcase]) > :not([data-auth-showcase]) > [aria-hidden] {
+  display: none;
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="auth"] h1 {
+  color: #fff;
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="auth"] :has(> [data-auth-showcase]) [data-slot="input"] {
+  height: 2.75rem;
+  border-radius: 999px;
+  border-color: transparent;
+  background-color: var(--k-surface-100);
+  color: var(--k-ink-900);
+  padding-inline: 1.1rem;
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="auth"] :has(> [data-auth-showcase]) [data-slot="input"]:focus-visible {
+  border-color: var(--k-purple-glow);
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="auth"] :has(> [data-auth-showcase]) [data-slot="button"] {
+  height: 3rem;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   COMPONENTS — inside app shells and their portals
+   ========================================================================== */
+
+html[data-platform-theme="kultiva"]:has([data-app-shell]) :is(h1, h2, h3, h4) {
+  letter-spacing: 0;
+}
+
+/* Cards: flat, 1.5px hairline, 14px radius */
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="card"] {
+  border: 1.5px solid var(--k-border);
+  border-radius: var(--k-radius-md);
+  box-shadow: none;
+}
+
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="card-title"] {
+  font-family: var(--font-quicksand), "Quicksand", sans-serif;
+  font-weight: 700;
+  color: var(--k-ink-900);
+}
+
+/* Buttons: pills */
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="button"] {
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="button"][data-variant="default"]:hover {
+  background-color: hsl(var(--primary));
+  filter: brightness(1.12);
+}
+
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="button"][data-variant="secondary"] {
+  background-color: var(--k-surface-100);
+  color: var(--k-ink-700);
+}
+
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="button"][data-variant="secondary"]:hover {
+  background-color: var(--k-surface-200);
+}
+
+/* Form fields */
+html[data-platform-theme="kultiva"]:has([data-app-shell]) :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]) {
+  border-width: 1.5px;
+  border-radius: var(--k-radius-sm);
+  box-shadow: none;
+}
+
+html[data-platform-theme="kultiva"]:has([data-app-shell]) :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]):focus-visible {
+  border-color: var(--k-purple-glow);
+}
+
+/* Tabs: the POC's segmented nav — lavender tray, purple active pill */
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="tabs-list"] {
+  height: auto;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 16px;
+  background-color: var(--k-surface-100);
+  color: var(--k-ink-500);
+}
+
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="tabs-trigger"] {
+  border-radius: 12px;
+  padding: 0.5rem 0.9rem;
+  font-weight: 600;
+}
+
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="tabs-trigger"]:hover {
+  color: var(--k-purple-700);
+}
+
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="tabs-trigger"][data-state="active"] {
+  background-color: var(--k-purple-700);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(77, 28, 104, 0.28);
+}
+
+/* Badges: bold pill tags */
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="badge"] {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="badge"][data-variant="secondary"] {
+  background-color: var(--k-surface-100);
+  color: var(--k-purple-700);
+}
+
+/* Tables: lavender header row, soft row rules */
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="table-header"] tr {
+  background-color: var(--k-surface-100);
+}
+
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="table-head"] {
+  color: var(--k-ink-700);
+  font-weight: 700;
+}
+
+html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="table-row"] {
+  border-color: var(--k-surface-200);
+}
+
+/* Small uppercase section labels read as the POC's leaf-green eyebrows */
+html[data-platform-theme="kultiva"] [data-app-shell] [data-app-main] :is(p, span, h2, h3, div).uppercase.tracking-wider.text-muted-foreground,
+html[data-platform-theme="kultiva"] [data-app-shell] [data-app-main] :is(p, span, h2, h3, div).uppercase.tracking-widest.text-muted-foreground {
+  color: var(--k-leaf-ink);
+  font-weight: 700;
+}
