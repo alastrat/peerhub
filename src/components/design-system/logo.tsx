@@ -1,31 +1,36 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils/cn";
 
 interface LogoProps {
   className?: string;
+  /** false shows only the leaves mark, for narrow spaces like the sidebar rail. */
   showText?: boolean;
+  /** "white" for dark or brand-colored backgrounds. */
+  variant?: "color" | "white";
 }
 
-export function Logo({ className, showText = true }: LogoProps) {
+export function Logo({ className, showText = true, variant = "color" }: LogoProps) {
+  if (!showText) {
+    return (
+      <Image
+        src="/brand/kultiva-mark.png"
+        alt="Kultiva"
+        width={125}
+        height={122}
+        priority
+        className={cn("h-8 w-auto", className)}
+      />
+    );
+  }
+
   return (
-    <div className={cn("flex items-center gap-2", className)}>
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          className="h-5 w-5 text-primary-foreground"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <path d="M12 8v8" />
-          <path d="M8 12h8" />
-        </svg>
-      </div>
-      {showText && (
-        <span className="text-xl font-bold tracking-tight">Kultiva</span>
-      )}
-    </div>
+    <Image
+      src={variant === "white" ? "/brand/kultiva-logo-white.png" : "/brand/kultiva-logo.png"}
+      alt="Kultiva"
+      width={735}
+      height={270}
+      priority
+      className={cn("h-9 w-auto", className)}
+    />
   );
 }

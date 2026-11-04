@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/design-system/page-header";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,8 @@ export default async function EditClimateTemplatePage({ params }: PageProps) {
     })),
   };
 
+  const t = await getTranslations("climate_templates");
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -60,8 +63,8 @@ export default async function EditClimateTemplatePage({ params }: PageProps) {
           </Button>
         </Link>
         <PageHeader
-          title={`Edit: ${template.name}`}
-          description="Modify this climate survey template"
+          title={t("edit_title", { name: template.name })}
+          description={t("edit_desc")}
         />
       </div>
       <ClimateTemplateWizard

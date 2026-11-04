@@ -3522,5 +3522,27 @@
     "no_strengths": "No se recibieron comentarios sobre fortalezas",
     "no_opportunities": "No se recibieron oportunidades de crecimiento",
     "min_responses": "Se necesitan al menos {count} respuestas para mostrarlas"
+  },
+  "climate_templates": {
+    "title": "Plantillas de clima",
+    "description": "Plantillas reutilizables para lanzar encuestas de clima organizacional",
+    "create": "Crear plantilla",
+    "empty_title": "Aún no hay plantillas",
+    "empty_desc": "Crea plantillas reutilizables para lanzar encuestas de clima más rápido.",
+    "built_in": "Predeterminada",
+    "question_count": "{count, plural, one {# pregunta} other {# preguntas}}",
+    "survey_count": "{count, plural, one {# encuesta creada} other {# encuestas creadas}}",
+    "no_description": "Sin descripción",
+    "edit": "Editar",
+    "survey_type": "Tipo de encuesta",
+    "questions": "Preguntas",
+    "surveys_created": "Encuestas creadas",
+    "questions_desc": "{count, plural, one {# pregunta en esta plantilla} other {# preguntas en esta plantilla}}",
+    "required": "Obligatoria",
+    "edit_title": "Editar: {name}",
+    "edit_desc": "Modifica esta plantilla de encuesta de clima",
+    "review_title": "Revisar plantilla",
+    "save_draft_failed": "No se pudo guardar el borrador",
+    "save_failed": "No se pudo guardar la plantilla"
   }
 }
