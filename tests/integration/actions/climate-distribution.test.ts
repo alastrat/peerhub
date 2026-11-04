@@ -233,7 +233,7 @@ describe("climate distribution actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Survey not found");
+      expect(result.error).toBe("No encontramos la encuesta");
       expect(mockPrisma.surveyDistribution.create).not.toHaveBeenCalled();
     });
 
@@ -248,7 +248,7 @@ describe("climate distribution actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Select at least one hub");
+      expect(result.error).toBe("Selecciona al menos una sede");
       expect(mockPrisma.surveyDistribution.create).not.toHaveBeenCalled();
     });
 
@@ -263,7 +263,7 @@ describe("climate distribution actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Select at least one department");
+      expect(result.error).toBe("Selecciona al menos un departamento");
       expect(mockPrisma.surveyDistribution.create).not.toHaveBeenCalled();
     });
 
@@ -278,7 +278,7 @@ describe("climate distribution actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Select at least one team");
+      expect(result.error).toBe("Selecciona al menos un equipo");
       expect(mockPrisma.surveyDistribution.create).not.toHaveBeenCalled();
     });
 
@@ -293,7 +293,7 @@ describe("climate distribution actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Select at least one employee");
+      expect(result.error).toBe("Selecciona al menos una persona");
       expect(mockPrisma.surveyDistribution.create).not.toHaveBeenCalled();
     });
 
@@ -308,7 +308,7 @@ describe("climate distribution actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("No employees found for the selected target");
+      expect(result.error).toBe("No hay colaboradores activos en el grupo seleccionado");
       expect(mockPrisma.surveyDistribution.create).not.toHaveBeenCalled();
     });
 
@@ -365,7 +365,7 @@ describe("climate distribution actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Failed to distribute survey");
+      expect(result.error).toBe("No tienes permiso para hacer esto");
       expect(mockPrisma.climateSurvey.findFirst).not.toHaveBeenCalled();
     });
   });
@@ -400,7 +400,7 @@ describe("climate distribution actions", () => {
       const result = await closeSurvey("nonexistent");
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Survey not found");
+      expect(result.error).toBe("No encontramos la encuesta");
       expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
     });
 
@@ -413,7 +413,7 @@ describe("climate distribution actions", () => {
       const result = await closeSurvey("s1");
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Only active surveys can be closed");
+      expect(result.error).toBe("Solo se pueden cerrar encuestas activas");
       expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
     });
 
@@ -423,7 +423,7 @@ describe("climate distribution actions", () => {
       const result = await closeSurvey("s1");
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Unauthorized");
+      expect(result.error).toBe("No tienes permiso para hacer esto");
       expect(mockPrisma.climateSurvey.findFirst).not.toHaveBeenCalled();
     });
 
@@ -437,7 +437,7 @@ describe("climate distribution actions", () => {
       const result = await closeSurvey("s1");
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("DB fail");
+      expect(result.error).toBe("No se pudo cerrar la encuesta (DB fail)");
     });
   });
 });

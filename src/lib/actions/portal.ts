@@ -24,6 +24,7 @@ export async function requestPortalAccess(
         email: normalizedEmail,
         isActive: true,
       },
+      include: { company: { select: { locale: true } } },
     });
 
     // Always return success to prevent email enumeration
@@ -56,7 +57,7 @@ export async function requestPortalAccess(
     // (to avoid email enumeration), but we log loudly and mark the token
     // as used so it's not left orphaned.
     try {
-      await sendPortalMagicLinkEmail(normalizedEmail, employee.name, magicLinkUrl);
+      await sendPortalMagicLinkEmail(normalizedEmail, employee.name, magicLinkUrl, employee.company?.locale);
     } catch (emailError) {
       console.error(
         "[portal] Magic link email failed to deliver. The user will see a generic 'check your email' message.",

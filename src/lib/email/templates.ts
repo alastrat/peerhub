@@ -1,242 +1,216 @@
+// 360° review emails. Every email takes the company's locale (es by default).
+
 import { sendEmail } from "./resend";
+import { baseTemplate, escapeHtml } from "./portal-templates";
+import { getTranslator, type Translator } from "@/i18n/translator";
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "Kultiva";
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-function baseTemplate(content: string): string {
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${APP_NAME}</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      line-height: 1.6;
-      color: #171717;
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 40px 20px;
-      background-color: #fafafa;
-    }
-    .container {
-      background: white;
-      border-radius: 12px;
-      padding: 40px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    .logo {
-      font-size: 24px;
-      font-weight: 700;
-      color: #0066FF;
-      margin-bottom: 32px;
-    }
-    h1 {
-      font-size: 24px;
-      font-weight: 600;
-      margin: 0 0 16px 0;
-      color: #171717;
-    }
-    p {
-      margin: 0 0 16px 0;
-      color: #525252;
-    }
-    .button {
-      display: inline-block;
-      background: #0066FF;
-      color: white !important;
-      padding: 14px 28px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: 500;
-      margin: 16px 0;
-    }
-    .button:hover {
-      background: #0052CC;
-    }
-    .secondary-text {
-      font-size: 14px;
-      color: #737373;
-    }
-    .footer {
-      margin-top: 32px;
-      padding-top: 24px;
-      border-top: 1px solid #e5e5e5;
-      font-size: 14px;
-      color: #737373;
-    }
-    .highlight {
-      background: #f5f5f5;
-      padding: 16px;
-      border-radius: 8px;
-      margin: 16px 0;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="logo">${APP_NAME}</div>
-    ${content}
-    <div class="footer">
-      <p>This email was sent by ${APP_NAME}. If you have questions, please contact your HR administrator.</p>
-    </div>
-  </div>
-</body>
-</html>
-`;
+type Locale = string | null | undefined;
+
+/** Plain-text version of a message that wraps part of its text in <strong>. */
+function plain(t: Translator, key: string, values: Record<string, string | number>) {
+  return t.markup(key, { ...values, strong: (chunks) => chunks });
+}
+
+/** HTML version: values are escaped, <strong> is kept. */
+function rich(t: Translator, key: string, values: Record<string, string | number>) {
+  const escaped = Object.fromEntries(
+    Object.entries(values).map(([k, v]) => [k, typeof v === "string" ? escapeHtml(v) : v]),
+  );
+  return t.markup(key, { ...escaped, strong: (chunks) => `<strong>${chunks}</strong>` });
+}
+
+function greeting(t: Translator, name: string | null | undefined) {
+  return name ? t("greeting", { name }) : t("greeting_no_name");
+}
+
+function dueDateBlock(t: Translator, dueDate: string) {
+  return `<div class="highlight">
+      <p style="margin: 0;"><strong>${escapeHtml(t("due_label"))}</strong> ${escapeHtml(dueDate)}</p>
+    </div>`;
 }
 
 export async function sendInvitationEmail(params: {
   to: string;
-  inviterName: string;
-  companyName: string;
+  inviterName?: string | null;
+  companyName?: string | null;
   inviteUrl: string;
+  locale?: Locale;
 }) {
+  const t = getTranslator(params.locale, "emails");
+  const values = {
+    inviter: params.inviterName || t("invitation.fallback_inviter"),
+    company: params.companyName || t("invitation.fallback_company"),
+    appName: APP_NAME,
+  };
+  const cta = t("invitation.cta");
+
   const html = baseTemplate(`
-    <h1>You're invited to join ${params.companyName}</h1>
-    <p>${params.inviterName} has invited you to join ${params.companyName} on ${APP_NAME}, our 360° performance feedback platform.</p>
-    <a href="${params.inviteUrl}" class="button">Accept Invitation</a>
-    <p class="secondary-text">This invitation will expire in 7 days.</p>
-  `);
+    <h1>${escapeHtml(t("invitation.heading", values))}</h1>
+    <p>${escapeHtml(t("invitation.body", values))}</p>
+    <a href="${params.inviteUrl}" class="button">${escapeHtml(cta)}</a>
+    <p class="secondary-text">${escapeHtml(t("invitation.expiry"))}</p>
+  `, params.locale);
 
   return sendEmail({
     to: params.to,
-    subject: `You're invited to join ${params.companyName} on ${APP_NAME}`,
+    subject: t("invitation.subject", values),
     html,
-    text: `${params.inviterName} has invited you to join ${params.companyName} on ${APP_NAME}. Accept your invitation: ${params.inviteUrl}`,
+    text: `${t("invitation.body", values)} ${cta}: ${params.inviteUrl}`,
   });
 }
 
 export async function sendReviewRequestEmail(params: {
   to: string;
-  reviewerName: string;
-  revieweeName: string;
+  reviewerName?: string | null;
+  /** null for a self-review */
+  revieweeName: string | null;
   cycleName: string;
   dueDate: string;
   reviewUrl: string;
+  locale?: Locale;
 }) {
+  const t = getTranslator(params.locale, "emails");
+  const self = params.revieweeName === null;
+  const values = { reviewee: params.revieweeName ?? "", cycle: params.cycleName };
+  const key = (name: string) => `review_request.${name}${self ? "_self" : ""}`;
+  const cta = t("review_request.cta");
+
   const html = baseTemplate(`
-    <h1>Feedback Request: ${params.revieweeName}</h1>
-    <p>Hi ${params.reviewerName},</p>
-    <p>You've been asked to provide feedback for <strong>${params.revieweeName}</strong> as part of the "${params.cycleName}" review cycle.</p>
-    <div class="highlight">
-      <p style="margin: 0;"><strong>Due date:</strong> ${params.dueDate}</p>
-    </div>
-    <a href="${params.reviewUrl}" class="button">Start Review</a>
-    <p class="secondary-text">Your feedback is valuable and will help ${params.revieweeName} grow professionally. Please be thoughtful and constructive in your responses.</p>
-  `);
+    <h1>${escapeHtml(t(key("heading"), values))}</h1>
+    <p>${escapeHtml(greeting(t, params.reviewerName))}</p>
+    <p>${rich(t, key("body"), values)}</p>
+    ${dueDateBlock(t, params.dueDate)}
+    <a href="${params.reviewUrl}" class="button">${escapeHtml(cta)}</a>
+    <p class="secondary-text">${escapeHtml(t(key("note"), values))}</p>
+  `, params.locale);
 
   return sendEmail({
     to: params.to,
-    subject: `Feedback requested for ${params.revieweeName}`,
+    subject: t(key("subject"), values),
     html,
-    text: `You've been asked to provide feedback for ${params.revieweeName}. Due: ${params.dueDate}. Start your review: ${params.reviewUrl}`,
+    text: `${plain(t, key("body"), values)} ${t("due_label")} ${params.dueDate}. ${cta}: ${params.reviewUrl}`,
   });
 }
 
 export async function sendExternalReviewRequestEmail(params: {
   to: string;
-  reviewerName: string;
+  reviewerName?: string | null;
   revieweeName: string;
   companyName: string;
   cycleName: string;
   dueDate: string;
   reviewUrl: string;
+  locale?: Locale;
 }) {
+  const t = getTranslator(params.locale, "emails");
+  const values = { company: params.companyName, reviewee: params.revieweeName, cycle: params.cycleName };
+  const cta = t("external_review_request.cta");
+
   const html = baseTemplate(`
-    <h1>Feedback Request from ${params.companyName}</h1>
-    <p>Hi ${params.reviewerName},</p>
-    <p>${params.companyName} has requested your feedback for <strong>${params.revieweeName}</strong> as part of their "${params.cycleName}" review cycle.</p>
-    <div class="highlight">
-      <p style="margin: 0;"><strong>Due date:</strong> ${params.dueDate}</p>
-    </div>
-    <a href="${params.reviewUrl}" class="button">Provide Feedback</a>
-    <p class="secondary-text">No account is required. Simply click the button above to share your feedback. This link is unique to you and will expire after use.</p>
-  `);
+    <h1>${escapeHtml(t("external_review_request.heading", values))}</h1>
+    <p>${escapeHtml(greeting(t, params.reviewerName))}</p>
+    <p>${rich(t, "external_review_request.body", values)}</p>
+    ${dueDateBlock(t, params.dueDate)}
+    <a href="${params.reviewUrl}" class="button">${escapeHtml(cta)}</a>
+    <p class="secondary-text">${escapeHtml(t("external_review_request.note"))}</p>
+  `, params.locale);
 
   return sendEmail({
     to: params.to,
-    subject: `${params.companyName} requests your feedback for ${params.revieweeName}`,
+    subject: t("external_review_request.subject", values),
     html,
-    text: `${params.companyName} has requested your feedback for ${params.revieweeName}. Due: ${params.dueDate}. Provide feedback: ${params.reviewUrl}`,
+    text: `${plain(t, "external_review_request.body", values)} ${t("due_label")} ${params.dueDate}. ${cta}: ${params.reviewUrl}`,
   });
 }
 
 export async function sendReminderEmail(params: {
   to: string;
-  reviewerName: string;
+  reviewerName?: string | null;
   pendingCount: number;
   dueDate: string;
   dashboardUrl: string;
+  locale?: Locale;
 }) {
+  const t = getTranslator(params.locale, "emails");
+  const values = { count: params.pendingCount };
+  const cta = t("reminder.cta");
+
   const html = baseTemplate(`
-    <h1>Reminder: ${params.pendingCount} Pending Review${params.pendingCount > 1 ? "s" : ""}</h1>
-    <p>Hi ${params.reviewerName},</p>
-    <p>This is a friendly reminder that you have <strong>${params.pendingCount} pending review${params.pendingCount > 1 ? "s" : ""}</strong> awaiting your feedback.</p>
-    <div class="highlight">
-      <p style="margin: 0;"><strong>Due date:</strong> ${params.dueDate}</p>
-    </div>
-    <a href="${params.dashboardUrl}" class="button">View Pending Reviews</a>
-    <p class="secondary-text">Your feedback helps your colleagues grow. Please complete your reviews before the deadline.</p>
-  `);
+    <h1>${escapeHtml(t("reminder.heading", values))}</h1>
+    <p>${escapeHtml(greeting(t, params.reviewerName))}</p>
+    <p>${rich(t, "reminder.body", values)}</p>
+    ${dueDateBlock(t, params.dueDate)}
+    <a href="${params.dashboardUrl}" class="button">${escapeHtml(cta)}</a>
+    <p class="secondary-text">${escapeHtml(t("reminder.note"))}</p>
+  `, params.locale);
 
   return sendEmail({
     to: params.to,
-    subject: `Reminder: ${params.pendingCount} pending review${params.pendingCount > 1 ? "s" : ""}`,
+    subject: t("reminder.subject", values),
     html,
-    text: `You have ${params.pendingCount} pending reviews due by ${params.dueDate}. Complete them here: ${params.dashboardUrl}`,
+    text: `${plain(t, "reminder.body", values)} ${t("due_label")} ${params.dueDate}. ${cta}: ${params.dashboardUrl}`,
   });
 }
 
 export async function sendReportReleasedEmail(params: {
   to: string;
-  employeeName: string;
+  employeeName?: string | null;
   cycleName: string;
   reportUrl: string;
+  locale?: Locale;
 }) {
+  const t = getTranslator(params.locale, "emails");
+  const values = { cycle: params.cycleName };
+  const cta = t("report_released.cta");
+
   const html = baseTemplate(`
-    <h1>Your Feedback Report is Ready</h1>
-    <p>Hi ${params.employeeName},</p>
-    <p>Great news! Your feedback report for the "${params.cycleName}" review cycle is now available.</p>
-    <a href="${params.reportUrl}" class="button">View Your Report</a>
-    <p class="secondary-text">This report contains aggregated feedback from your reviewers. Take time to reflect on the insights and consider discussing them with your manager.</p>
-  `);
+    <h1>${escapeHtml(t("report_released.heading"))}</h1>
+    <p>${escapeHtml(greeting(t, params.employeeName))}</p>
+    <p>${escapeHtml(t("report_released.body", values))}</p>
+    <a href="${params.reportUrl}" class="button">${escapeHtml(cta)}</a>
+    <p class="secondary-text">${escapeHtml(t("report_released.note"))}</p>
+  `, params.locale);
 
   return sendEmail({
     to: params.to,
-    subject: `Your feedback report for "${params.cycleName}" is ready`,
+    subject: t("report_released.subject", values),
     html,
-    text: `Your feedback report for "${params.cycleName}" is now available. View it here: ${params.reportUrl}`,
+    text: `${t("report_released.body", values)} ${cta}: ${params.reportUrl}`,
   });
 }
 
 export async function sendNominationRequestEmail(params: {
   to: string;
-  employeeName: string;
+  employeeName?: string | null;
   cycleName: string;
   minPeers: number;
   maxPeers: number;
   dueDate: string;
   nominationUrl: string;
+  locale?: Locale;
 }) {
+  const t = getTranslator(params.locale, "emails");
+  const values = { cycle: params.cycleName, min: params.minPeers, max: params.maxPeers };
+  const cta = t("nomination_request.cta");
+
   const html = baseTemplate(`
-    <h1>Nominate Your Peer Reviewers</h1>
-    <p>Hi ${params.employeeName},</p>
-    <p>It's time to nominate colleagues to provide feedback for you as part of the "${params.cycleName}" review cycle.</p>
+    <h1>${escapeHtml(t("nomination_request.heading"))}</h1>
+    <p>${escapeHtml(greeting(t, params.employeeName))}</p>
+    <p>${escapeHtml(t("nomination_request.body", values))}</p>
     <div class="highlight">
-      <p style="margin: 0 0 8px 0;"><strong>Required:</strong> ${params.minPeers}-${params.maxPeers} peer reviewers</p>
-      <p style="margin: 0;"><strong>Due date:</strong> ${params.dueDate}</p>
+      <p style="margin: 0 0 8px 0;"><strong>${escapeHtml(t("nomination_request.required_label"))}</strong> ${escapeHtml(t("nomination_request.required_value", values))}</p>
+      <p style="margin: 0;"><strong>${escapeHtml(t("due_label"))}</strong> ${escapeHtml(params.dueDate)}</p>
     </div>
-    <a href="${params.nominationUrl}" class="button">Nominate Reviewers</a>
-    <p class="secondary-text">Choose colleagues who work closely with you and can provide valuable feedback on your performance.</p>
-  `);
+    <a href="${params.nominationUrl}" class="button">${escapeHtml(cta)}</a>
+    <p class="secondary-text">${escapeHtml(t("nomination_request.note"))}</p>
+  `, params.locale);
 
   return sendEmail({
     to: params.to,
-    subject: `Nominate your peer reviewers for "${params.cycleName}"`,
+    subject: t("nomination_request.subject", values),
     html,
-    text: `Nominate ${params.minPeers}-${params.maxPeers} peer reviewers for "${params.cycleName}" by ${params.dueDate}. Nominate here: ${params.nominationUrl}`,
+    text: `${t("nomination_request.body", values)} ${t("nomination_request.required_value", values)}. ${t("due_label")} ${params.dueDate}. ${cta}: ${params.nominationUrl}`,
   });
 }

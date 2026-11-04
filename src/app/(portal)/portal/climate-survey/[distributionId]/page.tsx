@@ -1,7 +1,9 @@
 import { redirect, notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getPortalSession } from "@/lib/auth/portal-session";
+import { getPortalLocale } from "@/lib/auth/portal-locale";
 import { prisma } from "@/lib/db/prisma";
 import { PageHeader } from "@/components/design-system/page-header";
 import { Button } from "@/components/ui/button";
@@ -43,8 +45,10 @@ export default async function PortalClimateSurveyPage({ params }: PageProps) {
     notFound();
   }
 
+  const locale = await getPortalLocale();
   const existingResponse = distribution.responses[0];
   if (existingResponse?.isComplete) {
+    const t = await getTranslations({ locale, namespace: "portal.climate_survey" });
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
@@ -55,14 +59,12 @@ export default async function PortalClimateSurveyPage({ params }: PageProps) {
           </Link>
           <PageHeader
             title={distribution.survey.name}
-            description="Ya has completado esta encuesta"
+            description={t("already_completed")}
           />
         </div>
         <Card>
           <CardContent className="p-6 text-center">
-            <p className="text-muted-foreground">
-              Gracias por tu participación. Tus respuestas han sido registradas.
-            </p>
+            <p className="text-muted-foreground">{t("already_completed_body")}</p>
           </CardContent>
         </Card>
       </div>
@@ -103,7 +105,7 @@ export default async function PortalClimateSurveyPage({ params }: PageProps) {
       thankYouCtaText={distribution.survey.thankYouCtaText}
       logoUrl={distribution.survey.logoUrl}
       questionsPerPage={distribution.survey.questionsPerPage}
-      dueDateLabel={formatDate(distribution.dueDate)}
+      dueDateLabel={formatDate(distribution.dueDate, undefined, locale)}
       daysLeft={daysLeft}
       isOverdue={isOverdue}
       questions={distribution.survey.questions.map((q) => ({

@@ -198,7 +198,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Name is required");
+      expect(result.error).toBe("El nombre es obligatorio");
       expect(mockPrisma.climateSurvey.create).not.toHaveBeenCalled();
     });
 
@@ -210,7 +210,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("one question is required");
+      expect(result.error).toContain("al menos una pregunta");
       expect(mockPrisma.climateSurvey.create).not.toHaveBeenCalled();
     });
 
@@ -224,7 +224,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Unauthorized");
+      expect(result.error).toContain("No tienes permiso para hacer esto");
     });
 
     it("returns error when no session exists", async () => {
@@ -251,7 +251,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("DB error");
+      expect(result.error).toBe("No se pudo crear la encuesta (DB error)");
     });
   });
 
@@ -372,7 +372,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Survey not found");
+      expect(result.error).toBe("No encontramos la encuesta");
       expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
     });
 
@@ -421,7 +421,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Unauthorized");
+      expect(result.error).toContain("No tienes permiso para hacer esto");
     });
 
     it("handles database errors gracefully", async () => {
@@ -435,7 +435,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Update failed");
+      expect(result.error).toBe("No se pudo actualizar la encuesta (Update failed)");
     });
   });
 
@@ -501,7 +501,7 @@ describe("climate survey actions", () => {
       const result = await deleteClimateSurvey("nonexistent");
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Survey not found");
+      expect(result.error).toBe("No encontramos la encuesta");
       expect(mockPrisma.climateSurvey.delete).not.toHaveBeenCalled();
     });
 
@@ -511,7 +511,7 @@ describe("climate survey actions", () => {
       const result = await deleteClimateSurvey("survey-1");
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Failed to delete survey");
+      expect(result.error).toBe("No tienes permiso para hacer esto");
     });
 
     it("handles database errors gracefully on hard delete", async () => {
@@ -526,7 +526,7 @@ describe("climate survey actions", () => {
       const result = await deleteClimateSurvey("survey-1");
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Failed to delete survey");
+      expect(result.error).toBe("No se pudo eliminar la encuesta");
     });
 
     it("handles database errors gracefully on archive", async () => {
@@ -541,7 +541,7 @@ describe("climate survey actions", () => {
       const result = await deleteClimateSurvey("survey-1");
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Failed to delete survey");
+      expect(result.error).toBe("No se pudo eliminar la encuesta");
     });
   });
 
@@ -601,7 +601,7 @@ describe("climate survey actions", () => {
       const result = await duplicateClimateSurvey("nonexistent");
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Survey not found");
+      expect(result.error).toBe("No encontramos la encuesta");
       expect(mockPrisma.climateSurvey.create).not.toHaveBeenCalled();
     });
 
@@ -623,7 +623,7 @@ describe("climate survey actions", () => {
       const result = await duplicateClimateSurvey("survey-1");
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Failed to duplicate survey");
+      expect(result.error).toBe("No tienes permiso para hacer esto");
     });
 
     it("handles database errors gracefully", async () => {
@@ -635,7 +635,7 @@ describe("climate survey actions", () => {
       const result = await duplicateClimateSurvey("survey-1");
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Failed to duplicate survey");
+      expect(result.error).toBe("No se pudo duplicar la encuesta");
     });
   });
 
@@ -654,7 +654,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Questions cannot be changed");
+      expect(result.error).toContain("Las preguntas no se pueden cambiar");
     });
 
     it("allows presentation-only updates on ACTIVE surveys", async () => {
@@ -736,7 +736,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Name is required");
+      expect(result.error).toBe("El nombre es obligatorio");
     });
 
     it("returns error when survey not found", async () => {
@@ -747,7 +747,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Survey not found");
+      expect(result.error).toBe("No encontramos la encuesta");
     });
 
     it("returns success with no updates when input is empty", async () => {
@@ -851,7 +851,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Unauthorized");
+      expect(result.error).toContain("No tienes permiso para hacer esto");
     });
 
     it("handles database errors gracefully", async () => {
@@ -865,7 +865,7 @@ describe("climate survey actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Connection lost");
+      expect(result.error).toBe("No se pudo guardar la configuración (Connection lost)");
     });
 
     it("clears description when set to empty string", async () => {

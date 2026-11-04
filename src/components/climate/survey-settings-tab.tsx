@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Loader2, Save, ImagePlus, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -57,6 +57,15 @@ interface SurveySettingsTabProps {
   distributions: DistributionInfo[];
 }
 
+/** Distribution target → its label in the `climate_distribute` namespace. */
+const DISTRIBUTION_TARGET_KEYS: Record<string, string> = {
+  ALL: "target_all",
+  HUB: "target_hubs",
+  DEPARTMENT: "target_departments",
+  TEAM: "target_teams",
+  CUSTOM: "target_employees",
+};
+
 function toDatetimeLocal(d: Date | null): string {
   if (!d) return "";
   const date = new Date(d);
@@ -72,6 +81,8 @@ export function SurveySettingsTab({
 }: SurveySettingsTabProps) {
   const router = useRouter();
   const t = useTranslations("dashboard.climate.settings_tab");
+  const tTarget = useTranslations("climate_distribute");
+  const locale = useLocale();
   const [isPending, startTransition] = useTransition();
 
   const [name, setName] = useState(initialValues.name);
@@ -440,14 +451,16 @@ export function SurveySettingsTab({
                     <p className="text-sm font-medium">
                       {dist.sentAt
                         ? t("sent_relative", {
-                            when: formatRelativeTime(dist.sentAt),
+                            when: formatRelativeTime(dist.sentAt, locale),
                           })
                         : t("not_sent")}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {t("due_target", {
-                        when: formatRelativeTime(dist.dueDate),
-                        target: dist.targetType,
+                        when: formatRelativeTime(dist.dueDate, locale),
+                        target: DISTRIBUTION_TARGET_KEYS[dist.targetType]
+                          ? tTarget(DISTRIBUTION_TARGET_KEYS[dist.targetType])
+                          : dist.targetType,
                       })}
                     </p>
                   </div>

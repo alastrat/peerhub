@@ -1,8 +1,10 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { ArrowLeft, Lock } from "lucide-react";
 import { getPortalSession } from "@/lib/auth/portal-session";
+import { getPortalLocale } from "@/lib/auth/portal-locale";
 import { prisma } from "@/lib/db/prisma";
 import { getEmployeeReport } from "@/lib/queries/reports";
 import { Button } from "@/components/ui/button";
@@ -38,6 +40,8 @@ async function PortalReportContent({ cycleId }: { cycleId: string }) {
     redirect("/portal");
   }
 
+  const t = await getTranslations({ locale: await getPortalLocale(), namespace: "portal.report" });
+
   // Check if user has access to this report (participant with released report)
   const participant = await prisma.cycleParticipant.findFirst({
     where: {
@@ -69,7 +73,7 @@ async function PortalReportContent({ cycleId }: { cycleId: string }) {
           <Link href="/portal/home">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
+              {t("back_home")}
             </Button>
           </Link>
 
@@ -77,12 +81,10 @@ async function PortalReportContent({ cycleId }: { cycleId: string }) {
             <CardContent className="flex flex-col items-center justify-center py-16">
               <Lock className="h-12 w-12 text-muted-foreground mb-4" />
               <h2 className="text-xl font-semibold mb-2">
-                Report Not Available Yet
+                {t("not_available_title")}
               </h2>
               <p className="text-muted-foreground text-center max-w-md">
-                Your feedback report for &ldquo;{unreleased.cycle.name}&rdquo;
-                hasn&apos;t been released yet. You&apos;ll receive an email
-                notification when it&apos;s ready to view.
+                {t("not_available_body", { cycle: unreleased.cycle.name })}
               </p>
             </CardContent>
           </Card>
@@ -166,7 +168,7 @@ async function PortalReportContent({ cycleId }: { cycleId: string }) {
       <Link href="/portal/home">
         <Button variant="ghost" size="sm">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Home
+          {t("back_home")}
         </Button>
       </Link>
 

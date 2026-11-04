@@ -8,12 +8,13 @@ import type { Prisma } from "@prisma/client";
 import type { ActionResult } from "@/types";
 import { getQuestionScale } from "@/lib/constants/climate-scales";
 import { buildSegmentSnapshot } from "@/lib/utils/climate-segments";
+import { actionError, unexpectedActionError } from "@/lib/auth/action-locale";
 
 type AnswerInput = { questionId: string; ratingValue?: number; textValue?: string };
 
 /**
  * Reject answers to questions outside the survey and ratings outside the
- * question's scale. Returns an error message, or null when all are valid.
+ * question's scale. Returns an `action_errors` key, or null when all are valid.
  */
 function validateAnswers(
   questions: { id: string; type: string; config: unknown }[],
@@ -22,11 +23,11 @@ function validateAnswers(
   const byId = new Map(questions.map((q) => [q.id, q]));
   for (const a of answers) {
     const q = byId.get(a.questionId);
-    if (!q) return "Answer to a question that is not part of this survey";
+    if (!q) return "answer_not_in_survey";
     if (a.ratingValue == null) continue;
     const scale = getQuestionScale(q);
     if (!scale || !Number.isInteger(a.ratingValue) || a.ratingValue < scale.min || a.ratingValue > scale.max) {
-      return "Answer is outside the question's scale";
+      return "answer_out_of_scale";
     }
   }
   return null;
@@ -71,10 +72,10 @@ export async function saveSurveyDraft(input: {
       include: { survey: { select: { companyId: true, questions: { select: { id: true, type: true, config: true } } } } },
     });
     if (!distribution || distribution.survey.companyId !== companyId) {
-      return { success: false, error: "Survey not found" };
+      return actionError("survey_not_found");
     }
     const invalid = validateAnswers(distribution.survey.questions, input.answers);
-    if (invalid) return { success: false, error: invalid };
+    if (invalid) return actionError(invalid);
 
     // Find or create response
     let response = await prisma.surveyResponse.findFirst({
@@ -91,7 +92,7 @@ export async function saveSurveyDraft(input: {
     }
 
     if (response.isComplete) {
-      return { success: false, error: "Survey already submitted" };
+      return actionError("already_submitted");
     }
 
     // Upsert answers
@@ -118,10 +119,7 @@ export async function saveSurveyDraft(input: {
 
     return { success: true };
   } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to save draft",
-    };
+    return unexpectedActionError(error, "failed_save_draft");
   }
 }
 
@@ -143,11 +141,11 @@ export async function submitSurveyResponse(input: {
     });
 
     if (!distribution || distribution.survey.companyId !== companyId) {
-      return { success: false, error: "Survey not found" };
+      return actionError("survey_not_found");
     }
 
     const invalid = validateAnswers(distribution.survey.questions, input.answers);
-    if (invalid) return { success: false, error: invalid };
+    if (invalid) return actionError(invalid);
 
     // Validate required questions
     const requiredQuestionIds = distribution.survey.questions.filter((q) => q.isRequired).map((q) => q.id);
@@ -159,7 +157,7 @@ export async function submitSurveyResponse(input: {
       (qId) => !answeredQuestionIds.includes(qId)
     );
     if (missingRequired.length > 0) {
-      return { success: false, error: `Please answer all required questions (${missingRequired.length} remaining)` };
+      return actionError("missing_required", { count: missingRequired.length });
     }
 
     // Find or create response
@@ -177,7 +175,7 @@ export async function submitSurveyResponse(input: {
     }
 
     if (response.isComplete) {
-      return { success: false, error: "Survey already submitted" };
+      return actionError("already_submitted");
     }
 
     const employeeForSnapshot = await prisma.employee.findUnique({
@@ -231,9 +229,6 @@ export async function submitSurveyResponse(input: {
     revalidatePath("/my-surveys");
     return { success: true };
   } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to submit survey",
-    };
+    return unexpectedActionError(error, "failed_submit_survey");
   }
 }

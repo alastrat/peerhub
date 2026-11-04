@@ -190,7 +190,7 @@ describe("climate response actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Survey already submitted");
+      expect(result.error).toBe("Ya enviaste esta encuesta");
       expect(mockPrisma.surveyAnswer.upsert).not.toHaveBeenCalled();
     });
 
@@ -203,7 +203,7 @@ describe("climate response actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Unauthorized");
+      expect(result.error).toBe("No tienes permiso para hacer esto");
     });
 
     it("returns error when employee not found", async () => {
@@ -215,7 +215,7 @@ describe("climate response actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Employee not found");
+      expect(result.error).toBe("No encontramos tu perfil de colaborador");
     });
 
     it("handles database errors gracefully on response creation", async () => {
@@ -231,7 +231,7 @@ describe("climate response actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("DB connection failed");
+      expect(result.error).toBe("No se pudo guardar el borrador");
     });
 
     it("handles database errors gracefully on answer upsert", async () => {
@@ -247,7 +247,7 @@ describe("climate response actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Upsert failed");
+      expect(result.error).toBe("No se pudo guardar el borrador");
     });
 
     it("handles empty answers array (no upserts)", async () => {
@@ -351,7 +351,7 @@ describe("climate response actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Survey not found");
+      expect(result.error).toBe("No encontramos la encuesta");
       expect(mockPrisma.$transaction).not.toHaveBeenCalled();
     });
 
@@ -366,8 +366,7 @@ describe("climate response actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("required questions");
-      expect(result.error).toContain("1 remaining");
+      expect(result.error).toBe("Falta 1 pregunta obligatoria por responder");
       expect(mockPrisma.$transaction).not.toHaveBeenCalled();
     });
 
@@ -385,7 +384,7 @@ describe("climate response actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("required questions");
+      expect(result.error).toContain("pregunta obligatoria");
     });
 
     it("accepts answers where all required questions are properly answered", async () => {
@@ -421,7 +420,7 @@ describe("climate response actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Survey already submitted");
+      expect(result.error).toBe("Ya enviaste esta encuesta");
       expect(mockPrisma.$transaction).not.toHaveBeenCalled();
     });
 
@@ -434,7 +433,7 @@ describe("climate response actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Unauthorized");
+      expect(result.error).toBe("No tienes permiso para hacer esto");
     });
 
     it("returns error when employee not found", async () => {
@@ -446,7 +445,7 @@ describe("climate response actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Employee not found");
+      expect(result.error).toBe("No encontramos tu perfil de colaborador");
     });
 
     it("handles transaction errors gracefully", async () => {
@@ -463,7 +462,7 @@ describe("climate response actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Transaction failed");
+      expect(result.error).toBe("No se pudo enviar la encuesta");
     });
 
     it("handles database errors on distribution lookup", async () => {
@@ -478,7 +477,7 @@ describe("climate response actions", () => {
       });
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("DB error");
+      expect(result.error).toBe("No se pudo enviar la encuesta");
     });
 
     it("queries distribution with survey and required questions include", async () => {
@@ -511,7 +510,7 @@ describe("climate response actions", () => {
 
       const result = await submitSurveyResponse({ distributionId: "dist-1", answers: sampleAnswers });
 
-      expect(result).toEqual({ success: false, error: "Survey not found" });
+      expect(result).toEqual({ success: false, error: "No encontramos la encuesta" });
       expect(mockPrisma.$transaction).not.toHaveBeenCalled();
     });
 
@@ -522,7 +521,7 @@ describe("climate response actions", () => {
         answers: [...sampleAnswers, { questionId: "q-other", ratingValue: 3 }],
       });
       expect(result.success).toBe(false);
-      expect(result.error).toContain("not part of this survey");
+      expect(result.error).toContain("no hace parte de esta encuesta");
     });
 
     it("rejects ratings outside the question's scale", async () => {
@@ -539,7 +538,7 @@ describe("climate response actions", () => {
           distributionId: "dist-1",
           answers: [{ questionId: "q-1", ratingValue }],
         });
-        expect(result.error).toContain("outside the question's scale");
+        expect(result.error).toContain("fuera de la escala de la pregunta");
       }
     });
 

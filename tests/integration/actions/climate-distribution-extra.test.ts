@@ -75,8 +75,8 @@ describe("distributeSurvey — warning + lifecycle edge cases", () => {
     });
 
     expect(result.success).toBe(true);
-    expect(result.warning).toContain("2 email notification(s) failed");
-    expect(result.warning).toContain("3 employees");
+    expect(result.warning).toContain("2 correos de notificación no se pudieron entregar");
+    expect(result.warning).toContain("3 colaboradores");
   });
 
   it("does NOT flip status when survey is already ACTIVE", async () => {
@@ -122,7 +122,7 @@ describe("reactivateSurvey", () => {
     mockPrisma.climateSurvey.findFirst.mockResolvedValue(null);
     const result = await reactivateSurvey("nope");
     expect(result.success).toBe(false);
-    expect(result.error).toBe("Survey not found");
+    expect(result.error).toBe("No encontramos la encuesta");
   });
 
   it("rejects non-CLOSED surveys with the 'Only closed surveys' error", async () => {
@@ -133,7 +133,7 @@ describe("reactivateSurvey", () => {
       });
       const result = await reactivateSurvey("s1");
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Only closed surveys can be reactivated");
+      expect(result.error).toBe("Solo se pueden reactivar encuestas cerradas");
     }
   });
 
@@ -141,7 +141,7 @@ describe("reactivateSurvey", () => {
     mockSession = createMemberSession();
     const result = await reactivateSurvey("s1");
     expect(result.success).toBe(false);
-    expect(result.error).toContain("Unauthorized");
+    expect(result.error).toContain("No tienes permiso para hacer esto");
   });
 
   it("handles DB errors gracefully", async () => {
@@ -153,6 +153,6 @@ describe("reactivateSurvey", () => {
 
     const result = await reactivateSurvey("s1");
     expect(result.success).toBe(false);
-    expect(result.error).toBe("boom");
+    expect(result.error).toBe("No se pudo reactivar la encuesta (boom)");
   });
 });

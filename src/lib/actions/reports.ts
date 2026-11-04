@@ -8,8 +8,6 @@ import { sendReportReleasedEmail } from "@/lib/email/templates";
 import { getEmployeeReport, getCycleReportSummary } from "@/lib/queries/reports";
 import { notifyEmployee } from "@/lib/utils/notify-employee";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
 export async function releaseReport(
   cycleId: string,
   participantId: string,
@@ -74,12 +72,13 @@ export async function releaseReport(
           employeeId: participant.employeeId,
           subject: `Your feedback report for "${participant.cycle.name}" is ready`,
           dashboardUrl: `/my-feedback/${cycleId}`,
-          sendMemberEmail: async (email, name, url) => {
+          sendMemberEmail: async (email, name, url, locale) => {
             await sendReportReleasedEmail({
               to: email,
-              employeeName: name || "there",
+              employeeName: name,
               cycleName: participant.cycle.name,
               reportUrl: url,
+              locale,
             });
           },
         });
@@ -160,12 +159,13 @@ export async function releaseAllReports(
               employeeId: participant.employeeId,
               subject: `Your feedback report for "${cycle.name}" is ready`,
               dashboardUrl: `/my-feedback/${cycleId}`,
-              sendMemberEmail: async (email, name, url) => {
+              sendMemberEmail: async (email, name, url, locale) => {
                 await sendReportReleasedEmail({
                   to: email,
-                  employeeName: name || "there",
+                  employeeName: name,
                   cycleName: cycle.name,
                   reportUrl: url,
+                  locale,
                 });
               },
             });

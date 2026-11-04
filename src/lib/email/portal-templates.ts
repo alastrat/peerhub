@@ -1,11 +1,23 @@
 import { sendEmail } from "./resend";
+import { getTranslator, toSupportedLocale } from "@/i18n/translator";
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "Kultiva";
 
-export function baseTemplate(content: string): string {
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/** Wraps email content in the shared layout; the footer follows `locale` (company locale). */
+export function baseTemplate(content: string, locale?: string | null): string {
+  const t = getTranslator(locale, "emails");
   return `
 <!DOCTYPE html>
-<html>
+<html lang="${toSupportedLocale(locale)}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -79,7 +91,7 @@ export function baseTemplate(content: string): string {
     <div class="logo">${APP_NAME}</div>
     ${content}
     <div class="footer">
-      <p>This email was sent by ${APP_NAME}. If you have questions, please contact your HR administrator.</p>
+      <p>${escapeHtml(t("footer", { appName: APP_NAME }))}</p>
     </div>
   </div>
 </body>
@@ -90,21 +102,27 @@ export function baseTemplate(content: string): string {
 export async function sendPortalMagicLinkEmail(
   to: string,
   name: string,
-  magicLinkUrl: string
+  magicLinkUrl: string,
+  locale?: string | null,
 ): Promise<void> {
+  const t = getTranslator(locale, "emails");
+  const greeting = t("greeting", { name });
+  const body = t("portal_magic_link.body", { appName: APP_NAME });
+  const expiry = t("portal_magic_link.expiry_note");
+
   const html = baseTemplate(`
-    <h1>Access Your Portal</h1>
-    <p>Hi ${name},</p>
-    <p>You requested access to your ${APP_NAME} employee portal. Click the button below to sign in.</p>
-    <a href="${magicLinkUrl}" class="button">Sign In to Portal</a>
-    <p class="secondary-text">This link will expire in 24 hours. If you didn't request this, you can safely ignore this email.</p>
-  `);
+    <h1>${escapeHtml(t("portal_magic_link.heading"))}</h1>
+    <p>${escapeHtml(greeting)}</p>
+    <p>${escapeHtml(body)}</p>
+    <a href="${magicLinkUrl}" class="button">${escapeHtml(t("portal_magic_link.cta"))}</a>
+    <p class="secondary-text">${escapeHtml(expiry)}</p>
+  `, locale);
 
   await sendEmail({
     to,
-    subject: `Access your ${APP_NAME} portal`,
+    subject: t("portal_magic_link.subject", { appName: APP_NAME }),
     html,
-    text: `Hi ${name}, you requested access to your ${APP_NAME} employee portal. Sign in here: ${magicLinkUrl} — This link will expire in 24 hours.`,
+    text: `${greeting} ${body} ${t("portal_magic_link.cta")}: ${magicLinkUrl} — ${expiry}`,
   });
 }
 
@@ -114,28 +132,38 @@ export function buildSurveyInvitationEmail(opts: {
   dueDate: string;
   surveyUrl: string;
   isAnonymous: boolean;
+  /** Company locale; defaults to Spanish. */
+  locale?: string | null;
 }): { subject: string; html: string; text: string } {
-  const { employeeName, surveyName, dueDate, surveyUrl, isAnonymous } = opts;
+  const { employeeName, surveyName, dueDate, surveyUrl, isAnonymous, locale } = opts;
+  const t = getTranslator(locale, "emails");
+  const greeting = t("greeting", { name: employeeName });
+  const cta = t("survey_invitation.cta");
 
   const anonymousNote = isAnonymous
-    ? `<div class="highlight"><strong>Your answers are anonymous.</strong> Your identity will not be linked to your responses.</div>`
+    ? `<div class="highlight"><strong>${escapeHtml(t("survey_invitation.anonymous_title"))}</strong> ${escapeHtml(t("survey_invitation.anonymous_body"))}</div>`
     : "";
 
-  const subject = `You've been invited to complete: ${surveyName}`;
+  const subject = t("survey_invitation.subject", { survey: surveyName });
 
   const html = baseTemplate(`
-    <h1>You have a new survey</h1>
-    <p>Hi ${employeeName},</p>
-    <p>You've been invited to complete <strong>${surveyName}</strong>. Your feedback is important and helps us improve.</p>
+    <h1>${escapeHtml(t("survey_invitation.heading"))}</h1>
+    <p>${escapeHtml(greeting)}</p>
+    <p>${t.markup("survey_invitation.intro", {
+      survey: escapeHtml(surveyName),
+      strong: (chunks) => `<strong>${chunks}</strong>`,
+    })}</p>
     ${anonymousNote}
     <div class="highlight">
-      <strong>Due date:</strong> ${dueDate}
+      <strong>${escapeHtml(t("survey_invitation.due_label"))}</strong> ${escapeHtml(dueDate)}
     </div>
-    <a href="${surveyUrl}" class="button">Complete Survey</a>
-    <p class="secondary-text">Click the button above to access the survey through the ${APP_NAME} employee portal.</p>
-  `);
+    <a href="${surveyUrl}" class="button">${escapeHtml(cta)}</a>
+    <p class="secondary-text">${escapeHtml(t("survey_invitation.portal_note", { appName: APP_NAME }))}</p>
+  `, locale);
 
-  const text = `Hi ${employeeName}, you've been invited to complete "${surveyName}". Due date: ${dueDate}. ${isAnonymous ? "Your answers are anonymous. " : ""}Complete it here: ${surveyUrl}`;
+  const intro = t.markup("survey_invitation.intro", { survey: surveyName, strong: (chunks) => chunks });
+  const anonymous = isAnonymous ? `${t("survey_invitation.anonymous_title")} ` : "";
+  const text = `${greeting} ${intro} ${t("survey_invitation.due_label")} ${dueDate}. ${anonymous}${cta}: ${surveyUrl}`;
 
   return { subject, html, text };
 }

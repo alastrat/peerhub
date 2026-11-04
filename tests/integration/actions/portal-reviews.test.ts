@@ -10,6 +10,11 @@ vi.mock("@/lib/db/prisma", () => ({
   },
 }));
 
+// Error messages follow the caller's company language (dashboard session first)
+vi.mock("@/lib/auth/config", () => ({
+  auth: vi.fn(() => Promise.resolve(null)),
+}));
+
 vi.mock("@/lib/auth/portal-session", () => ({
   getPortalSession: vi.fn(() => Promise.resolve(mockPortalSession)),
 }));
@@ -174,7 +179,7 @@ describe("portal review actions", () => {
       const result = await savePortalReviewProgress("assignment-1", sampleResponses);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Unauthorized");
+      expect(result.error).toBe("No tienes permiso para hacer esto");
       expect(mockPrisma.reviewAssignment.findFirst).not.toHaveBeenCalled();
     });
 
@@ -184,7 +189,7 @@ describe("portal review actions", () => {
       const result = await savePortalReviewProgress("nonexistent", sampleResponses);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Review assignment not found");
+      expect(result.error).toBe("No encontramos esta evaluación");
       expect(mockPrisma.reviewAssignment.update).not.toHaveBeenCalled();
     });
 
@@ -194,7 +199,7 @@ describe("portal review actions", () => {
       const result = await savePortalReviewProgress("assignment-1", sampleResponses);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Review already submitted");
+      expect(result.error).toBe("Ya enviaste esta evaluación");
       expect(mockPrisma.reviewAssignment.update).not.toHaveBeenCalled();
     });
 
@@ -206,7 +211,7 @@ describe("portal review actions", () => {
       const result = await savePortalReviewProgress("assignment-1", sampleResponses);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Failed to save progress");
+      expect(result.error).toBe("No se pudo guardar el avance");
     });
 
     it("handles update errors gracefully", async () => {
@@ -218,7 +223,7 @@ describe("portal review actions", () => {
       const result = await savePortalReviewProgress("assignment-1", sampleResponses);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Failed to save progress");
+      expect(result.error).toBe("No se pudo guardar el avance");
     });
   });
 
@@ -311,7 +316,7 @@ describe("portal review actions", () => {
       const result = await submitPortalReview("assignment-1", sampleResponses);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Unauthorized");
+      expect(result.error).toBe("No tienes permiso para hacer esto");
       expect(mockPrisma.reviewAssignment.findFirst).not.toHaveBeenCalled();
     });
 
@@ -321,7 +326,7 @@ describe("portal review actions", () => {
       const result = await submitPortalReview("nonexistent", sampleResponses);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Review assignment not found");
+      expect(result.error).toBe("No encontramos esta evaluación");
       expect(mockPrisma.$transaction).not.toHaveBeenCalled();
     });
 
@@ -335,7 +340,7 @@ describe("portal review actions", () => {
       const result = await submitPortalReview("assignment-1", sampleResponses);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Review already submitted");
+      expect(result.error).toBe("Ya enviaste esta evaluación");
       expect(mockPrisma.$transaction).not.toHaveBeenCalled();
     });
 
@@ -350,7 +355,7 @@ describe("portal review actions", () => {
       const result = await submitPortalReview("assignment-1", incompleteResponses);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Please answer all required questions");
+      expect(result.error).toBe("Responde todas las preguntas obligatorias");
       expect(mockPrisma.$transaction).not.toHaveBeenCalled();
     });
 
@@ -394,7 +399,7 @@ describe("portal review actions", () => {
       const result = await submitPortalReview("assignment-1", responses);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Failed to submit review");
+      expect(result.error).toBe("No se pudo enviar la evaluación");
     });
 
     it("handles database errors on findFirst gracefully", async () => {
@@ -405,7 +410,7 @@ describe("portal review actions", () => {
       const result = await submitPortalReview("assignment-1", sampleResponses);
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Failed to submit review");
+      expect(result.error).toBe("No se pudo enviar la evaluación");
     });
 
     it("maps selectedOptions to empty array when not provided", async () => {

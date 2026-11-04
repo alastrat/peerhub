@@ -4,23 +4,18 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import confetti from "canvas-confetti";
 import { ArrowLeft, ArrowRight, Check, ClipboardCheck, ShieldCheck } from "lucide-react";
-import type { WallpaperConfig, ColorConfig } from "@/lib/utils/wallpaper";
+import type { WallpaperConfig } from "@/lib/utils/wallpaper";
 import { getWallpaperCSS, parseWallpaperConfig, parseColorConfig, resolveColors, getContrastBadgeColors } from "@/lib/utils/wallpaper";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PortalClimateSurveyForm } from "@/components/portal/portal-climate-survey-form";
+import { getClimateSurveyTypeLabel } from "@/lib/constants/climate-survey";
 import type { SurveyQuestionType } from "@prisma/client";
-
-const DEFAULT_CTA_TEXT = "Comenzar encuesta";
-const DEFAULT_THEME_COLOR = "#613171";
-const DEFAULT_THANK_YOU_BODY =
-  "Gracias por completar nuestra encuesta. Tu opinión es muy valiosa para seguir mejorando nuestro ambiente laboral.";
-const DEFAULT_THANK_YOU_CTA = "Ir a Inicio";
 
 interface Question {
   id: string;
@@ -87,6 +82,7 @@ export function PortalClimateSurveyFlow({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const t = useTranslations("portal.climate_survey");
+  const locale = useLocale();
 
   // Stage lives in the URL (?stage=form|thankyou) so a refresh keeps the
   // respondent on the screen they were on. Default is the welcome screen.
@@ -116,6 +112,9 @@ export function PortalClimateSurveyFlow({
     if (typeof window === "undefined") return;
     const accepted = window.localStorage.getItem(consentKey) === "1";
     if (!accepted) return;
+    // localStorage only exists after mount; reading it during render would
+    // make the server and client markup disagree
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setConsentAccepted(true);
     if (stage === "welcome") setStage("form");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -137,7 +136,7 @@ export function PortalClimateSurveyFlow({
   }, [stage]);
 
   const resolvedTitle = welcomeTitle?.trim() || surveyName;
-  const resolvedCta = welcomeCtaText?.trim() || DEFAULT_CTA_TEXT;
+  const resolvedCta = welcomeCtaText?.trim() || t("default_cta");
 
   // Color scheme
   const colors = resolveColors(parseColorConfig(rawColorConfig), themeColor || undefined);
@@ -151,8 +150,8 @@ export function PortalClimateSurveyFlow({
   const badgeColors = getContrastBadgeColors(parsedWallpaper, accent);
 
   const resolvedThankYouTitle = thankYouTitle?.trim() || surveyName;
-  const resolvedThankYouBody = thankYouBody?.trim() || DEFAULT_THANK_YOU_BODY;
-  const resolvedThankYouCta = thankYouCtaText?.trim() || DEFAULT_THANK_YOU_CTA;
+  const resolvedThankYouBody = thankYouBody?.trim() || t("default_thank_you_body");
+  const resolvedThankYouCta = thankYouCtaText?.trim() || t("default_thank_you_cta");
 
   if (stage === "thankyou") {
     return (
@@ -242,7 +241,7 @@ export function PortalClimateSurveyFlow({
       <div className="flex items-center gap-4">
         {!previewMode && (
           <Link href="/portal/home">
-            <Button variant="ghost" size="icon" aria-label="Back to portal home">
+            <Button variant="ghost" size="icon" aria-label={t("back_home")}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
@@ -273,15 +272,15 @@ export function PortalClimateSurveyFlow({
       <div className="mx-auto max-w-2xl overflow-hidden rounded-xl bg-white shadow-lg">
         <div className="space-y-6 p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <Badge variant="outline">{surveyType}</Badge>
+            <Badge variant="outline">{getClimateSurveyTypeLabel(surveyType, locale)}</Badge>
             {isOverdue ? (
-              <Badge variant="destructive">Vencida</Badge>
+              <Badge variant="destructive">{t("overdue")}</Badge>
             ) : daysLeft <= 3 ? (
               <Badge variant="secondary" className="bg-amber-100 text-amber-700">
-                {daysLeft} día{daysLeft !== 1 ? "s" : ""} restante{daysLeft !== 1 ? "s" : ""}
+                {t("days_left", { count: daysLeft })}
               </Badge>
             ) : (
-              <span className="text-muted-foreground">Vence el {dueDateLabel}</span>
+              <span className="text-muted-foreground">{t("due_on", { date: dueDateLabel })}</span>
             )}
           </div>
 
@@ -304,9 +303,7 @@ export function PortalClimateSurveyFlow({
               className="text-base leading-relaxed"
               style={{ color: colors.pageText }}
             >
-              Estamos muy interesados en conocer tu opinión. Tus respuestas nos
-              ayudarán a identificar oportunidades de mejora y a seguir construyendo
-              un mejor ambiente de trabajo.
+              {t("default_welcome_body")}
             </p>
           )}
 
@@ -322,10 +319,7 @@ export function PortalClimateSurveyFlow({
                 className="text-sm leading-relaxed"
                 style={{ color: colors.pageText }}
               >
-                Al responder esta encuesta, autorizo el tratamiento de mis datos
-                con fines de análisis de clima organizacional. Mis respuestas serán
-                confidenciales y los resultados se reportarán de forma agregada,
-                sin identificación individual.
+                {t("consent")}
               </span>
             </label>
           )}
