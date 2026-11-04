@@ -46,7 +46,22 @@ html[data-platform-theme="kultiva"]:has([data-app-shell]) {
     radial-gradient(1100px 680px at 50% 22%, var(--k-purple-glow), transparent 62%),
     linear-gradient(165deg, var(--k-purple-800), var(--k-purple-950));
 
-  /* shadcn tokens (HSL triplets) */
+  /* Template variables behind the base element styles (bizzen/style.css) */
+  --heading-font: var(--font-quicksand), "Quicksand", sans-serif;
+  --body-font: var(--font-display), "Inter", system-ui, sans-serif;
+  --heading-color: var(--k-ink-900);
+  --text-color: var(--k-ink-700);
+
+  background-color: var(--k-purple-950);
+}
+
+/* shadcn tokens (HSL triplets) for the page and its portals. Popovers that
+   open inline inside the dark chrome (e.g. the header search results) get
+   them back too, so they read as light panels. */
+html[data-platform-theme="kultiva"]:has([data-app-shell]),
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > aside .bg-popover,
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > div > header .bg-popover,
+html[data-platform-theme="kultiva"] [data-app-shell] [data-app-header] .bg-popover {
   --background: 0 0% 100%;
   --foreground: 268 51% 15%; /* ink-900 */
   --card: 0 0% 100%;
@@ -72,14 +87,6 @@ html[data-platform-theme="kultiva"]:has([data-app-shell]) {
   --chart-3: 42 72% 50%;
   --chart-4: 294 43% 36%;
   --chart-5: 6 56% 51%;
-
-  /* Template variables behind the base element styles (bizzen/style.css) */
-  --heading-font: var(--font-quicksand), "Quicksand", sans-serif;
-  --body-font: var(--font-display), "Inter", system-ui, sans-serif;
-  --heading-color: var(--k-ink-900);
-  --text-color: var(--k-ink-700);
-
-  background-color: var(--k-purple-950);
 }
 
 html[data-platform-theme="kultiva"] body:has([data-app-shell]) {
@@ -120,6 +127,8 @@ html[data-platform-theme="kultiva"] [data-app-shell] [data-app-footer] {
   --primary: 88 50% 53%; /* leaf-500: notification dots, focus rings */
   --primary-foreground: 269 68% 11%;
   --ring: 88 50% 53%;
+  /* text typed into inline popover triggers, e.g. the header search input */
+  --popover-foreground: 0 0% 100%;
   color: #fff;
 }
 
@@ -155,14 +164,14 @@ html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > aside a[class
 }
 
 /* Top bar search: translucent pill like the POC's back button */
-html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > div > header [data-slot="input"] {
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > div > header :is([data-slot="input"], [cmdk-input]) {
   border-radius: 999px;
   border-color: rgba(255, 255, 255, 0.16);
   background-color: rgba(255, 255, 255, 0.1);
   color: #fff;
 }
 
-html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > div > header [data-slot="input"]:focus-visible {
+html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > div > header :is([data-slot="input"], [cmdk-input]):focus-visible {
   background-color: rgba(255, 255, 255, 0.16);
   border-color: rgba(255, 255, 255, 0.3);
 }
