@@ -154,9 +154,7 @@ html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > aside a:has(>
 
 html[data-platform-theme="kultiva"] [data-app-shell="dashboard"] > aside a[class*="bg-[#613171]"] {
   background-color: #fff;
-  /* !important: the link also carries .text-white, which Bootstrap's
-     utilities mark !important */
-  color: var(--k-purple-700) !important;
+  color: var(--k-purple-700);
   box-shadow: 0 6px 18px rgba(20, 6, 34, 0.35);
 }
 
@@ -265,9 +263,7 @@ html[data-platform-theme="kultiva"] [data-app-shell="auth"] :has(> [data-auth-sh
 html[data-platform-theme="kultiva"] [data-app-shell="onboarding"] main [data-slot="card"] {
   border: none;
   border-radius: var(--k-radius-lg);
-  /* !important: the card carries .shadow-lg, which Bootstrap's utilities
-     mark !important */
-  box-shadow: var(--k-shadow-card) !important;
+  box-shadow: var(--k-shadow-card);
 }
 
 /* ==========================================================================
@@ -311,14 +307,15 @@ html[data-platform-theme="kultiva"]:has([data-app-shell]) [data-slot="button"][d
   background-color: var(--k-surface-200);
 }
 
-/* Form fields */
-html[data-platform-theme="kultiva"]:has([data-app-shell]) :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]) {
+/* Form fields (.phone-input: react-phone-number-input, styled in globals.css) */
+html[data-platform-theme="kultiva"]:has([data-app-shell]) :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"], .phone-input) {
   border-width: 1.5px;
   border-radius: var(--k-radius-sm);
   box-shadow: none;
 }
 
-html[data-platform-theme="kultiva"]:has([data-app-shell]) :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]):focus-visible {
+html[data-platform-theme="kultiva"]:has([data-app-shell]) :is([data-slot="input"], [data-slot="textarea"], [data-slot="select-trigger"]):focus-visible,
+html[data-platform-theme="kultiva"]:has([data-app-shell]) .phone-input:focus-within {
   border-color: var(--k-purple-glow);
 }
 

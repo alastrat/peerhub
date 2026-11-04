@@ -50,9 +50,8 @@ export function PlatformThemeSwitcher({ currentTheme }: { currentTheme: Platform
               aria-checked={isSelected}
               onClick={() => setSelected(theme)}
               disabled={isPending}
-              // border-solid: bizzen/style.css strips <button> borders.
               className={cn(
-                "group rounded-xl border-2 border-solid bg-card p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-70",
+                "group rounded-xl border-2 bg-card p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-70",
                 isSelected ? "border-primary" : "border-border hover:border-primary/40"
               )}
             >

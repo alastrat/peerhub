@@ -497,23 +497,19 @@
 
 /* ==========================================================================
    BOOTSTRAP OVERRIDES
-   Neutralize Bootstrap utility classes that conflict with Tailwind.
+   Brand primary for the marketing site's Bootstrap classes. Bootstrap only
+   applies inside [data-website], so the app's Tailwind classes are untouched.
    ========================================================================== */
 
-.bg-primary {
+:where([data-website]) .bg-primary {
   background-color: hsl(var(--primary)) !important;
 }
 
-.text-primary {
+:where([data-website]) .text-primary {
   color: hsl(var(--primary)) !important;
 }
 
-/* Only the bare class collides; border-primary/50 etc. aren't Bootstrap classes */
-.border-primary {
-  border-color: hsl(var(--primary)) !important;
-}
-
-.btn-primary {
+:where([data-website]) .btn-primary {
   background-color: hsl(var(--primary)) !important;
   border-color: hsl(var(--primary)) !important;
 }
