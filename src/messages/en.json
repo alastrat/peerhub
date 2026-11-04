@@ -1845,6 +1845,7 @@
       "features": "Features",
       "admin_domains": "Admin Domains",
       "platform_health": "Platform Health",
+      "appearance": "Appearance",
       "company_settings": "Company Settings",
       "manage_settings_for": "Manage settings for",
       "company_info": "Company Information",
@@ -2759,7 +2760,26 @@
       "health_user": "user",
       "health_users_plural": "users",
       "users_title": "Users",
-      "users_description": "Manage all users across the platform"
+      "users_description": "Manage all users across the platform",
+      "appearance_title": "Appearance",
+      "appearance_description": "Choose the visual theme for the whole platform",
+      "appearance": {
+        "scope_note": "The theme applies to every company and user: the dashboard, the employee portal and the sign-in pages. Only super admins can change it.",
+        "themes_label": "Platform theme",
+        "current": "Current theme",
+        "apply": "Apply theme",
+        "applying": "Applying…",
+        "applied": "Theme updated for the whole platform",
+        "error": "Couldn't change the theme",
+        "classic": {
+          "name": "Classic",
+          "description": "The current look: warm light background, light sidebar and purple accents."
+        },
+        "kultiva": {
+          "name": "Kultiva",
+          "description": "The look of Kultiva's proposal: deep purple backdrop, rounded white surfaces, pill buttons and leaf-green accents."
+        }
+      }
     },
     "roles_page": {
       "create_role": "Create Role",

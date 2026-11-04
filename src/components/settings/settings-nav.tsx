@@ -17,6 +17,7 @@ import {
   Target,
   MapPin,
   UsersRound,
+  Palette,
 } from "lucide-react";
 
 interface NavItemDef {
@@ -45,6 +46,7 @@ const PLATFORM_ITEMS: NavItemDef[] = [
   { href: "/settings/company/features", labelKey: "features", icon: Puzzle },
   { href: "/settings/platform/domains", labelKey: "admin_domains", icon: Globe },
   { href: "/settings/platform/health", labelKey: "platform_health", icon: Activity },
+  { href: "/settings/platform/appearance", labelKey: "appearance", icon: Palette },
 ];
 
 export function SettingsNav({

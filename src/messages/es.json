@@ -1891,6 +1891,7 @@
       "features": "Funcionalidades",
       "admin_domains": "Dominios de Admin",
       "platform_health": "Salud de Plataforma",
+      "appearance": "Apariencia",
       "company_settings": "Configuración de Empresa",
       "manage_settings_for": "Administrar configuración de",
       "company_info": "Información de la Empresa",
@@ -2807,7 +2808,26 @@
       "health_user": "usuario",
       "health_users_plural": "usuarios",
       "users_title": "Usuarios",
-      "users_description": "Administra los usuarios de la plataforma"
+      "users_description": "Administra los usuarios de la plataforma",
+      "appearance_title": "Apariencia",
+      "appearance_description": "Elige el tema visual de toda la plataforma",
+      "appearance": {
+        "scope_note": "El tema se aplica a todas las empresas y usuarios: el panel, el portal de colaboradores y las páginas de inicio de sesión. Solo los super administradores pueden cambiarlo.",
+        "themes_label": "Tema de la plataforma",
+        "current": "Tema actual",
+        "apply": "Aplicar tema",
+        "applying": "Aplicando…",
+        "applied": "Tema actualizado para toda la plataforma",
+        "error": "No se pudo cambiar el tema",
+        "classic": {
+          "name": "Clásico",
+          "description": "El aspecto actual: fondo claro cálido, barra lateral clara y acentos morados."
+        },
+        "kultiva": {
+          "name": "Kultiva",
+          "description": "El aspecto de la propuesta de Kultiva: fondo morado profundo, superficies blancas redondeadas, botones tipo píldora y acentos verde hoja."
+        }
+      }
     },
     "roles_page": {
       "create_role": "Crear rol",

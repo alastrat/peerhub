@@ -40,11 +40,11 @@ export default function DashboardLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages[locale] ?? messages.es}>
-      <div className="min-h-screen bg-muted">
+      <div data-app-shell="dashboard" className="min-h-screen bg-muted">
         <Sidebar />
         <div className="flex min-h-screen flex-col pl-16">
           <Header />
-          <main className="flex-1 rounded-tl-2xl bg-background p-6 shadow-sm">
+          <main data-app-main className="flex-1 rounded-tl-2xl bg-background p-6 shadow-sm">
             <div className="mx-auto max-w-6xl">
               {children}
             </div>
