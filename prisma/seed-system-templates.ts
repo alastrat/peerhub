@@ -6,11 +6,14 @@
  *
  * Run standalone:  npx tsx prisma/seed-system-templates.ts
  * Or via seed:     npx prisma db seed  (imported by seed.ts)
+ * On deploy:       npx tsx prisma/seed-system-templates.ts --deploy
+ *                  (part of `npm run build`; production deploys only)
  */
 
 import { PrismaClient } from "@prisma/client";
 import { SYSTEM_360_TEMPLATES } from "./seeds/360-review-templates";
 import { SYSTEM_CLIMATE_TEMPLATES } from "./seeds/climate-survey-templates";
+import { KULTIVA_CLIMATE_TEMPLATE } from "./seeds/kultiva-climate-template";
 
 const prisma = new PrismaClient();
 
@@ -229,6 +232,70 @@ export async function seedClimateInstrument() {
 }
 
 // ---------------------------------------------------------------------------
+// Kultiva climate survey (the whole instrument + open questions)
+// ---------------------------------------------------------------------------
+
+export async function seedKultivaClimateTemplate() {
+  console.log("Seeding Kultiva climate survey template...");
+  const { INSTRUMENT_DIMENSIONS, instrumentItemConfig } = await import("../src/lib/constants/climate-instrument");
+  const { name, description, openQuestionsDimension, openQuestions } = KULTIVA_CLIMATE_TEMPLATE;
+
+  const existing = await prisma.climateSurveyTemplate.findFirst({ where: { companyId: null, name } });
+  if (existing) {
+    console.log(`  ⏭  Skipping "${name}" (already exists)`);
+    return;
+  }
+
+  const dimensions = await prisma.climateDimension.findMany({
+    where: { code: { in: INSTRUMENT_DIMENSIONS.map((d) => d.code) } },
+    select: { id: true, code: true },
+  });
+  const dimensionIds = new Map(dimensions.map((d) => [d.code!, d.id]));
+  if (dimensionIds.size !== INSTRUMENT_DIMENSIONS.length) {
+    throw new Error("The climate instrument's dimensions are missing; run seedClimateInstrument first");
+  }
+
+  const openDimension =
+    (await prisma.climateDimension.findFirst({ where: { companyId: null, name: openQuestionsDimension.name } })) ??
+    (await prisma.climateDimension.create({
+      data: { ...openQuestionsDimension, companyId: null, isDefault: true, order: 200 },
+    }));
+
+  let order = 0;
+  await prisma.climateSurveyTemplate.create({
+    data: {
+      name,
+      description,
+      type: "CLIMATE",
+      companyId: null,
+      isDefault: true,
+      questions: {
+        create: [
+          ...INSTRUMENT_DIMENSIONS.flatMap((dim) =>
+            dim.items.map((item) => ({
+              text: item.text,
+              type: "LIKERT" as const,
+              dimensionId: dimensionIds.get(dim.code)!,
+              order: ++order,
+              isRequired: true,
+              config: instrumentItemConfig(item.code),
+            })),
+          ),
+          ...openQuestions.map((text) => ({
+            text,
+            type: "TEXT" as const,
+            dimensionId: openDimension.id,
+            order: ++order,
+            isRequired: false,
+          })),
+        ],
+      },
+    },
+  });
+  console.log(`  ✅ Created "${name}" (${order} questions)`);
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -239,15 +306,35 @@ export async function seedSystemTemplates() {
   await seedClimateTemplates();
   console.log("");
   await seedClimateInstrument();
+  console.log("");
+  await seedKultivaClimateTemplate();
   console.log("\n✅ System templates seeded successfully!\n");
 }
 
-// Allow running standalone
+/**
+ * The templates every company gets in production: the validated, Spanish
+ * ones. The English samples above stay in local and demo databases.
+ */
+export async function seedProductionTemplates() {
+  console.log("\n🌱 Seeding production templates...\n");
+  await seedClimateInstrument();
+  console.log("");
+  await seedKultivaClimateTemplate();
+  console.log("\n✅ Production templates seeded\n");
+}
+
+// Allow running standalone. `--deploy` is the build step: preview builds share
+// the production database, so it only writes on production deploys.
 if (require.main === module) {
-  seedSystemTemplates()
-    .catch((e) => {
-      console.error("Seed failed:", e);
-      process.exit(1);
-    })
-    .finally(() => prisma.$disconnect());
+  const deploy = process.argv.includes("--deploy");
+  if (deploy && process.env.VERCEL_ENV !== "production") {
+    console.log(`Skipping template seed: not a production deploy (VERCEL_ENV=${process.env.VERCEL_ENV ?? "unset"})`);
+  } else {
+    (deploy ? seedProductionTemplates() : seedSystemTemplates())
+      .catch((e) => {
+        console.error("Seed failed:", e);
+        process.exit(1);
+      })
+      .finally(() => prisma.$disconnect());
+  }
 }
