@@ -1393,6 +1393,47 @@
     "error": "Error",
     "success": "Success"
   },
+  "search": {
+    "label": "Search Kultiva",
+    "placeholder": "Search...",
+    "loading": "Searching…",
+    "error": "We couldn't complete the search. Please try again.",
+    "empty": "No results for “{query}”",
+    "min_chars": "Type at least {count} characters to search",
+    "hint_company": "Search people, surveys, action plans, templates, 360 cycles, departments and teams",
+    "hint_platform": "Search platform companies",
+    "groups": {
+      "pages": "Go to",
+      "person": "People",
+      "climateSurvey": "Climate surveys",
+      "actionPlan": "Action plans",
+      "climateTemplate": "Climate templates",
+      "cycle": "360 cycles",
+      "department": "Departments",
+      "team": "Teams",
+      "company": "Companies"
+    },
+    "pages": {
+      "overview": "Overview",
+      "people": "People",
+      "climate_surveys": "Climate surveys",
+      "climate_templates": "Climate templates",
+      "cycles_360": "360 reviews",
+      "templates_360": "360 review templates",
+      "reports": "Reports",
+      "company_settings": "Company settings",
+      "profile": "My profile",
+      "my_reviews": "My reviews",
+      "my_feedback": "My feedback",
+      "platform_companies": "Platform companies",
+      "platform_users": "Platform users"
+    },
+    "keys": {
+      "navigate": "navigate",
+      "open": "open",
+      "close": "close"
+    }
+  },
   "onboarding": {
     "profile_title": "Tell us about yourself",
     "profile_description": "A few details to personalize your account",

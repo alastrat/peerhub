@@ -1439,6 +1439,47 @@
     "error": "Error",
     "success": "Exito"
   },
+  "search": {
+    "label": "Buscar en Kultiva",
+    "placeholder": "Buscar...",
+    "loading": "Buscando…",
+    "error": "No pudimos completar la búsqueda. Intenta de nuevo.",
+    "empty": "No encontramos resultados para “{query}”",
+    "min_chars": "Escribe al menos {count} caracteres para buscar",
+    "hint_company": "Busca personas, encuestas, planes de acción, plantillas, ciclos 360, departamentos y equipos",
+    "hint_platform": "Busca empresas de la plataforma",
+    "groups": {
+      "pages": "Ir a",
+      "person": "Personas",
+      "climateSurvey": "Encuestas de clima",
+      "actionPlan": "Planes de acción",
+      "climateTemplate": "Plantillas de clima",
+      "cycle": "Ciclos 360",
+      "department": "Departamentos",
+      "team": "Equipos",
+      "company": "Empresas"
+    },
+    "pages": {
+      "overview": "Inicio",
+      "people": "Personas",
+      "climate_surveys": "Encuestas de clima",
+      "climate_templates": "Plantillas de clima",
+      "cycles_360": "Evaluaciones 360",
+      "templates_360": "Plantillas de evaluación 360",
+      "reports": "Reportes",
+      "company_settings": "Configuración de la empresa",
+      "profile": "Mi perfil",
+      "my_reviews": "Mis evaluaciones",
+      "my_feedback": "Mi retroalimentación",
+      "platform_companies": "Empresas de la plataforma",
+      "platform_users": "Usuarios de la plataforma"
+    },
+    "keys": {
+      "navigate": "navegar",
+      "open": "abrir",
+      "close": "cerrar"
+    }
+  },
   "onboarding": {
     "profile_title": "Cuéntanos sobre ti",
     "profile_description": "Algunos datos para personalizar tu cuenta",
