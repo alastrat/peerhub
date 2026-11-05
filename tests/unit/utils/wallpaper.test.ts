@@ -5,6 +5,7 @@ import {
   parseColorConfig,
   resolveColors,
   getContrastBadgeColors,
+  isDarkWallpaper,
   GRADIENT_PRESETS,
   PATTERN_OPTIONS,
   DEFAULT_COLORS,
@@ -399,6 +400,26 @@ describe("wallpaper utils", () => {
     it("handles short hex colors (#rgb format) via fallback", () => {
       const result = getContrastBadgeColors(null, "#fff");
       expect(result.bg).toContain("0,0,0");
+    });
+  });
+
+  describe("isDarkWallpaper", () => {
+    it("counts the Kultiva backdrop as dark", () => {
+      expect(isDarkWallpaper(null, "#38bdf8", "kultiva")).toBe(true);
+    });
+
+    it("judges a survey without a wallpaper by its accent gradient", () => {
+      expect(isDarkWallpaper(null, "#613171")).toBe(true);
+      expect(isDarkWallpaper(null, "#fde68a")).toBe(false);
+    });
+
+    it("judges a fill by its color, under either theme", () => {
+      expect(isDarkWallpaper({ style: "fill", color: "#f4f4f5" }, "#613171", "kultiva")).toBe(false);
+      expect(isDarkWallpaper({ style: "fill", color: "#111827" })).toBe(true);
+    });
+
+    it("counts an image as dark", () => {
+      expect(isDarkWallpaper({ style: "image", url: "https://example.com/a.jpg" })).toBe(true);
     });
   });
 });

@@ -81,6 +81,9 @@ function isAnswered(a: { ratingValue?: number; textValue?: string } | undefined)
 
 const DEFAULT_ACCENT = "#613171";
 
+/** Kultiva's leaf green: the progress bar is green whatever the survey's colors. */
+export const PROGRESS_GREEN = "#8bc34a";
+
 export function PortalClimateSurveyForm({
   distributionId,
   questions,
@@ -309,13 +312,13 @@ export function PortalClimateSurveyForm({
 
         <div
           className="relative h-1 w-full overflow-hidden"
-          style={{ backgroundColor: accent + "1f" }}
+          style={{ backgroundColor: PROGRESS_GREEN + "2e" }}
         >
           <div
             className="h-full transition-all duration-500 ease-out"
             style={{
               width: `${progress}%`,
-              backgroundColor: accent,
+              backgroundColor: PROGRESS_GREEN,
             }}
           />
         </div>

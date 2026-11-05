@@ -315,6 +315,27 @@ function luminance(hex: string): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
+/** The wallpaper's dominant color, or null for an image (it can't be analyzed). */
+function dominantWallpaperColor(
+  wallpaperConfig: WallpaperConfig | null | undefined,
+  fallbackColor?: string,
+): string | null {
+  if (!wallpaperConfig) return fallbackColor || "#613171";
+
+  switch (wallpaperConfig.style) {
+    case "gradient":
+      return wallpaperConfig.preset
+        ? (GRADIENT_PRESETS[wallpaperConfig.preset]?.colors[0] ?? wallpaperConfig.color)
+        : wallpaperConfig.color;
+    case "fill":
+    case "blur":
+    case "pattern":
+      return wallpaperConfig.color;
+    case "image":
+      return null;
+  }
+}
+
 /**
  * Given the wallpaper config, extract the dominant color and return
  * badge colors that will contrast against it.
@@ -324,31 +345,27 @@ export function getContrastBadgeColors(
   wallpaperConfig: WallpaperConfig | null | undefined,
   fallbackColor?: string,
 ): { bg: string; text: string } {
-  let dominantColor = fallbackColor || "#613171";
-
-  if (wallpaperConfig) {
-    switch (wallpaperConfig.style) {
-      case "fill":
-        dominantColor = wallpaperConfig.color;
-        break;
-      case "gradient":
-        dominantColor = wallpaperConfig.preset
-          ? (GRADIENT_PRESETS[wallpaperConfig.preset]?.colors[0] ?? wallpaperConfig.color)
-          : wallpaperConfig.color;
-        break;
-      case "blur":
-      case "pattern":
-        dominantColor = wallpaperConfig.color;
-        break;
-      case "image":
-        // Can't analyze an image; assume dark overlay
-        return { bg: "rgba(255,255,255,0.9)", text: "#1a1a2e" };
-    }
-  }
+  const dominantColor = dominantWallpaperColor(wallpaperConfig, fallbackColor);
+  // Can't analyze an image; assume dark overlay
+  if (!dominantColor) return { bg: "rgba(255,255,255,0.9)", text: "#1a1a2e" };
 
   const lum = luminance(dominantColor);
   // Dark background → white badge; light background → dark badge
   return lum < 0.4
     ? { bg: "rgba(255,255,255,0.85)", text: "#1a1a2e" }
     : { bg: "rgba(0,0,0,0.7)", text: "#ffffff" };
+}
+
+/**
+ * Whether the page a wallpaper paints is dark, so whatever sits straight on it
+ * should be light. Images count as dark; the Kultiva backdrop is dark.
+ */
+export function isDarkWallpaper(
+  wallpaperConfig: WallpaperConfig | null | undefined,
+  fallbackColor?: string,
+  platformTheme: PlatformTheme = "classic",
+): boolean {
+  if (!wallpaperConfig && platformTheme === "kultiva") return true;
+  const dominantColor = dominantWallpaperColor(wallpaperConfig, fallbackColor);
+  return !dominantColor || luminance(dominantColor) < 0.4;
 }

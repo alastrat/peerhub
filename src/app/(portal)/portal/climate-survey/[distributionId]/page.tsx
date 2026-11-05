@@ -88,6 +88,10 @@ export default async function PortalClimateSurveyPage({ params }: PageProps) {
   }
 
   const platformTheme = await getPlatformTheme();
+  const respondent = await prisma.employee.findUnique({
+    where: { id: session.employeeId },
+    select: { name: true },
+  });
 
   // Break out of the portal layout's max-w container so the wallpaper fills
   // full viewport width. The opaque background keeps the portal header from
@@ -111,6 +115,7 @@ export default async function PortalClimateSurveyPage({ params }: PageProps) {
       thankYouCtaText={distribution.survey.thankYouCtaText}
       logoUrl={distribution.survey.logoUrl ?? distribution.survey.company.logo}
       companyName={distribution.survey.company.name}
+      respondentName={respondent?.name}
       questionsPerPage={distribution.survey.questionsPerPage}
       dueDateLabel={formatDate(distribution.dueDate, undefined, locale)}
       daysLeft={daysLeft}

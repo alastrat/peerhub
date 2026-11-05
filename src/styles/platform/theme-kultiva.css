@@ -428,14 +428,6 @@ html[data-platform-theme="kultiva"] [data-app-shell="survey"] [data-survey-heade
   box-shadow: 0 8px 24px rgba(20, 6, 34, 0.18);
 }
 
-/* The welcome screen's back button sits straight on the wallpaper, which may
-   be dark or light: a white chip keeps it legible on both */
-html[data-platform-theme="kultiva"] [data-app-shell="survey"] [data-survey-topbar] [data-slot="button"] {
-  background-color: rgba(255, 255, 255, 0.92);
-  color: var(--k-ink-900);
-  box-shadow: 0 6px 18px rgba(20, 6, 34, 0.2);
-}
-
 /* "Pregunta 1 de 63" eyebrows */
 html[data-platform-theme="kultiva"] [data-app-shell="survey"] p.uppercase.tracking-wider.text-muted-foreground {
   color: var(--k-leaf-ink);
