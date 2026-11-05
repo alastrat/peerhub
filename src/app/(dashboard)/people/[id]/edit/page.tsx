@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
 import { redirect, notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/design-system/page-header";
@@ -53,6 +54,8 @@ export default async function EditEmployeePage({ params }: PageProps) {
   }
 
   const companyId = session.companyUser.companyId;
+  // Dashboard routes have no locale segment: follow the company's language
+  const t = await getTranslations({ locale: session.companyUser.locale ?? "es", namespace: "dashboard.people_page" });
   const [employee, departments, managers, hubs, company] = await Promise.all([
     getEmployee(companyId, id),
     getDepartments(companyId),
@@ -69,22 +72,20 @@ export default async function EditEmployeePage({ params }: PageProps) {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Link href={`/people/${id}`}>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label={t("edit.back")}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
         <PageHeader
-          title={`Edit ${employee.name || "Employee"}`}
-          description="Update employee information"
+          title={employee.name ? t("edit.title", { name: employee.name }) : t("edit.title_fallback")}
+          description={t("edit.description")}
         />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Employee Details</CardTitle>
-          <CardDescription>
-            Update the employee's role, department, and other information.
-          </CardDescription>
+          <CardTitle>{t("details_title")}</CardTitle>
+          <CardDescription>{t("edit.details_description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <EditEmployeeForm

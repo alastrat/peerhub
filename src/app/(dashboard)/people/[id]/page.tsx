@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
 import { redirect, notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { ArrowLeft, Mail, Building2, User, Calendar, Briefcase, MapPin, Users } from "lucide-react";
 import { PageHeader } from "@/components/design-system/page-header";
@@ -17,7 +18,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { getInitials } from "@/lib/utils/formatting";
 import { formatDate } from "@/lib/utils/dates";
-import { ROLE_LABELS } from "@/lib/constants/roles";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -97,22 +97,29 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
   const stats = await getReviewStats(employee.id);
   const companyUserRole = employee.companyUser?.role;
 
+  // Dashboard routes have no locale segment: follow the company's language
+  const locale = session.companyUser.locale ?? "es";
+  const t = await getTranslations({ locale, namespace: "dashboard.people_page.profile" });
+  // The people table's role names, so a role reads the same in both places
+  const tRoles = await getTranslations({ locale, namespace: "dashboard.people" });
+  const roleKeys = { ADMIN: "admin", MANAGER: "manager", MEMBER: "member" } as const;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/people">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" aria-label={t("back")}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
         <PageHeader
-          title={employee.name || "Employee"}
-          description={employee.title || "No title"}
+          title={employee.name || t("name_fallback")}
+          description={employee.title || t("no_title")}
         />
         {isAdmin && (
           <div className="ml-auto">
             <Link href={`/people/${id}/edit`}>
-              <Button>Edit Employee</Button>
+              <Button>{t("edit")}</Button>
             </Link>
           </div>
         )}
@@ -129,12 +136,12 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
                 </AvatarFallback>
               </Avatar>
               <h2 className="mt-4 text-xl font-semibold">{employee.name}</h2>
-              <p className="text-muted-foreground">{employee.title || "No title"}</p>
+              <p className="text-muted-foreground">{employee.title || t("no_title")}</p>
               <div className="mt-2 flex gap-2">
                 {companyUserRole && (
-                  <Badge variant="secondary">{ROLE_LABELS[companyUserRole]}</Badge>
+                  <Badge variant="secondary">{tRoles(roleKeys[companyUserRole])}</Badge>
                 )}
-                {!employee.isActive && <Badge variant="destructive">Inactive</Badge>}
+                {!employee.isActive && <Badge variant="destructive">{t("inactive")}</Badge>}
               </div>
 
               <Separator className="my-6" />
@@ -153,7 +160,7 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
                 {employee.manager && (
                   <div className="flex items-center gap-3 text-sm">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    <span>Reports to {employee.manager.name}</span>
+                    <span>{t("reports_to", { name: employee.manager.name })}</span>
                   </div>
                 )}
                 {employee.hub && (
@@ -165,13 +172,13 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
                 {employee.startDate && (
                   <div className="flex items-center gap-3 text-sm">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>Started {formatDate(employee.startDate)}</span>
+                    <span>{t("started_on", { date: formatDate(employee.startDate, undefined, locale) })}</span>
                   </div>
                 )}
                 {employee.employeeCode && (
                   <div className="flex items-center gap-3 text-sm">
                     <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    <span>ID: {employee.employeeCode}</span>
+                    <span>{t("employee_code", { code: employee.employeeCode })}</span>
                   </div>
                 )}
               </div>
@@ -184,22 +191,22 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
           {/* Review Stats */}
           <Card>
             <CardHeader>
-              <CardTitle>Review Statistics</CardTitle>
-              <CardDescription>Summary of feedback participation</CardDescription>
+              <CardTitle>{t("review_stats_title")}</CardTitle>
+              <CardDescription>{t("review_stats_description")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center p-4 bg-muted rounded-lg">
                   <p className="text-3xl font-bold">{stats.reviewsReceived}</p>
-                  <p className="text-sm text-muted-foreground">Reviews Received</p>
+                  <p className="text-sm text-muted-foreground">{t("reviews_received")}</p>
                 </div>
                 <div className="text-center p-4 bg-muted rounded-lg">
                   <p className="text-3xl font-bold">{stats.reviewsGiven}</p>
-                  <p className="text-sm text-muted-foreground">Reviews Given</p>
+                  <p className="text-sm text-muted-foreground">{t("reviews_given")}</p>
                 </div>
                 <div className="text-center p-4 bg-muted rounded-lg">
                   <p className="text-3xl font-bold">{stats.nominations}</p>
-                  <p className="text-sm text-muted-foreground">Times Nominated</p>
+                  <p className="text-sm text-muted-foreground">{t("times_nominated")}</p>
                 </div>
               </div>
             </CardContent>
@@ -209,10 +216,9 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
           {employee.directReports.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Direct Reports</CardTitle>
+                <CardTitle>{t("direct_reports_title")}</CardTitle>
                 <CardDescription>
-                  {employee.directReports.length} team member
-                  {employee.directReports.length !== 1 ? "s" : ""}
+                  {t("direct_reports_count", { count: employee.directReports.length })}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -231,7 +237,7 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
                       <div>
                         <p className="font-medium">{report.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {report.title || "No title"}
+                          {report.title || t("no_title")}
                         </p>
                       </div>
                     </Link>
@@ -245,10 +251,9 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
           {employee.teamMemberships.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Teams</CardTitle>
+                <CardTitle>{t("teams_title")}</CardTitle>
                 <CardDescription>
-                  Member of {employee.teamMemberships.length} team
-                  {employee.teamMemberships.length !== 1 ? "s" : ""}
+                  {t("teams_count", { count: employee.teamMemberships.length })}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -268,7 +273,7 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
                         )}
                       </div>
                       <Badge variant={tm.role === "LEAD" ? "default" : "secondary"} className="text-xs">
-                        {tm.role === "LEAD" ? "Lead" : "Member"}
+                        {tm.role === "LEAD" ? t("team_lead") : t("team_member")}
                       </Badge>
                     </div>
                   ))}
@@ -280,12 +285,12 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
           {/* Recent Activity placeholder */}
           <Card>
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Recent feedback and reviews</CardDescription>
+              <CardTitle>{t("recent_activity_title")}</CardTitle>
+              <CardDescription>{t("recent_activity_description")}</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground text-center py-8">
-                No recent activity to display
+                {t("no_recent_activity")}
               </p>
             </CardContent>
           </Card>
