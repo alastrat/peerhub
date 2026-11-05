@@ -29,7 +29,6 @@ import { Switch } from "@/components/ui/switch";
 import { updateEmployeeSchema, type UpdateEmployeeInput } from "@/lib/validations/user";
 import { updateEmployee, deactivateEmployee } from "@/lib/actions/users";
 import { DemographicFields } from "./demographic-fields";
-import { ROLE_LABELS } from "@/lib/constants/roles";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +41,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import type { Department, Employee, CompanyUser, Hub } from "@prisma/client";
+
+const ROLE_OPTIONS = [
+  { value: "ADMIN", key: "admin" },
+  { value: "MANAGER", key: "manager" },
+  { value: "MEMBER", key: "member" },
+] as const;
 
 type EmployeeWithRelations = Employee & {
   department: Department | null;
@@ -67,6 +72,8 @@ export function EditEmployeeForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const t = useTranslations("dashboard.editEmployeeForm");
+  // The people table's role names, so a role reads the same in both places
+  const tRoles = useTranslations("dashboard.people");
 
   const form = useForm<UpdateEmployeeInput>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -181,9 +188,9 @@ export function EditEmployeeForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Object.entries(ROLE_LABELS).map(([value, label]) => (
+                    {ROLE_OPTIONS.map(({ value, key }) => (
                       <SelectItem key={value} value={value}>
-                        {label}
+                        {tRoles(key)}
                       </SelectItem>
                     ))}
                   </SelectContent>

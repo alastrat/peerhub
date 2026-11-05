@@ -358,3 +358,11 @@ export function classifyImpact(baseline: ClimateBand, result: ClimateBand | null
   if (diff < 0) return "WORSENED";
   return "UNCHANGED";
 }
+
+export function formatMean(mean: number | null | undefined): string {
+  return mean == null ? "—" : mean.toFixed(2);
+}
+
+export function formatPct(share: number | null | undefined): string {
+  return share == null ? "—" : `${Math.round(share * 100)}%`;
+}

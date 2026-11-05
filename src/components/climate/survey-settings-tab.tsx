@@ -2,9 +2,9 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Loader2, Save, ImagePlus, Upload } from "lucide-react";
+import { Loader2, Save, ImagePlus, Undo2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,7 +55,18 @@ interface SurveySettingsTabProps {
     accessEndDate: Date | null;
   };
   distributions: DistributionInfo[];
+  /** Shown on the survey while it has no logo of its own. */
+  companyLogoUrl?: string | null;
 }
+
+/** Distribution target → its label in the `climate_distribute` namespace. */
+const DISTRIBUTION_TARGET_KEYS: Record<string, string> = {
+  ALL: "target_all",
+  HUB: "target_hubs",
+  DEPARTMENT: "target_departments",
+  TEAM: "target_teams",
+  CUSTOM: "target_employees",
+};
 
 function toDatetimeLocal(d: Date | null): string {
   if (!d) return "";
@@ -69,9 +80,12 @@ export function SurveySettingsTab({
   surveyId,
   initialValues,
   distributions,
+  companyLogoUrl = null,
 }: SurveySettingsTabProps) {
   const router = useRouter();
   const t = useTranslations("dashboard.climate.settings_tab");
+  const tTarget = useTranslations("climate_distribute");
+  const locale = useLocale();
   const [isPending, startTransition] = useTransition();
 
   const [name, setName] = useState(initialValues.name);
@@ -148,6 +162,22 @@ export function SurveySettingsTab({
       router.refresh();
     } catch {
       toast.error(t("logo_upload_error"));
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
+  const handleUseCompanyLogo = async () => {
+    setIsUploadingLogo(true);
+    try {
+      const result = await updateSurveySettings(surveyId, { logoUrl: null });
+      if (!result.success) {
+        toast.error(result.error || t("save_failed"));
+        return;
+      }
+      setLogoUrl("");
+      toast.success(t("logo_company_restored"));
+      router.refresh();
     } finally {
       setIsUploadingLogo(false);
     }
@@ -336,13 +366,20 @@ export function SurveySettingsTab({
         </CardHeader>
         <CardContent>
           <div className="flex items-start gap-4">
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={logoUrl}
-                alt={t("logo_alt")}
-                className="h-14 w-14 shrink-0 rounded-lg border object-contain p-1"
-              />
+            {logoUrl || companyLogoUrl ? (
+              <div className="shrink-0 space-y-1 text-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={logoUrl || companyLogoUrl || undefined}
+                  alt={t("logo_alt")}
+                  className="h-14 w-24 rounded-lg border object-contain p-1"
+                />
+                {!logoUrl && (
+                  <p className="w-24 text-[10px] leading-tight text-muted-foreground">
+                    {t("logo_company_badge")}
+                  </p>
+                )}
+              </div>
             ) : (
               <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
                 <ImagePlus className="h-6 w-6" />
@@ -410,6 +447,20 @@ export function SurveySettingsTab({
                   />
                 </div>
               )}
+
+              {logoUrl && companyLogoUrl && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="-ml-3"
+                  onClick={handleUseCompanyLogo}
+                  disabled={isUploadingLogo}
+                >
+                  <Undo2 className="mr-2 h-4 w-4" />
+                  {t("logo_use_company")}
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>
@@ -440,14 +491,16 @@ export function SurveySettingsTab({
                     <p className="text-sm font-medium">
                       {dist.sentAt
                         ? t("sent_relative", {
-                            when: formatRelativeTime(dist.sentAt),
+                            when: formatRelativeTime(dist.sentAt, locale),
                           })
                         : t("not_sent")}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {t("due_target", {
-                        when: formatRelativeTime(dist.dueDate),
-                        target: dist.targetType,
+                        when: formatRelativeTime(dist.dueDate, locale),
+                        target: DISTRIBUTION_TARGET_KEYS[dist.targetType]
+                          ? tTarget(DISTRIBUTION_TARGET_KEYS[dist.targetType])
+                          : dist.targetType,
                       })}
                     </p>
                   </div>

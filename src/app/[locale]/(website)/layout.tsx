@@ -7,7 +7,9 @@ interface WebsiteLayoutProps {
 
 export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
   return (
-    <>
+    // data-website: Bootstrap's and bizzen's class rules only apply inside it
+    // (scripts/scope-website-css.mjs), so they don't override Tailwind in the app.
+    <div data-website>
       <div id="smooth-wrapper">
         <div id="smooth-content">
           <Header />
@@ -16,6 +18,6 @@ export default function WebsiteLayout({ children }: WebsiteLayoutProps) {
         </div>
       </div>
       <ThemeSwitcher />
-    </>
+    </div>
   );
 }

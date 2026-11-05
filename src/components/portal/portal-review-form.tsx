@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { Loader2, CheckCircle2, Save, Send, Star, AlertCircle } from "lucide-react";
@@ -65,6 +66,8 @@ export function PortalReviewForm({
   sections,
   draftResponses,
 }: PortalReviewFormProps) {
+  const t = useTranslations("portal.review");
+  const locale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isSaving, setIsSaving] = useState(false);
@@ -160,11 +163,11 @@ export function PortalReviewForm({
       const result = await submitPortalReview(assignmentId, responseArray);
 
       if (result.success) {
-        toast.success("Review submitted successfully!");
+        toast.success(t("submitted_toast"));
         router.push("/portal/home");
         router.refresh();
       } else {
-        toast.error(result.error || "Failed to submit review");
+        toast.error(result.error || t("submit_failed"));
       }
     });
   }
@@ -176,27 +179,32 @@ export function PortalReviewForm({
         <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm text-muted-foreground">Progress</p>
+              <p className="text-sm text-muted-foreground">{t("progress")}</p>
               <p className="text-lg font-medium">
-                {answeredCount} of {allQuestions.length} questions answered
+                {t("answered_count", { answered: answeredCount, total: allQuestions.length })}
               </p>
             </div>
             <div className="flex items-center gap-4">
               {isSaving && (
                 <span className="flex items-center text-sm text-muted-foreground">
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
+                  {t("saving")}
                 </span>
               )}
               {lastSaved && !isSaving && (
                 <span className="flex items-center text-sm text-muted-foreground">
                   <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
-                  Saved {lastSaved.toLocaleTimeString()}
+                  {t("saved_at", {
+                    time: lastSaved.toLocaleTimeString(locale === "en" ? "en-US" : "es-CO", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    }),
+                  })}
                 </span>
               )}
               <Button variant="outline" onClick={autoSave} disabled={isSaving}>
                 <Save className="mr-2 h-4 w-4" />
-                Save Draft
+                {t("save_draft")}
               </Button>
             </div>
           </div>
@@ -237,13 +245,13 @@ export function PortalReviewForm({
               {!requiredAnswered && (
                 <p className="flex items-center text-sm text-amber-600">
                   <AlertCircle className="mr-2 h-4 w-4" />
-                  Please answer all required questions before submitting
+                  {t("required_missing")}
                 </p>
               )}
               {requiredAnswered && (
                 <p className="flex items-center text-sm text-green-600">
                   <CheckCircle2 className="mr-2 h-4 w-4" />
-                  All required questions answered
+                  {t("required_done")}
                 </p>
               )}
             </div>
@@ -255,21 +263,22 @@ export function PortalReviewForm({
                   ) : (
                     <Send className="mr-2 h-4 w-4" />
                   )}
-                  Submit Review
+                  {t("submit")}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Submit Review</AlertDialogTitle>
+                  <AlertDialogTitle>{t("submit")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to submit your review for {revieweeName}?
-                    This action cannot be undone.
+                    {reviewerType === "SELF"
+                      ? t("confirm_body_self")
+                      : t("confirm_body", { name: revieweeName })}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                   <AlertDialogAction onClick={handleSubmit}>
-                    Submit Review
+                    {t("submit")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -289,6 +298,7 @@ interface QuestionFieldProps {
 }
 
 function QuestionField({ question, index, value, onChange }: QuestionFieldProps) {
+  const t = useTranslations("portal.review");
   if (question.type === "RATING" || question.type === "COMPETENCY_RATING") {
     return (
       <div className="space-y-3">
@@ -339,7 +349,7 @@ function QuestionField({ question, index, value, onChange }: QuestionFieldProps)
         </div>
         <div className="ml-9">
           <Textarea
-            placeholder="Type your response here..."
+            placeholder={t("text_placeholder")}
             value={value?.textValue || ""}
             onChange={(e) => onChange({ ...value, textValue: e.target.value })}
             className="min-h-32"
@@ -358,9 +368,10 @@ interface RatingInputProps {
 }
 
 function RatingInput({ value, onChange }: RatingInputProps) {
+  const t = useTranslations("portal.review");
   const [hovered, setHovered] = useState<number | null>(null);
 
-  const labels = ["Poor", "Below Average", "Average", "Good", "Excellent"];
+  const labels = [1, 2, 3, 4, 5].map((n) => t(`rating_${n}`));
 
   return (
     <div className="space-y-2">
@@ -393,8 +404,8 @@ function RatingInput({ value, onChange }: RatingInputProps) {
         )}
       </div>
       <div className="flex justify-between text-xs text-muted-foreground px-1">
-        <span>Poor</span>
-        <span>Excellent</span>
+        <span>{labels[0]}</span>
+        <span>{labels[4]}</span>
       </div>
     </div>
   );

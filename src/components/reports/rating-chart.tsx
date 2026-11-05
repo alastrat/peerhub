@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface RatingChartProps {
@@ -23,8 +24,10 @@ const COLORS = ["#ef4444", "#f97316", "#eab308", "#84cc16", "#22c55e"];
 export function RatingChart({
   distribution,
   maxRating = 5,
-  title = "Rating Distribution",
+  title,
 }: RatingChartProps) {
+  const t = useTranslations("feedback_report");
+  const heading = title ?? t("distribution_title");
   const data = Array.from({ length: maxRating }, (_, i) => {
     const rating = i + 1;
     return {
@@ -39,11 +42,11 @@ export function RatingChart({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{title}</CardTitle>
+          <CardTitle>{heading}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-8">
-            No rating data available
+            {t("distribution_empty")}
           </p>
         </CardContent>
       </Card>
@@ -53,7 +56,7 @@ export function RatingChart({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle>{heading}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-64">
@@ -73,8 +76,8 @@ export function RatingChart({
                 allowDecimals={false}
               />
               <Tooltip
-                formatter={(value) => [String(value ?? 0), "Responses"]}
-                labelFormatter={(label) => `Rating: ${label}`}
+                formatter={(value) => [String(value ?? 0), t("tooltip_responses")]}
+                labelFormatter={(label) => t("tooltip_rating", { rating: String(label) })}
                 contentStyle={{
                   borderRadius: "8px",
                   border: "1px solid hsl(var(--border))",

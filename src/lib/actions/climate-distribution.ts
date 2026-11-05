@@ -5,6 +5,8 @@ import { auth } from "@/lib/auth/config";
 import { revalidatePath } from "next/cache";
 import { sendBulkEmails } from "@/lib/email/resend";
 import { buildSurveyInvitationEmail } from "@/lib/email/portal-templates";
+import { toSupportedLocale } from "@/i18n/translator";
+import { actionError, getActionErrors, unexpectedActionError } from "@/lib/auth/action-locale";
 import type { ActionResult } from "@/types";
 import type { SurveyDistribution } from "@prisma/client";
 
@@ -34,7 +36,7 @@ export async function distributeSurvey(input: {
       where: { id: input.surveyId, companyId },
     });
     if (!survey) {
-      return { success: false, error: "Survey not found" };
+      return actionError("survey_not_found");
     }
 
     // Resolve target employees (fetch name + email for notifications)
@@ -47,7 +49,7 @@ export async function distributeSurvey(input: {
       });
     } else if (input.targetType === "HUB") {
       if (!input.targetIds?.length) {
-        return { success: false, error: "Select at least one hub" };
+        return actionError("select_hub");
       }
       targetEmployees = await prisma.employee.findMany({
         where: { companyId, isActive: true, hubId: { in: input.targetIds } },
@@ -55,7 +57,7 @@ export async function distributeSurvey(input: {
       });
     } else if (input.targetType === "DEPARTMENT") {
       if (!input.targetIds?.length) {
-        return { success: false, error: "Select at least one department" };
+        return actionError("select_department");
       }
       targetEmployees = await prisma.employee.findMany({
         where: { companyId, isActive: true, departmentId: { in: input.targetIds } },
@@ -63,7 +65,7 @@ export async function distributeSurvey(input: {
       });
     } else if (input.targetType === "TEAM") {
       if (!input.targetIds?.length) {
-        return { success: false, error: "Select at least one team" };
+        return actionError("select_team");
       }
       const members = await prisma.teamMember.findMany({
         where: {
@@ -84,7 +86,7 @@ export async function distributeSurvey(input: {
         });
     } else if (input.targetType === "CUSTOM") {
       if (!input.targetIds?.length) {
-        return { success: false, error: "Select at least one employee" };
+        return actionError("select_employee");
       }
       targetEmployees = await prisma.employee.findMany({
         where: { id: { in: input.targetIds }, companyId, isActive: true },
@@ -93,7 +95,7 @@ export async function distributeSurvey(input: {
     }
 
     if (targetEmployees.length === 0) {
-      return { success: false, error: "No employees found for the selected target" };
+      return actionError("no_employees");
     }
 
     // Create distribution and response stubs
@@ -120,8 +122,11 @@ export async function distributeSurvey(input: {
       });
     }
 
-    // Send invitation emails (best-effort — don't fail the distribution)
-    const dueDateLabel = input.dueDate.toLocaleDateString("en-US", {
+    // Send invitation emails (best-effort — don't fail the distribution),
+    // written in the company's language
+    const company = await prisma.company.findUnique({ where: { id: companyId }, select: { locale: true } });
+    const locale = toSupportedLocale(company?.locale);
+    const dueDateLabel = input.dueDate.toLocaleDateString(locale === "en" ? "en-US" : "es-CO", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -136,6 +141,7 @@ export async function distributeSurvey(input: {
         dueDate: dueDateLabel,
         surveyUrl,
         isAnonymous: survey.isAnonymous,
+        locale,
       });
       return { to: emp.email, subject, html, text };
     });
@@ -146,17 +152,18 @@ export async function distributeSurvey(input: {
     revalidatePath(`/surveys/climate/${input.surveyId}`);
 
     if (emailResult.failureCount > 0) {
+      const t = await getActionErrors();
       return {
         success: true,
         data: distribution,
-        warning: `Survey sent to ${targetEmployees.length} employees. ${emailResult.failureCount} email notification(s) failed to deliver.`,
+        warning: t("emails_failed", { count: targetEmployees.length, failed: emailResult.failureCount }),
       };
     }
 
     return { success: true, data: distribution };
   } catch (error) {
     console.error("Failed to distribute survey:", error);
-    return { success: false, error: "Failed to distribute survey" };
+    return unexpectedActionError(error, "failed_distribute");
   }
 }
 
@@ -168,10 +175,10 @@ export async function closeSurvey(surveyId: string): Promise<ActionResult> {
       where: { id: surveyId, companyId },
     });
     if (!survey) {
-      return { success: false, error: "Survey not found" };
+      return actionError("survey_not_found");
     }
     if (survey.status !== "ACTIVE") {
-      return { success: false, error: "Only active surveys can be closed" };
+      return actionError("close_only_active");
     }
 
     await prisma.climateSurvey.update({
@@ -193,10 +200,7 @@ export async function closeSurvey(surveyId: string): Promise<ActionResult> {
     revalidatePath(`/surveys/climate/${surveyId}`);
     return { success: true };
   } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to close survey",
-    };
+    return unexpectedActionError(error, "failed_close", { withDetail: true });
   }
 }
 
@@ -208,10 +212,10 @@ export async function reactivateSurvey(surveyId: string): Promise<ActionResult> 
       where: { id: surveyId, companyId },
     });
     if (!survey) {
-      return { success: false, error: "Survey not found" };
+      return actionError("survey_not_found");
     }
     if (survey.status !== "CLOSED") {
-      return { success: false, error: "Only closed surveys can be reactivated" };
+      return actionError("reactivate_only_closed");
     }
 
     await prisma.climateSurvey.update({
@@ -223,9 +227,6 @@ export async function reactivateSurvey(surveyId: string): Promise<ActionResult> 
     revalidatePath(`/surveys/climate/${surveyId}`);
     return { success: true };
   } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to reactivate survey",
-    };
+    return unexpectedActionError(error, "failed_reactivate", { withDetail: true });
   }
 }

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   ArrowDown,
@@ -22,15 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -41,7 +33,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { distributeSurvey } from "@/lib/actions/climate-distribution";
-import { formatRelativeTime } from "@/lib/utils/dates";
+import { formatDate, formatRelativeTime } from "@/lib/utils/dates";
 import {
   ParticipantScopePicker,
   type ParticipantScopeValue,
@@ -191,6 +183,7 @@ function ResponderTable({
   isAnonymous,
 }: SurveyParticipantsTabProps) {
   const t = useTranslations("dashboard.climate.detail.participants_tab");
+  const locale = useLocale();
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortState<ResponderSortKey> | null>(null);
 
@@ -351,9 +344,9 @@ function ResponderTable({
                 </TableCell>
                 <TableCell className="text-right text-sm text-muted-foreground">
                   {r.submittedAt
-                    ? formatRelativeTime(r.submittedAt)
+                    ? formatRelativeTime(r.submittedAt, locale)
                     : r.updatedAt
-                      ? formatRelativeTime(r.updatedAt)
+                      ? formatRelativeTime(r.updatedAt, locale)
                       : "—"}
                 </TableCell>
               </TableRow>
@@ -393,6 +386,7 @@ function InvitePicker({
 }: SurveyParticipantsTabProps) {
   const router = useRouter();
   const t = useTranslations("dashboard.climate.detail.participants_tab");
+  const locale = useLocale();
   const [isPending, startTransition] = useTransition();
 
   const [picker, setPicker] = useState<ParticipantScopeValue>({
@@ -401,18 +395,16 @@ function InvitePicker({
     participantIds: [],
   });
 
-  // Single source of truth for the deadline: the survey's accessEndDate (set
-  // in the Configuración tab). If it's null we fall back to +14d so the
-  // existing distribute action still has a valid date, and we surface a hint
-  // pointing the admin to the right place to configure it.
-  const dueDate =
-    accessEndDate ?? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-  const dueDateConfigured = accessEndDate !== null;
-
   // Map the picker's value into distributeSurvey's payload shape. CUSTOM
   // routes through participantIds; the other scopes route through scopeIds.
   const handleInvite = () => {
     if (!canInvite) return;
+    // Single source of truth for the deadline: the survey's accessEndDate (set
+    // in the Configuración tab). If it's null we fall back to +14d so the
+    // existing distribute action still has a valid date, and we surface a hint
+    // pointing the admin to the right place to configure it.
+    const dueDate =
+      accessEndDate ?? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
     startTransition(async () => {
       const targetIds =
         picker.scope === "CUSTOM" ? picker.participantIds : picker.scopeIds;
@@ -470,8 +462,8 @@ function InvitePicker({
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3">
         <p className="text-xs text-muted-foreground">
-          {dueDateConfigured
-            ? t("due_date_from_settings", { date: dueDate.toLocaleDateString() })
+          {accessEndDate
+            ? t("due_date_from_settings", { date: formatDate(accessEndDate, undefined, locale) })
             : t("due_date_not_set_hint")}
         </p>
         <Button onClick={handleInvite} disabled={!canInvite || isPending}>

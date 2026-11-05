@@ -27,9 +27,14 @@ import {
 } from "@/components/ui/select";
 import { createUserSchema, type CreateUserInput } from "@/lib/validations/user";
 import { inviteUser, createUser } from "@/lib/actions/users";
-import { ROLE_LABELS } from "@/lib/constants/roles";
 import type { Department, Employee, Hub } from "@prisma/client";
 import { DemographicFields } from "./demographic-fields";
+
+const ROLE_OPTIONS = [
+  { value: "ADMIN", key: "admin" },
+  { value: "MANAGER", key: "manager" },
+  { value: "MEMBER", key: "member" },
+] as const;
 
 interface EmployeeFormProps {
   departments: Department[];
@@ -49,6 +54,8 @@ export function EmployeeForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const t = useTranslations("dashboard.employeeForm");
+  // The people table's role names, so a role reads the same in both places
+  const tRoles = useTranslations("dashboard.people");
 
   const form = useForm<CreateUserInput>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -163,9 +170,9 @@ export function EmployeeForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {Object.entries(ROLE_LABELS).map(([value, label]) => (
+                    {ROLE_OPTIONS.map(({ value, key }) => (
                       <SelectItem key={value} value={value}>
-                        {label}
+                        {tRoles(key)}
                       </SelectItem>
                     ))}
                   </SelectContent>

@@ -152,7 +152,8 @@ input, textarea {
   display: inherit;
 }
 
-button {
+/* Scoped to the marketing site: in the app it hid Tailwind borders on <button> */
+:where([data-website]) button {
   border: none;
 }
 

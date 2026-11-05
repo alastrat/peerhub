@@ -87,16 +87,17 @@ function formatTimeDiff(start: Date, end: Date): string {
   return rem > 0 ? `${hours}h ${rem}m` : `${hours}h`;
 }
 
-function formatDateTime(date: Date): string {
+function formatDateTime(date: Date, locale: string): string {
   const d = new Date(date);
+  const tag = locale === "en" ? "en-US" : "es-CO";
   return (
-    d.toLocaleDateString("en-US", {
+    d.toLocaleDateString(tag, {
       month: "short",
       day: "2-digit",
       year: "numeric",
     }) +
     ", " +
-    d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+    d.toLocaleTimeString(tag, { hour: "numeric", minute: "2-digit" })
   );
 }
 
@@ -211,7 +212,7 @@ export function RespondentDetailSheet({
     timeline.push({
       icon: <CheckCircle2 className="h-4 w-4" />,
       label: t("timeline.submitted"),
-      date: formatDateTime(respondent.submittedAt),
+      date: formatDateTime(respondent.submittedAt, locale),
       detail: t("timeline.submitted_detail", { count: respondent.totalQuestions }),
     });
   }
@@ -228,7 +229,7 @@ export function RespondentDetailSheet({
       timeline.push({
         icon: <ClipboardCheck className="h-4 w-4" />,
         label,
-        date: formatDateTime(respondent.updatedAt),
+        date: formatDateTime(respondent.updatedAt, locale),
         detail: t("timeline.answered_detail", {
           answered: respondent.answeredCount,
           total: respondent.totalQuestions,
@@ -245,7 +246,7 @@ export function RespondentDetailSheet({
     timeline.push({
       icon: <Play className="h-4 w-4" />,
       label: t("timeline.started"),
-      date: formatDateTime(new Date(Math.min(...answerDates))),
+      date: formatDateTime(new Date(Math.min(...answerDates)), locale),
     });
   }
 
@@ -253,16 +254,10 @@ export function RespondentDetailSheet({
     timeline.push({
       icon: <Send className="h-4 w-4" />,
       label: t("timeline.invitation"),
-      date: formatDateTime(respondent.distributionSentAt),
+      date: formatDateTime(respondent.distributionSentAt, locale),
       detail: t("timeline.invitation_detail"),
     });
   }
-
-  // Determine the max score for the dominant question type
-  const dominantMax =
-    questions.filter((q) => q.type !== "TEXT").length > 0
-      ? maxFor(questions.find((q) => q.type !== "TEXT")!)
-      : 4;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

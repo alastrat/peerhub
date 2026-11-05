@@ -1066,6 +1066,20 @@ model SuperAdminDomain {
 }
 
 // ============================================
+// PLATFORM SETTINGS
+// ============================================
+
+// Platform-wide settings (not per company), one row per key. Super admins
+// change them from Configuración → Plataforma. A missing row means the
+// default, e.g. key "theme" absent → the classic look.
+model PlatformSetting {
+  key         String   @id // e.g. "theme"
+  value       String
+  updatedById String? // User.id of the super admin who last changed it
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
 // NEXTAUTH REQUIRED MODELS
 // ============================================
 

@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages, getTranslations } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/db/prisma";
+import { toSupportedLocale } from "@/i18n/translator";
+import { getPlatformTheme } from "@/lib/queries/platform-theme";
 import { PortalClimateSurveyFlow } from "@/components/portal/portal-climate-survey-flow";
 import { Badge } from "@/components/ui/badge";
 
@@ -28,18 +30,21 @@ export default async function SurveyPreviewPage({ params }: PageProps) {
         orderBy: { order: "asc" },
         include: { dimension: { select: { name: true } } },
       },
+      company: { select: { locale: true, logo: true, name: true } },
     },
   });
 
   if (!survey) notFound();
 
-  const locale = await getLocale();
-  const messages = await getMessages();
-  const t = await getTranslations("portal.climate_survey");
+  // Respondents see the survey in their company's language, so the preview does too
+  const locale = toSupportedLocale(survey.company.locale);
+  const messages = await getMessages({ locale });
+  const t = await getTranslations({ locale, namespace: "portal.climate_survey" });
+  const platformTheme = await getPlatformTheme();
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-    <div className="min-h-screen">
+    <div data-app-shell="survey" className="min-h-screen">
       {/* Thin preview banner so testers know they're on a preview page */}
       <div className="border-b bg-amber-50 text-amber-900">
         <div className="mx-auto flex max-w-4xl items-center gap-2 px-4 py-2 text-xs">
@@ -71,7 +76,8 @@ export default async function SurveyPreviewPage({ params }: PageProps) {
           thankYouTitle={survey.thankYouTitle}
           thankYouBody={survey.thankYouBody}
           thankYouCtaText={survey.thankYouCtaText}
-          logoUrl={survey.logoUrl}
+          logoUrl={survey.logoUrl ?? survey.company.logo}
+          companyName={survey.company.name}
           questionsPerPage={survey.questionsPerPage}
           dueDateLabel="—"
           daysLeft={999}
@@ -88,6 +94,7 @@ export default async function SurveyPreviewPage({ params }: PageProps) {
           }))}
           draftAnswers={{}}
           previewMode
+          platformTheme={platformTheme}
         />
       </main>
     </div>

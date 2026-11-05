@@ -28,16 +28,6 @@ vi.mock("@/lib/auth/config", () => ({
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-// Default behaviour: pretend next-intl's request context is missing — the
-// production code falls back to the English baseline, which the tests below
-// assert against. Individual tests can override this to simulate a translated
-// runtime context.
-vi.mock("next-intl/server", () => ({
-  getTranslations: vi.fn(() =>
-    Promise.reject(new Error("No request context")),
-  ),
-}));
-
 // Mock the supabase storage client lazily — the action does a dynamic
 // `import("@/lib/supabase/server")` so we need a static module hook here.
 const storageMocks = {
@@ -65,8 +55,6 @@ import {
   uploadSurveyLogo,
   uploadSurveyWallpaper,
 } from "@/lib/actions/climate-surveys";
-import { getTranslations } from "next-intl/server";
-const mockedGetTranslations = getTranslations as unknown as ReturnType<typeof vi.fn>;
 
 const baseQuestion = {
   text: "Q1?",
@@ -95,10 +83,6 @@ beforeEach(() => {
   mockSession = createAdminSession();
   storageMocks.upload.mockReset();
   storageMocks.getPublicUrl.mockReset();
-  // restore default no-context behaviour for getTranslations
-  mockedGetTranslations.mockImplementation(() =>
-    Promise.reject(new Error("No request context")),
-  );
 });
 
 // ---------------------------------------------------------------------------
@@ -292,7 +276,7 @@ describe("createClimateSurvey — presentation fields", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toMatch(/^P2002:/);
+    expect(result.error).toBe("No se pudo crear la encuesta (P2002: on field x)");
   });
 });
 
@@ -301,15 +285,10 @@ describe("createClimateSurvey — presentation fields", () => {
 // ---------------------------------------------------------------------------
 
 describe("updateClimateSurvey non-DRAFT translations", () => {
-  it("uses translated message when next-intl request context is present", async () => {
+  it("answers in Spanish by default", async () => {
     mockPrisma.climateSurvey.findFirst.mockResolvedValue({
       ...baseSurvey,
       status: "ACTIVE",
-    });
-    // Simulate a translator function that returns Spanish text
-    mockedGetTranslations.mockResolvedValueOnce((key: string) => {
-      if (key === "questions_locked_after_send") return "ES_LOCKED";
-      return key;
     });
 
     const result = await updateClimateSurvey("survey-1", {
@@ -317,10 +296,12 @@ describe("updateClimateSurvey non-DRAFT translations", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toBe("ES_LOCKED");
+    expect(result.error).toBe("Las preguntas no se pueden cambiar después de enviar la encuesta");
   });
 
-  it("falls back to English when next-intl context is unavailable", async () => {
+  it("answers in English for en companies", async () => {
+    mockSession = createAdminSession();
+    (mockSession.companyUser as { locale?: string }).locale = "en";
     mockPrisma.climateSurvey.findFirst.mockResolvedValue({
       ...baseSurvey,
       status: "ACTIVE",
@@ -331,9 +312,7 @@ describe("updateClimateSurvey non-DRAFT translations", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toBe(
-      "Questions cannot be changed after the survey has been sent",
-    );
+    expect(result.error).toBe("Questions cannot be changed after the survey has been sent");
   });
 
   it("returns 'At least one question is required' when DRAFT + empty array", async () => {
@@ -342,7 +321,7 @@ describe("updateClimateSurvey non-DRAFT translations", () => {
     const result = await updateClimateSurvey("survey-1", { questions: [] });
 
     expect(result.success).toBe(false);
-    expect(result.error).toBe("At least one question is required");
+    expect(result.error).toBe("Agrega al menos una pregunta");
   });
 });
 
@@ -376,7 +355,7 @@ describe("duplicateClimateSurvey", () => {
     const result = await duplicateClimateSurvey("survey-1");
 
     expect(result.success).toBe(false);
-    expect(result.error).toBe("Failed to duplicate survey");
+    expect(result.error).toBe("No tienes permiso para hacer esto");
   });
 });
 
@@ -459,7 +438,7 @@ describe("updateClimateSurveyQuestion", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toBe("Dimension not found");
+    expect(result.error).toBe("No encontramos la dimensión");
     expect(mockPrisma.surveyQuestion.update).not.toHaveBeenCalled();
   });
 
@@ -492,7 +471,7 @@ describe("updateClimateSurveyQuestion", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toBe("Archived surveys cannot be edited");
+    expect(result.error).toBe("Las encuestas archivadas no se pueden editar");
     expect(mockPrisma.surveyQuestion.findFirst).not.toHaveBeenCalled();
   });
 
@@ -505,7 +484,7 @@ describe("updateClimateSurveyQuestion", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toBe("Question text is required");
+    expect(result.error).toBe("El texto de la pregunta es obligatorio");
   });
 
   it("returns 'Survey not found' when survey id is wrong", async () => {
@@ -516,7 +495,7 @@ describe("updateClimateSurveyQuestion", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toBe("Survey not found");
+    expect(result.error).toBe("No encontramos la encuesta");
   });
 
   it("returns 'Question not found' when question is not in survey", async () => {
@@ -528,7 +507,7 @@ describe("updateClimateSurveyQuestion", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toBe("Question not found");
+    expect(result.error).toBe("No encontramos la pregunta");
   });
 
   it("rejects non-admins via the wrapping error", async () => {
@@ -537,7 +516,7 @@ describe("updateClimateSurveyQuestion", () => {
       text: "x",
     });
     expect(result.success).toBe(false);
-    expect(result.error).toContain("Unauthorized");
+    expect(result.error).toContain("No tienes permiso para hacer esto");
   });
 });
 
@@ -557,7 +536,7 @@ describe("uploadSurveyLogo", () => {
     const fd = new FormData();
     const result = await uploadSurveyLogo("survey-1", fd);
     expect(result.success).toBe(false);
-    expect(result.error).toBe("No file provided");
+    expect(result.error).toBe("No se adjuntó ningún archivo");
   });
 
   it("rejects when survey is not found", async () => {
@@ -567,7 +546,7 @@ describe("uploadSurveyLogo", () => {
 
     const result = await uploadSurveyLogo("nope", fd);
     expect(result.success).toBe(false);
-    expect(result.error).toBe("Survey not found");
+    expect(result.error).toBe("No encontramos la encuesta");
   });
 
   it("rejects unsupported mime types", async () => {
@@ -577,7 +556,7 @@ describe("uploadSurveyLogo", () => {
 
     const result = await uploadSurveyLogo("survey-1", fd);
     expect(result.success).toBe(false);
-    expect(result.error).toMatch(/Unsupported file type/);
+    expect(result.error).toMatch(/Tipo de archivo no permitido/);
   });
 
   it("rejects oversized files (>2MB)", async () => {
@@ -587,7 +566,7 @@ describe("uploadSurveyLogo", () => {
 
     const result = await uploadSurveyLogo("survey-1", fd);
     expect(result.success).toBe(false);
-    expect(result.error).toMatch(/too large/);
+    expect(result.error).toMatch(/demasiado grande/);
   });
 
   it("returns the public URL on a successful upload", async () => {
@@ -627,7 +606,7 @@ describe("uploadSurveyLogo", () => {
     const result = await uploadSurveyLogo("survey-1", fd);
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain("Upload failed: 5xx");
+    expect(result.error).toBe("No se pudo subir el archivo (5xx)");
   });
 
   it("rejects non-admin callers", async () => {
@@ -635,7 +614,7 @@ describe("uploadSurveyLogo", () => {
     const fd = new FormData();
     const result = await uploadSurveyLogo("survey-1", fd);
     expect(result.success).toBe(false);
-    expect(result.error).toContain("Unauthorized");
+    expect(result.error).toContain("No tienes permiso para hacer esto");
   });
 });
 
@@ -649,7 +628,7 @@ describe("uploadSurveyWallpaper", () => {
     const fd = new FormData();
     const result = await uploadSurveyWallpaper(fd);
     expect(result.success).toBe(false);
-    expect(result.error).toBe("No file provided");
+    expect(result.error).toBe("No se adjuntó ningún archivo");
   });
 
   it("rejects unsupported mime types", async () => {
@@ -658,7 +637,7 @@ describe("uploadSurveyWallpaper", () => {
 
     const result = await uploadSurveyWallpaper(fd);
     expect(result.success).toBe(false);
-    expect(result.error).toMatch(/Unsupported file type/);
+    expect(result.error).toMatch(/Tipo de archivo no permitido/);
   });
 
   it("rejects oversized files (>2MB)", async () => {
@@ -667,7 +646,7 @@ describe("uploadSurveyWallpaper", () => {
 
     const result = await uploadSurveyWallpaper(fd);
     expect(result.success).toBe(false);
-    expect(result.error).toMatch(/too large/);
+    expect(result.error).toMatch(/demasiado grande/);
   });
 
   it("uploads to the company-scoped wallpapers path and returns the public URL", async () => {
@@ -707,7 +686,7 @@ describe("uploadSurveyWallpaper", () => {
     const result = await uploadSurveyWallpaper(fd);
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain("Upload failed: boom");
+    expect(result.error).toBe("No se pudo subir el archivo (boom)");
   });
 
   it("rejects non-admin callers via the wrapping error", async () => {
@@ -717,7 +696,7 @@ describe("uploadSurveyWallpaper", () => {
 
     const result = await uploadSurveyWallpaper(fd);
     expect(result.success).toBe(false);
-    expect(result.error).toContain("Unauthorized");
+    expect(result.error).toContain("No tienes permiso para hacer esto");
   });
 
   it("rejects unauthenticated callers via the wrapping error", async () => {

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/design-system/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmployeeForm } from "@/components/people/employee-form";
@@ -12,6 +13,8 @@ export default async function AddEmployeePage() {
   }
 
   const companyId = session.companyUser.companyId;
+  // Dashboard routes have no locale segment: follow the company's language
+  const t = await getTranslations({ locale: session.companyUser.locale ?? "es", namespace: "dashboard.people_page" });
 
   const [departments, managers, hubs, company] = await Promise.all([
     prisma.department.findMany({ where: { companyId }, orderBy: { name: "asc" } }),
@@ -23,16 +26,14 @@ export default async function AddEmployeePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Add Employee"
-        description="Add a new team member to your organization"
+        title={t("add_employee")}
+        description={t("new.description")}
       />
 
       <Card>
         <CardHeader>
-          <CardTitle>Employee Details</CardTitle>
-          <CardDescription>
-            Enter the employee&apos;s information. They will receive an invitation email to join.
-          </CardDescription>
+          <CardTitle>{t("details_title")}</CardTitle>
+          <CardDescription>{t("new.details_description")}</CardDescription>
         </CardHeader>
         <CardContent>
           <EmployeeForm

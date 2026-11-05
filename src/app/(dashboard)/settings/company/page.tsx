@@ -38,6 +38,7 @@ export default async function CompanySettingsPage() {
         slug: company.slug,
         domain: company.domain,
         locale: company.locale,
+        logo: company.logo,
         _count: company._count,
         departments: company.departments,
       }}

@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import type { PlatformTheme } from "@/lib/constants/platform-theme";
 
 // ============================================
 // Wallpaper config types
@@ -128,11 +129,23 @@ export interface WallpaperCSS {
  *
  * @param config  The stored wallpaper config (may be null)
  * @param fallbackColor  Used when config is null — produces a gradient from this color
+ * @param platformTheme  Under "kultiva", a survey without a wallpaper sits on
+ *   the theme's backdrop (the --k-backdrop variable of theme-kultiva.css)
  */
 export function getWallpaperCSS(
   config: WallpaperConfig | null | undefined,
   fallbackColor?: string,
+  platformTheme: PlatformTheme = "classic",
 ): WallpaperCSS {
+  if (!config && platformTheme === "kultiva") {
+    return {
+      style: {
+        background: "var(--k-backdrop)",
+        backgroundAttachment: "fixed",
+      },
+    };
+  }
+
   if (!config) {
     const c = fallbackColor || "#613171";
     return {
@@ -229,26 +242,48 @@ const DEFAULT_COLORS: Required<ColorConfig> = {
   titleText: "#111827",
 };
 
+/** Survey defaults under the Kultiva platform theme (the POC's palette). */
+const KULTIVA_COLORS: Required<ColorConfig> = {
+  background: "#eef0fb",
+  buttons: "#4d1c68",
+  buttonText: "#ffffff",
+  pageText: "#4a3960",
+  titleText: "#241238",
+};
+
 export function parseColorConfig(raw: unknown): ColorConfig | null {
   if (!raw || typeof raw !== "object") return null;
   return raw as ColorConfig;
 }
 
-/** Merge user colors with defaults — every field always has a value. */
+/**
+ * Merge user colors with defaults — every field always has a value.
+ *
+ * Under the Kultiva platform theme, colors a survey chose still win, but the
+ * defaults come from Kultiva's palette. The survey wizard saves the classic
+ * defaults verbatim, so a value equal to one of them counts as not chosen.
+ */
 export function resolveColors(
   config: ColorConfig | null | undefined,
   themeColorFallback?: string,
+  platformTheme: PlatformTheme = "classic",
 ): Required<ColorConfig> {
+  const pick = (key: keyof ColorConfig, value: string | undefined): string => {
+    if (platformTheme === "classic") return value || DEFAULT_COLORS[key];
+    if (!value || value.toLowerCase() === DEFAULT_COLORS[key]) return KULTIVA_COLORS[key];
+    return value;
+  };
+
   return {
-    background: config?.background || DEFAULT_COLORS.background,
-    buttons: config?.buttons || themeColorFallback || DEFAULT_COLORS.buttons,
-    buttonText: config?.buttonText || DEFAULT_COLORS.buttonText,
-    pageText: config?.pageText || DEFAULT_COLORS.pageText,
-    titleText: config?.titleText || DEFAULT_COLORS.titleText,
+    background: pick("background", config?.background),
+    buttons: pick("buttons", config?.buttons || themeColorFallback),
+    buttonText: pick("buttonText", config?.buttonText),
+    pageText: pick("pageText", config?.pageText),
+    titleText: pick("titleText", config?.titleText),
   };
 }
 
-export { DEFAULT_COLORS };
+export { DEFAULT_COLORS, KULTIVA_COLORS };
 
 // ============================================
 // Contrast helpers
@@ -280,6 +315,27 @@ function luminance(hex: string): number {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
+/** The wallpaper's dominant color, or null for an image (it can't be analyzed). */
+function dominantWallpaperColor(
+  wallpaperConfig: WallpaperConfig | null | undefined,
+  fallbackColor?: string,
+): string | null {
+  if (!wallpaperConfig) return fallbackColor || "#613171";
+
+  switch (wallpaperConfig.style) {
+    case "gradient":
+      return wallpaperConfig.preset
+        ? (GRADIENT_PRESETS[wallpaperConfig.preset]?.colors[0] ?? wallpaperConfig.color)
+        : wallpaperConfig.color;
+    case "fill":
+    case "blur":
+    case "pattern":
+      return wallpaperConfig.color;
+    case "image":
+      return null;
+  }
+}
+
 /**
  * Given the wallpaper config, extract the dominant color and return
  * badge colors that will contrast against it.
@@ -289,31 +345,27 @@ export function getContrastBadgeColors(
   wallpaperConfig: WallpaperConfig | null | undefined,
   fallbackColor?: string,
 ): { bg: string; text: string } {
-  let dominantColor = fallbackColor || "#613171";
-
-  if (wallpaperConfig) {
-    switch (wallpaperConfig.style) {
-      case "fill":
-        dominantColor = wallpaperConfig.color;
-        break;
-      case "gradient":
-        dominantColor = wallpaperConfig.preset
-          ? (GRADIENT_PRESETS[wallpaperConfig.preset]?.colors[0] ?? wallpaperConfig.color)
-          : wallpaperConfig.color;
-        break;
-      case "blur":
-      case "pattern":
-        dominantColor = wallpaperConfig.color;
-        break;
-      case "image":
-        // Can't analyze an image; assume dark overlay
-        return { bg: "rgba(255,255,255,0.9)", text: "#1a1a2e" };
-    }
-  }
+  const dominantColor = dominantWallpaperColor(wallpaperConfig, fallbackColor);
+  // Can't analyze an image; assume dark overlay
+  if (!dominantColor) return { bg: "rgba(255,255,255,0.9)", text: "#1a1a2e" };
 
   const lum = luminance(dominantColor);
   // Dark background → white badge; light background → dark badge
   return lum < 0.4
     ? { bg: "rgba(255,255,255,0.85)", text: "#1a1a2e" }
     : { bg: "rgba(0,0,0,0.7)", text: "#ffffff" };
+}
+
+/**
+ * Whether the page a wallpaper paints is dark, so whatever sits straight on it
+ * should be light. Images count as dark; the Kultiva backdrop is dark.
+ */
+export function isDarkWallpaper(
+  wallpaperConfig: WallpaperConfig | null | undefined,
+  fallbackColor?: string,
+  platformTheme: PlatformTheme = "classic",
+): boolean {
+  if (!wallpaperConfig && platformTheme === "kultiva") return true;
+  const dominantColor = dominantWallpaperColor(wallpaperConfig, fallbackColor);
+  return !dominantColor || luminance(dominantColor) < 0.4;
 }

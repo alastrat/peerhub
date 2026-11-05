@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThumbsUp, TrendingUp, Lock } from "lucide-react";
 
@@ -14,6 +15,7 @@ export function TextFeedback({
   opportunities,
   minResponses = 3,
 }: TextFeedbackProps) {
+  const t = useTranslations("feedback_report");
   const hasStrengths = strengths.length >= minResponses;
   const hasOpportunities = opportunities.length >= minResponses;
 
@@ -23,7 +25,7 @@ export function TextFeedback({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ThumbsUp className="h-5 w-5 text-green-500" />
-            Strengths
+            {t("strengths")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -43,8 +45,8 @@ export function TextFeedback({
               <Lock className="h-4 w-4" />
               <span className="text-sm">
                 {strengths.length === 0
-                  ? "No strength feedback provided"
-                  : `Minimum ${minResponses} responses required for display`}
+                  ? t("no_strengths")
+                  : t("min_responses", { count: minResponses })}
               </span>
             </div>
           )}
@@ -55,7 +57,7 @@ export function TextFeedback({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-blue-500" />
-            Growth Opportunities
+            {t("opportunities")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -75,8 +77,8 @@ export function TextFeedback({
               <Lock className="h-4 w-4" />
               <span className="text-sm">
                 {opportunities.length === 0
-                  ? "No growth opportunities provided"
-                  : `Minimum ${minResponses} responses required for display`}
+                  ? t("no_opportunities")
+                  : t("min_responses", { count: minResponses })}
               </span>
             </div>
           )}

@@ -60,7 +60,12 @@ describe("applyInstrumentRules", () => {
       [{ text: "x", type: "LIKERT", order: 0, isRequired: true, config: { itemCode: "XXX-1" } }],
       dimIds,
     );
-    expect(unknown).toEqual({ ok: false, error: "Unknown instrument item XXX-1" });
+    expect(unknown).toEqual({
+      ok: false,
+      error: "Unknown instrument item XXX-1",
+      code: "unknown_item",
+      values: { code: "XXX-1" },
+    });
   });
 
   it("keeps custom questions out of instrument dimensions", () => {
@@ -84,6 +89,7 @@ describe("applyInstrumentRules", () => {
     expect(applyInstrumentRules(itemsOf("LID"), new Map())).toEqual({
       ok: false,
       error: "The validated instrument is not installed",
+      code: "not_installed",
     });
   });
 

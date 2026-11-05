@@ -10,7 +10,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import { Logo } from "@/components/design-system/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -240,106 +239,47 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="flex h-16 items-center justify-center border-b">
-        <Logo />
-      </header>
-
-      <main className="flex flex-1 items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-md"
-        >
-          <Card className="border-0 shadow-lg">
-            {step === "profile" ? (
-              <>
-                <CardHeader className="space-y-1 text-center">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
+    <main className="flex flex-1 items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md"
+      >
+        <Card className="border-0 shadow-lg">
+          {step === "profile" ? (
+            <>
+              <CardHeader className="space-y-1 text-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
+                >
+                  <UserCircle2 className="h-8 w-8 text-primary" />
+                </motion.div>
+                <CardTitle className="text-2xl font-bold">
+                  {t("profile_title")}
+                </CardTitle>
+                <CardDescription>
+                  {t("profile_description")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...profileForm}>
+                  <form
+                    onSubmit={profileForm.handleSubmit(onSubmitProfile)}
+                    className="space-y-4"
                   >
-                    <UserCircle2 className="h-8 w-8 text-primary" />
-                  </motion.div>
-                  <CardTitle className="text-2xl font-bold">
-                    {t("profile_title")}
-                  </CardTitle>
-                  <CardDescription>
-                    {t("profile_description")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Form {...profileForm}>
-                    <form
-                      onSubmit={profileForm.handleSubmit(onSubmitProfile)}
-                      className="space-y-4"
-                    >
-                      <div className="grid grid-cols-2 gap-3">
-                        <FormField
-                          control={profileForm.control}
-                          name="firstName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t("first_name")}</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder={t("first_name_placeholder")}
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={profileForm.control}
-                          name="lastName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{t("last_name")}</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder={t("last_name_placeholder")}
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
+                    <div className="grid grid-cols-2 gap-3">
                       <FormField
                         control={profileForm.control}
-                        name="phone"
+                        name="firstName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{t("phone_label")}</FormLabel>
-                            <FormControl>
-                              <PhoneInput
-                                international
-                                defaultCountry="CO"
-                                value={field.value || undefined}
-                                onChange={(v) => field.onChange(v ?? "")}
-                                className="phone-input"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={profileForm.control}
-                        name="jobTitle"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("job_title_label")}</FormLabel>
+                            <FormLabel>{t("first_name")}</FormLabel>
                             <FormControl>
                               <Input
-                                placeholder={t("job_title_placeholder")}
+                                placeholder={t("first_name_placeholder")}
                                 {...field}
                               />
                             </FormControl>
@@ -347,142 +287,195 @@ export default function OnboardingPage() {
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={profileForm.control}
+                        name="lastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("last_name")}</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder={t("last_name_placeholder")}
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
+                    <FormField
+                      control={profileForm.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("phone_label")}</FormLabel>
+                          <FormControl>
+                            <PhoneInput
+                              international
+                              defaultCountry="CO"
+                              value={field.value || undefined}
+                              onChange={(v) => field.onChange(v ?? "")}
+                              className="phone-input"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={profileForm.control}
+                      name="jobTitle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("job_title_label")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("job_title_placeholder")}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={isSubmittingProfile}
+                    >
+                      {isSubmittingProfile ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : null}
+                      {t("continue")}
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </>
+          ) : (
+            <>
+              <CardHeader className="space-y-1 text-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
+                >
+                  <Building2 className="h-8 w-8 text-primary" />
+                </motion.div>
+                <CardTitle className="text-2xl font-bold">
+                  {t("company_title")}
+                </CardTitle>
+                <CardDescription>
+                  {t("company_description")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...companyForm}>
+                  <form
+                    onSubmit={companyForm.handleSubmit(onSubmitCompany)}
+                    className="space-y-4"
+                  >
+                    <FormField
+                      control={companyForm.control}
+                      name="companyName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("company_name")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("company_name_placeholder")}
+                              {...field}
+                              onChange={(e) =>
+                                handleCompanyNameChange(e.target.value)
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={companyForm.control}
+                      name="slug"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("company_url")}</FormLabel>
+                          <FormControl>
+                            <div className="flex items-center rounded-lg border border-input bg-background shadow-sm">
+                              <span className="px-3 text-sm text-muted-foreground">
+                                peerhub.com/
+                              </span>
+                              <Input
+                                className="border-0 shadow-none"
+                                placeholder={t("company_url_placeholder")}
+                                {...field}
+                              />
+                            </div>
+                          </FormControl>
+                          <FormDescription>
+                            {t("company_url_help")}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={companyForm.control}
+                      name="taxId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("company_tax_id")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("company_tax_id_placeholder")}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            {t("company_tax_id_help")}
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="flex-1"
+                        onClick={() => setStep("profile")}
+                        disabled={isSubmittingCompany}
+                      >
+                        {t("back")}
+                      </Button>
                       <Button
                         type="submit"
-                        className="w-full"
-                        disabled={isSubmittingProfile}
+                        className="flex-1"
+                        disabled={isSubmittingCompany}
                       >
-                        {isSubmittingProfile ? (
+                        {isSubmittingCompany ? (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : null}
-                        {t("continue")}
+                        ) : (
+                          <Check className="mr-2 h-4 w-4" />
+                        )}
+                        {t("create_company")}
                       </Button>
-                    </form>
-                  </Form>
-                </CardContent>
-              </>
-            ) : (
-              <>
-                <CardHeader className="space-y-1 text-center">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                    className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10"
-                  >
-                    <Building2 className="h-8 w-8 text-primary" />
-                  </motion.div>
-                  <CardTitle className="text-2xl font-bold">
-                    {t("company_title")}
-                  </CardTitle>
-                  <CardDescription>
-                    {t("company_description")}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Form {...companyForm}>
-                    <form
-                      onSubmit={companyForm.handleSubmit(onSubmitCompany)}
-                      className="space-y-4"
-                    >
-                      <FormField
-                        control={companyForm.control}
-                        name="companyName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("company_name")}</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder={t("company_name_placeholder")}
-                                {...field}
-                                onChange={(e) =>
-                                  handleCompanyNameChange(e.target.value)
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={companyForm.control}
-                        name="slug"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("company_url")}</FormLabel>
-                            <FormControl>
-                              <div className="flex items-center rounded-lg border border-input bg-background shadow-sm">
-                                <span className="px-3 text-sm text-muted-foreground">
-                                  peerhub.com/
-                                </span>
-                                <Input
-                                  className="border-0 shadow-none"
-                                  placeholder={t("company_url_placeholder")}
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormDescription>
-                              {t("company_url_help")}
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={companyForm.control}
-                        name="taxId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{t("company_tax_id")}</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder={t("company_tax_id_placeholder")}
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              {t("company_tax_id_help")}
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="flex-1"
-                          onClick={() => setStep("profile")}
-                          disabled={isSubmittingCompany}
-                        >
-                          {t("back")}
-                        </Button>
-                        <Button
-                          type="submit"
-                          className="flex-1"
-                          disabled={isSubmittingCompany}
-                        >
-                          {isSubmittingCompany ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <Check className="mr-2 h-4 w-4" />
-                          )}
-                          {t("create_company")}
-                        </Button>
-                      </div>
-                    </form>
-                  </Form>
-                </CardContent>
-              </>
-            )}
-          </Card>
-        </motion.div>
-      </main>
-    </div>
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+            </>
+          )}
+        </Card>
+      </motion.div>
+    </main>
   );
 }
