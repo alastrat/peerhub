@@ -405,6 +405,7 @@ export function CSVImportWizard() {
                     <TableHead>{t("review.table.national_id")}</TableHead>
                     <TableHead>{t("review.table.name")}</TableHead>
                     <TableHead>{t("review.table.email")}</TableHead>
+                    <TableHead>{t("review.table.title")}</TableHead>
                     <TableHead>{t("review.table.department")}</TableHead>
                     <TableHead>{t("review.table.manager")}</TableHead>
                     {showRole && <TableHead>{t("review.table.role")}</TableHead>}
@@ -428,6 +429,7 @@ export function CSVImportWizard() {
                       <TableCell>{result.data.nationalId || "-"}</TableCell>
                       <TableCell>{result.data.name || "-"}</TableCell>
                       <TableCell>{result.data.email || "-"}</TableCell>
+                      <TableCell>{result.data.title || "-"}</TableCell>
                       <TableCell>{result.data.department || "-"}</TableCell>
                       <TableCell>
                         {result.data.managerName || result.data.managerNationalId || result.data.managerEmail || "-"}
