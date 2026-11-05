@@ -189,6 +189,13 @@ function revalidatePlan(plan: { id: string; surveyId: string }) {
   revalidatePath("/portal/home");
 }
 
+/** Where HR lands from plan emails: the leader's page in Planes de acción, or the plan itself. */
+function hrPlanPath(plan: { id: string; surveyId: string; scope: string; scopeRefId: string | null }) {
+  return plan.scope === "LEADER" && plan.scopeRefId
+    ? `/action-plans/${plan.surveyId}/${plan.scopeRefId}`
+    : `/surveys/climate/${plan.surveyId}/plans/${plan.id}`;
+}
+
 function formatDay(d: Date) {
   return d.toISOString().slice(0, 10);
 }
@@ -410,7 +417,7 @@ export async function submitActionPlan(planId: string): Promise<ActionResult> {
       emailUsersViaDashboard(
         actor.companyId,
         plan.survey.followUpUserIds,
-        `/surveys/climate/${plan.surveyId}/plans/${plan.id}`,
+        hrPlanPath(plan),
         planEmails.planSubmitted(plan.owner.name, plan.title, plan.dimension.name, plan.survey.name),
       ),
     );
@@ -451,7 +458,7 @@ export async function completeActionPlan(planId: string, closingNote: string): P
           emailUsersViaDashboard(
             actor.companyId,
             plan.survey.followUpUserIds,
-            `/surveys/climate/${plan.surveyId}?tab=plans`,
+            hrPlanPath(plan),
             planEmails.leaderCompleted(plan.owner.name, plan.survey.name, siblings.length),
           ),
         );
