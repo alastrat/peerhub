@@ -1648,6 +1648,8 @@
       "preview_banner_body": "Esta es una vista previa en vivo de <strong>{name}</strong>. No se registran respuestas.",
       "preview_restart_hint": "Modo de vista previa — toca arriba para volver a la pantalla de bienvenida.",
       "anonymous_badge": "Tu respuesta es 100% confidencial",
+      "questions_count": "{count, plural, one {# pregunta} other {# preguntas}}",
+      "conducted_with": "{company} realiza esta encuesta con Kultiva.",
       "already_completed": "Ya completaste esta encuesta",
       "already_completed_body": "Gracias por tu participación. Tus respuestas quedaron registradas.",
       "default_cta": "Comenzar encuesta",
@@ -1910,6 +1912,22 @@
         "saving": "Guardando...",
         "updated": "Idioma actualizado",
         "error": "Error al actualizar el idioma"
+      },
+      "logo": {
+        "title": "Logo de la empresa",
+        "description": "Aparece en las encuestas de la empresa. Una encuesta puede usar otro logo desde su configuración.",
+        "alt": "Logo de la empresa",
+        "empty": "Sin logo",
+        "upload": "Subir logo",
+        "replace": "Cambiar logo",
+        "remove": "Quitar",
+        "saving": "Guardando...",
+        "hint": "PNG, JPEG, SVG o WebP. Máx. 2 MB. Funciona mejor con fondo transparente.",
+        "updated": "Logo actualizado",
+        "removed": "Logo quitado",
+        "invalid_type": "Formato no soportado. Usa PNG, JPEG, SVG o WebP.",
+        "too_large": "El archivo supera los 2 MB.",
+        "error": "No se pudo guardar el logo"
       }
     },
     "header": {
@@ -2735,7 +2753,10 @@
         "access_start_label": "La encuesta abre a partir de esta fecha",
         "access_end_label": "La encuesta cierra después de esta fecha",
         "branding_title": "Marca",
-        "branding_description": "Agrega un logo que aparecerá en el encabezado de la encuesta.",
+        "branding_description": "Agrega un logo que aparecerá en el encabezado de la encuesta. Sin un logo propio, la encuesta usa el logo de la empresa.",
+        "logo_company_badge": "Logo de la empresa",
+        "logo_use_company": "Usar el logo de la empresa",
+        "logo_company_restored": "La encuesta usa el logo de la empresa",
         "logo_alt": "Logo de la encuesta",
         "logo_url_label": "URL del logo",
         "logo_source_label": "Origen del logo",

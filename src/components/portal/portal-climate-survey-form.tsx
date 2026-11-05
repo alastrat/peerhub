@@ -247,7 +247,7 @@ export function PortalClimateSurveyForm({
     <div className="flex min-h-screen flex-col">
       {/* Andela-style sticky header: logo + survey name + question counter,
           with a thin accent-coloured progress bar pinned to its bottom edge. */}
-      <header className="sticky top-0 z-30 border-b bg-white/95 shadow-sm backdrop-blur">
+      <header data-survey-header className="sticky top-0 z-30 border-b bg-white/95 shadow-sm backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
           {onBackToWelcome && (
             <button
@@ -325,7 +325,7 @@ export function PortalClimateSurveyForm({
 
       {/* Page navigation (top) */}
       {isPaginated && totalPages > 1 && (
-        <div className="flex items-center justify-between rounded-xl bg-white/90 px-4 py-2 shadow-sm backdrop-blur">
+        <div data-survey-bar className="flex items-center justify-between rounded-xl bg-white/90 px-4 py-2 shadow-sm backdrop-blur">
           <Button
             type="button"
             variant="ghost"
@@ -399,6 +399,7 @@ export function PortalClimateSurveyForm({
                     label: getScaleAnchor(getQuestionScale(q)!, value, locale) ?? String(value),
                   })).map((opt) => (
                     <button
+                      data-survey-option
                       key={opt.value}
                       type="button"
                       onClick={() => setAnswer(q.id, { ratingValue: opt.value })}
@@ -420,6 +421,7 @@ export function PortalClimateSurveyForm({
                 <div className="grid grid-cols-5 gap-2">
                   {[1, 2, 3, 4, 5].map((v) => (
                     <button
+                      data-survey-option
                       key={v}
                       type="button"
                       onClick={() => setAnswer(q.id, { ratingValue: v })}
@@ -441,6 +443,7 @@ export function PortalClimateSurveyForm({
                 <div className="grid grid-cols-11 gap-1">
                   {Array.from({ length: 11 }, (_, v) => (
                     <button
+                      data-survey-option
                       key={v}
                       type="button"
                       onClick={() => setAnswer(q.id, { ratingValue: v })}
@@ -477,7 +480,7 @@ export function PortalClimateSurveyForm({
       {(() => {
         const isLastPage = !isPaginated || currentPage >= totalPages - 1;
         return (
-          <div className="flex items-center justify-between gap-3 sticky bottom-4 bg-white/90 backdrop-blur p-3 rounded-lg border shadow-sm">
+          <div data-survey-bar className="flex items-center justify-between gap-3 sticky bottom-4 bg-white/90 backdrop-blur p-3 rounded-lg border shadow-sm">
             <Button
               type="button"
               variant="outline"

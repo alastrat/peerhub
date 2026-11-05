@@ -8,6 +8,7 @@ import {
   GRADIENT_PRESETS,
   PATTERN_OPTIONS,
   DEFAULT_COLORS,
+  KULTIVA_COLORS,
   type WallpaperConfig,
   type ColorConfig,
 } from "@/lib/utils/wallpaper";
@@ -59,6 +60,16 @@ describe("wallpaper utils", () => {
     it("returns fallback gradient when config is undefined", () => {
       const result = getWallpaperCSS(undefined);
       expect(result.style.background).toContain("#613171");
+    });
+
+    it("puts a survey without a wallpaper on the backdrop under Kultiva", () => {
+      const result = getWallpaperCSS(null, "#ff0000", "kultiva");
+      expect(result.style.background).toBe("var(--k-backdrop)");
+    });
+
+    it("keeps a survey's own wallpaper under Kultiva", () => {
+      const result = getWallpaperCSS({ style: "fill", color: "#f4f4f5" }, "#ff0000", "kultiva");
+      expect(result.style.background).toBe("#f4f4f5");
     });
 
     it("uses custom fallback color when config is null", () => {
@@ -275,6 +286,33 @@ describe("wallpaper utils", () => {
         expect(value).toBeDefined();
         expect(value).not.toBe("");
       }
+    });
+    describe("under the Kultiva platform theme", () => {
+      it("uses Kultiva's palette for a survey without colors", () => {
+        expect(resolveColors(null, undefined, "kultiva")).toEqual(KULTIVA_COLORS);
+      });
+
+      it("treats the classic defaults the wizard saves as not chosen", () => {
+        const wizardDefaults: ColorConfig = { ...DEFAULT_COLORS };
+        expect(resolveColors(wizardDefaults, "#613171", "kultiva")).toEqual(KULTIVA_COLORS);
+      });
+
+      it("keeps colors the survey chose", () => {
+        const config: ColorConfig = { ...DEFAULT_COLORS, buttons: "#38BDF8", titleText: "#0f172a" };
+        const result = resolveColors(config, undefined, "kultiva");
+        expect(result.buttons).toBe("#38BDF8");
+        expect(result.titleText).toBe("#0f172a");
+        expect(result.pageText).toBe(KULTIVA_COLORS.pageText);
+      });
+
+      it("keeps a custom theme color as the button color", () => {
+        expect(resolveColors(null, "#0ea5e9", "kultiva").buttons).toBe("#0ea5e9");
+      });
+    });
+
+    it("leaves classic surveys exactly as before", () => {
+      const config: ColorConfig = { ...DEFAULT_COLORS };
+      expect(resolveColors(config, "#613171", "classic")).toEqual(DEFAULT_COLORS);
     });
   });
 

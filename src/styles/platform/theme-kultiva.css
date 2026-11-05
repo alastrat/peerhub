@@ -8,8 +8,9 @@
  * as <html data-platform-theme="…">; "classic" needs no rules.
  *
  * Scope: only pages that render an app shell ([data-app-shell] on the
- * dashboard, portal, auth, external-review and onboarding layouts). The
- * marketing site never has one, so it keeps its own look under either theme.
+ * dashboard, portal, auth, external-review, onboarding and survey layouts).
+ * The marketing site never has one, so it keeps its own look under either
+ * theme.
  * Tokens sit on <html> so Radix portals (dialogs, popovers, menus) pick them
  * up too.
  *
@@ -387,4 +388,72 @@ html[data-platform-theme="kultiva"] [data-app-shell] [data-app-main] :is(p, span
 html[data-platform-theme="kultiva"] [data-app-shell] [data-app-main] :is(p, span, h2, h3, div).uppercase.tracking-widest.text-muted-foreground {
   color: var(--k-leaf-ink);
   font-weight: 700;
+}
+
+/* ==========================================================================
+   SURVEYS — the climate survey a respondent answers (portal) and its public
+   preview. Colors and wallpaper a survey sets for itself stay inline and win;
+   a survey without a wallpaper sits on the backdrop (see getWallpaperCSS).
+   Last in the file so it wins ties with the component rules above.
+   ========================================================================== */
+
+html[data-platform-theme="kultiva"] [data-app-shell="survey"] :is(h1, h2) {
+  font-family: var(--font-quicksand), "Quicksand", sans-serif;
+  font-weight: 700;
+}
+
+/* Welcome and thank-you panels, question cards and the sticky bars float on
+   the wallpaper as white rounded surfaces */
+html[data-platform-theme="kultiva"] [data-app-shell="survey"] [data-survey-panel] {
+  border: none;
+  border-radius: var(--k-radius-lg);
+  box-shadow: var(--k-shadow-card);
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="survey"] [data-slot="card"]:not([data-survey-panel]) {
+  border-color: transparent;
+  border-radius: var(--k-radius-lg);
+  box-shadow: 0 14px 34px rgba(20, 6, 34, 0.22);
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="survey"] [data-survey-bar] {
+  border-color: transparent;
+  border-radius: var(--k-radius-md);
+  background-color: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 30px rgba(20, 6, 34, 0.25);
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="survey"] [data-survey-header] {
+  border-color: transparent;
+  box-shadow: 0 8px 24px rgba(20, 6, 34, 0.18);
+}
+
+/* The welcome screen's back button sits straight on the wallpaper, which may
+   be dark or light: a white chip keeps it legible on both */
+html[data-platform-theme="kultiva"] [data-app-shell="survey"] [data-survey-topbar] [data-slot="button"] {
+  background-color: rgba(255, 255, 255, 0.92);
+  color: var(--k-ink-900);
+  box-shadow: 0 6px 18px rgba(20, 6, 34, 0.2);
+}
+
+/* "Pregunta 1 de 63" eyebrows */
+html[data-platform-theme="kultiva"] [data-app-shell="survey"] p.uppercase.tracking-wider.text-muted-foreground {
+  color: var(--k-leaf-ink);
+  font-weight: 700;
+}
+
+/* Answer options, as the POC's scale buttons: 1.5px hairline, purple-glow on
+   hover. The chosen option keeps its inline accent colors. */
+html[data-platform-theme="kultiva"] [data-app-shell="survey"] [data-survey-option] {
+  border-width: 1.5px;
+  border-color: var(--k-border);
+  border-radius: var(--k-radius-sm);
+  background-color: #fff;
+  color: var(--k-ink-700);
+  font-weight: 600;
+}
+
+html[data-platform-theme="kultiva"] [data-app-shell="survey"] [data-survey-option]:hover {
+  border-color: var(--k-purple-glow);
+  background-color: #fff;
 }

@@ -52,6 +52,7 @@ async function getSurvey(companyId: string, surveyId: string) {
   return prisma.climateSurvey.findFirst({
     where: { id: surveyId, companyId },
     include: {
+      company: { select: { logo: true } },
       questions: {
         include: { dimension: { select: { id: true, name: true } } },
         orderBy: { order: "asc" },
@@ -489,6 +490,7 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
               accessStartDate: survey.accessStartDate,
               accessEndDate: survey.accessEndDate,
             }}
+            companyLogoUrl={survey.company.logo}
             distributions={survey.distributions.map((dist) => ({
               id: dist.id,
               sentAt: dist.sentAt,

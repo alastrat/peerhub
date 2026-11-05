@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import type { PlatformTheme } from "@/lib/constants/platform-theme";
 
 // ============================================
 // Wallpaper config types
@@ -128,11 +129,23 @@ export interface WallpaperCSS {
  *
  * @param config  The stored wallpaper config (may be null)
  * @param fallbackColor  Used when config is null — produces a gradient from this color
+ * @param platformTheme  Under "kultiva", a survey without a wallpaper sits on
+ *   the theme's backdrop (the --k-backdrop variable of theme-kultiva.css)
  */
 export function getWallpaperCSS(
   config: WallpaperConfig | null | undefined,
   fallbackColor?: string,
+  platformTheme: PlatformTheme = "classic",
 ): WallpaperCSS {
+  if (!config && platformTheme === "kultiva") {
+    return {
+      style: {
+        background: "var(--k-backdrop)",
+        backgroundAttachment: "fixed",
+      },
+    };
+  }
+
   if (!config) {
     const c = fallbackColor || "#613171";
     return {
@@ -229,26 +242,48 @@ const DEFAULT_COLORS: Required<ColorConfig> = {
   titleText: "#111827",
 };
 
+/** Survey defaults under the Kultiva platform theme (the POC's palette). */
+const KULTIVA_COLORS: Required<ColorConfig> = {
+  background: "#eef0fb",
+  buttons: "#4d1c68",
+  buttonText: "#ffffff",
+  pageText: "#4a3960",
+  titleText: "#241238",
+};
+
 export function parseColorConfig(raw: unknown): ColorConfig | null {
   if (!raw || typeof raw !== "object") return null;
   return raw as ColorConfig;
 }
 
-/** Merge user colors with defaults — every field always has a value. */
+/**
+ * Merge user colors with defaults — every field always has a value.
+ *
+ * Under the Kultiva platform theme, colors a survey chose still win, but the
+ * defaults come from Kultiva's palette. The survey wizard saves the classic
+ * defaults verbatim, so a value equal to one of them counts as not chosen.
+ */
 export function resolveColors(
   config: ColorConfig | null | undefined,
   themeColorFallback?: string,
+  platformTheme: PlatformTheme = "classic",
 ): Required<ColorConfig> {
+  const pick = (key: keyof ColorConfig, value: string | undefined): string => {
+    if (platformTheme === "classic") return value || DEFAULT_COLORS[key];
+    if (!value || value.toLowerCase() === DEFAULT_COLORS[key]) return KULTIVA_COLORS[key];
+    return value;
+  };
+
   return {
-    background: config?.background || DEFAULT_COLORS.background,
-    buttons: config?.buttons || themeColorFallback || DEFAULT_COLORS.buttons,
-    buttonText: config?.buttonText || DEFAULT_COLORS.buttonText,
-    pageText: config?.pageText || DEFAULT_COLORS.pageText,
-    titleText: config?.titleText || DEFAULT_COLORS.titleText,
+    background: pick("background", config?.background),
+    buttons: pick("buttons", config?.buttons || themeColorFallback),
+    buttonText: pick("buttonText", config?.buttonText),
+    pageText: pick("pageText", config?.pageText),
+    titleText: pick("titleText", config?.titleText),
   };
 }
 
-export { DEFAULT_COLORS };
+export { DEFAULT_COLORS, KULTIVA_COLORS };
 
 // ============================================
 // Contrast helpers

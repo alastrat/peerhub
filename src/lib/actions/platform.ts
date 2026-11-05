@@ -52,58 +52,71 @@ export async function uploadCompanyLogo(
   try {
     await requireSuperAdmin();
 
-    const file = formData.get("file");
-    if (!(file instanceof File)) {
-      return { success: false, error: "No file provided" };
-    }
-
-    if (!ALLOWED_COMPANY_LOGO_MIME.has(file.type)) {
-      return {
-        success: false,
-        error: "Unsupported file type. Use PNG, JPEG, SVG or WebP.",
-      };
-    }
-
-    if (file.size > MAX_COMPANY_LOGO_BYTES) {
-      return {
-        success: false,
-        error: "File is too large. Maximum size is 2MB.",
-      };
-    }
-
-    const { createSupabaseStorageClient, SURVEY_ASSETS_BUCKET } = await import(
-      "@/lib/supabase/server"
+    return await storeCompanyLogo(
+      formData.get("file"),
+      `companies/_pending/${crypto.randomUUID()}-${Date.now()}`,
     );
-    const supabase = createSupabaseStorageClient();
-
-    const ext = file.name.split(".").pop()?.toLowerCase() || "png";
-    const path = `companies/_pending/${crypto.randomUUID()}-${Date.now()}.${ext}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from(SURVEY_ASSETS_BUCKET)
-      .upload(path, file, {
-        contentType: file.type,
-        cacheControl: "31536000",
-        upsert: false,
-      });
-
-    if (uploadError) {
-      return {
-        success: false,
-        error: `Upload failed: ${uploadError.message}`,
-      };
-    }
-
-    const { data: publicUrl } = supabase.storage
-      .from(SURVEY_ASSETS_BUCKET)
-      .getPublicUrl(path);
-
-    return { success: true, data: { url: publicUrl.publicUrl } };
   } catch (error) {
     const msg =
       error instanceof Error ? error.message : "Failed to upload logo";
     return { success: false, error: msg };
   }
+}
+
+/**
+ * Validate a logo file and put it in the public `survey-assets` bucket at
+ * `<pathWithoutExt>.<ext>`. Returns its public URL.
+ */
+async function storeCompanyLogo(
+  file: FormDataEntryValue | null,
+  pathWithoutExt: string,
+): Promise<ActionResult<{ url: string }>> {
+  if (!(file instanceof File)) {
+    return { success: false, error: "No file provided" };
+  }
+
+  if (!ALLOWED_COMPANY_LOGO_MIME.has(file.type)) {
+    return {
+      success: false,
+      error: "Unsupported file type. Use PNG, JPEG, SVG or WebP.",
+    };
+  }
+
+  if (file.size > MAX_COMPANY_LOGO_BYTES) {
+    return {
+      success: false,
+      error: "File is too large. Maximum size is 2MB.",
+    };
+  }
+
+  const { createSupabaseStorageClient, SURVEY_ASSETS_BUCKET } = await import(
+    "@/lib/supabase/server"
+  );
+  const supabase = createSupabaseStorageClient();
+
+  const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+  const path = `${pathWithoutExt}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from(SURVEY_ASSETS_BUCKET)
+    .upload(path, file, {
+      contentType: file.type,
+      cacheControl: "31536000",
+      upsert: false,
+    });
+
+  if (uploadError) {
+    return {
+      success: false,
+      error: `Upload failed: ${uploadError.message}`,
+    };
+  }
+
+  const { data: publicUrl } = supabase.storage
+    .from(SURVEY_ASSETS_BUCKET)
+    .getPublicUrl(path);
+
+  return { success: true, data: { url: publicUrl.publicUrl } };
 }
 
 // ============================================
@@ -873,6 +886,62 @@ export async function updateCompanyLocale(
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to update locale",
+    };
+  }
+}
+
+// ============================================
+// COMPANY LOGO
+// ============================================
+
+/**
+ * Upload a logo for the active company and save it. Its surveys show it
+ * unless they set a logo of their own.
+ */
+export async function updateCompanyLogo(
+  formData: FormData,
+): Promise<ActionResult<{ logo: string }>> {
+  try {
+    const { companyId } = await requireCompanyAdmin();
+
+    const upload = await storeCompanyLogo(
+      formData.get("file"),
+      `companies/${companyId}/logo-${Date.now()}`,
+    );
+    if (!upload.success || !upload.data) {
+      return { success: false, error: upload.error };
+    }
+
+    await prisma.company.update({
+      where: { id: companyId },
+      data: { logo: upload.data.url },
+    });
+
+    revalidatePath("/settings/company");
+    return { success: true, data: { logo: upload.data.url } };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update logo",
+    };
+  }
+}
+
+export async function removeCompanyLogo(): Promise<ActionResult> {
+  try {
+    const { companyId } = await requireCompanyAdmin();
+
+    await prisma.company.update({
+      where: { id: companyId },
+      data: { logo: null },
+    });
+
+    revalidatePath("/settings/company");
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to remove logo",
     };
   }
 }
