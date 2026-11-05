@@ -9,6 +9,7 @@ import { toSupportedLocale } from "@/i18n/translator";
 import { actionError, getActionErrors, unexpectedActionError } from "@/lib/auth/action-locale";
 import type { ActionResult } from "@/types";
 import type { SurveyDistribution } from "@prisma/client";
+import { finishSurvey } from "@/lib/climate/survey-finish";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -181,20 +182,9 @@ export async function closeSurvey(surveyId: string): Promise<ActionResult> {
       return actionError("close_only_active");
     }
 
-    await prisma.climateSurvey.update({
-      where: { id: surveyId },
-      data: { status: "CLOSED" },
-    });
-
-    // A closed instrument survey is the follow-up for earlier action plans
-    if (survey.instrumentVersion) {
-      try {
-        const { evaluateAndNotifyPlanOutcomes } = await import("@/lib/queries/action-plans");
-        await evaluateAndNotifyPlanOutcomes(surveyId, companyId);
-      } catch (e) {
-        console.error("Impact evaluation after close failed:", e);
-      }
-    }
+    // Same as closing on the end date or once everyone answered: impact of
+    // earlier plans, results to the leaders and the report to the admins
+    await finishSurvey(surveyId, companyId);
 
     revalidatePath("/surveys/climate");
     revalidatePath(`/surveys/climate/${surveyId}`);
@@ -220,7 +210,8 @@ export async function reactivateSurvey(surveyId: string): Promise<ActionResult> 
 
     await prisma.climateSurvey.update({
       where: { id: surveyId },
-      data: { status: "ACTIVE" },
+      // Closing it again sends the admins an updated report; leaders keep their links
+      data: { status: "ACTIVE", closingReportSentAt: null },
     });
 
     revalidatePath("/surveys/climate");

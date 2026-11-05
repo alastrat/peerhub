@@ -9,8 +9,6 @@ import { getClimateActor, requireClimateActor, type ClimateActor } from "@/lib/a
 import { loadSurveyForScoring, scoreScope } from "@/lib/queries/climate-reports";
 import {
   evaluateAndNotifyPlanOutcomes,
-  leaderGaps,
-  leaderIdsOf,
   OPEN_PLAN_STATUSES,
   SUBMITTED_PLAN_STATUSES,
   isSingleActionPlan,
@@ -18,6 +16,16 @@ import {
 import { bandRank, isClimateBand, nextBand, type ClimateBand } from "@/lib/utils/climate-scoring";
 import { emailEmployeeViaPortal, emailUsersViaDashboard, planEmails, safely } from "@/lib/email/climate-plan-emails";
 import { businessDayAsDate } from "@/lib/constants/business-time";
+import {
+  firstName,
+  followUpPeople,
+  getEmailSignature,
+  joinNames,
+  sendLeaderResultsEmails,
+  sendSurveyEmail,
+} from "@/lib/climate/survey-finish";
+import { getLeaderLink } from "@/lib/climate/leader-links";
+import { longDay, planCopyEmail } from "@/lib/email/climate-result-emails";
 import { MAX_EVIDENCE_BYTES, MAX_EVIDENCE_MB } from "@/lib/constants/action-plan-evidence";
 import { getTranslator } from "@/i18n/translator";
 
@@ -195,6 +203,40 @@ function hrPlanPath(plan: { id: string; surveyId: string; scope: string; scopeRe
   return plan.scope === "LEADER" && plan.scopeRefId
     ? `/action-plans/${plan.surveyId}/${plan.scopeRefId}`
     : `/surveys/climate/${plan.surveyId}/plans/${plan.id}`;
+}
+
+/** The leader's own copy of a plan they registered, with their personal link. */
+async function emailPlanCopy(plan: LoadedPlan) {
+  if (plan.scope !== "LEADER") return;
+  const [leader, company] = await Promise.all([
+    prisma.employee.findFirst({
+      where: { id: plan.ownerEmployeeId, companyId: plan.companyId, isActive: true },
+      select: { id: true, name: true, email: true, companyId: true },
+    }),
+    prisma.company.findUnique({ where: { id: plan.companyId }, select: { locale: true } }),
+  ]);
+  if (!leader) return;
+  const locale = company?.locale ?? "es";
+  const [signature, followUp, link] = await Promise.all([
+    getEmailSignature(),
+    followUpPeople(plan.companyId, plan.survey),
+    getLeaderLink(leader, plan.surveyId),
+  ]);
+  const email = planCopyEmail(
+    {
+      leaderFirstName: firstName(leader.name),
+      surveyName: plan.survey.name,
+      dimension: plan.dimension.name,
+      action: plan.title,
+      startDate: longDay(plan.startDate, locale),
+      endDate: longDay(plan.endDate, locale),
+      link,
+      signature,
+      responsible: joinNames(followUp.names, locale) || null,
+    },
+    locale,
+  );
+  await sendSurveyEmail(leader.email, email);
 }
 
 function formatDay(d: Date) {
@@ -423,6 +465,7 @@ export async function submitActionPlan(planId: string): Promise<ActionResult> {
         plan.survey.followUpEmails,
       ),
     );
+    await safely("plan copy email", () => emailPlanCopy(plan));
     for (const task of plan.tasks) await notifyTaskOwner(task, plan);
 
     revalidatePlan(plan);
@@ -884,7 +927,7 @@ export async function saveLeaderContext(
 
 export async function releaseSurveyResults(
   surveyId: string,
-): Promise<ActionResult<{ leaders: number; leadersWithGaps: number }>> {
+): Promise<ActionResult<{ leaders: number; leadersWithGaps: number; emailed: number }>> {
   try {
     const actor = await requireClimateActor();
     if (!isAdmin(actor)) fail("admin_only_release");
@@ -908,27 +951,35 @@ export async function releaseSurveyResults(
     });
     if (count === 0) fail("already_released");
 
-    const survey = await loadSurveyForScoring(meta.id, actor.companyId);
-    let leadersWithGaps = 0;
-    const leaders = survey ? leaderIdsOf(survey) : [];
-    for (const leaderId of leaders) {
-      const g = leaderGaps(survey!, leaderId, meta.planMinPerLeader);
-      if (g.suppressed || g.gaps.length === 0) continue;
-      leadersWithGaps++;
-      await safely("results released email", () =>
-        emailEmployeeViaPortal(
-          leaderId,
-          `/portal/climate-results/${meta.id}`,
-          planEmails.resultsReleased(meta.name, g.gaps.length, formatDay(planDueDate)),
-        ),
-      );
-    }
+    // Every leader with a visible report gets their results (Modelo 1)
+    const { leaders, leadersWithGaps, sent } = await sendLeaderResultsEmails(meta.id, actor.companyId, releasedAt);
 
     revalidatePath(`/surveys/climate/${meta.id}`);
     revalidatePath("/portal/home");
-    return { success: true, data: { leaders: leaders.length, leadersWithGaps } };
+    return { success: true, data: { leaders, leadersWithGaps, emailed: sent } };
   } catch (error) {
     return toResult(error, "failed_release_results");
+  }
+}
+
+/** Results email to every leader, for results released before it went out (or when it failed). */
+export async function sendSurveyResultsEmails(surveyId: string): Promise<ActionResult<{ emailed: number }>> {
+  try {
+    const actor = await requireClimateActor();
+    if (!isAdmin(actor)) fail("admin_only_release");
+    const meta = await prisma.climateSurvey.findFirst({
+      where: { id: surveyId, companyId: actor.companyId },
+      select: { id: true, resultsReleasedAt: true, resultsEmailedAt: true },
+    });
+    if (!meta) fail("survey_not_found");
+    if (!meta.resultsReleasedAt) fail("results_not_released");
+    if (meta.resultsEmailedAt) fail("results_already_emailed");
+    const { claimed, sent } = await sendLeaderResultsEmails(meta.id, actor.companyId);
+    if (!claimed) fail("results_already_emailed");
+    revalidatePath(`/surveys/climate/${meta.id}`);
+    return { success: true, data: { emailed: sent } };
+  } catch (error) {
+    return toResult(error, "failed_send_results_emails");
   }
 }
 
@@ -944,7 +995,8 @@ export async function retractSurveyResults(surveyId: string): Promise<ActionResu
     if (!meta.resultsReleasedAt) return { success: true };
     const submitted = await prisma.actionPlan.count({ where: { surveyId, status: { in: SUBMITTED_PLAN_STATUSES } } });
     if (submitted > 0) fail("plans_already_submitted");
-    await prisma.climateSurvey.update({ where: { id: meta.id }, data: { resultsReleasedAt: null } });
+    // Publishing again emails the leaders again
+    await prisma.climateSurvey.update({ where: { id: meta.id }, data: { resultsReleasedAt: null, resultsEmailedAt: null } });
     revalidatePath(`/surveys/climate/${meta.id}`);
     revalidatePath("/portal/home");
     return { success: true };

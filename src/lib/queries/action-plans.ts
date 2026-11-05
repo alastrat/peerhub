@@ -561,6 +561,7 @@ export async function getSurveyPlansOverview(surveyId: string, companyId: string
       status: true,
       instrumentVersion: true,
       resultsReleasedAt: true,
+      resultsEmailedAt: true,
       goalBand: true,
       planMinPerLeader: true,
       planDueDate: true,

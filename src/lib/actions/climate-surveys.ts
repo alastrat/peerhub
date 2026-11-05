@@ -383,6 +383,8 @@ export interface SurveySettingsInput {
   goalBand?: ClimateBand;
   planMinPerLeader?: number;
   planDueDate?: Date | string | null;
+  /** When leaders short of plans get their reminder; null = 3 days before the due date. */
+  planReminderDate?: Date | string | null;
   followUpUserIds?: string[];
   /** Report cover. Blank stores null, so the cover shows its default text. */
   reportExtraDuration?: string | null;
@@ -449,6 +451,21 @@ export async function updateSurveySettings(
       const due = input.planDueDate ? new Date(input.planDueDate) : null;
       if (due && Number.isNaN(due.getTime())) return actionError("invalid_plan_due_date");
       data.planDueDate = due;
+    }
+    if (input.planReminderDate !== undefined) {
+      const remind = input.planReminderDate ? new Date(input.planReminderDate) : null;
+      if (remind && Number.isNaN(remind.getTime())) return actionError("invalid_plan_reminder_date");
+      data.planReminderDate = remind;
+    }
+    {
+      const due: Date | null = data.planDueDate !== undefined ? data.planDueDate : existing.planDueDate;
+      const remind: Date | null = data.planReminderDate !== undefined ? data.planReminderDate : existing.planReminderDate;
+      if (due && remind && remind.getTime() > due.getTime()) return actionError("invalid_plan_reminder_date");
+      // New dates, new reminder
+      const moved = (a: Date | null | undefined, b: Date | null) => a !== undefined && (a?.getTime() ?? null) !== (b?.getTime() ?? null);
+      if (moved(data.planDueDate, existing.planDueDate) || moved(data.planReminderDate, existing.planReminderDate)) {
+        data.planReminderSentAt = null;
+      }
     }
     if (input.followUpUserIds !== undefined) {
       // Only active users of this company can follow up

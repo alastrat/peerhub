@@ -379,8 +379,9 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     expect([first.success, second.success].filter(Boolean)).toHaveLength(1);
     const res = first.success ? first : second;
     expect((first.success ? second : first).error).toBe("Los resultados ya se publicaron");
-    expect(res.data).toEqual({ leaders: 3, leadersWithGaps: 2 }); // Lina (CVI, SPS) and Marco (LID); Nora suppressed
-    expect(emailsTo(ctx.lina.email)[0].subject).toContain("Resultados de tu equipo");
+    // Lina (CVI, SPS) and Marco (LID) get their results; Nora's team is suppressed
+    expect(res.data).toEqual({ leaders: 3, leadersWithGaps: 2, emailed: 2 });
+    expect(emailsTo(ctx.lina.email)[0].subject).toContain("Ya puedes ver los resultados de tu equipo");
     expect(emailsTo(ctx.marco.email)).toHaveLength(1);
     expect(emailsTo(ctx.nora.email)).toHaveLength(0);
 
@@ -666,7 +667,7 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     await prisma.climateSurvey.update({ where: { id: ctx.surveyA }, data: { planDueDate: new Date(Date.now() + 2 * DAY), planReminderSentAt: null } });
     state.emails = [];
     const nudge = await sendPlanDeadlineReminders();
-    expect(emailsTo(ctx.marco.email).some((e) => e.subject.includes("Faltan planes"))).toBe(true);
+    expect(emailsTo(ctx.marco.email).some((e) => e.subject.startsWith("Recordatorio: tu plan de acción"))).toBe(true);
     expect(emailsTo(ctx.lina.email)).toHaveLength(0); // Lina met her minimum
     expect(nudge.emails).toBeGreaterThanOrEqual(1);
     expect((await sendPlanDeadlineReminders()).emails).toBe(0);

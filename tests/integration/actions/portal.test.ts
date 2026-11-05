@@ -190,6 +190,7 @@ describe("portal actions", () => {
           id: "emp-1",
           email: "test@acme.com",
           companyId: "company-1",
+          isActive: true,
         },
         usedAt: null,
       });
@@ -207,6 +208,40 @@ describe("portal actions", () => {
         where: { id: "at-1" },
         data: { usedAt: expect.any(Date) },
       });
+    });
+
+    it("lets a leader reuse their personal link, keeping its first use", async () => {
+      const leaderToken = {
+        id: "at-2",
+        token: "leader-token",
+        email: "lina@acme.com",
+        companyId: "company-1",
+        purpose: "LEADER_LINK",
+        employee: { id: "lead-1", email: "lina@acme.com", companyId: "company-1", isActive: true },
+        usedAt: new Date("2026-11-01"),
+      };
+      mockPrisma.accessToken.findFirst.mockResolvedValue(leaderToken);
+
+      expect((await verifyPortalToken("leader-token")).success).toBe(true);
+      expect((await verifyPortalToken("leader-token")).success).toBe(true);
+      expect(mockPrisma.accessToken.update).not.toHaveBeenCalled();
+
+      // The first time it's opened is recorded
+      mockPrisma.accessToken.findFirst.mockResolvedValue({ ...leaderToken, usedAt: null });
+      await verifyPortalToken("leader-token");
+      expect(mockPrisma.accessToken.update).toHaveBeenCalledWith({ where: { id: "at-2" }, data: { usedAt: expect.any(Date) } });
+    });
+
+    it("rejects links of employees who left", async () => {
+      mockPrisma.accessToken.findFirst.mockResolvedValue({
+        id: "at-3",
+        companyId: "company-1",
+        purpose: "LEADER_LINK",
+        employee: { id: "lead-1", isActive: false },
+        usedAt: null,
+      });
+      expect((await verifyPortalToken("old-token")).success).toBe(false);
+      expect(mockPrisma.accessToken.update).not.toHaveBeenCalled();
     });
 
     it("returns error when token has no employee", async () => {
@@ -237,9 +272,8 @@ describe("portal actions", () => {
       expect(mockPrisma.accessToken.findFirst).toHaveBeenCalledWith({
         where: {
           token: "some-token",
-          purpose: "EMPLOYEE_PORTAL",
-          usedAt: null,
           expiresAt: { gt: expect.any(Date) },
+          OR: [{ purpose: "EMPLOYEE_PORTAL", usedAt: null }, { purpose: "LEADER_LINK" }],
         },
         include: { employee: true },
       });

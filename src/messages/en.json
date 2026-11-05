@@ -2827,7 +2827,7 @@
       "users_title": "Users",
       "users_description": "Manage all users across the platform",
       "appearance_title": "Appearance",
-      "appearance_description": "Choose the visual theme for the whole platform",
+      "appearance_description": "Choose the visual theme and email signature for the whole platform",
       "appearance": {
         "scope_note": "The theme applies to every company and user: the dashboard, the employee portal and the sign-in pages. Only super admins can change it.",
         "themes_label": "Platform theme",
@@ -2836,6 +2836,17 @@
         "applying": "Applying…",
         "applied": "Theme updated for the whole platform",
         "error": "Couldn't change the theme",
+        "email_signature": {
+          "title": "Survey email signature",
+          "description": "The name that signs the results, reminder and action-plan emails that leaders and admins of every company receive.",
+          "label": "Signature",
+          "hint": "If empty, “{fallback}” is used.",
+          "preview": "How each email ends",
+          "sign_off": "Best regards,",
+          "save": "Save signature",
+          "saved": "Signature updated",
+          "error": "Couldn't save the signature"
+        },
         "classic": {
           "name": "Classic",
           "description": "The current look: warm light background, light sidebar and purple accents."
@@ -3171,10 +3182,13 @@
     "no_activity": "No activity yet.",
     "needs_instrument": "Action plans are available for surveys that use Kultiva's validated instrument.",
     "release_title": "Results for leaders",
-    "release_desc": "Once you release results, every leader with at least the minimum number of responses sees their team's results and can create plans. Leaders with gaps get an email.",
+    "release_desc": "Once you release results, every leader with at least the minimum number of responses sees their team's results, can record plans and gets an email with their personal link. Results are released automatically when the survey closes.",
     "released_on": "Released on {date}. Plan deadline: {due}.",
     "release": "Release results to leaders",
-    "released_toast": "Results released: {leaders} leaders, {gaps} with gaps were emailed",
+    "released_toast": "Results released: {emailed} of {leaders} leaders got their email",
+    "results_not_emailed": "Leaders haven't received the email with their results yet.",
+    "send_results_emails": "Send results email",
+    "results_emails_sent": "{count, plural, =0 {No leader had results to send} one {# leader got their email} other {# leaders got their email}}",
     "retract": "Hide results",
     "retracted": "Results hidden from leaders",
     "evaluate_impact": "Evaluate earlier plans",
@@ -3256,13 +3270,16 @@
       "plan_min_hint": "Minimum plans each leader with gaps must submit (0 = optional).",
       "due": "Plan deadline",
       "due_hint": "If empty, it's set to 15 days after results are released.",
+      "reminder": "Reminder date",
+      "reminder_hint": "On this day, leaders who haven't recorded their plans get a reminder. If empty, 3 days before the deadline.",
       "follow_up": "Follow-up (HR)",
-      "follow_up_hint": "They're emailed when a plan is submitted and when a leader completes theirs. Pick someone in the company or type any email address.",
+      "follow_up_hint": "They're emailed when a plan is submitted and when a leader completes theirs, and are named as responsible in the emails to leaders. Pick someone in the company or type any email address.",
       "follow_up_placeholder": "Search for a person or type an email",
       "follow_up_add_email": "Add “{email}”",
       "follow_up_invalid": "“{email}” isn't a valid email address",
       "follow_up_remove": "Remove {name}",
       "follow_up_no_matches": "No one matches. Type a full email address to add it.",
+      "no_follow_up_warning": "No one follows up: emails to leaders won't say who receives their plans, and no one will hear about new plans.",
       "save": "Save",
       "saved": "Settings saved",
       "error": "Couldn't save"
@@ -3329,6 +3346,7 @@
       "release_needs_sent": "Only sent surveys can release results",
       "release_needs_instrument": "Only surveys that use the validated instrument have leader results",
       "already_released": "Results were already released",
+      "results_already_emailed": "The results email was already sent",
       "admin_only_hide": "Only an administrator can hide results",
       "plans_already_submitted": "Leaders already submitted plans for these results",
       "admin_only_evaluate": "Only an administrator can evaluate impact",
@@ -3351,6 +3369,7 @@
       "failed_delete_file": "Failed to delete the file",
       "failed_save_answers": "Failed to save the answers",
       "failed_release_results": "Failed to release results",
+      "failed_send_results_emails": "Failed to send the results email",
       "failed_hide_results": "Failed to hide results",
       "failed_evaluate_impact": "Failed to evaluate impact",
       "fields": {
@@ -3426,6 +3445,7 @@
     "sent_toast": "\"{name}\" has been sent. Email invitations delivered."
   },
   "emails": {
+    "button_fallback": "If the button doesn't work, copy and paste this link into your browser:",
     "footer": "This email was sent by {appName}. If you have questions, please contact your HR administrator.",
     "greeting": "Hi {name},",
     "portal_magic_link": {
@@ -3618,6 +3638,7 @@
     "invalid_goal_band": "Invalid goal band",
     "invalid_plan_minimum": "Invalid plan minimum",
     "invalid_plan_due_date": "Invalid plan due date",
+    "invalid_plan_reminder_date": "The reminder date must be a valid date on or before the plan due date",
     "unknown_follow_up_user": "Unknown follow-up user",
     "report_cover_too_long": "A report cover text is too long",
     "invalid_follow_up_email": "“{email}” isn't a valid email address",

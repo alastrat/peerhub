@@ -2875,7 +2875,7 @@
       "users_title": "Usuarios",
       "users_description": "Administra los usuarios de la plataforma",
       "appearance_title": "Apariencia",
-      "appearance_description": "Elige el tema visual de toda la plataforma",
+      "appearance_description": "Elige el tema visual y la firma de los correos de toda la plataforma",
       "appearance": {
         "scope_note": "El tema se aplica a todas las empresas y usuarios: el panel, el portal de colaboradores y las páginas de inicio de sesión. Solo los super administradores pueden cambiarlo.",
         "themes_label": "Tema de la plataforma",
@@ -2884,6 +2884,17 @@
         "applying": "Aplicando…",
         "applied": "Tema actualizado para toda la plataforma",
         "error": "No se pudo cambiar el tema",
+        "email_signature": {
+          "title": "Firma de los correos de encuestas",
+          "description": "El nombre que firma los correos de resultados, recordatorios y planes de acción que reciben líderes y administradores de todas las empresas.",
+          "label": "Firma",
+          "hint": "Si la dejas vacía, se usa «{fallback}».",
+          "preview": "Así termina cada correo",
+          "sign_off": "Un saludo,",
+          "save": "Guardar firma",
+          "saved": "Firma actualizada",
+          "error": "No se pudo guardar la firma"
+        },
         "classic": {
           "name": "Clásico",
           "description": "El aspecto actual: fondo claro cálido, barra lateral clara y acentos morados."
@@ -3219,10 +3230,13 @@
     "no_activity": "Sin actividad todavía.",
     "needs_instrument": "Los planes de acción están disponibles para encuestas que usan el instrumento validado de Kultiva.",
     "release_title": "Resultados para líderes",
-    "release_desc": "Cuando publiques los resultados, cada líder con al menos el mínimo de respuestas verá los de su equipo y podrá crear planes. Los líderes con brechas reciben un correo.",
+    "release_desc": "Cuando publiques los resultados, cada líder con al menos el mínimo de respuestas verá los de su equipo, podrá registrar planes y recibirá un correo con su enlace personal. Al cerrarse la encuesta se publican solos.",
     "released_on": "Publicados el {date}. Fecha límite para planes: {due}.",
     "release": "Publicar resultados a líderes",
-    "released_toast": "Resultados publicados: {leaders} líderes, {gaps} con brechas recibieron un correo",
+    "released_toast": "Resultados publicados: {emailed} de {leaders} líderes recibieron su correo",
+    "results_not_emailed": "Los líderes aún no han recibido el correo con sus resultados.",
+    "send_results_emails": "Enviar correo de resultados",
+    "results_emails_sent": "{count, plural, =0 {Ningún líder tenía resultados para enviar} one {# líder recibió su correo} other {# líderes recibieron su correo}}",
     "retract": "Ocultar resultados",
     "retracted": "Resultados ocultos para los líderes",
     "evaluate_impact": "Evaluar impacto de planes anteriores",
@@ -3304,13 +3318,16 @@
       "plan_min_hint": "Mínimo de planes que debe enviar cada líder con brechas (0 = opcional).",
       "due": "Fecha límite de planes",
       "due_hint": "Si la dejas vacía, se fija en 15 días al publicar los resultados.",
+      "reminder": "Fecha de recordatorio",
+      "reminder_hint": "Ese día, los líderes que aún no registran sus planes reciben un recordatorio. Si la dejas vacía, 3 días antes de la fecha límite.",
       "follow_up": "Seguimiento (RR.HH.)",
-      "follow_up_hint": "Reciben un correo cuando se envía un plan y cuando un líder completa los suyos. Elige a alguien de la empresa o escribe cualquier correo.",
+      "follow_up_hint": "Reciben un correo cuando se envía un plan y cuando un líder completa los suyos, y aparecen como responsables en los correos a los líderes. Elige a alguien de la empresa o escribe cualquier correo.",
       "follow_up_placeholder": "Busca una persona o escribe un correo",
       "follow_up_add_email": "Agregar «{email}»",
       "follow_up_invalid": "«{email}» no es un correo válido",
       "follow_up_remove": "Quitar a {name}",
       "follow_up_no_matches": "Nadie coincide. Escribe un correo completo para agregarlo.",
+      "no_follow_up_warning": "Nadie hace seguimiento: los correos a los líderes no dirán quién recibe sus planes y nadie recibirá aviso de los planes nuevos.",
       "save": "Guardar",
       "saved": "Configuración guardada",
       "error": "No se pudo guardar"
@@ -3377,6 +3394,7 @@
       "release_needs_sent": "Solo se pueden publicar los resultados de encuestas ya enviadas",
       "release_needs_instrument": "Solo las encuestas que usan el instrumento validado tienen resultados por líder",
       "already_released": "Los resultados ya se publicaron",
+      "results_already_emailed": "El correo de resultados ya se envió",
       "admin_only_hide": "Solo un administrador puede ocultar los resultados",
       "plans_already_submitted": "Los líderes ya enviaron planes para estos resultados",
       "admin_only_evaluate": "Solo un administrador puede evaluar el impacto",
@@ -3399,6 +3417,7 @@
       "failed_delete_file": "No se pudo eliminar el archivo",
       "failed_save_answers": "No se pudieron guardar las respuestas",
       "failed_release_results": "No se pudieron publicar los resultados",
+      "failed_send_results_emails": "No se pudo enviar el correo de resultados",
       "failed_hide_results": "No se pudieron ocultar los resultados",
       "failed_evaluate_impact": "No se pudo evaluar el impacto",
       "fields": {
@@ -3474,6 +3493,7 @@
     "sent_toast": "\"{name}\" fue enviada. Se enviaron las invitaciones por correo."
   },
   "emails": {
+    "button_fallback": "Si el botón no funciona, copia y pega este enlace en tu navegador:",
     "footer": "Este correo fue enviado por {appName}. Si tienes preguntas, comunícate con el área de Recursos Humanos de tu empresa.",
     "greeting": "Hola {name},",
     "portal_magic_link": {
@@ -3666,6 +3686,7 @@
     "invalid_goal_band": "Nivel meta inválido",
     "invalid_plan_minimum": "Mínimo de planes inválido",
     "invalid_plan_due_date": "Fecha límite de planes inválida",
+    "invalid_plan_reminder_date": "La fecha de recordatorio debe ser una fecha válida, igual o anterior a la fecha límite de planes",
     "unknown_follow_up_user": "Uno de los usuarios de seguimiento no pertenece a la empresa",
     "report_cover_too_long": "Un texto de la portada del informe es demasiado largo",
     "invalid_follow_up_email": "«{email}» no es un correo válido",

@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AlertTriangle, CheckCircle2, Eye, EyeOff, Loader2, RefreshCw } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Eye, EyeOff, Loader2, Mail, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import {
   evaluateSurveyImpact,
   releaseSurveyResults,
   retractSurveyResults,
+  sendSurveyResultsEmails,
 } from "@/lib/actions/action-plans";
 import type { SurveyPlansOverview } from "@/lib/queries/action-plans";
 import { BUSINESS_TIME_ZONE } from "@/lib/constants/business-time";
@@ -74,6 +75,7 @@ export function SurveyPlansTab({ overview, dimensions, groups, employees }: Surv
                   due: formatDay(survey.planDueDate, locale),
                 })
               : t("release_desc")}
+            {released && !survey.resultsEmailedAt && <span className="block">{t("results_not_emailed")}</span>}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
@@ -83,8 +85,8 @@ export function SurveyPlansTab({ overview, dimensions, groups, employees }: Surv
               onClick={() =>
                 run(
                   () => releaseSurveyResults(survey.id),
-                  (r: { data: { leaders: number; leadersWithGaps: number } }) =>
-                    t("released_toast", { leaders: r.data.leaders, gaps: r.data.leadersWithGaps }),
+                  (r: { data: { leaders: number; emailed: number } }) =>
+                    t("released_toast", { leaders: r.data.leaders, emailed: r.data.emailed }),
                 )
               }
             >
@@ -92,10 +94,26 @@ export function SurveyPlansTab({ overview, dimensions, groups, employees }: Surv
               {t("release")}
             </Button>
           ) : (
-            <Button variant="outline" disabled={pending} onClick={() => run(() => retractSurveyResults(survey.id), () => t("retracted"))}>
-              <EyeOff className="mr-1.5 h-4 w-4" />
-              {t("retract")}
-            </Button>
+            <>
+              {!survey.resultsEmailedAt && (
+                <Button
+                  disabled={pending}
+                  onClick={() =>
+                    run(
+                      () => sendSurveyResultsEmails(survey.id),
+                      (r: { data: { emailed: number } }) => t("results_emails_sent", { count: r.data.emailed }),
+                    )
+                  }
+                >
+                  {pending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <Mail className="mr-1.5 h-4 w-4" />}
+                  {t("send_results_emails")}
+                </Button>
+              )}
+              <Button variant="outline" disabled={pending} onClick={() => run(() => retractSurveyResults(survey.id), () => t("retracted"))}>
+                <EyeOff className="mr-1.5 h-4 w-4" />
+                {t("retract")}
+              </Button>
+            </>
           )}
           {survey.status === "CLOSED" && (
             <Button

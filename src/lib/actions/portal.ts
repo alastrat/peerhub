@@ -90,27 +90,33 @@ export async function verifyPortalToken(
     const accessToken = await prisma.accessToken.findFirst({
       where: {
         token,
-        purpose: "EMPLOYEE_PORTAL",
-        usedAt: null,
         expiresAt: { gt: new Date() },
+        OR: [
+          // Sign-in links work once
+          { purpose: "EMPLOYEE_PORTAL", usedAt: null },
+          // A leader's personal results link works until it expires
+          { purpose: "LEADER_LINK" },
+        ],
       },
       include: {
         employee: true,
       },
     });
 
-    if (!accessToken || !accessToken.employee) {
+    if (!accessToken || !accessToken.employee || !accessToken.employee.isActive) {
       return {
         success: false,
         error: "Invalid or expired link. Please request a new one.",
       };
     }
 
-    // Mark the token as used
-    await prisma.accessToken.update({
-      where: { id: accessToken.id },
-      data: { usedAt: new Date() },
-    });
+    // Sign-in links are spent; personal links keep the first use
+    if (accessToken.purpose === "EMPLOYEE_PORTAL" || !accessToken.usedAt) {
+      await prisma.accessToken.update({
+        where: { id: accessToken.id },
+        data: { usedAt: new Date() },
+      });
+    }
 
     return {
       success: true,

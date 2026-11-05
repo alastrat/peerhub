@@ -4,6 +4,7 @@ import { type PrismaClient } from "@prisma/client";
 // Deep mock of PrismaClient methods
 type MockPrismaModel = {
   findUnique: ReturnType<typeof vi.fn>;
+  findUniqueOrThrow: ReturnType<typeof vi.fn>;
   findFirst: ReturnType<typeof vi.fn>;
   findMany: ReturnType<typeof vi.fn>;
   create: ReturnType<typeof vi.fn>;
@@ -21,6 +22,7 @@ type MockPrismaModel = {
 function createMockModel(): MockPrismaModel {
   return {
     findUnique: vi.fn(),
+    findUniqueOrThrow: vi.fn(),
     findFirst: vi.fn(),
     findMany: vi.fn(),
     create: vi.fn(),
@@ -75,6 +77,7 @@ export type MockPrismaClient = {
     | "actionPlanUpdate"
     | "actionPlanEvidence"
     | "leaderSurveyContext"
+    | "platformSetting"
   >]: MockPrismaModel;
 } & {
   $transaction: ReturnType<typeof vi.fn>;
@@ -118,6 +121,7 @@ export function createMockPrisma(): MockPrismaClient {
     actionPlanUpdate: createMockModel(),
     actionPlanEvidence: createMockModel(),
     leaderSurveyContext: createMockModel(),
+    platformSetting: createMockModel(),
     $transaction: vi.fn((fn: (tx: MockPrismaClient) => Promise<unknown>) => {
       // By default, $transaction passes itself as the transactional client
       const txClient = createMockPrisma();

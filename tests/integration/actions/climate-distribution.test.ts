@@ -31,6 +31,9 @@ vi.mock("@/lib/email/portal-templates", () => ({
   })),
 }));
 
+const finishSurvey = vi.hoisted(() => vi.fn(async () => ({ closed: true })));
+vi.mock("@/lib/climate/survey-finish", () => ({ finishSurvey }));
+
 // Import AFTER mocks
 import { distributeSurvey, closeSurvey } from "@/lib/actions/climate-distribution";
 
@@ -375,12 +378,11 @@ describe("climate distribution actions", () => {
   // =========================================================================
 
   describe("closeSurvey", () => {
-    it("should close an active survey", async () => {
+    it("should close an active survey the same way the end date does", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue({
         ...baseSurvey,
         status: "ACTIVE",
       });
-      mockPrisma.climateSurvey.update.mockResolvedValue({});
 
       const result = await closeSurvey("s1");
 
@@ -388,10 +390,8 @@ describe("climate distribution actions", () => {
       expect(mockPrisma.climateSurvey.findFirst).toHaveBeenCalledWith({
         where: { id: "s1", companyId: "company-1" },
       });
-      expect(mockPrisma.climateSurvey.update).toHaveBeenCalledWith({
-        where: { id: "s1" },
-        data: { status: "CLOSED" },
-      });
+      // Closes it and sends the results and closing emails
+      expect(finishSurvey).toHaveBeenCalledWith("s1", "company-1");
     });
 
     it("should return error when survey not found", async () => {
@@ -414,7 +414,7 @@ describe("climate distribution actions", () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Solo se pueden cerrar encuestas activas");
-      expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
+      expect(finishSurvey).not.toHaveBeenCalled();
     });
 
     it("should require admin role", async () => {
@@ -432,7 +432,7 @@ describe("climate distribution actions", () => {
         ...baseSurvey,
         status: "ACTIVE",
       });
-      mockPrisma.climateSurvey.update.mockRejectedValue(new Error("DB fail"));
+      finishSurvey.mockRejectedValueOnce(new Error("DB fail"));
 
       const result = await closeSurvey("s1");
 

@@ -7,6 +7,8 @@ const reminders = vi.hoisted(() => ({
   sendPlanDeadlineReminders: vi.fn(async () => ({ surveys: 1, emails: 1 })),
 }));
 vi.mock("@/lib/queries/action-plan-reminders", () => reminders);
+const finish = vi.hoisted(() => ({ finishSurveysPastEndDate: vi.fn(async () => ({ checked: 3, closed: 1 })) }));
+vi.mock("@/lib/climate/survey-finish", () => finish);
 
 import { GET } from "@/app/api/cron/climate-plans/route";
 
@@ -26,6 +28,7 @@ describe("GET /api/cron/climate-plans", () => {
     const res = await call();
     expect(res.status).toBe(401);
     expect(reminders.sendTaskReminders).not.toHaveBeenCalled();
+    expect(finish.finishSurveysPastEndDate).not.toHaveBeenCalled();
   });
 
   it("rejects a wrong bearer token", async () => {
@@ -34,12 +37,14 @@ describe("GET /api/cron/climate-plans", () => {
     expect((await call()).status).toBe(401);
   });
 
-  it("runs both reminder jobs with the right token (as Vercel Cron sends it)", async () => {
+  it("closes surveys past their end date, then runs both reminder jobs (as Vercel Cron calls it)", async () => {
     process.env.CRON_SECRET = "s3cret";
     const res = await call("Bearer s3cret");
     expect(res.status).toBe(200);
+    expect(finish.finishSurveysPastEndDate).toHaveBeenCalledTimes(1);
     expect(await res.json()).toEqual({
       success: true,
+      closed: { checked: 3, closed: 1 },
       tasks: { tasks: 2, emails: 1 },
       deadlines: { surveys: 1, emails: 1 },
     });
