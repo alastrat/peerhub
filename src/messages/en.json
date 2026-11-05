@@ -2968,6 +2968,7 @@
       "status_label": "Status",
       "status_updated": "Status updated",
       "no_evidence": "No evidence",
+      "evidence_failed": "The plan was saved, but the evidence couldn't be attached: {reason} You can attach it from the plan card.",
       "edit": "Edit",
       "delete": "Delete",
       "delete_confirm": "Delete this action plan?",
@@ -3200,6 +3201,7 @@
     },
     "errors": {
       "admin_only_delete_completed": "Only HR can delete a completed plan.",
+      "not_single_action": "This plan has its own objective or several tasks: edit it from the full plan.",
       "unauthorized": "Unauthorized",
       "required": "{field} is required",
       "invalid_date": "{field} is not a valid date",

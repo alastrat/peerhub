@@ -28,6 +28,7 @@ import {
   setSingleActionPlanStatus,
   updateSingleActionPlan,
 } from "@/lib/actions/action-plans";
+import { isSingleActionPlan } from "@/lib/queries/action-plans";
 
 const admin: ClimateActor = { kind: "admin", companyId: "company-1", userId: "user-1", employeeId: null, name: "Ana" };
 const leader: ClimateActor = { kind: "employee", companyId: "company-1", userId: null, employeeId: "lead-1", name: "Sara" };
@@ -39,6 +40,8 @@ function plan(overrides: Record<string, unknown> = {}) {
     surveyId: "survey-1",
     status: "ACTIVE",
     title: "Pausas activas",
+    // The one-action form writes the same text to the title, objective and task
+    objective: "Pausas activas",
     ownerEmployeeId: "lead-1",
     scope: "LEADER",
     scopeRefId: "lead-1",
@@ -90,6 +93,28 @@ describe("updateSingleActionPlan", () => {
     expect(res.success).toBe(false);
     expect(mockPrisma.actionPlan.update).not.toHaveBeenCalled();
   });
+
+  it("refuses a plan written in the full editor, so its objective isn't overwritten", async () => {
+    // One open task left (the other was cancelled), but its own objective
+    mockPrisma.actionPlan.findFirst.mockResolvedValue(
+      plan({
+        objective: "Reducir el estrés del equipo en temporada alta",
+        tasks: [
+          { id: "task-1", ownerEmployeeId: null, status: "PENDING", title: "Pausas activas", dueDate: new Date("2026-12-01") },
+          { id: "task-2", ownerEmployeeId: null, status: "CANCELLED", title: "Taller", dueDate: new Date("2026-12-01") },
+        ],
+      }),
+    );
+
+    const res = await updateSingleActionPlan("plan-1", { action: "Otra cosa", startDate: "2026-11-05", endDate: "2026-12-15" });
+
+    expect(res).toEqual({
+      success: false,
+      error: "Este plan tiene su propio objetivo o varias tareas: edítalo desde el plan completo.",
+    });
+    expect(mockPrisma.actionPlan.update).not.toHaveBeenCalled();
+    expect(mockPrisma.actionPlanTask.update).not.toHaveBeenCalled();
+  });
 });
 
 describe("setSingleActionPlanStatus", () => {
@@ -124,6 +149,84 @@ describe("setSingleActionPlanStatus", () => {
       where: { id: "task-1" },
       data: { status: "IN_PROGRESS", completedAt: null },
     });
+  });
+});
+
+describe("setSingleActionPlanStatus completing the action", () => {
+  it("marks the task done, completes the plan with its title as closing note, and logs both", async () => {
+    const doneTask = { id: "task-1", ownerEmployeeId: null, status: "DONE", title: "Pausas activas", dueDate: new Date("2026-12-01") };
+    mockPrisma.actionPlan.findFirst
+      .mockResolvedValueOnce(plan())
+      // completeActionPlan reloads the plan after the task moved to DONE
+      .mockResolvedValueOnce(plan({ tasks: [doneTask] }));
+    mockPrisma.actionPlanTask.findFirst.mockResolvedValue({
+      id: "task-1",
+      planId: "plan-1",
+      status: "PENDING",
+      ownerEmployeeId: null,
+      plan: plan(),
+    });
+    mockPrisma.actionPlan.findMany.mockResolvedValue([]);
+
+    const res = await setSingleActionPlanStatus("plan-1", "DONE");
+
+    expect(res).toEqual({ success: true });
+    expect(mockPrisma.actionPlanTask.update).toHaveBeenCalledWith({
+      where: { id: "task-1" },
+      data: { status: "DONE", completedAt: expect.any(Date) },
+    });
+    expect(mockPrisma.actionPlan.update).toHaveBeenCalledWith({
+      where: { id: "plan-1" },
+      data: { status: "COMPLETED", completedAt: expect.any(Date), closingNote: "Pausas activas" },
+    });
+    expect(mockPrisma.actionPlanUpdate.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ planId: "plan-1", taskId: "task-1", statusFrom: "PENDING", statusTo: "DONE" }),
+    });
+    expect(mockPrisma.actionPlanUpdate.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ planId: "plan-1", statusFrom: "ACTIVE", statusTo: "COMPLETED" }),
+    });
+  });
+
+  it("refuses a plan with several open tasks", async () => {
+    mockPrisma.actionPlan.findFirst.mockResolvedValue(
+      plan({
+        tasks: [
+          { id: "task-1", ownerEmployeeId: null, status: "PENDING", title: "Pausas activas", dueDate: new Date("2026-12-01") },
+          { id: "task-2", ownerEmployeeId: null, status: "PENDING", title: "Taller", dueDate: new Date("2026-12-01") },
+        ],
+      }),
+    );
+
+    // Without the guard, the first task would be updated and the plan completed
+    mockPrisma.actionPlanTask.findFirst.mockResolvedValue({
+      id: "task-1",
+      planId: "plan-1",
+      status: "PENDING",
+      ownerEmployeeId: null,
+      plan: plan(),
+    });
+
+    const res = await setSingleActionPlanStatus("plan-1", "DONE");
+
+    expect(res.error).toBe("Este plan tiene su propio objetivo o varias tareas: edítalo desde el plan completo.");
+    expect(mockPrisma.actionPlanTask.update).not.toHaveBeenCalled();
+    expect(mockPrisma.actionPlan.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("isSingleActionPlan", () => {
+  const task = (title: string, status = "PENDING") => ({ title, status }) as { title: string; status: "PENDING" };
+
+  it("recognises what the one-action form writes", () => {
+    expect(isSingleActionPlan({ title: "A", objective: "A", tasks: [task("A")] })).toBe(true);
+    expect(isSingleActionPlan({ title: "A", objective: "A", tasks: [task("A"), task("B", "CANCELLED") as never] })).toBe(true);
+  });
+
+  it("leaves full-editor plans to the full editor", () => {
+    expect(isSingleActionPlan({ title: "A", objective: "Objetivo", tasks: [task("A")] })).toBe(false);
+    expect(isSingleActionPlan({ title: "A", objective: "A", tasks: [task("Otra")] })).toBe(false);
+    expect(isSingleActionPlan({ title: "A", objective: "A", tasks: [task("A"), task("A")] })).toBe(false);
+    expect(isSingleActionPlan({ title: "A", objective: "A", tasks: [] })).toBe(false);
   });
 });
 

@@ -42,6 +42,21 @@ export function isTaskOverdue(task: { dueDate: Date; status: ActionTaskStatus },
   return new Date(task.dueDate).toISOString().slice(0, 10) < businessDay(now);
 }
 
+/**
+ * A plan made with the leader view's one-action form: its title, objective
+ * and only open task share one text, as createSingleActionPlan writes them.
+ * That form edits all three at once, so a plan whose texts differ (one
+ * written in the full editor) is never edited through it and loses nothing.
+ */
+export function isSingleActionPlan(plan: {
+  title: string;
+  objective: string;
+  tasks: { title: string; status: ActionTaskStatus }[];
+}): boolean {
+  const open = plan.tasks.filter((t) => t.status !== "CANCELLED");
+  return open.length === 1 && open[0].title === plan.title && plan.objective === plan.title;
+}
+
 export function planProgress(tasks: { status: ActionTaskStatus }[]) {
   const counted = tasks.filter((t) => t.status !== "CANCELLED");
   const done = counted.filter((t) => t.status === "DONE").length;
@@ -146,6 +161,8 @@ export interface LeaderPlanSummary {
     evidence: { id: string; fileName: string; uploadedByEmployeeId: string | null }[];
   } | null;
   taskCount: number;
+  /** Edited through the one-action form (see isSingleActionPlan). */
+  isSingleAction: boolean;
 }
 
 export interface LeaderTeamView {
@@ -213,6 +230,7 @@ export async function getLeaderTeamView(
         tasks: {
           select: {
             id: true,
+            title: true,
             status: true,
             evidence: { select: { id: true, fileName: true, uploadedByEmployeeId: true }, orderBy: { createdAt: "asc" } },
           },
@@ -264,6 +282,7 @@ export async function getLeaderTeamView(
         return task ? { taskId: task.id, status: task.status, evidence: task.evidence } : null;
       })(),
       taskCount: p.tasks.filter((t) => t.status !== "CANCELLED").length,
+      isSingleAction: isSingleActionPlan(p),
     })),
     submittedOnGaps: plans.filter((p) => SUBMITTED_PLAN_STATUSES.includes(p.status) && gapIds.has(p.dimensionId)).length,
     context: (context?.answers as Record<string, string> | undefined) ?? null,
@@ -493,11 +512,14 @@ type PlanWithRowData = Prisma.ActionPlanGetPayload<{ include: typeof planRowIncl
 
 /** One table row per plan: scope name, progress, overdue tasks and impact. */
 async function toPlanRows(plans: PlanWithRowData[], companyId: string) {
-  const scopeNames = new Map<string, string | null>();
-  for (const p of plans) {
-    const key = `${p.scope}:${p.scopeRefId}`;
-    if (!scopeNames.has(key)) scopeNames.set(key, await resolveScopeName(companyId, p.scope, p.scopeRefId));
-  }
+  // One lookup per distinct scope, run together
+  const scopes = new Map<string, Pick<PlanWithRowData, "scope" | "scopeRefId">>();
+  for (const p of plans) scopes.set(`${p.scope}:${p.scopeRefId}`, p);
+  const scopeNames = new Map(
+    await Promise.all(
+      [...scopes].map(async ([key, p]) => [key, await resolveScopeName(companyId, p.scope, p.scopeRefId)] as const),
+    ),
+  );
   return plans.map((p) => ({
     id: p.id,
     title: p.title,

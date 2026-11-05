@@ -70,7 +70,14 @@ export function LeaderPlansPanel({ view, canEdit, canAnswerContext, planDetailBa
 
   function run(fn: () => Promise<{ success: boolean; error?: string }>, ok?: string, after?: () => void) {
     startTransition(async () => {
-      const res = await fn();
+      let res: { success: boolean; error?: string };
+      try {
+        res = await fn();
+      } catch {
+        // A network failure, or a file over the server action's body limit
+        toast.error(tl("error_generic"));
+        return;
+      }
       if (!res.success) {
         toast.error(res.error ?? tl("error_generic"));
         return;
@@ -357,6 +364,7 @@ function PlanForm({
   onClose: () => void;
 }) {
   const t = useTranslations("climate_plans.panel");
+  const tl = useTranslations("climate_plans");
   const editing = form.mode === "edit" ? form.plan : null;
   const empty = { action: "", start: toDateInput(new Date()), end: toDateInput(defaultEnd) };
   const [values, setValues] = useState(
@@ -382,9 +390,15 @@ function PlanForm({
           endDate: values.end,
         });
         if (!res.success || !file) return res;
+        // The plan exists now: a failed upload must not keep the form open,
+        // or saving again would create a second plan
         const fd = new FormData();
         fd.append("file", file);
-        return uploadTaskEvidence(res.data!.taskId, fd);
+        const uploaded = await uploadTaskEvidence(res.data!.taskId, fd).catch(() => null);
+        if (!uploaded?.success) {
+          toast.warning(t("evidence_failed", { reason: uploaded?.error ?? tl("error_generic") }));
+        }
+        return { success: true };
       },
       t("saved"),
       () => {
@@ -481,7 +495,7 @@ function PlanCard({
 }) {
   const t = useTranslations("climate_plans.panel");
   const fileRef = useRef<HTMLInputElement>(null);
-  const single = plan.taskCount <= 1 && plan.action && plan.status !== "DRAFT";
+  const single = plan.isSingleAction && plan.action && plan.status !== "DRAFT";
   const status: SingleActionStatus = plan.status === "COMPLETED" ? "DONE" : ((plan.action?.status as SingleActionStatus) ?? "PENDING");
   const open = plan.status === "ACTIVE" || plan.status === "DRAFT";
 

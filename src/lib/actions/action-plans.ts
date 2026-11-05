@@ -13,6 +13,7 @@ import {
   leaderIdsOf,
   OPEN_PLAN_STATUSES,
   SUBMITTED_PLAN_STATUSES,
+  isSingleActionPlan,
 } from "@/lib/queries/action-plans";
 import { bandRank, isClimateBand, nextBand, type ClimateBand } from "@/lib/utils/climate-scoring";
 import { emailEmployeeViaPortal, emailUsersViaDashboard, planEmails, safely } from "@/lib/email/climate-plan-emails";
@@ -971,8 +972,9 @@ export interface SingleActionPlanInput {
 
 export type SingleActionStatus = "PENDING" | "IN_PROGRESS" | "DONE";
 
-/** The plan's one action (first task that isn't cancelled). */
+/** The plan's one action. Refuses plans written in the full editor, whose texts the one-action form would overwrite. */
 function singleTask(plan: LoadedPlan) {
+  if (!isSingleActionPlan(plan)) fail("not_single_action");
   const task = plan.tasks.find((t) => t.status !== "CANCELLED");
   if (!task) fail("task_not_found");
   return task;
