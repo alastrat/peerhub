@@ -7,7 +7,6 @@ import { useTranslations } from "next-intl";
 import { Command as CommandPrimitive } from "cmdk";
 import {
   ArrowRight,
-  Building,
   Building2,
   ClipboardList,
   Loader2,
@@ -39,7 +38,6 @@ const RESULT_ICONS: Record<SearchResultType, LucideIcon> = {
   cycle: RefreshCcw,
   department: Building2,
   team: Users,
-  company: Building,
 };
 
 type PageLink = { href: string; labelKey: string };
@@ -111,9 +109,9 @@ export function GlobalSearch() {
 
   const role = session?.companyUser?.role;
   const isSuperAdmin = session?.user?.globalRole === "SUPER_ADMIN";
-  // The API only returns records to company admins and super admins; other
-  // roles just get the page shortcuts, so skip the round trip for them.
-  const canSearchRecords = role === "ADMIN" || isSuperAdmin;
+  // The API only returns records to company admins, and only from their own
+  // company; other roles just get the page shortcuts, so skip the round trip.
+  const canSearchRecords = role === "ADMIN";
 
   const term = canSearchRecords ? normalizeSearchQuery(query) : null;
   // Keyed by company too, so switching companies never shows the old one's results.
@@ -309,7 +307,7 @@ export function GlobalSearch() {
             )}
             {!trimmed && canSearchRecords && (
               <p className="px-4 py-3 text-center text-xs text-muted-foreground">
-                {t(role === "ADMIN" ? "hint_company" : "hint_platform")}
+                {t("hint")}
               </p>
             )}
           </div>

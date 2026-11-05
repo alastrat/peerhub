@@ -1446,8 +1446,7 @@
     "error": "No pudimos completar la búsqueda. Intenta de nuevo.",
     "empty": "No encontramos resultados para “{query}”",
     "min_chars": "Escribe al menos {count} caracteres para buscar",
-    "hint_company": "Busca personas, encuestas, planes de acción, plantillas, ciclos 360, departamentos y equipos",
-    "hint_platform": "Busca empresas de la plataforma",
+    "hint": "Busca personas, encuestas, planes de acción, plantillas, ciclos 360, departamentos y equipos",
     "groups": {
       "pages": "Ir a",
       "person": "Personas",
@@ -1456,8 +1455,7 @@
       "climateTemplate": "Plantillas de clima",
       "cycle": "Ciclos 360",
       "department": "Departamentos",
-      "team": "Equipos",
-      "company": "Empresas"
+      "team": "Equipos"
     },
     "pages": {
       "overview": "Inicio",
