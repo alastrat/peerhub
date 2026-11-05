@@ -16,6 +16,7 @@ import {
 } from "@/lib/actions/action-plans";
 import type { SurveyPlansOverview } from "@/lib/queries/action-plans";
 import { BUSINESS_TIME_ZONE } from "@/lib/constants/business-time";
+import { actionPlanPath } from "@/lib/climate/plan-paths";
 import { CreatePlanDialog, type PlanDimensionOption } from "./create-plan-dialog";
 import { ImpactBadge, formatDay } from "./plan-ui";
 import { PlansTable } from "./plans-table";
@@ -225,7 +226,7 @@ export function SurveyPlansTab({ overview, dimensions, groups, employees }: Surv
               dimensions={dimensions}
               groups={groups}
               employees={employees}
-              planHref={(id) => `/surveys/climate/${survey.id}/plans/${id}`}
+              planHref={(id) => actionPlanPath(survey.id, id)}
             />
           )}
         </CardHeader>

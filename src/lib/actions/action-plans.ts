@@ -25,6 +25,7 @@ import {
   sendSurveyEmail,
 } from "@/lib/climate/survey-finish";
 import { getLeaderLink } from "@/lib/climate/leader-links";
+import { actionPlanPath } from "@/lib/climate/plan-paths";
 import { longDay, planCopyEmail } from "@/lib/email/climate-result-emails";
 import { MAX_EVIDENCE_BYTES, MAX_EVIDENCE_MB } from "@/lib/constants/action-plan-evidence";
 import { getTranslator } from "@/i18n/translator";
@@ -191,7 +192,7 @@ function assertActive(plan: { status: string }) {
 
 function revalidatePlan(plan: { id: string; surveyId: string }) {
   revalidatePath(`/surveys/climate/${plan.surveyId}`);
-  revalidatePath(`/surveys/climate/${plan.surveyId}/plans/${plan.id}`);
+  revalidatePath(actionPlanPath(plan.surveyId, plan.id));
   revalidatePath(`/portal/climate-plans/${plan.id}`);
   revalidatePath(`/portal/climate-results/${plan.surveyId}`);
   revalidatePath("/portal/my-tasks");
@@ -202,7 +203,7 @@ function revalidatePlan(plan: { id: string; surveyId: string }) {
 function hrPlanPath(plan: { id: string; surveyId: string; scope: string; scopeRefId: string | null }) {
   return plan.scope === "LEADER" && plan.scopeRefId
     ? `/action-plans/${plan.surveyId}/${plan.scopeRefId}`
-    : `/surveys/climate/${plan.surveyId}/plans/${plan.id}`;
+    : actionPlanPath(plan.surveyId, plan.id);
 }
 
 /** The leader's own copy of a plan they registered, with their personal link. */

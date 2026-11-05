@@ -71,14 +71,14 @@ describe("HR plan emails link to Planes de acción", () => {
     );
   });
 
-  it("keeps the plan's own page for organization plans", async () => {
+  it("sends HR to the plan in Planes de acción for organization plans", async () => {
     actor = { kind: "admin", companyId: "company-1", userId: "user-1", employeeId: null, name: "Ana" };
     mockPrisma.actionPlan.findFirst.mockResolvedValue(plan({ scope: "ORGANIZATION", scopeRefId: null }));
     await submitActionPlan("plan-1");
     expect(emailUsersViaDashboard).toHaveBeenCalledWith(
       "company-1",
       ["hr-1"],
-      "/surveys/climate/survey-1/plans/plan-1",
+      "/action-plans/survey-1/plans/plan-1",
       expect.any(Function),
       followUpEmails,
     );

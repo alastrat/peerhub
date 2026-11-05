@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import type { PlanRow } from "@/lib/queries/action-plans";
+import { actionPlanPath } from "@/lib/climate/plan-paths";
 import { BandBadge, formatMean } from "../climate-score-ui";
 import { ImpactBadge, NativeSelect, PlanStatusBadge, ProgressBar } from "./plan-ui";
 
@@ -72,7 +73,7 @@ export function PlansTable({ plans, dimensions, emptyText }: PlansTableProps) {
               {filtered.map((p) => (
                 <tr key={p.id} className="border-t align-top">
                   <td className="px-2 py-2">
-                    <Link href={`/surveys/climate/${p.surveyId}/plans/${p.id}`} className="font-medium hover:underline">
+                    <Link href={actionPlanPath(p.surveyId, p.id)} className="font-medium hover:underline">
                       {p.title}
                     </Link>
                     <p className="text-xs text-muted-foreground">{p.dimensionName}</p>

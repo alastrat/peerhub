@@ -22,6 +22,17 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "4.5mb",
     },
   },
+  async redirects() {
+    return [
+      // A plan's page moved from its survey to Planes de acción. Emails
+      // already sent still link to the old URL.
+      {
+        source: "/surveys/climate/:surveyId/plans/:planId",
+        destination: "/action-plans/:surveyId/plans/:planId",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default withSentryConfig(withNextIntl(nextConfig), {
