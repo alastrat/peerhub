@@ -2306,7 +2306,7 @@
     "people_page": {
       "title": "Personas",
       "description": "Administra los miembros de tu equipo y la estructura organizacional",
-      "import_csv": "Importar CSV",
+      "import_csv": "Importar Excel o CSV",
       "add_employee": "Agregar Empleado",
       "no_employees_yet": "Aún no hay empleados",
       "add_first_member": "Agrega tu primer miembro del equipo para comenzar con la retroalimentación 360°.",
@@ -3467,6 +3467,20 @@
       "privacy_hint": "Se usan solo para resultados agregados de clima (grupos de al menos el mínimo de respuestas); nunca se muestran por persona."
     }
   },
+  "employee_fields": {
+    "national_id": "Cédula",
+    "national_id_placeholder": "Ej. 1020304050",
+    "national_id_value": "Cédula: {value}",
+    "job_level": "Nivel jerárquico",
+    "not_set": "Sin especificar",
+    "job_level_values": {
+      "STAFF": "Colaborador",
+      "COORDINATOR": "Coordinador",
+      "LEADER": "Líder",
+      "MANAGER": "Gerencia",
+      "DIRECTOR": "Dirección"
+    }
+  },
   "climate_distribute": {
     "title": "Enviar encuesta",
     "description": "Elige quién debe recibir <strong>{name}</strong>. Al enviarla, la encuesta queda activa y empieza a recibir respuestas.",
@@ -3566,7 +3580,7 @@
   },
   "people_import": {
     "page_title": "Importar colaboradores",
-    "page_description": "Importa colaboradores en bloque desde un archivo CSV",
+    "page_description": "Importa colaboradores en bloque desde un archivo Excel o CSV",
     "download_template": "Descargar plantilla",
     "back": "Atrás",
     "continue": "Continuar",
@@ -3579,18 +3593,23 @@
       "role": "Rol",
       "startDate": "Fecha de ingreso (AAAA-MM-DD)",
       "gender": "Género (F / M / No binario)",
-      "birthDate": "Fecha de nacimiento (AAAA-MM-DD)"
+      "birthDate": "Fecha de nacimiento (AAAA-MM-DD)",
+      "nationalId": "Cédula",
+      "hub": "Sede",
+      "managerName": "Líder directo (nombre)",
+      "managerNationalId": "Cédula del líder",
+      "jobLevel": "Nivel jerárquico"
     },
     "upload": {
-      "title": "Sube el archivo CSV",
-      "description": "Sube un archivo CSV con los datos de los colaboradores. Columnas obligatorias: email, name.",
+      "title": "Sube el archivo Excel o CSV",
+      "description": "Sube la plantilla de Excel (.xlsx) diligenciada o un archivo CSV con los datos de los colaboradores. Columnas obligatorias: Cédula, Nombres y Apellidos y Correo corporativo.",
       "drop_active": "Suelta el archivo aquí",
-      "drop_idle": "Arrastra y suelta tu archivo CSV aquí",
+      "drop_idle": "Arrastra y suelta tu archivo Excel o CSV aquí",
       "browse": "o haz clic para buscarlo en tu equipo"
     },
     "mapping": {
       "title": "Relaciona las columnas",
-      "description": "Relaciona las columnas de tu CSV con los campos. {count, plural, one {Se encontró # fila} other {Se encontraron # filas}}.",
+      "description": "Relaciona las columnas de tu archivo con los campos. {count, plural, one {Se encontró # fila} other {Se encontraron # filas}}.",
       "required": "Obligatorio",
       "select_placeholder": "Selecciona una columna",
       "skip": "-- Omitir --",
@@ -3598,7 +3617,7 @@
     },
     "review": {
       "title": "Revisa la importación",
-      "description": "Revisa los datos antes de importar. Si hay errores, corrígelos en tu CSV y vuelve a subirlo.",
+      "description": "Revisa los datos antes de importar. Si hay errores, corrígelos en tu archivo y vuelve a subirlo.",
       "valid_count": "{count, plural, one {# válida} other {# válidas}}",
       "invalid_count": "{count} con errores",
       "table": {
@@ -3609,7 +3628,9 @@
         "title": "Cargo",
         "department": "Departamento",
         "role": "Rol",
-        "errors": "Errores"
+        "errors": "Errores",
+        "national_id": "Cédula",
+        "manager": "Líder"
       },
       "valid": "Válida",
       "error": "Error",
@@ -3630,21 +3651,32 @@
       "failed_hint": "No se pudieron importar",
       "errors": "Errores:",
       "view_people": "Ver colaboradores",
-      "import_more": "Importar más"
+      "import_more": "Importar más",
+      "warnings": "Avisos:"
     },
     "errors": {
-      "file_too_short": "El archivo CSV debe tener una fila de encabezados y al menos una fila de datos",
+      "file_too_short": "El archivo debe tener una fila de encabezados y al menos una fila de datos",
       "email_required": "El correo es obligatorio",
       "email_invalid": "Formato de correo inválido",
       "name_too_short": "El nombre debe tener al menos 2 caracteres",
       "role_invalid": "El rol debe ser Admin, Manager o Member",
-      "gender_unknown": "Género desconocido \"{value}\" (usa F, M, No binario o Prefiero no decirlo)",
-      "invalid_date": "{column}: fecha inválida \"{value}\"",
+      "gender_unknown": "Género desconocido \"{value}\" (usa Femenino, Masculino, No binario o Prefiero no decir)",
+      "invalid_date": "{column}: fecha inválida \"{value}\" (usa AAAA-MM-DD)",
       "birth_date_range": "{column}: debe estar entre 1900 y hoy",
       "map_required": "Relaciona las columnas obligatorias: {columns}",
       "row": "Fila {row}: {message}",
       "import_failed": "No se pudo importar",
-      "network": "Error de red"
+      "network": "Error de red",
+      "file_unreadable": "No pudimos leer el archivo. Sube la plantilla de Excel (.xlsx) o un CSV.",
+      "national_id_required": "La cédula es obligatoria",
+      "duplicate_national_id": "La cédula {value} está repetida en el archivo",
+      "example_row": "Es una fila de ejemplo de la plantilla: bórrala antes de subir el archivo",
+      "duplicate_email": "El correo {value} está repetido en el archivo",
+      "job_level_unknown": "Nivel jerárquico desconocido \"{value}\" (usa Colaborador, Coordinador, Líder, Gerencia o Dirección)",
+      "own_manager": "La cédula del líder es la de la misma persona"
+    },
+    "warnings": {
+      "manager_not_in_file": "El líder «{value}» no está en el archivo: se buscará entre los colaboradores ya registrados"
     },
     "api": {
       "unauthorized": "No autorizado",
@@ -3655,7 +3687,10 @@
       "invalid_birth_date": "Fecha de nacimiento inválida \"{value}\"",
       "invalid_start_date": "Fecha de ingreso inválida \"{value}\"",
       "imported": "Colaborador importado",
-      "failed": "No se pudo importar el colaborador"
+      "failed": "No se pudo importar el colaborador",
+      "already_exists_national_id": "Ya existe un colaborador con la cédula {value} en la empresa",
+      "unknown_job_level": "Nivel jerárquico desconocido \"{value}\"",
+      "manager_not_found": "se importó sin líder porque no encontramos a «{manager}»"
     }
   },
   "action_errors": {
@@ -3663,6 +3698,7 @@
     "unauthorized": "No tienes permiso para hacer esto",
     "no_active_company": "No tienes una empresa activa",
     "employee_not_found": "No encontramos tu perfil de colaborador",
+    "national_id_taken": "Ya hay otro colaborador de la empresa con esta cédula",
     "survey_not_found": "No encontramos la encuesta",
     "select_hub": "Selecciona al menos una sede",
     "select_department": "Selecciona al menos un departamento",

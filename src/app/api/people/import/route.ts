@@ -1,9 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/config";
 import { prisma } from "@/lib/db/prisma";
-import { csvImportRowSchema } from "@/lib/validations/user";
+import { csvImportRowSchema, type CSVImportRow } from "@/lib/validations/user";
 import { isValidBirthDate, parseGender } from "@/lib/constants/demographics";
+import { parseJobLevel } from "@/lib/constants/job-levels";
+import { normalizeNationalId } from "@/lib/utils/employee-import";
 import { getTranslator } from "@/i18n/translator";
+
+// Kultiva's format points at the leader by cédula, falling back to the name;
+// the old CSV template by email
+async function findManagerId(companyId: string, data: CSVImportRow): Promise<string | undefined> {
+  if (data.managerNationalId) {
+    const manager = await prisma.employee.findUnique({
+      where: { companyId_nationalId: { companyId, nationalId: normalizeNationalId(data.managerNationalId) } },
+      select: { id: true },
+    });
+    if (manager) return manager.id;
+  }
+  if (data.managerEmail) {
+    const manager = await prisma.employee.findFirst({
+      where: { companyId, email: { equals: data.managerEmail, mode: "insensitive" } },
+      select: { id: true },
+    });
+    if (manager) return manager.id;
+  }
+  if (data.managerName) {
+    // Only an unambiguous name: with two namesakes we can't tell which one leads
+    const matches = await prisma.employee.findMany({
+      where: { companyId, name: { equals: data.managerName.trim(), mode: "insensitive" } },
+      select: { id: true },
+      take: 2,
+    });
+    if (matches.length === 1) return matches[0].id;
+  }
+  return undefined;
+}
 
 export async function POST(request: NextRequest) {
   // Messages are shown per row in the import wizard, in the company's language
@@ -29,12 +60,12 @@ export async function POST(request: NextRequest) {
     }
 
     const data = parsed.data;
+    const nationalId = data.nationalId ? normalizeNationalId(data.nationalId) : null;
 
     // Check if employee with this email already exists in the company
-    const existingEmployee = await prisma.employee.findUnique({
-      where: {
-        companyId_email: { companyId, email: data.email },
-      },
+    const existingEmployee = await prisma.employee.findFirst({
+      where: { companyId, email: { equals: data.email, mode: "insensitive" } },
+      select: { id: true },
     });
 
     if (existingEmployee) {
@@ -42,6 +73,21 @@ export async function POST(request: NextRequest) {
         { message: t("already_exists") },
         { status: 400 }
       );
+    }
+
+    if (nationalId) {
+      const sameNationalId = await prisma.employee.findUnique({
+        where: { companyId_nationalId: { companyId, nationalId } },
+        select: { id: true },
+      });
+      if (sameNationalId) {
+        return NextResponse.json({ message: t("already_exists_national_id", { value: nationalId }) }, { status: 400 });
+      }
+    }
+
+    const jobLevel = data.jobLevel ? parseJobLevel(data.jobLevel) : null;
+    if (data.jobLevel && !jobLevel) {
+      return NextResponse.json({ message: t("unknown_job_level", { value: data.jobLevel }) }, { status: 400 });
     }
 
     // Find or create department if provided
@@ -68,18 +114,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Find manager if provided (by email in the Employee table)
-    let managerId: string | undefined;
-    if (data.managerEmail) {
-      const manager = await prisma.employee.findUnique({
-        where: {
-          companyId_email: { companyId, email: data.managerEmail },
-        },
-      });
-      if (manager) {
-        managerId = manager.id;
-      }
+    // "Sede": find or create the hub, like departments
+    let hubId: string | undefined;
+    if (data.hub) {
+      const hub =
+        (await prisma.hub.findFirst({
+          where: { companyId, name: { equals: data.hub, mode: "insensitive" } },
+          select: { id: true },
+        })) ?? (await prisma.hub.create({ data: { name: data.hub, companyId }, select: { id: true } }));
+      hubId = hub.id;
     }
+
+    // The wizard imports leaders before their reports, so a leader in the
+    // same file is already here. One who isn't found leaves the row without a
+    // leader and the wizard says so.
+    const managerRef = data.managerNationalId || data.managerEmail || data.managerName;
+    const managerId = managerRef ? await findManagerId(companyId, data) : undefined;
 
     // Optional demographics (climate segments). Unknown values are rejected
     // so a typo doesn't silently drop someone out of every segment.
@@ -104,7 +154,10 @@ export async function POST(request: NextRequest) {
         name: data.name,
         title: data.title || null,
         employeeCode: data.employeeCode || null,
+        nationalId,
+        jobLevel,
         departmentId,
+        hubId,
         managerId,
         startDate,
         gender,
@@ -144,6 +197,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: t("imported"),
       data: employee,
+      ...(managerRef && !managerId && { warning: t("manager_not_found", { manager: data.managerName || managerRef }) }),
     });
   } catch (error) {
     console.error("Import error:", error);

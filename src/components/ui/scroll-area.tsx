@@ -6,8 +6,11 @@ import { cn } from "@/lib/utils/cn";
 
 const ScrollArea = React.forwardRef<
   React.ElementRef<typeof ScrollAreaPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> & {
+    /** Also scroll sideways (wide tables). Radix hides horizontal overflow unless this scrollbar exists. */
+    horizontal?: boolean;
+  }
+>(({ className, children, horizontal = false, ...props }, ref) => (
   <ScrollAreaPrimitive.Root
     ref={ref}
     className={cn("relative overflow-hidden", className)}
@@ -17,6 +20,7 @@ const ScrollArea = React.forwardRef<
       {children}
     </ScrollAreaPrimitive.Viewport>
     <ScrollBar />
+    {horizontal && <ScrollBar orientation="horizontal" />}
     <ScrollAreaPrimitive.Corner />
   </ScrollAreaPrimitive.Root>
 ));

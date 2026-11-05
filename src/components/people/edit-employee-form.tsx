@@ -29,6 +29,7 @@ import { Switch } from "@/components/ui/switch";
 import { updateEmployeeSchema, type UpdateEmployeeInput } from "@/lib/validations/user";
 import { updateEmployee, deactivateEmployee } from "@/lib/actions/users";
 import { DemographicFields } from "./demographic-fields";
+import { JobFields } from "./job-fields";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -89,6 +90,8 @@ export function EditEmployeeForm({
       gender: employee.gender ?? "none",
       birthDate: employee.birthDate ? employee.birthDate.toISOString().slice(0, 10) : "",
       startDate: employee.startDate ? employee.startDate.toISOString().slice(0, 10) : "",
+      nationalId: employee.nationalId ?? "",
+      jobLevel: employee.jobLevel ?? "none",
     } as UpdateEmployeeInput,
   });
 
@@ -291,6 +294,8 @@ export function EditEmployeeForm({
               )}
             />
           )}
+
+          <JobFields control={form.control} />
         </div>
 
         <DemographicFields control={form.control} />

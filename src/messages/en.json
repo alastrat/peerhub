@@ -2260,7 +2260,7 @@
     "people_page": {
       "title": "People",
       "description": "Manage your team members and organizational structure",
-      "import_csv": "Import CSV",
+      "import_csv": "Import Excel or CSV",
       "add_employee": "Add Employee",
       "no_employees_yet": "No employees yet",
       "add_first_member": "Add your first team member to get started with 360° feedback.",
@@ -3419,6 +3419,20 @@
       "privacy_hint": "Used only for aggregated climate results (groups with at least the minimum number of responses); never shown per person."
     }
   },
+  "employee_fields": {
+    "national_id": "ID number (cédula)",
+    "national_id_placeholder": "e.g. 1020304050",
+    "national_id_value": "ID number: {value}",
+    "job_level": "Job level",
+    "not_set": "Not set",
+    "job_level_values": {
+      "STAFF": "Staff",
+      "COORDINATOR": "Coordinator",
+      "LEADER": "Leader",
+      "MANAGER": "Management",
+      "DIRECTOR": "Director"
+    }
+  },
   "climate_distribute": {
     "title": "Send survey to members",
     "description": "Choose who should receive <strong>{name}</strong>. Once sent, the survey becomes active and responses start being collected.",
@@ -3518,7 +3532,7 @@
   },
   "people_import": {
     "page_title": "Import Employees",
-    "page_description": "Bulk import employees from a CSV file",
+    "page_description": "Bulk import employees from an Excel or CSV file",
     "download_template": "Download Template",
     "back": "Back",
     "continue": "Continue",
@@ -3531,18 +3545,23 @@
       "role": "Role",
       "startDate": "Start Date (YYYY-MM-DD)",
       "gender": "Gender (F / M / No binario)",
-      "birthDate": "Date of Birth (YYYY-MM-DD)"
+      "birthDate": "Date of Birth (YYYY-MM-DD)",
+      "nationalId": "ID number (cédula)",
+      "hub": "Hub",
+      "managerName": "Direct leader (name)",
+      "managerNationalId": "Leader's ID number",
+      "jobLevel": "Job level"
     },
     "upload": {
-      "title": "Upload CSV File",
-      "description": "Upload a CSV file with employee data. Required columns: email, name.",
+      "title": "Upload an Excel or CSV File",
+      "description": "Upload the filled-in Excel template (.xlsx) or a CSV file with employee data. Required columns: ID number (Cédula), full name (Nombres y Apellidos) and work email (Correo corporativo).",
       "drop_active": "Drop the file here",
-      "drop_idle": "Drag & drop your CSV file here",
+      "drop_idle": "Drag & drop your Excel or CSV file here",
       "browse": "or click to browse files"
     },
     "mapping": {
       "title": "Map Columns",
-      "description": "Match your CSV columns to the required fields. {count, plural, one {Found # row} other {Found # rows}}.",
+      "description": "Match your file's columns to the fields. {count, plural, one {Found # row} other {Found # rows}}.",
       "required": "Required",
       "select_placeholder": "Select a column",
       "skip": "-- Skip --",
@@ -3550,7 +3569,7 @@
     },
     "review": {
       "title": "Review Import",
-      "description": "Review the data before importing. Fix any errors in your CSV and re-upload if needed.",
+      "description": "Review the data before importing. Fix any errors in your file and re-upload if needed.",
       "valid_count": "{count} valid",
       "invalid_count": "{count} with errors",
       "table": {
@@ -3561,7 +3580,9 @@
         "title": "Title",
         "department": "Department",
         "role": "Role",
-        "errors": "Errors"
+        "errors": "Errors",
+        "national_id": "ID number",
+        "manager": "Leader"
       },
       "valid": "Valid",
       "error": "Error",
@@ -3582,21 +3603,32 @@
       "failed_hint": "Could not import",
       "errors": "Errors:",
       "view_people": "View Employees",
-      "import_more": "Import More"
+      "import_more": "Import More",
+      "warnings": "Notices:"
     },
     "errors": {
-      "file_too_short": "CSV file must have a header row and at least one data row",
+      "file_too_short": "The file must have a header row and at least one data row",
       "email_required": "Email is required",
       "email_invalid": "Invalid email format",
       "name_too_short": "Name must be at least 2 characters",
       "role_invalid": "Role must be Admin, Manager, or Member",
-      "gender_unknown": "Unknown gender \"{value}\" (use F, M, No binario or Prefiero no decirlo)",
-      "invalid_date": "{column}: invalid date \"{value}\"",
+      "gender_unknown": "Unknown gender \"{value}\" (use Femenino, Masculino, No binario or Prefiero no decir)",
+      "invalid_date": "{column}: invalid date \"{value}\" (use YYYY-MM-DD)",
       "birth_date_range": "{column}: must be between 1900 and today",
       "map_required": "Please map required columns: {columns}",
       "row": "Row {row}: {message}",
       "import_failed": "Failed to import",
-      "network": "Network error"
+      "network": "Network error",
+      "file_unreadable": "We couldn't read the file. Upload the Excel template (.xlsx) or a CSV.",
+      "national_id_required": "ID number (cédula) is required",
+      "duplicate_national_id": "ID number {value} appears more than once in the file",
+      "example_row": "This is one of the template's example rows: delete it before uploading",
+      "duplicate_email": "Email {value} appears more than once in the file",
+      "job_level_unknown": "Unknown job level \"{value}\" (use Colaborador, Coordinador, Líder, Gerencia or Dirección)",
+      "own_manager": "The leader's ID number is this person's own"
+    },
+    "warnings": {
+      "manager_not_in_file": "Leader \"{value}\" isn't in the file: we'll look for them among existing employees"
     },
     "api": {
       "unauthorized": "Unauthorized",
@@ -3607,7 +3639,10 @@
       "invalid_birth_date": "Invalid birth date \"{value}\"",
       "invalid_start_date": "Invalid start date \"{value}\"",
       "imported": "Employee imported successfully",
-      "failed": "Failed to import employee"
+      "failed": "Failed to import employee",
+      "already_exists_national_id": "An employee with ID number {value} already exists in this company",
+      "unknown_job_level": "Unknown job level \"{value}\"",
+      "manager_not_found": "imported without a leader because we couldn't find \"{manager}\""
     }
   },
   "action_errors": {
@@ -3615,6 +3650,7 @@
     "unauthorized": "Unauthorized",
     "no_active_company": "No active company",
     "employee_not_found": "Employee not found",
+    "national_id_taken": "Another employee in this company already has this ID number",
     "survey_not_found": "Survey not found",
     "select_hub": "Select at least one hub",
     "select_department": "Select at least one department",

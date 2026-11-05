@@ -29,6 +29,7 @@ import { createUserSchema, type CreateUserInput } from "@/lib/validations/user";
 import { inviteUser, createUser } from "@/lib/actions/users";
 import type { Department, Employee, Hub } from "@prisma/client";
 import { DemographicFields } from "./demographic-fields";
+import { JobFields } from "./job-fields";
 
 const ROLE_OPTIONS = [
   { value: "ADMIN", key: "admin" },
@@ -273,6 +274,8 @@ export function EmployeeForm({
               )}
             />
           )}
+
+          {mode === "create" && <JobFields control={form.control} />}
         </div>
 
         {/* Invitations don't store demographics; they're filled in on the edit page */}
