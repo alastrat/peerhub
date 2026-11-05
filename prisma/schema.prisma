@@ -779,6 +779,11 @@ model ClimateSurvey {
   // Last "plans due soon" reminder sent to leaders (once per survey)
   planReminderSentAt DateTime?
 
+  // Report cover ("Portada del informe"). Null shows the default text.
+  reportExtraDuration String?
+  reportScaleText     String?
+  reportIntroText     String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

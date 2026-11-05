@@ -1,0 +1,56 @@
+/* Printable climate reports (/climate-report/…). "Save as PDF" in the print
+   dialog is the export: the browser keeps fonts, SVG icons and page breaks. */
+
+@page {
+  size: A4;
+  margin: 14mm 12mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  /* Band colours and bars are the content; keep them on paper */
+  [data-climate-report],
+  [data-climate-report] * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  [data-climate-report] [data-slot="card"] {
+    box-shadow: none;
+  }
+
+  /* Heatmaps scroll sideways on screen, but paper has no scrollbar: shrink
+     the table so every dimension column stays on the page. */
+  [data-climate-report] .overflow-x-auto {
+    overflow: visible;
+  }
+
+  [data-climate-report] table {
+    font-size: 8pt;
+  }
+
+  [data-climate-report] th,
+  [data-climate-report] td {
+    padding: 3px 4px;
+  }
+
+  /* …but not the group names, which would wrap word by word */
+  [data-climate-report] tbody td:first-child {
+    min-width: 26mm;
+  }
+
+  /* Dimension names read bottom to top, so a dozen columns fit the page.
+     Anything wider than the page makes Chrome shrink every page to fit. */
+  [data-climate-report] thead th:not(:first-child) {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    text-align: left;
+    vertical-align: middle;
+    padding: 4px 2px;
+  }
+}

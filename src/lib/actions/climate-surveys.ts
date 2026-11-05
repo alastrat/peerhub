@@ -379,7 +379,18 @@ export interface SurveySettingsInput {
   planMinPerLeader?: number;
   planDueDate?: Date | string | null;
   followUpUserIds?: string[];
+  /** Report cover. Blank stores null, so the cover shows its default text. */
+  reportExtraDuration?: string | null;
+  reportScaleText?: string | null;
+  reportIntroText?: string | null;
 }
+
+/** Longest text each report cover field keeps. */
+const REPORT_COVER_LIMITS = {
+  reportExtraDuration: 120,
+  reportScaleText: 300,
+  reportIntroText: 3000,
+} as const;
 
 export async function updateSurveySettings(
   surveyId: string,
@@ -441,6 +452,13 @@ export async function updateSurveySettings(
         : [];
       if (valid.length !== ids.length) return actionError("unknown_follow_up_user");
       data.followUpUserIds = ids;
+    }
+    for (const key of Object.keys(REPORT_COVER_LIMITS) as (keyof typeof REPORT_COVER_LIMITS)[]) {
+      const value = input[key];
+      if (value === undefined) continue;
+      const text = value?.trim() ?? "";
+      if (text.length > REPORT_COVER_LIMITS[key]) return actionError("report_cover_too_long");
+      data[key] = text || null;
     }
 
     if (Object.keys(data).length === 0) {

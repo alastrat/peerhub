@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth/config";
 import { getLeaderTeamView, listLeaderSurveys } from "@/lib/queries/action-plans";
 import { LeaderPlansPanel } from "@/components/climate/plans/leader-plans-panel";
 import { SurveySwitcher } from "@/components/climate/plans/survey-switcher";
+import { ReportLinkButton } from "@/components/climate/report/report-link-button";
 
 interface PageProps {
   params: Promise<{ surveyId: string; leaderId: string }>;
@@ -41,15 +42,18 @@ export default async function LeaderPlansPage({ params }: PageProps) {
             {t("panel.subtitle", { survey: view.survey.name, count: view.gaps.respondents })}
           </p>
         </div>
-        {!isAdmin && (
-          <SurveySwitcher
-            surveys={ownSurveys.map((s) => ({ id: s.surveyId, name: s.name }))}
-            currentId={surveyId}
-            basePath="/action-plans"
-            suffix={`/${leaderId}`}
-            label={t("leaders.survey_label")}
-          />
-        )}
+        <div className="flex flex-wrap items-center gap-3">
+          {!isAdmin && (
+            <SurveySwitcher
+              surveys={ownSurveys.map((s) => ({ id: s.surveyId, name: s.name }))}
+              currentId={surveyId}
+              basePath="/action-plans"
+              suffix={`/${leaderId}`}
+              label={t("leaders.survey_label")}
+            />
+          )}
+          <ReportLinkButton href={`/climate-report/${surveyId}/leaders/${leaderId}`} />
+        </div>
       </div>
 
       <LeaderPlansPanel
