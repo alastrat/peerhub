@@ -1,5 +1,6 @@
 import type { Session } from "next-auth";
 import { prisma } from "@/lib/db/prisma";
+import { actionPlanPath } from "@/lib/climate/plan-paths";
 import {
   normalizeSearchQuery,
   SEARCH_RESULTS_PER_TYPE,
@@ -65,7 +66,7 @@ async function searchActionPlans(companyId: string, match: Contains): Promise<Se
     id: row.id,
     title: row.title,
     subtitle: row.survey.name,
-    href: `/surveys/climate/${row.surveyId}/plans/${row.id}`,
+    href: actionPlanPath(row.surveyId, row.id),
   }));
 }
 

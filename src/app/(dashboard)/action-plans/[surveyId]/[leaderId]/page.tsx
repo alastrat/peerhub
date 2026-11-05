@@ -60,7 +60,7 @@ export default async function LeaderPlansPage({ params }: PageProps) {
         view={view}
         canEdit={isAdmin || isSelf}
         canAnswerContext={isSelf}
-        planDetailBase={isAdmin ? `/surveys/climate/${surveyId}/plans/` : undefined}
+        planDetailBase={isAdmin ? `/action-plans/${surveyId}/plans/` : undefined}
         backHref={isAdmin ? `/action-plans/${surveyId}` : undefined}
         backLabel={t("leaders.back")}
       />

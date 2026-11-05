@@ -198,7 +198,7 @@ describe("globalSearch", () => {
         id: "plan-1",
         title: "Plan de comunicación",
         subtitle: "Clima 2026",
-        href: "/surveys/climate/survey-1/plans/plan-1",
+        href: "/action-plans/survey-1/plans/plan-1",
       },
       {
         type: "climateTemplate",
