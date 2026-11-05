@@ -3573,7 +3573,21 @@
       "cta": "Aceptar invitación",
       "expiry": "Esta invitación vence en 7 días.",
       "fallback_inviter": "Tu administrador",
-      "fallback_company": "tu empresa"
+      "fallback_company": "tu empresa",
+      "reminder_subject": "Recordatorio: te invitaron a unirte a {company} en {appName}"
+    },
+    "admin_invitation": {
+      "subject": "Te invitaron a administrar {company} en {appName}",
+      "heading": "Te invitaron como administrador",
+      "body": "{inviter} te invitó a administrar {company} en {appName}. Haz clic en el botón para aceptar y configurar tu cuenta.",
+      "cta": "Aceptar invitación"
+    },
+    "login_link": {
+      "subject": "Inicia sesión en {appName}",
+      "heading": "Inicia sesión en {appName}",
+      "body": "Haz clic en el botón para iniciar sesión en tu cuenta de {appName}.",
+      "cta": "Iniciar sesión",
+      "note": "Si no solicitaste este correo, puedes ignorarlo."
     },
     "review_request": {
       "subject": "Te pidieron retroalimentación sobre {reviewee}",

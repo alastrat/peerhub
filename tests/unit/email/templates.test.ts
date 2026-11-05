@@ -91,6 +91,32 @@ describe("360 email templates", () => {
     expect(email.html).not.toContain("<Acme>");
   });
 
+  it("sends invitations with the shared button and the link spelled out", async () => {
+    const inviteUrl = "https://app.test/invite/tok-1?a=1&b=2";
+    await sendInvitationEmail({ to: "x@acme.test", inviterName: "Iskya", companyName: "Acme", inviteUrl });
+    const email = lastEmail();
+
+    expect(email.html).toContain("Aceptar invitación</a>");
+    expect(email.html.split('href="https://app.test/invite/tok-1?a=1&amp;b=2"')).toHaveLength(3);
+    expect(email.html).toContain("Si el botón no funciona");
+    expect(email.html).toContain("Esta invitación vence en 7 días.");
+    expect(email.html).not.toContain('class="button"');
+    expect(email.text).toContain(`Aceptar invitación: ${inviteUrl}`);
+  });
+
+  it("marks a re-sent invitation as a reminder, in the company's language", async () => {
+    const base = { to: "x@acme.test", inviterName: "Iskya", companyName: "Acme", inviteUrl: "https://app.test/i" };
+
+    await sendInvitationEmail({ ...base, reminder: true });
+    expect(lastEmail().subject).toBe("Recordatorio: te invitaron a unirte a Acme en Kultiva");
+
+    await sendInvitationEmail({ ...base, reminder: true, locale: "en" });
+    expect(lastEmail().subject).toBe("Reminder: You're invited to join Acme on Kultiva");
+
+    await sendInvitationEmail({ ...base, locale: "en" });
+    expect(lastEmail().subject).toBe("You're invited to join Acme on Kultiva");
+  });
+
   it("localizes report and nomination emails", async () => {
     await sendReportReleasedEmail({ to: "a@acme.test", employeeName: "Ana", cycleName: "Ciclo", reportUrl: "https://app.test" });
     expect(lastEmail().subject).toBe("Tu reporte de retroalimentación de «Ciclo» está listo");

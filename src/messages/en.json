@@ -3525,7 +3525,21 @@
       "cta": "Accept Invitation",
       "expiry": "This invitation will expire in 7 days.",
       "fallback_inviter": "Your admin",
-      "fallback_company": "your company"
+      "fallback_company": "your company",
+      "reminder_subject": "Reminder: You're invited to join {company} on {appName}"
+    },
+    "admin_invitation": {
+      "subject": "You're invited to administer {company} on {appName}",
+      "heading": "You've been invited as an admin",
+      "body": "{inviter} has invited you to administer {company} on {appName}. Click the button below to accept and set up your account.",
+      "cta": "Accept Invitation"
+    },
+    "login_link": {
+      "subject": "Sign in to {appName}",
+      "heading": "Sign in to {appName}",
+      "body": "Click the button below to sign in to your {appName} account.",
+      "cta": "Sign In",
+      "note": "If you didn't request this email, you can safely ignore it."
     },
     "review_request": {
       "subject": "Feedback requested for {reviewee}",

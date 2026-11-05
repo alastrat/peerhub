@@ -342,19 +342,16 @@ export async function createPlatformCompanyWithAdmin(
 
     try {
       const { sendEmail } = await import("@/lib/email/resend");
-      const greetingName = parsed.admin.firstName || adminEmail.split("@")[0];
+      const { buildAdminInvitationEmail } = await import("@/lib/email/auth-emails");
       await sendEmail({
         to: adminEmail,
-        subject: `You're invited to administer ${company.name} on Kultiva`,
-        html: `
-          <h2>Hi ${greetingName} — you've been invited as an admin</h2>
-          <p><strong>${session.user.name || session.user.email}</strong> has invited you to administer <strong>${company.name}</strong> on Kultiva.</p>
-          <p>Click the link below to accept and set up your account:</p>
-          <p><a href="${inviteUrl}" style="display:inline-block;background:#613171;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;">Accept Invitation</a></p>
-          <p>Or copy this link: ${inviteUrl}</p>
-          <p><em>This invitation expires in 7 days.</em></p>
-        `,
-        text: `Hi ${greetingName} — you've been invited to administer ${company.name} on Kultiva. Accept here: ${inviteUrl}`,
+        ...buildAdminInvitationEmail({
+          inviteeName: parsed.admin.firstName || adminEmail.split("@")[0],
+          inviterName: session.user.name || session.user.email,
+          companyName: company.name,
+          inviteUrl,
+          locale: company.locale,
+        }),
       });
     } catch (emailError) {
       // Roll back the entire transaction-equivalent (company + invitation) so
@@ -492,7 +489,7 @@ export async function inviteMember(input: {
 }): Promise<ActionResult<{ inviteUrl: string }>> {
   try {
     const { session, companyId } = await requireCompanyAdmin();
-    const { sendEmail } = await import("@/lib/email/resend");
+    const { sendInvitationEmail } = await import("@/lib/email/templates");
 
     // Enforce: can only invite to the company the admin is currently viewing
     if (input.companyId !== companyId) {
@@ -537,25 +534,19 @@ export async function inviteMember(input: {
         role: input.role,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
-      include: { company: { select: { name: true } } },
+      include: { company: { select: { name: true, locale: true } } },
     });
 
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:4999";
     const inviteUrl = `${baseUrl}/invite/${invitation.token}`;
 
     try {
-      await sendEmail({
+      await sendInvitationEmail({
         to: email,
-        subject: `You're invited to join ${invitation.company.name} on Kultiva`,
-        html: `
-          <h2>You've been invited!</h2>
-          <p><strong>${session.user.name || session.user.email}</strong> has invited you to join <strong>${invitation.company.name}</strong> on Kultiva.</p>
-          <p>Click the link below to accept:</p>
-          <p><a href="${inviteUrl}" style="display:inline-block;background:#613171;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;">Accept Invitation</a></p>
-          <p>Or copy this link: ${inviteUrl}</p>
-          <p><em>This invitation expires in 7 days.</em></p>
-        `,
-        text: `You've been invited to join ${invitation.company.name} on Kultiva. Accept here: ${inviteUrl}`,
+        inviterName: session.user.name || session.user.email,
+        companyName: invitation.company.name,
+        inviteUrl,
+        locale: invitation.company.locale,
       });
     } catch (emailError) {
       // Roll back the invitation if email failed
@@ -774,11 +765,11 @@ export async function resendInvitation(
 ): Promise<ActionResult> {
   try {
     const { session, companyId } = await requireCompanyAdmin();
-    const { sendEmail } = await import("@/lib/email/resend");
+    const { sendInvitationEmail } = await import("@/lib/email/templates");
 
     const invitation = await prisma.invitation.findUnique({
       where: { id: invitationId },
-      include: { company: { select: { name: true } } },
+      include: { company: { select: { name: true, locale: true } } },
     });
     if (!invitation) return { success: false, error: "Invitation not found" };
 
@@ -796,18 +787,13 @@ export async function resendInvitation(
     const inviteUrl = `${baseUrl}/invite/${invitation.token}`;
 
     try {
-      await sendEmail({
+      await sendInvitationEmail({
         to: invitation.email,
-        subject: `Reminder: You're invited to join ${invitation.company.name} on Kultiva`,
-        html: `
-          <h2>You've been invited!</h2>
-          <p><strong>${session.user.name || session.user.email}</strong> has invited you to join <strong>${invitation.company.name}</strong> on Kultiva.</p>
-          <p>Click the link below to accept:</p>
-          <p><a href="${inviteUrl}" style="display:inline-block;background:#613171;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;">Accept Invitation</a></p>
-          <p>Or copy this link: ${inviteUrl}</p>
-          <p><em>This invitation expires in 7 days.</em></p>
-        `,
-        text: `You've been invited to join ${invitation.company.name} on Kultiva. Accept here: ${inviteUrl}`,
+        inviterName: session.user.name || session.user.email,
+        companyName: invitation.company.name,
+        inviteUrl,
+        locale: invitation.company.locale,
+        reminder: true,
       });
     } catch (emailError) {
       const msg = emailError instanceof Error ? emailError.message : "Failed to send email";

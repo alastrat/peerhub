@@ -120,7 +120,7 @@ export async function sendPortalMagicLinkEmail(
     <h1>${escapeHtml(t("portal_magic_link.heading"))}</h1>
     <p>${escapeHtml(greeting)}</p>
     <p>${escapeHtml(body)}</p>
-    <a href="${magicLinkUrl}" class="button">${escapeHtml(t("portal_magic_link.cta"))}</a>
+    ${emailButton(magicLinkUrl, t("portal_magic_link.cta"), locale)}
     <p class="secondary-text">${escapeHtml(expiry)}</p>
   `, locale);
 

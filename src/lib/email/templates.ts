@@ -1,7 +1,7 @@
 // 360° review emails. Every email takes the company's locale (es by default).
 
 import { sendEmail } from "./resend";
-import { baseTemplate, escapeHtml } from "./portal-templates";
+import { baseTemplate, emailButton, escapeHtml } from "./portal-templates";
 import { getTranslator, type Translator } from "@/i18n/translator";
 
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "Kultiva";
@@ -37,6 +37,8 @@ export async function sendInvitationEmail(params: {
   companyName?: string | null;
   inviteUrl: string;
   locale?: Locale;
+  /** Re-send of a pending invitation: the subject says so. */
+  reminder?: boolean;
 }) {
   const t = getTranslator(params.locale, "emails");
   const values = {
@@ -49,13 +51,13 @@ export async function sendInvitationEmail(params: {
   const html = baseTemplate(`
     <h1>${escapeHtml(t("invitation.heading", values))}</h1>
     <p>${escapeHtml(t("invitation.body", values))}</p>
-    <a href="${params.inviteUrl}" class="button">${escapeHtml(cta)}</a>
+    ${emailButton(params.inviteUrl, cta, params.locale)}
     <p class="secondary-text">${escapeHtml(t("invitation.expiry"))}</p>
   `, params.locale);
 
   return sendEmail({
     to: params.to,
-    subject: t("invitation.subject", values),
+    subject: t(params.reminder ? "invitation.reminder_subject" : "invitation.subject", values),
     html,
     text: `${t("invitation.body", values)} ${cta}: ${params.inviteUrl}`,
   });
