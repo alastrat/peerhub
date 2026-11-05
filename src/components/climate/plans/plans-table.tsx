@@ -10,24 +10,18 @@ import { ImpactBadge, NativeSelect, PlanStatusBadge, ProgressBar } from "./plan-
 interface PlansTableProps {
   plans: PlanRow[];
   dimensions: { dimensionId: string; dimensionName: string }[];
-  /** Adds a survey filter and column, for lists that span surveys. */
-  surveys?: { id: string; name: string }[];
   emptyText: string;
-  /** "action-plans" opens plans under /action-plans; the default opens them in their survey. */
-  planLinks?: "survey" | "action-plans";
 }
 
 /** Filterable list of action plans; each title links to the plan. */
-export function PlansTable({ plans, dimensions, surveys, emptyText, planLinks = "survey" }: PlansTableProps) {
+export function PlansTable({ plans, dimensions, emptyText }: PlansTableProps) {
   const t = useTranslations("climate_plans");
-  const [surveyFilter, setSurveyFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [dimensionFilter, setDimensionFilter] = useState("");
   const [overdueOnly, setOverdueOnly] = useState(false);
 
   const filtered = plans.filter(
     (p) =>
-      (!surveyFilter || p.surveyId === surveyFilter) &&
       (!statusFilter || p.status === statusFilter) &&
       (!dimensionFilter || p.dimensionId === dimensionFilter) &&
       (!overdueOnly || p.overdueTasks > 0),
@@ -36,16 +30,6 @@ export function PlansTable({ plans, dimensions, surveys, emptyText, planLinks = 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        {surveys && (
-          <NativeSelect className="h-8 w-60" value={surveyFilter} onChange={(e) => setSurveyFilter(e.target.value)} aria-label={t("col_survey")}>
-            <option value="">{t("all_surveys")}</option>
-            {surveys.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </NativeSelect>
-        )}
         <NativeSelect className="h-8 w-44" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} aria-label={t("col_status")}>
           <option value="">{t("all_statuses")}</option>
           {(["DRAFT", "ACTIVE", "COMPLETED", "CANCELLED"] as const).map((s) => (
@@ -76,7 +60,6 @@ export function PlansTable({ plans, dimensions, surveys, emptyText, planLinks = 
             <thead>
               <tr className="text-left text-muted-foreground">
                 <th className="px-2 py-2 font-medium">{t("col_plan")}</th>
-                {surveys && <th className="px-2 py-2 font-medium">{t("col_survey")}</th>}
                 <th className="px-2 py-2 font-medium">{t("field_scope")}</th>
                 <th className="px-2 py-2 font-medium">{t("owner")}</th>
                 <th className="px-2 py-2 font-medium">{t("col_level")}</th>
@@ -89,21 +72,11 @@ export function PlansTable({ plans, dimensions, surveys, emptyText, planLinks = 
               {filtered.map((p) => (
                 <tr key={p.id} className="border-t align-top">
                   <td className="px-2 py-2">
-                    <Link
-                      href={planLinks === "action-plans" ? `/action-plans/${p.id}` : `/surveys/climate/${p.surveyId}/plans/${p.id}`}
-                      className="font-medium hover:underline"
-                    >
+                    <Link href={`/surveys/climate/${p.surveyId}/plans/${p.id}`} className="font-medium hover:underline">
                       {p.title}
                     </Link>
                     <p className="text-xs text-muted-foreground">{p.dimensionName}</p>
                   </td>
-                  {surveys && (
-                    <td className="px-2 py-2 text-xs">
-                      <Link href={`/surveys/climate/${p.surveyId}?tab=plans`} className="hover:underline">
-                        {p.surveyName}
-                      </Link>
-                    </td>
-                  )}
                   <td className="px-2 py-2 text-xs">
                     {t(`scope.${p.scope}`)}
                     {p.scopeName ? `: ${p.scopeName}` : ""}

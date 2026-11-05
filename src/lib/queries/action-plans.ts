@@ -135,9 +135,17 @@ export interface LeaderPlanSummary {
   status: ActionPlanStatus;
   baselineBand: ClimateBand;
   targetBand: ClimateBand;
+  startDate: Date;
   endDate: Date;
   progress: { done: number; total: number; pct: number };
   impact: ImpactResult | null;
+  /** The plan's first open task: the "action" of a single-action plan. */
+  action: {
+    taskId: string;
+    status: ActionTaskStatus;
+    evidence: { id: string; fileName: string; uploadedByEmployeeId: string | null }[];
+  } | null;
+  taskCount: number;
 }
 
 export interface LeaderTeamView {
@@ -148,8 +156,10 @@ export interface LeaderTeamView {
     planMinPerLeader: number;
     planDueDate: Date | null;
     anonymityThreshold: number;
-    releasedAt: Date;
+    /** Null only when an admin opens a leader before results are released. */
+    releasedAt: Date | null;
   };
+  leader: { id: string; name: string; department: string | null };
   gaps: LeaderGaps;
   items: LeaderItemResult[];
   plans: LeaderPlanSummary[];
@@ -161,12 +171,15 @@ export async function getLeaderTeamView(
   surveyId: string,
   leaderEmployeeId: string,
   companyId: string,
+  /** Admins may look at a leader before results are released to leaders. */
+  opts: { requireRelease?: boolean } = {},
 ): Promise<LeaderTeamView | null> {
+  const requireRelease = opts.requireRelease ?? true;
   const meta = await prisma.climateSurvey.findFirst({
     where: { id: surveyId, companyId },
     select: { resultsReleasedAt: true, planMinPerLeader: true, planDueDate: true, instrumentVersion: true },
   });
-  if (!meta?.resultsReleasedAt || !meta.instrumentVersion) return null;
+  if (!meta?.instrumentVersion || (requireRelease && !meta.resultsReleasedAt)) return null;
 
   const survey = await loadSurveyForScoring(surveyId, companyId);
   if (!survey) return null;
@@ -192,12 +205,19 @@ export async function getLeaderTeamView(
           };
         });
 
-  const [plans, context] = await Promise.all([
+  const [plans, context, leader] = await Promise.all([
     prisma.actionPlan.findMany({
       where: { surveyId, scope: "LEADER", scopeRefId: leaderEmployeeId, status: { not: "CANCELLED" } },
       include: {
         dimension: { select: { name: true } },
-        tasks: { select: { status: true } },
+        tasks: {
+          select: {
+            id: true,
+            status: true,
+            evidence: { select: { id: true, fileName: true, uploadedByEmployeeId: true }, orderBy: { createdAt: "asc" } },
+          },
+          orderBy: { createdAt: "asc" },
+        },
         measures: { where: { kind: "OUTCOME" }, select: { evaluatedAt: true, resultBand: true } },
       },
       orderBy: { createdAt: "asc" },
@@ -206,7 +226,12 @@ export async function getLeaderTeamView(
       where: { surveyId_leaderEmployeeId: { surveyId, leaderEmployeeId } },
       select: { answers: true },
     }),
+    prisma.employee.findFirst({
+      where: { id: leaderEmployeeId, companyId },
+      select: { id: true, name: true, department: { select: { name: true } } },
+    }),
   ]);
+  if (!leader) return null;
 
   const gapIds = new Set(gaps.gaps.map((g) => g.dimensionId));
   return {
@@ -219,6 +244,7 @@ export async function getLeaderTeamView(
       anonymityThreshold: survey.anonymityThreshold,
       releasedAt: meta.resultsReleasedAt,
     },
+    leader: { id: leader.id, name: leader.name, department: leader.department?.name ?? null },
     gaps,
     items,
     plans: plans.map((p) => ({
@@ -229,14 +255,95 @@ export async function getLeaderTeamView(
       status: p.status,
       baselineBand: p.baselineBand as ClimateBand,
       targetBand: p.targetBand as ClimateBand,
+      startDate: p.startDate,
       endDate: p.endDate,
       progress: planProgress(p.tasks),
       impact: planImpact(p.baselineBand as ClimateBand, p.measures[0] as never),
+      action: (() => {
+        const task = p.tasks.find((t) => t.status !== "CANCELLED");
+        return task ? { taskId: task.id, status: task.status, evidence: task.evidence } : null;
+      })(),
+      taskCount: p.tasks.filter((t) => t.status !== "CANCELLED").length,
     })),
     submittedOnGaps: plans.filter((p) => SUBMITTED_PLAN_STATUSES.includes(p.status) && gapIds.has(p.dimensionId)).length,
     context: (context?.answers as Record<string, string> | undefined) ?? null,
   };
 }
+
+/** Instrument surveys that have been sent: the ones with leaders to look at. */
+export async function listPlanSurveys(companyId: string) {
+  return prisma.climateSurvey.findMany({
+    where: { companyId, instrumentVersion: { not: null }, status: { in: ["ACTIVE", "CLOSED"] } },
+    select: { id: true, name: true, status: true, resultsReleasedAt: true },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export interface SurveyLeaderRow {
+  leaderEmployeeId: string;
+  name: string;
+  department: string | null;
+  respondents: number;
+  suppressed: boolean;
+  indexMean: number | null;
+  indexBand: ClimateBand | null;
+  gapCount: number;
+  required: number;
+  planCount: number;
+}
+
+/**
+ * Leaders of a survey (managers of its respondents) with their gaps and plans,
+ * most gaps first. `onlyLeaderId` limits it to one leader (a leader's own view).
+ */
+export async function getSurveyLeaders(surveyId: string, companyId: string, opts: { onlyLeaderId?: string } = {}) {
+  const meta = await prisma.climateSurvey.findFirst({
+    where: { id: surveyId, companyId, instrumentVersion: { not: null } },
+    select: { id: true, name: true, goalBand: true, planMinPerLeader: true, resultsReleasedAt: true, status: true },
+  });
+  if (!meta) return null;
+  const survey = await loadSurveyForScoring(surveyId, companyId);
+  if (!survey) return null;
+
+  const ids = leaderIdsOf(survey).filter((id) => !opts.onlyLeaderId || id === opts.onlyLeaderId);
+  const [employees, planCounts] = await Promise.all([
+    prisma.employee.findMany({
+      where: { companyId, id: { in: ids } },
+      select: { id: true, name: true, department: { select: { name: true } } },
+    }),
+    prisma.actionPlan.groupBy({
+      by: ["scopeRefId"],
+      where: { surveyId, scope: "LEADER", scopeRefId: { in: ids }, status: { not: "CANCELLED" } },
+      _count: { _all: true },
+    }),
+  ]);
+  const byId = new Map(employees.map((e) => [e.id, e]));
+  const plansBy = new Map(planCounts.map((p) => [p.scopeRefId, p._count._all]));
+
+  const leaders: SurveyLeaderRow[] = ids
+    .map((id) => {
+      const g = leaderGaps(survey, id, meta.planMinPerLeader);
+      const { score } = scoreScope(survey, "LEADER", id);
+      const employee = byId.get(id);
+      return {
+        leaderEmployeeId: id,
+        name: employee?.name ?? "—",
+        department: employee?.department?.name ?? null,
+        respondents: g.respondents,
+        suppressed: g.suppressed,
+        indexMean: g.suppressed ? null : (score.index?.mean ?? null),
+        indexBand: g.suppressed ? null : ((score.index?.band as ClimateBand | undefined) ?? null),
+        gapCount: g.gaps.length,
+        required: g.required,
+        planCount: plansBy.get(id) ?? 0,
+      };
+    })
+    .sort((a, b) => b.gapCount - a.gapCount || a.name.localeCompare(b.name));
+
+  return { survey: { ...meta, goalBand: survey.goalBand, anonymityThreshold: survey.anonymityThreshold }, leaders };
+}
+
+export type SurveyLeaders = NonNullable<Awaited<ReturnType<typeof getSurveyLeaders>>>;
 
 /** Released instrument surveys where the employee leads at least one respondent. */
 export async function listLeaderSurveys(employeeId: string, companyId: string) {
@@ -490,39 +597,6 @@ export async function getSurveyPlansOverview(surveyId: string, companyId: string
 
 export type SurveyPlansOverview = NonNullable<Awaited<ReturnType<typeof getSurveyPlansOverview>>>;
 
-/** Every action plan in the company, across climate surveys, newest first. */
-export async function getCompanyPlans(companyId: string) {
-  const plans = await prisma.actionPlan.findMany({
-    where: { companyId },
-    include: planRowInclude,
-    orderBy: { createdAt: "desc" },
-  });
-  const rows = await toPlanRows(plans, companyId);
-
-  const surveys = new Map<string, string>();
-  const dimensions = new Map<string, string>();
-  for (const p of rows) {
-    surveys.set(p.surveyId, p.surveyName);
-    dimensions.set(p.dimensionId, p.dimensionName);
-  }
-
-  return {
-    plans: rows,
-    surveys: [...surveys].map(([id, name]) => ({ id, name })),
-    dimensions: [...dimensions]
-      .map(([dimensionId, dimensionName]) => ({ dimensionId, dimensionName }))
-      .sort((a, b) => a.dimensionName.localeCompare(b.dimensionName)),
-    summary: {
-      total: rows.length,
-      active: rows.filter((p) => p.status === "ACTIVE").length,
-      completed: rows.filter((p) => p.status === "COMPLETED").length,
-      withOverdueTasks: rows.filter((p) => p.overdueTasks > 0 && p.status === "ACTIVE").length,
-      impact: impactSummaryOf(rows),
-    },
-  };
-}
-
-export type CompanyPlans = Awaited<ReturnType<typeof getCompanyPlans>>;
 
 // ---------------------------------------------------------------------------
 // Impact evaluation (spec §4.4)

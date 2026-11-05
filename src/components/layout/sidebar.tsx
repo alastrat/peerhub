@@ -41,6 +41,8 @@ const employeeNavItems: NavItemDef[] = [
 
 const managerNavItems: NavItemDef[] = [
   { href: "/team", icon: UsersRound, labelKey: "my_team" },
+  // Their own team's gaps and plans (leaders only see themselves)
+  { href: "/action-plans", icon: ListChecks, labelKey: "action_plans" },
 ];
 
 function NavItem({
