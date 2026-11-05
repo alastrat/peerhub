@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { updateSurveySettings } from "@/lib/actions/climate-surveys";
 import { CLIMATE_BANDS, type ClimateBand } from "@/lib/utils/climate-scoring";
 import { NativeSelect, toDateInput } from "./plan-ui";
+import { FollowUpPicker } from "./follow-up-picker";
 
 interface PlanSettingsCardProps {
   surveyId: string;
@@ -20,6 +21,7 @@ interface PlanSettingsCardProps {
     planMinPerLeader: number;
     planDueDate: Date | null;
     followUpUserIds: string[];
+    followUpEmails: string[];
   };
   /** Company admins who can follow up on plans. */
   users: { id: string; name: string | null; email: string }[];
@@ -33,7 +35,10 @@ export function PlanSettingsCard({ surveyId, initial, users }: PlanSettingsCardP
   const [goalBand, setGoalBand] = useState<ClimateBand>(initial.goalBand);
   const [planMin, setPlanMin] = useState(String(initial.planMinPerLeader));
   const [due, setDue] = useState(toDateInput(initial.planDueDate));
-  const [followUps, setFollowUps] = useState<string[]>(initial.followUpUserIds);
+  const [followUps, setFollowUps] = useState({
+    userIds: initial.followUpUserIds,
+    emails: initial.followUpEmails,
+  });
 
   function save() {
     startTransition(async () => {
@@ -41,7 +46,8 @@ export function PlanSettingsCard({ surveyId, initial, users }: PlanSettingsCardP
         goalBand,
         planMinPerLeader: Number(planMin),
         planDueDate: due || null,
-        followUpUserIds: followUps,
+        followUpUserIds: followUps.userIds,
+        followUpEmails: followUps.emails,
       });
       if (!res.success) {
         toast.error(res.error ?? t("error"));
@@ -83,22 +89,18 @@ export function PlanSettingsCard({ surveyId, initial, users }: PlanSettingsCardP
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label>{t("follow_up")}</Label>
-          <p className="text-xs text-muted-foreground">{t("follow_up_hint")}</p>
-          <div className="grid gap-1.5 sm:grid-cols-2">
-            {users.map((u) => (
-              <label key={u.id} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={followUps.includes(u.id)}
-                  onChange={(e) =>
-                    setFollowUps(e.target.checked ? [...followUps, u.id] : followUps.filter((x) => x !== u.id))
-                  }
-                />
-                {u.name ?? u.email} <span className="text-xs text-muted-foreground">{u.email}</span>
-              </label>
-            ))}
-          </div>
+          <Label htmlFor="ps-follow-up">{t("follow_up")}</Label>
+          <p id="ps-follow-up-hint" className="text-xs text-muted-foreground">
+            {t("follow_up_hint")}
+          </p>
+          <FollowUpPicker
+            id="ps-follow-up"
+            aria-describedby="ps-follow-up-hint"
+            users={users}
+            userIds={followUps.userIds}
+            emails={followUps.emails}
+            onChange={setFollowUps}
+          />
         </div>
         <Button onClick={save} disabled={pending || planMin === "" || Number.isNaN(Number(planMin))}>
           {pending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
