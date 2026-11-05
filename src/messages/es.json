@@ -3667,6 +3667,7 @@
     "invalid_plan_minimum": "Mínimo de planes inválido",
     "invalid_plan_due_date": "Fecha límite de planes inválida",
     "unknown_follow_up_user": "Uno de los usuarios de seguimiento no pertenece a la empresa",
+    "report_cover_too_long": "Un texto de la portada del informe es demasiado largo",
     "invalid_follow_up_email": "«{email}» no es un correo válido",
     "too_many_follow_up_emails": "Puedes agregar hasta {max} correos de seguimiento",
     "failed_update_settings": "No se pudo guardar la configuración",
@@ -3747,5 +3748,69 @@
     "review_title": "Revisar plantilla",
     "save_draft_failed": "No se pudo guardar el borrador",
     "save_failed": "No se pudo guardar la plantilla"
+  },
+  "climate_report": {
+    "document_title": "Informe de clima — {name}",
+    "document_title_leader": "Informe de {leader} — {name}",
+    "open_report": "Informe PDF",
+    "toolbar": {
+      "back": "Volver",
+      "hint": "Para descargarlo, elige «Guardar como PDF» al imprimir.",
+      "print": "Imprimir / PDF"
+    },
+    "cover": {
+      "eyebrow_leader": "Informe de líder",
+      "team_of": "Equipo de {name}",
+      "subtitle": "A continuación, te damos algunos detalles sobre la encuesta:",
+      "default_intro": "A través de estos resultados entenderás cómo se sienten tus colaboradores en diferentes aspectos de la organización, como la comunicación, el liderazgo, el bienestar y el ambiente laboral en general.\n\nEsta información te ayudará a identificar qué están haciendo bien y qué pueden mejorar, para trabajar juntos en cultivar un entorno más positivo, motivador y productivo para todos.",
+      "logo_alt": "Logo de {company}",
+      "date_title": "Fecha de aplicación",
+      "date_missing": "Por definir",
+      "starts": "Inicia {time}",
+      "ends": "Finaliza {time}",
+      "days": "{count, plural, one {# día} other {# días}} de aplicación",
+      "scale_title": "Escala de respuestas",
+      "scale_missing": "Sin definir",
+      "dimensions_title": "Dimensiones evaluadas",
+      "dimensions_count": "{dimensions, plural, one {# dimensión} other {# dimensiones}}, {questions, plural, one {# pregunta} other {# preguntas}}",
+      "generated": "Informe generado el {date}"
+    },
+    "sections": {
+      "no_results": "Esta encuesta todavía no tiene resultados. El informe se completa cuando la encuesta está activa o cerrada.",
+      "invited": "Invitaciones",
+      "responded": "Respuestas completas",
+      "rate": "Tasa de respuesta",
+      "dimensions": "Dimensiones",
+      "questions": "Preguntas",
+      "summary": "Resumen",
+      "band_legend": "Niveles:",
+      "dimensions_title": "Resultados por dimensión",
+      "groups_title": "Resultados por grupo",
+      "questions_title": "Resultados por pregunta",
+      "other_questions": "Otras preguntas",
+      "responses": "{count, plural, one {# respuesta} other {# respuestas}}",
+      "open_title": "Preguntas abiertas",
+      "open_desc": "Respuestas textuales, sin nombre ni grupo.",
+      "open_none": "Sin respuestas",
+      "leader_banner": "Este informe muestra solo las respuestas del equipo de {name}. No incluye el consolidado de la empresa ni los resultados de otros equipos.",
+      "team_respondents": "Respuestas del equipo",
+      "goal": "Meta",
+      "below_goal": "Por debajo de la meta"
+    },
+    "settings": {
+      "title": "Portada del informe",
+      "desc": "Es la primera página del informe: fecha de aplicación, escala de respuestas, dimensiones evaluadas y un texto introductorio. La fecha sale de las fechas de acceso de la encuesta o, si no hay, de sus envíos. El logo y los colores son los de la encuesta.",
+      "extra_duration": "Nota de duración adicional (opcional)",
+      "extra_duration_placeholder": "Ej. 1 semana adicional",
+      "extra_duration_hint": "Se muestra bajo la fecha de aplicación, por ejemplo si la encuesta se extendió.",
+      "scale": "Escala de respuestas (separada por comas)",
+      "scale_hint": "Déjala vacía para usar la escala de la encuesta.",
+      "intro": "Texto introductorio",
+      "intro_hint": "Aparece bajo el título. Separa los párrafos con una línea en blanco; déjalo vacío para usar el texto predeterminado.",
+      "save": "Guardar portada",
+      "saved": "Portada del informe guardada",
+      "error": "No se pudo guardar la portada",
+      "view_report": "Ver informe"
+    }
   }
 }

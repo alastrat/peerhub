@@ -3619,6 +3619,7 @@
     "invalid_plan_minimum": "Invalid plan minimum",
     "invalid_plan_due_date": "Invalid plan due date",
     "unknown_follow_up_user": "Unknown follow-up user",
+    "report_cover_too_long": "A report cover text is too long",
     "invalid_follow_up_email": "“{email}” isn't a valid email address",
     "too_many_follow_up_emails": "You can add up to {max} follow-up emails",
     "failed_update_settings": "Failed to update settings",
@@ -3699,5 +3700,69 @@
     "review_title": "Review template",
     "save_draft_failed": "Failed to save draft",
     "save_failed": "Failed to save template"
+  },
+  "climate_report": {
+    "document_title": "Climate report — {name}",
+    "document_title_leader": "{leader}'s report — {name}",
+    "open_report": "PDF report",
+    "toolbar": {
+      "back": "Back",
+      "hint": "To download it, choose “Save as PDF” when printing.",
+      "print": "Print / PDF"
+    },
+    "cover": {
+      "eyebrow_leader": "Leader report",
+      "team_of": "{name}'s team",
+      "subtitle": "Here are a few details about the survey:",
+      "default_intro": "These results show how your employees feel about different aspects of the organization, such as communication, leadership, wellbeing and the work environment in general.\n\nThis information will help you see what you're doing well and what you can improve, so you can work together to cultivate a more positive, motivating and productive environment for everyone.",
+      "logo_alt": "{company} logo",
+      "date_title": "Survey dates",
+      "date_missing": "To be set",
+      "starts": "Opens {time}",
+      "ends": "Closes {time}",
+      "days": "{count, plural, one {Open for # day} other {Open for # days}}",
+      "scale_title": "Response scale",
+      "scale_missing": "Not set",
+      "dimensions_title": "Dimensions evaluated",
+      "dimensions_count": "{dimensions, plural, one {# dimension} other {# dimensions}}, {questions, plural, one {# question} other {# questions}}",
+      "generated": "Report generated on {date}"
+    },
+    "sections": {
+      "no_results": "This survey has no results yet. The report fills in once the survey is active or closed.",
+      "invited": "Invited",
+      "responded": "Completed responses",
+      "rate": "Response rate",
+      "dimensions": "Dimensions",
+      "questions": "Questions",
+      "summary": "Summary",
+      "band_legend": "Bands:",
+      "dimensions_title": "Results by dimension",
+      "groups_title": "Results by group",
+      "questions_title": "Results by question",
+      "other_questions": "Other questions",
+      "responses": "{count, plural, one {# response} other {# responses}}",
+      "open_title": "Open questions",
+      "open_desc": "Verbatim answers, without names or groups.",
+      "open_none": "No answers",
+      "leader_banner": "This report only shows the answers of {name}'s team. It doesn't include the company-wide results or other teams' results.",
+      "team_respondents": "Team responses",
+      "goal": "Goal",
+      "below_goal": "Below the goal"
+    },
+    "settings": {
+      "title": "Report cover",
+      "desc": "The first page of the report: survey dates, response scale, dimensions evaluated and an intro text. The dates come from the survey's access window or, without one, from its sends. The logo and colors are the survey's.",
+      "extra_duration": "Extra duration note (optional)",
+      "extra_duration_placeholder": "E.g. 1 extra week",
+      "extra_duration_hint": "Shown under the survey dates, for example when the survey was extended.",
+      "scale": "Response scale (comma-separated)",
+      "scale_hint": "Leave it empty to use the survey's scale.",
+      "intro": "Intro text",
+      "intro_hint": "Shown under the title. Separate paragraphs with a blank line; leave it empty to use the default text.",
+      "save": "Save cover",
+      "saved": "Report cover saved",
+      "error": "Couldn't save the cover",
+      "view_report": "View report"
+    }
   }
 }

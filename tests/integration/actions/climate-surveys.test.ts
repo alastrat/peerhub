@@ -595,6 +595,28 @@ describe("climate survey actions", () => {
       });
     });
 
+    it("copies the report cover", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue({
+        ...sampleSurveyWithQuestions,
+        reportExtraDuration: "1 semana adicional",
+        reportScaleText: null,
+        reportIntroText: "Texto propio",
+      });
+      mockPrisma.climateSurvey.create.mockResolvedValue({ ...sampleSurveyWithQuestions, id: "survey-copy-1" });
+
+      await duplicateClimateSurvey("survey-1");
+
+      expect(mockPrisma.climateSurvey.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            reportExtraDuration: "1 semana adicional",
+            reportScaleText: null,
+            reportIntroText: "Texto propio",
+          }),
+        }),
+      );
+    });
+
     it("returns error when survey not found", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(null);
 
@@ -880,6 +902,35 @@ describe("climate survey actions", () => {
         where: { id: "survey-1" },
         data: { description: null },
       });
+    });
+
+    it("saves the report cover, blank fields as null", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+      mockPrisma.climateSurvey.update.mockResolvedValue({});
+
+      const result = await updateSurveySettings("survey-1", {
+        reportExtraDuration: "  1 semana adicional ",
+        reportScaleText: "   ",
+        reportIntroText: null,
+      });
+
+      expect(result.success).toBe(true);
+      expect(mockPrisma.climateSurvey.update).toHaveBeenCalledWith({
+        where: { id: "survey-1" },
+        data: { reportExtraDuration: "1 semana adicional", reportScaleText: null, reportIntroText: null },
+      });
+    });
+
+    it("rejects a report cover text over its limit", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+
+      const result = await updateSurveySettings("survey-1", {
+        reportIntroText: "x".repeat(3001),
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Un texto de la portada del informe es demasiado largo");
+      expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
     });
 
     it("saves typed follow-up emails trimmed, lowercased and once each", async () => {

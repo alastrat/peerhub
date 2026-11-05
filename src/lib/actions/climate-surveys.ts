@@ -338,6 +338,9 @@ export async function duplicateClimateSurvey(
         goalBand: original.goalBand,
         planMinPerLeader: original.planMinPerLeader,
         followUpUserIds: original.followUpUserIds,
+        reportExtraDuration: original.reportExtraDuration,
+        reportScaleText: original.reportScaleText,
+        reportIntroText: original.reportIntroText,
         followUpEmails: original.followUpEmails,
         questions: {
           create: original.questions.map((q) => ({
@@ -381,9 +384,20 @@ export interface SurveySettingsInput {
   planMinPerLeader?: number;
   planDueDate?: Date | string | null;
   followUpUserIds?: string[];
+  /** Report cover. Blank stores null, so the cover shows its default text. */
+  reportExtraDuration?: string | null;
+  reportScaleText?: string | null;
+  reportIntroText?: string | null;
   /** Addresses typed in by hand, notified like the follow-up users. */
   followUpEmails?: string[];
 }
+
+/** Longest text each report cover field keeps. */
+const REPORT_COVER_LIMITS = {
+  reportExtraDuration: 120,
+  reportScaleText: 300,
+  reportIntroText: 3000,
+} as const;
 
 const MAX_FOLLOW_UP_EMAILS = 20;
 
@@ -447,6 +461,13 @@ export async function updateSurveySettings(
         : [];
       if (valid.length !== ids.length) return actionError("unknown_follow_up_user");
       data.followUpUserIds = ids;
+    }
+    for (const key of Object.keys(REPORT_COVER_LIMITS) as (keyof typeof REPORT_COVER_LIMITS)[]) {
+      const value = input[key];
+      if (value === undefined) continue;
+      const text = value?.trim() ?? "";
+      if (text.length > REPORT_COVER_LIMITS[key]) return actionError("report_cover_too_long");
+      data[key] = text || null;
     }
     if (input.followUpEmails !== undefined) {
       const emails = [...new Set(input.followUpEmails.map((e) => e.trim().toLowerCase()).filter(Boolean))];

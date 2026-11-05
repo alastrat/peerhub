@@ -14,13 +14,7 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -29,7 +23,6 @@ import {
   CLIMATE_SURVEY_STATUS_COLORS,
   SURVEY_FREQUENCY_LABELS,
 } from "@/lib/constants/climate-survey";
-import { formatRelativeTime } from "@/lib/utils/dates";
 import { DistributeDialog } from "@/components/climate/distribute-dialog";
 import { SurveyDetailActions } from "@/components/climate/survey-detail-actions";
 import { SurveyAnswersTab } from "@/components/climate/survey-answers-tab";
@@ -42,6 +35,10 @@ import { getSurveyPlansOverview } from "@/lib/queries/action-plans";
 import { isLockedQuestion } from "@/lib/constants/climate-instrument";
 import { SurveyPlansTab } from "@/components/climate/plans/survey-plans-tab";
 import { PlanSettingsCard } from "@/components/climate/plans/plan-settings-card";
+import { ReportCoverCard } from "@/components/climate/report/report-cover-card";
+import { ReportLinkButton } from "@/components/climate/report/report-link-button";
+import { getTranslator, toSupportedLocale } from "@/i18n/translator";
+import { defaultScaleText } from "@/lib/utils/climate-report";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -204,6 +201,12 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
         })
       ).map((cu) => cu.user)
     : [];
+  // What the report cover shows while its fields are empty, in the company's language
+  const companyLocale = toSupportedLocale(session.companyUser.locale);
+  const reportDefaults = {
+    scaleText: defaultScaleText(survey.questions, companyLocale),
+    introText: getTranslator(companyLocale, "climate_report.cover")("default_intro"),
+  };
   const defaultTab =
     requestedTab && ["insights", "answers", "participants", "questions", "settings", "plans"].includes(requestedTab)
       ? requestedTab
@@ -320,6 +323,7 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
               }
             />
           )}
+          {isActiveOrClosed && <ReportLinkButton href={`/climate-report/${survey.id}`} />}
           <SurveyDetailActions
             surveyId={survey.id}
             surveyStatus={survey.status}
@@ -514,6 +518,15 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
               users={followUpCandidates}
             />
           )}
+          <ReportCoverCard
+            surveyId={survey.id}
+            initial={{
+              reportExtraDuration: survey.reportExtraDuration,
+              reportScaleText: survey.reportScaleText,
+              reportIntroText: survey.reportIntroText,
+            }}
+            defaults={reportDefaults}
+          />
         </TabsContent>
 
         {/* Insights Tab */}

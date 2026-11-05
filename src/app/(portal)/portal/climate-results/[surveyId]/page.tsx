@@ -4,6 +4,7 @@ import { getPortalSession } from "@/lib/auth/portal-session";
 import { prisma } from "@/lib/db/prisma";
 import { getLeaderTeamView } from "@/lib/queries/action-plans";
 import { LeaderPlansPanel } from "@/components/climate/plans/leader-plans-panel";
+import { ReportLinkButton } from "@/components/climate/report/report-link-button";
 
 interface PageProps {
   params: Promise<{ surveyId: string }>;
@@ -24,15 +25,18 @@ export default async function LeaderClimateResultsPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-4xl space-y-5">
-      <div className="space-y-1">
-        <p className="text-xs font-bold uppercase tracking-wider text-lime-600">
-          {t("leaders.eyebrow", { company: company?.name ?? "" })}
-        </p>
-        <h1 className="text-2xl font-semibold">
-          {view.leader.name}
-          {view.leader.department && ` — ${view.leader.department}`}
-        </h1>
-        <p className="text-muted-foreground">{t("panel.subtitle", { survey: view.survey.name, count: view.gaps.respondents })}</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-lime-600">
+            {t("leaders.eyebrow", { company: company?.name ?? "" })}
+          </p>
+          <h1 className="text-2xl font-semibold">
+            {view.leader.name}
+            {view.leader.department && ` — ${view.leader.department}`}
+          </h1>
+          <p className="text-muted-foreground">{t("panel.subtitle", { survey: view.survey.name, count: view.gaps.respondents })}</p>
+        </div>
+        <ReportLinkButton href={`/climate-report/${surveyId}/leaders/${view.leader.id}`} />
       </div>
       <LeaderPlansPanel
         view={view}
