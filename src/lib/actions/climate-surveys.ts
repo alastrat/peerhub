@@ -9,6 +9,7 @@ import { applyInstrumentRules, instrumentDimensionCodes } from "@/lib/utils/clim
 import { isLockedQuestion } from "@/lib/constants/climate-instrument";
 import { isClimateBand, type ClimateBand } from "@/lib/utils/climate-scoring";
 import { getTranslator } from "@/i18n/translator";
+import { isEmailAddress } from "@/lib/utils/email";
 import { actionError, getActionLocale, unexpectedActionError } from "@/lib/auth/action-locale";
 
 /** Canonicalize instrument items and enforce whole-dimension rules. */
@@ -340,6 +341,7 @@ export async function duplicateClimateSurvey(
         reportExtraDuration: original.reportExtraDuration,
         reportScaleText: original.reportScaleText,
         reportIntroText: original.reportIntroText,
+        followUpEmails: original.followUpEmails,
         questions: {
           create: original.questions.map((q) => ({
             text: q.text,
@@ -386,6 +388,8 @@ export interface SurveySettingsInput {
   reportExtraDuration?: string | null;
   reportScaleText?: string | null;
   reportIntroText?: string | null;
+  /** Addresses typed in by hand, notified like the follow-up users. */
+  followUpEmails?: string[];
 }
 
 /** Longest text each report cover field keeps. */
@@ -394,6 +398,8 @@ const REPORT_COVER_LIMITS = {
   reportScaleText: 300,
   reportIntroText: 3000,
 } as const;
+
+const MAX_FOLLOW_UP_EMAILS = 20;
 
 export async function updateSurveySettings(
   surveyId: string,
@@ -462,6 +468,15 @@ export async function updateSurveySettings(
       const text = value?.trim() ?? "";
       if (text.length > REPORT_COVER_LIMITS[key]) return actionError("report_cover_too_long");
       data[key] = text || null;
+    }
+    if (input.followUpEmails !== undefined) {
+      const emails = [...new Set(input.followUpEmails.map((e) => e.trim().toLowerCase()).filter(Boolean))];
+      const invalid = emails.find((e) => !isEmailAddress(e));
+      if (invalid) return actionError("invalid_follow_up_email", { email: invalid });
+      if (emails.length > MAX_FOLLOW_UP_EMAILS) {
+        return actionError("too_many_follow_up_emails", { max: MAX_FOLLOW_UP_EMAILS });
+      }
+      data.followUpEmails = emails;
     }
 
     if (Object.keys(data).length === 0) {

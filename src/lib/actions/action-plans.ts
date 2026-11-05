@@ -13,10 +13,12 @@ import {
   leaderIdsOf,
   OPEN_PLAN_STATUSES,
   SUBMITTED_PLAN_STATUSES,
+  isSingleActionPlan,
 } from "@/lib/queries/action-plans";
 import { bandRank, isClimateBand, nextBand, type ClimateBand } from "@/lib/utils/climate-scoring";
 import { emailEmployeeViaPortal, emailUsersViaDashboard, planEmails, safely } from "@/lib/email/climate-plan-emails";
 import { businessDayAsDate } from "@/lib/constants/business-time";
+import { MAX_EVIDENCE_BYTES, MAX_EVIDENCE_MB } from "@/lib/constants/action-plan-evidence";
 import { getTranslator } from "@/i18n/translator";
 
 // ---------------------------------------------------------------------------
@@ -69,7 +71,6 @@ const TASK_STATUSES: ActionTaskStatus[] = ["PENDING", "IN_PROGRESS", "DONE", "CA
 const MAX_TEXT = 2000;
 const MAX_TITLE = 200;
 const MAX_TASKS = 30;
-const MAX_EVIDENCE_BYTES = 10 * 1024 * 1024;
 const MAX_EVIDENCE_PER_TASK = 10;
 const EVIDENCE_MIME = new Set(["image/png", "image/jpeg", "image/webp", "application/pdf"]);
 
@@ -151,7 +152,7 @@ async function assertEmployeeInCompany(employeeId: string, companyId: string, no
 
 const planInclude = {
   tasks: { select: { id: true, ownerEmployeeId: true, status: true, title: true, dueDate: true } },
-  survey: { select: { id: true, name: true, followUpUserIds: true } },
+  survey: { select: { id: true, name: true, followUpUserIds: true, followUpEmails: true } },
   dimension: { select: { name: true } },
   owner: { select: { name: true, email: true } },
 } satisfies Prisma.ActionPlanInclude;
@@ -187,6 +188,13 @@ function revalidatePlan(plan: { id: string; surveyId: string }) {
   revalidatePath(`/portal/climate-results/${plan.surveyId}`);
   revalidatePath("/portal/my-tasks");
   revalidatePath("/portal/home");
+}
+
+/** Where HR lands from plan emails: the leader's page in Planes de acción, or the plan itself. */
+function hrPlanPath(plan: { id: string; surveyId: string; scope: string; scopeRefId: string | null }) {
+  return plan.scope === "LEADER" && plan.scopeRefId
+    ? `/action-plans/${plan.surveyId}/${plan.scopeRefId}`
+    : `/surveys/climate/${plan.surveyId}/plans/${plan.id}`;
 }
 
 function formatDay(d: Date) {
@@ -410,8 +418,9 @@ export async function submitActionPlan(planId: string): Promise<ActionResult> {
       emailUsersViaDashboard(
         actor.companyId,
         plan.survey.followUpUserIds,
-        `/surveys/climate/${plan.surveyId}/plans/${plan.id}`,
+        hrPlanPath(plan),
         planEmails.planSubmitted(plan.owner.name, plan.title, plan.dimension.name, plan.survey.name),
+        plan.survey.followUpEmails,
       ),
     );
     for (const task of plan.tasks) await notifyTaskOwner(task, plan);
@@ -451,8 +460,9 @@ export async function completeActionPlan(planId: string, closingNote: string): P
           emailUsersViaDashboard(
             actor.companyId,
             plan.survey.followUpUserIds,
-            `/surveys/climate/${plan.surveyId}?tab=plans`,
+            hrPlanPath(plan),
             planEmails.leaderCompleted(plan.owner.name, plan.survey.name, siblings.length),
+            plan.survey.followUpEmails,
           ),
         );
       }
@@ -748,7 +758,7 @@ export async function uploadTaskEvidence(taskId: string, formData: FormData): Pr
     const file = formData.get("file");
     if (!(file instanceof File) || file.size === 0) fail("choose_file");
     if (!EVIDENCE_MIME.has(file.type)) fail("file_type");
-    if (file.size > MAX_EVIDENCE_BYTES) fail("file_too_large", { max: MAX_EVIDENCE_BYTES / (1024 * 1024) });
+    if (file.size > MAX_EVIDENCE_BYTES) fail("file_too_large", { max: MAX_EVIDENCE_MB });
     const count = await prisma.actionPlanEvidence.count({ where: { taskId: task.id } });
     if (count >= MAX_EVIDENCE_PER_TASK) fail("too_many_files", { max: MAX_EVIDENCE_PER_TASK });
 
@@ -971,8 +981,9 @@ export interface SingleActionPlanInput {
 
 export type SingleActionStatus = "PENDING" | "IN_PROGRESS" | "DONE";
 
-/** The plan's one action (first task that isn't cancelled). */
+/** The plan's one action. Refuses plans written in the full editor, whose texts the one-action form would overwrite. */
 function singleTask(plan: LoadedPlan) {
+  if (!isSingleActionPlan(plan)) fail("not_single_action");
   const task = plan.tasks.find((t) => t.status !== "CANCELLED");
   if (!task) fail("task_not_found");
   return task;

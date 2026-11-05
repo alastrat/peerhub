@@ -776,6 +776,8 @@ model ClimateSurvey {
   resultsReleasedAt DateTime?
   // User ids notified about plans (HR / seguimiento)
   followUpUserIds   String[]    @default([])
+  // Extra addresses notified about plans, typed in by hand (people outside the company too)
+  followUpEmails    String[]    @default([])
   // Last "plans due soon" reminder sent to leaders (once per survey)
   planReminderSentAt DateTime?
 

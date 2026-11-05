@@ -13,6 +13,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    serverActions: {
+      // Action plan evidence is uploaded through a Server Action, and the
+      // default 1 MB limit rejected most photos and scans. Vercel caps
+      // function request bodies at 4.5 MB, so files are limited to 4 MB
+      // (MAX_EVIDENCE_BYTES) and the rest covers the multipart overhead.
+      bodySizeLimit: "4.5mb",
+    },
+  },
 };
 
 export default withSentryConfig(withNextIntl(nextConfig), {

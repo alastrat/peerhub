@@ -932,5 +932,39 @@ describe("climate survey actions", () => {
       expect(result.error).toBe("Un texto de la portada del informe es demasiado largo");
       expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
     });
+
+    it("saves typed follow-up emails trimmed, lowercased and once each", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+      mockPrisma.climateSurvey.update.mockResolvedValue({});
+
+      const result = await updateSurveySettings("survey-1", {
+        followUpEmails: [" Ana@Kultiva.com.co ", "ana@kultiva.com.co", "", "pablo@cliente.com"],
+      });
+
+      expect(result.success).toBe(true);
+      expect(mockPrisma.climateSurvey.update).toHaveBeenCalledWith({
+        where: { id: "survey-1" },
+        data: { followUpEmails: ["ana@kultiva.com.co", "pablo@cliente.com"] },
+      });
+    });
+
+    it("rejects a follow-up email that isn't an address", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+
+      const result = await updateSurveySettings("survey-1", { followUpEmails: ["ana@kultiva", "pablo@cliente.com"] });
+
+      expect(result).toEqual({ success: false, error: "«ana@kultiva» no es un correo válido" });
+      expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
+    });
+
+    it("caps the typed follow-up emails at 20", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+      const emails = Array.from({ length: 21 }, (_, i) => `persona${i}@cliente.com`);
+
+      const result = await updateSurveySettings("survey-1", { followUpEmails: emails });
+
+      expect(result).toEqual({ success: false, error: "Puedes agregar hasta 20 correos de seguimiento" });
+      expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
+    });
   });
 });
