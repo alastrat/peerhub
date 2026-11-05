@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db/prisma";
 import { randomUUID } from "crypto";
 import { sendPortalMagicLinkEmail } from "@/lib/email/portal-templates";
 import type { ActionResult } from "@/types";
+import { isPortalRedirect } from "@/lib/auth/portal-redirect";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -49,7 +50,7 @@ export async function requestPortalAccess(
 
     // Build the magic link URL, optionally including a redirect param
     let magicLinkUrl = `${APP_URL}/portal/verify/${token}`;
-    if (redirectTo && redirectTo.startsWith("/portal/")) {
+    if (isPortalRedirect(redirectTo)) {
       magicLinkUrl += `?redirect=${encodeURIComponent(redirectTo)}`;
     }
 

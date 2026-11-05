@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyPortalToken } from "@/lib/actions/portal";
 import { createPortalSession } from "@/lib/auth/portal-session";
+import { isPortalRedirect } from "@/lib/auth/portal-redirect";
 
 export async function GET(
   request: NextRequest,
@@ -22,10 +23,7 @@ export async function GET(
 
   // Support redirect after login (e.g. deep-linking to a specific survey)
   const redirectTo = request.nextUrl.searchParams.get("redirect");
-  const destination =
-    redirectTo && redirectTo.startsWith("/portal/")
-      ? redirectTo
-      : "/portal/home";
+  const destination = isPortalRedirect(redirectTo) ? redirectTo : "/portal/home";
 
   return NextResponse.redirect(new URL(destination, request.url));
 }

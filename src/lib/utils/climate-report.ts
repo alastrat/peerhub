@@ -36,6 +36,15 @@ function dayNumber(date: Date, timeZone: string): number {
 }
 
 /**
+ * A due date is a calendar day stored at UTC midnight (the distribute dialog's
+ * date input). Noon UTC keeps that day in any business time zone, where
+ * midnight would show the day before west of UTC.
+ */
+function dueDay(dueDate: Date): Date {
+  return new Date(Date.UTC(dueDate.getUTCFullYear(), dueDate.getUTCMonth(), dueDate.getUTCDate(), 12));
+}
+
+/**
  * When the survey ran: its access window, else from the first send to the
  * last due date. Null when neither bound is known or they're reversed.
  */
@@ -46,13 +55,15 @@ export function reportSchedule(input: ReportScheduleInput, timeZone: string): Re
   const end =
     input.accessEndDate ??
     (input.distributions.length
-      ? new Date(Math.max(...input.distributions.map((d) => d.dueDate.getTime())))
+      ? dueDay(new Date(Math.max(...input.distributions.map((d) => d.dueDate.getTime()))))
       : null);
-  if (!start || !end || end < start) return null;
+  if (!start || !end) return null;
+  const days = dayNumber(end, timeZone) - dayNumber(start, timeZone) + 1;
+  if (days < 1) return null;
   return {
     start,
     end,
-    days: dayNumber(end, timeZone) - dayNumber(start, timeZone) + 1,
+    days,
     hasStartTime: input.accessStartDate != null,
     hasEndTime: input.accessEndDate != null,
   };
@@ -67,13 +78,21 @@ interface ScaleQuestion {
   config?: unknown;
 }
 
-/** The scale most questions are answered on (the instrument's when there is one), NPS aside. */
+/**
+ * The scale most questions are answered on (the instrument's when there is
+ * one). NPS only counts when nothing else is scored, as in an eNPS survey.
+ */
 function mainScale(questions: ScaleQuestion[]): ScaleDefinition | null {
   const counts = new Map<string, { scale: ScaleDefinition; count: number }>();
+  let nps: ScaleDefinition | null = null;
   let instrument = false;
   for (const q of questions) {
     const scale = getQuestionScale(q);
-    if (!scale || scale.kind === "nps") continue;
+    if (!scale) continue;
+    if (scale.kind === "nps") {
+      nps = scale;
+      continue;
+    }
     if (getInstrumentItemCode(q.config) != null) instrument = true;
     const entry = counts.get(scale.key) ?? { scale, count: 0 };
     entry.count++;
@@ -82,7 +101,7 @@ function mainScale(questions: ScaleQuestion[]): ScaleDefinition | null {
   if (instrument && counts.has(INSTRUMENT_SCALE)) return counts.get(INSTRUMENT_SCALE)!.scale;
   let best: { scale: ScaleDefinition; count: number } | null = null;
   for (const entry of counts.values()) if (!best || entry.count > best.count) best = entry;
-  return best?.scale ?? null;
+  return best?.scale ?? nps;
 }
 
 /** Default "Escala de respuestas": the main scale's labels ("Nunca, Casi nunca, …"), or its range. */

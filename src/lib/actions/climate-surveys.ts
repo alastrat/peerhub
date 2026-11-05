@@ -337,6 +337,9 @@ export async function duplicateClimateSurvey(
         goalBand: original.goalBand,
         planMinPerLeader: original.planMinPerLeader,
         followUpUserIds: original.followUpUserIds,
+        reportExtraDuration: original.reportExtraDuration,
+        reportScaleText: original.reportScaleText,
+        reportIntroText: original.reportIntroText,
         questions: {
           create: original.questions.map((q) => ({
             text: q.text,

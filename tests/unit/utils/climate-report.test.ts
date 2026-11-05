@@ -8,6 +8,7 @@ import {
   storedCoverText,
 } from "@/lib/utils/climate-report";
 import { instrumentItemConfig } from "@/lib/constants/climate-instrument";
+import { businessDay } from "@/lib/constants/business-time";
 
 const BOGOTA = "America/Bogota";
 
@@ -39,21 +40,35 @@ describe("reportSchedule", () => {
   });
 
   it("falls back to the first send and the last due date", () => {
+    // Due dates are calendar days stored at UTC midnight
     const s = reportSchedule(
       {
         accessStartDate: null,
         accessEndDate: null,
         distributions: [
-          { sentAt: new Date("2026-03-10T15:00:00Z"), dueDate: new Date("2026-03-20T15:00:00Z") },
-          { sentAt: new Date("2026-03-05T15:00:00Z"), dueDate: new Date("2026-03-15T15:00:00Z") },
-          { sentAt: null, dueDate: new Date("2026-03-25T15:00:00Z") },
+          { sentAt: new Date("2026-03-10T15:00:00Z"), dueDate: new Date("2026-03-20") },
+          { sentAt: new Date("2026-03-05T15:00:00Z"), dueDate: new Date("2026-03-15") },
+          { sentAt: null, dueDate: new Date("2026-03-25") },
         ],
       },
       BOGOTA,
     );
     expect(s?.start.toISOString()).toBe("2026-03-05T15:00:00.000Z");
-    expect(s?.end.toISOString()).toBe("2026-03-25T15:00:00.000Z");
+    expect(s && businessDay(s.end, BOGOTA)).toBe("2026-03-25");
     expect(s).toMatchObject({ days: 21, hasStartTime: false, hasEndTime: false });
+  });
+
+  it("keeps a due date on its calendar day west of UTC, even when sent that day", () => {
+    const s = reportSchedule(
+      {
+        accessStartDate: null,
+        accessEndDate: null,
+        distributions: [{ sentAt: new Date("2026-03-17T15:00:00Z"), dueDate: new Date("2026-03-17") }],
+      },
+      BOGOTA,
+    );
+    expect(s && businessDay(s.end, BOGOTA)).toBe("2026-03-17");
+    expect(s?.days).toBe(1);
   });
 
   it("is null without a start or with reversed dates", () => {
@@ -92,7 +107,12 @@ describe("defaultScaleText", () => {
 
   it("shows a numeric range and nothing for text-only surveys", () => {
     expect(defaultScaleText([{ type: "RATING" }], "es")).toBe("1 – 5");
-    expect(defaultScaleText([{ type: "TEXT" }, { type: "NPS" }], "es")).toBe("");
+    expect(defaultScaleText([{ type: "TEXT" }], "es")).toBe("");
+  });
+
+  it("uses the NPS range only when nothing else is scored", () => {
+    expect(defaultScaleText([{ type: "TEXT" }, { type: "NPS" }], "es")).toBe("0 – 10");
+    expect(defaultScaleText([{ type: "NPS" }, { type: "RATING" }], "es")).toBe("1 – 5");
   });
 });
 

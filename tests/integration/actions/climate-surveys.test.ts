@@ -595,6 +595,28 @@ describe("climate survey actions", () => {
       });
     });
 
+    it("copies the report cover", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue({
+        ...sampleSurveyWithQuestions,
+        reportExtraDuration: "1 semana adicional",
+        reportScaleText: null,
+        reportIntroText: "Texto propio",
+      });
+      mockPrisma.climateSurvey.create.mockResolvedValue({ ...sampleSurveyWithQuestions, id: "survey-copy-1" });
+
+      await duplicateClimateSurvey("survey-1");
+
+      expect(mockPrisma.climateSurvey.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            reportExtraDuration: "1 semana adicional",
+            reportScaleText: null,
+            reportIntroText: "Texto propio",
+          }),
+        }),
+      );
+    });
+
     it("returns error when survey not found", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(null);
 
