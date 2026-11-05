@@ -214,7 +214,8 @@ async function main() {
     throw new Error(`This is a shared database (${databaseHost()}). Re-run with --confirm ${slug} to write to that company.`);
   }
 
-  const company = await prisma.company.findUnique({ where: { slug } });
+  // Only what it needs, so it also runs against a database a migration behind
+  const company = await prisma.company.findUnique({ where: { slug }, select: { id: true, name: true, slug: true } });
   if (!company) throw new Error(`No company with slug "${slug}"`);
   console.log(`Company: ${company.name} (${company.slug}) on ${databaseHost() || "?"}`);
 
