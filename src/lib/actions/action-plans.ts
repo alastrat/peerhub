@@ -152,7 +152,7 @@ async function assertEmployeeInCompany(employeeId: string, companyId: string, no
 
 const planInclude = {
   tasks: { select: { id: true, ownerEmployeeId: true, status: true, title: true, dueDate: true } },
-  survey: { select: { id: true, name: true, followUpUserIds: true } },
+  survey: { select: { id: true, name: true, followUpUserIds: true, followUpEmails: true } },
   dimension: { select: { name: true } },
   owner: { select: { name: true, email: true } },
 } satisfies Prisma.ActionPlanInclude;
@@ -420,6 +420,7 @@ export async function submitActionPlan(planId: string): Promise<ActionResult> {
         plan.survey.followUpUserIds,
         hrPlanPath(plan),
         planEmails.planSubmitted(plan.owner.name, plan.title, plan.dimension.name, plan.survey.name),
+        plan.survey.followUpEmails,
       ),
     );
     for (const task of plan.tasks) await notifyTaskOwner(task, plan);
@@ -461,6 +462,7 @@ export async function completeActionPlan(planId: string, closingNote: string): P
             plan.survey.followUpUserIds,
             hrPlanPath(plan),
             planEmails.leaderCompleted(plan.owner.name, plan.survey.name, siblings.length),
+            plan.survey.followUpEmails,
           ),
         );
       }

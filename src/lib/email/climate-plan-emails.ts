@@ -62,29 +62,42 @@ export async function emailEmployeeViaPortal(
   return true;
 }
 
-/** Email dashboard users (by User id) a link into the dashboard. */
+/**
+ * Email dashboard users (by User id) a link into the dashboard, plus any
+ * extra addresses typed in by hand. Each address gets one email.
+ */
 export async function emailUsersViaDashboard(
   companyId: string,
   userIds: string[],
   path: string,
   build: (locale: string) => PlanEmailContent,
+  extraEmails: string[] = [],
 ): Promise<number> {
-  if (userIds.length === 0) return 0;
+  if (userIds.length === 0 && extraEmails.length === 0) return 0;
   const [users, company] = await Promise.all([
     // Only people who still belong to the company (follow-up lists can go stale)
-    prisma.user.findMany({
-      where: { id: { in: userIds }, companies: { some: { companyId, isActive: true } } },
-      select: { email: true, name: true },
-    }),
+    userIds.length
+      ? prisma.user.findMany({
+          where: { id: { in: userIds }, companies: { some: { companyId, isActive: true } } },
+          select: { email: true, name: true },
+        })
+      : Promise.resolve([]),
     prisma.company.findUnique({ where: { id: companyId }, select: { locale: true } }),
   ]);
   const locale = company?.locale ?? "es";
   const content = build(locale);
+
+  const recipients = new Map<string, string>();
+  for (const u of users) if (u.email) recipients.set(u.email.toLowerCase(), u.name ?? u.email);
+  for (const email of extraEmails) {
+    const key = email.trim().toLowerCase();
+    if (key && !recipients.has(key)) recipients.set(key, key);
+  }
+
   let sent = 0;
-  for (const u of users) {
-    if (!u.email) continue;
-    const { html, text } = render(content, `${APP_URL}${path}`, u.name ?? u.email, locale);
-    await sendEmail({ to: u.email, subject: content.subject, html, text });
+  for (const [email, name] of recipients) {
+    const { html, text } = render(content, `${APP_URL}${path}`, name, locale);
+    await sendEmail({ to: email, subject: content.subject, html, text });
     sent++;
   }
   return sent;
