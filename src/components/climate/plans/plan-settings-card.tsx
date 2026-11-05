@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -20,6 +20,7 @@ interface PlanSettingsCardProps {
     goalBand: ClimateBand;
     planMinPerLeader: number;
     planDueDate: Date | null;
+    planReminderDate: Date | null;
     followUpUserIds: string[];
     followUpEmails: string[];
   };
@@ -35,6 +36,7 @@ export function PlanSettingsCard({ surveyId, initial, users }: PlanSettingsCardP
   const [goalBand, setGoalBand] = useState<ClimateBand>(initial.goalBand);
   const [planMin, setPlanMin] = useState(String(initial.planMinPerLeader));
   const [due, setDue] = useState(toDateInput(initial.planDueDate));
+  const [reminder, setReminder] = useState(toDateInput(initial.planReminderDate));
   const [followUps, setFollowUps] = useState({
     userIds: initial.followUpUserIds,
     emails: initial.followUpEmails,
@@ -46,6 +48,7 @@ export function PlanSettingsCard({ surveyId, initial, users }: PlanSettingsCardP
         goalBand,
         planMinPerLeader: Number(planMin),
         planDueDate: due || null,
+        planReminderDate: reminder || null,
         followUpUserIds: followUps.userIds,
         followUpEmails: followUps.emails,
       });
@@ -65,7 +68,7 @@ export function PlanSettingsCard({ surveyId, initial, users }: PlanSettingsCardP
         <CardDescription>{t("desc")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div className="space-y-1.5">
             <Label htmlFor="ps-goal">{t("goal")}</Label>
             <NativeSelect id="ps-goal" value={goalBand} onChange={(e) => setGoalBand(e.target.value as ClimateBand)}>
@@ -87,6 +90,17 @@ export function PlanSettingsCard({ surveyId, initial, users }: PlanSettingsCardP
             <Input id="ps-due" type="date" value={due} onChange={(e) => setDue(e.target.value)} />
             <p className="text-xs text-muted-foreground">{t("due_hint")}</p>
           </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="ps-reminder">{t("reminder")}</Label>
+            <Input
+              id="ps-reminder"
+              type="date"
+              value={reminder}
+              max={due || undefined}
+              onChange={(e) => setReminder(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">{t("reminder_hint")}</p>
+          </div>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="ps-follow-up">{t("follow_up")}</Label>
@@ -101,6 +115,12 @@ export function PlanSettingsCard({ surveyId, initial, users }: PlanSettingsCardP
             emails={followUps.emails}
             onChange={setFollowUps}
           />
+          {Number(planMin) > 0 && followUps.userIds.length === 0 && followUps.emails.length === 0 && (
+            <p className="flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+              <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0" />
+              {t("no_follow_up_warning")}
+            </p>
+          )}
         </div>
         <Button onClick={save} disabled={pending || planMin === "" || Number.isNaN(Number(planMin))}>
           {pending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}

@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/config";
 import { getPortalSession } from "@/lib/auth/portal-session";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { finishIfEveryoneAnswered } from "@/lib/climate/survey-finish";
 import type { Prisma } from "@prisma/client";
 import type { ActionResult } from "@/types";
 import { getQuestionScale } from "@/lib/constants/climate-scales";
@@ -164,6 +166,8 @@ export async function submitSurveyResponse(input: {
     let response = await prisma.surveyResponse.findFirst({
       where: { distributionId: input.distributionId, employeeId },
     });
+    // Invitations create a response per person; without one we can't tell who's left
+    const wasInvited = !!response;
 
     if (!response) {
       response = await prisma.surveyResponse.create({
@@ -225,6 +229,23 @@ export async function submitSurveyResponse(input: {
         },
       }),
     ]);
+
+    // The last invited person to answer closes the survey (and sends the results emails)
+    if (wasInvited) {
+      const surveyId = distribution.surveyId;
+      try {
+        after(async () => {
+          try {
+            await finishIfEveryoneAnswered(surveyId, companyId);
+          } catch (e) {
+            console.error("Closing the survey after the last response failed:", e);
+          }
+        });
+      } catch (e) {
+        // The answers are saved; the daily job closes the survey on its end date
+        console.error("Couldn't schedule the survey close check:", e);
+      }
+    }
 
     revalidatePath("/my-surveys");
     return { success: true };

@@ -5,9 +5,12 @@
 import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db/prisma";
 import { sendEmail } from "./resend";
-import { baseTemplate, escapeHtml } from "./portal-templates";
+import { baseTemplate, emailButton, escapeHtml } from "./portal-templates";
+import { SUPPORT_EMAIL, SURVEY_SENDER_NAME } from "./email-constants";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+// Climate emails come from "Kultiva Encuestas" and replies reach a person
+const SURVEY_SENDER = { fromName: SURVEY_SENDER_NAME, replyTo: SUPPORT_EMAIL };
 
 export interface PlanEmailContent {
   subject: string;
@@ -23,7 +26,7 @@ function render(content: PlanEmailContent, url: string, greetingName: string, lo
     <h1>${escapeHtml(content.heading)}</h1>
     <p>${escapeHtml(hello)}</p>
     ${content.paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join("\n")}
-    <a href="${url}" class="button">${escapeHtml(content.ctaLabel)}</a>
+    ${emailButton(url, content.ctaLabel, locale)}
   `, locale);
   const text = [hello, ...content.paragraphs, `${content.ctaLabel}: ${url}`].join("\n\n");
   return { html, text };
@@ -58,7 +61,7 @@ export async function emailEmployeeViaPortal(
   const locale = employee.company?.locale ?? "es";
   const content = build(locale);
   const { html, text } = render(content, url, employee.name, locale);
-  await sendEmail({ to: employee.email, subject: content.subject, html, text, ...(cc?.length ? { cc } : {}) });
+  await sendEmail({ to: employee.email, subject: content.subject, html, text, ...SURVEY_SENDER, ...(cc?.length ? { cc } : {}) });
   return true;
 }
 
@@ -97,7 +100,7 @@ export async function emailUsersViaDashboard(
   let sent = 0;
   for (const [email, name] of recipients) {
     const { html, text } = render(content, `${APP_URL}${path}`, name, locale);
-    await sendEmail({ to: email, subject: content.subject, html, text });
+    await sendEmail({ to: email, subject: content.subject, html, text, ...SURVEY_SENDER });
     sent++;
   }
   return sent;

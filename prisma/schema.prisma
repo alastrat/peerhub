@@ -66,6 +66,8 @@ enum QuestionType {
 enum AccessTokenPurpose {
   EMPLOYEE_PORTAL
   COMPLETE_REVIEW
+  // A leader's personal results link: reusable until it expires
+  LEADER_LINK
 }
 
 // Climate Survey enums
@@ -780,6 +782,14 @@ model ClimateSurvey {
   followUpEmails    String[]    @default([])
   // Last "plans due soon" reminder sent to leaders (once per survey)
   planReminderSentAt DateTime?
+  // Day the plan reminder goes out; null = 3 days before planDueDate
+  planReminderDate   DateTime?
+  // Results emails (client's "Modelos de correo"): sent once per survey
+  resultsEmailedAt    DateTime? // Modelo 1, to leaders
+  closingReportSentAt DateTime? // Modelo 3, to the company admins
+  closedAt            DateTime? // last time it closed; end-date auto-close skips a reopened survey until its end date moves past this
+  // Unguessable token for the shared general report link (Modelo 3)
+  reportToken         String?   @unique
 
   // Report cover ("Portada del informe"). Null shows the default text.
   reportExtraDuration String?

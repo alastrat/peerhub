@@ -17,6 +17,12 @@ vi.mock("@/lib/auth/config", () => ({
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
+// Run after() callbacks right away so they can be asserted
+const afterTasks = vi.hoisted(() => [] as Promise<unknown>[]);
+vi.mock("next/server", () => ({ after: (fn: () => Promise<unknown>) => afterTasks.push(fn()) }));
+const finishIfEveryoneAnswered = vi.hoisted(() => vi.fn(async () => false));
+vi.mock("@/lib/climate/survey-finish", () => ({ finishIfEveryoneAnswered }));
+
 // Static imports AFTER mocks
 import {
   saveSurveyDraft,
@@ -339,6 +345,27 @@ describe("climate response actions", () => {
           employeeId: "emp-1",
         },
       });
+    });
+
+    it("checks whether everyone has answered after an invited person submits", async () => {
+      mockEmployeeLookup();
+      mockPrisma.surveyResponse.findFirst.mockResolvedValue(sampleResponse);
+      mockPrisma.$transaction.mockResolvedValue([]);
+      afterTasks.length = 0;
+
+      expect((await submitSurveyResponse({ distributionId: "dist-1", answers: sampleAnswers })).success).toBe(true);
+      await Promise.all(afterTasks);
+      expect(finishIfEveryoneAnswered).toHaveBeenCalledWith("survey-1", "company-1");
+    });
+
+    it("leaves the survey open when the response wasn't from an invitation", async () => {
+      mockEmployeeLookup();
+      mockPrisma.surveyResponse.findFirst.mockResolvedValue(null);
+      mockPrisma.surveyResponse.create.mockResolvedValue(sampleResponse);
+      mockPrisma.$transaction.mockResolvedValue([]);
+
+      await submitSurveyResponse({ distributionId: "dist-1", answers: sampleAnswers });
+      expect(finishIfEveryoneAnswered).not.toHaveBeenCalled();
     });
 
     it("returns error when distribution not found", async () => {

@@ -26,7 +26,8 @@ interface ClimateReportProps {
   /** Null while the survey has no results yet (draft or archived). */
   results: SurveyResults | null;
   generatedOn: string;
-  backHref: string;
+  /** Omitted on the shared link, which has no dashboard to go back to. */
+  backHref?: string;
 }
 
 /** Share of promoters, passives and detractors across the survey's NPS answers. */

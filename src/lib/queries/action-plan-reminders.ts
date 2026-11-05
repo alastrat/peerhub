@@ -6,6 +6,9 @@ import { businessDay } from "@/lib/constants/business-time";
 import { emailEmployeeViaPortal, planEmails, safely } from "@/lib/email/climate-plan-emails";
 import { loadSurveyForScoring } from "@/lib/queries/climate-reports";
 import { leaderGaps, leaderIdsOf, SUBMITTED_PLAN_STATUSES } from "@/lib/queries/action-plans";
+import { firstName, getEmailSignature, sendSurveyEmail } from "@/lib/climate/survey-finish";
+import { getLeaderLink } from "@/lib/climate/leader-links";
+import { longDay, planReminderEmail } from "@/lib/email/climate-result-emails";
 
 const DAY = 24 * 60 * 60 * 1000;
 const SOON_DAYS = 3;
@@ -49,22 +52,47 @@ export async function sendTaskReminders(now = new Date()) {
   return { tasks: tasks.length, emails };
 }
 
-/** Leaders below their plan minimum when the deadline is 3 days away (once per survey). */
+/** The day leaders get the plan reminder: the survey's own date, else 3 days before the deadline. */
+export function planReminderDay(survey: { planDueDate: Date; planReminderDate: Date | null }): string {
+  return dayKey(survey.planReminderDate ?? new Date(survey.planDueDate.getTime() - SOON_DAYS * DAY));
+}
+
+/**
+ * Modelo 2: leaders still short of their plans get one reminder per survey,
+ * from the reminder day until the deadline.
+ */
 export async function sendPlanDeadlineReminders(now = new Date()) {
+  const today = businessDay(now);
   const surveys = await prisma.climateSurvey.findMany({
     where: {
       resultsReleasedAt: { not: null },
       instrumentVersion: { not: null },
       planReminderSentAt: null,
-      planDueDate: { gte: now, lte: new Date(now.getTime() + SOON_DAYS * DAY) },
+      planMinPerLeader: { gt: 0 },
+      // Due dates are calendar days at UTC midnight
+      planDueDate: { gte: new Date(`${today}T00:00:00.000Z`) },
     },
-    select: { id: true, name: true, companyId: true, planDueDate: true, planMinPerLeader: true },
+    select: {
+      id: true,
+      name: true,
+      companyId: true,
+      planDueDate: true,
+      planReminderDate: true,
+      planMinPerLeader: true,
+      company: { select: { locale: true } },
+    },
   });
 
   let emails = 0;
+  let due = 0;
   for (const s of surveys) {
+    const planDueDate = s.planDueDate!;
+    if (today < planReminderDay({ planDueDate, planReminderDate: s.planReminderDate })) continue;
+    due++;
     const survey = await loadSurveyForScoring(s.id, s.companyId);
     if (!survey) continue;
+    const locale = s.company.locale;
+    const signature = await getEmailSignature();
     for (const leaderId of leaderIdsOf(survey)) {
       const g = leaderGaps(survey, leaderId, s.planMinPerLeader);
       if (g.required === 0) continue;
@@ -78,19 +106,28 @@ export async function sendPlanDeadlineReminders(now = new Date()) {
         },
       });
       if (submitted >= g.required) continue;
-      await safely("plan deadline email", async () => {
-        if (
-          await emailEmployeeViaPortal(
-            leaderId,
-            `/portal/climate-results/${s.id}`,
-            planEmails.planDeadline(s.name, dayKey(s.planDueDate!), submitted, g.required),
-          )
-        ) {
-          emails++;
-        }
+      const leader = await prisma.employee.findFirst({
+        where: { id: leaderId, companyId: s.companyId, isActive: true },
+        select: { id: true, name: true, email: true, companyId: true },
+      });
+      if (!leader) continue;
+      await safely("plan reminder email", async () => {
+        const email = planReminderEmail(
+          {
+            leaderFirstName: firstName(leader.name),
+            surveyName: s.name,
+            dueDate: longDay(planDueDate, locale),
+            minimum: g.required,
+            link: await getLeaderLink(leader, s.id, now),
+            signature,
+          },
+          locale,
+        );
+        await sendSurveyEmail(leader.email, email);
+        emails++;
       });
     }
     await prisma.climateSurvey.update({ where: { id: s.id }, data: { planReminderSentAt: now } });
   }
-  return { surveys: surveys.length, emails };
+  return { surveys: due, emails };
 }

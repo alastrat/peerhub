@@ -33,6 +33,8 @@ vi.mock("@/lib/email/portal-templates", () => ({
   })),
 }));
 
+vi.mock("@/lib/climate/survey-finish", () => ({ finishSurvey: vi.fn() }));
+
 import {
   distributeSurvey,
   reactivateSurvey,
@@ -114,7 +116,8 @@ describe("reactivateSurvey", () => {
     expect(result.success).toBe(true);
     expect(mockPrisma.climateSurvey.update).toHaveBeenCalledWith({
       where: { id: "s1" },
-      data: { status: "ACTIVE" },
+      // Closing it again sends admins an updated report
+      data: { status: "ACTIVE", closingReportSentAt: null },
     });
   });
 

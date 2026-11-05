@@ -512,6 +512,7 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
                 goalBand: survey.goalBand,
                 planMinPerLeader: survey.planMinPerLeader,
                 planDueDate: survey.planDueDate,
+                planReminderDate: survey.planReminderDate,
                 followUpUserIds: survey.followUpUserIds,
                 followUpEmails: survey.followUpEmails,
               }}

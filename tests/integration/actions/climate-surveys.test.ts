@@ -772,6 +772,39 @@ describe("climate survey actions", () => {
       expect(result.error).toBe("No encontramos la encuesta");
     });
 
+    it("saves the plan reminder date, and a moved date sends the reminder again", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue({
+        ...sampleSurvey,
+        planDueDate: new Date("2026-12-22"),
+        planReminderDate: null,
+      });
+      mockPrisma.climateSurvey.update.mockResolvedValue({});
+
+      const result = await updateSurveySettings("survey-1", { planReminderDate: "2026-12-15" });
+
+      expect(result.success).toBe(true);
+      expect(mockPrisma.climateSurvey.update).toHaveBeenCalledWith({
+        where: { id: "survey-1" },
+        data: { planReminderDate: new Date("2026-12-15"), planReminderSentAt: null },
+      });
+    });
+
+    it("keeps the reminder on or before the plan deadline", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue({ ...sampleSurvey, planDueDate: new Date("2026-12-22"), planReminderDate: null });
+
+      const late = await updateSurveySettings("survey-1", { planReminderDate: "2026-12-23" });
+      expect(late.success).toBe(false);
+      expect(late.error).toBe("La fecha de recordatorio debe ser una fecha válida, igual o anterior a la fecha límite de planes");
+      // Same when the deadline moves before an existing reminder
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue({
+        ...sampleSurvey,
+        planDueDate: new Date("2026-12-22"),
+        planReminderDate: new Date("2026-12-19"),
+      });
+      expect((await updateSurveySettings("survey-1", { planDueDate: "2026-12-18" })).success).toBe(false);
+      expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
+    });
+
     it("returns success with no updates when input is empty", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
 

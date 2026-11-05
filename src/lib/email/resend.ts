@@ -29,6 +29,15 @@ interface SendEmailOptions {
   html: string;
   text?: string;
   cc?: string[];
+  /** Display name for the sender, keeping EMAIL_FROM's address (e.g. "Kultiva Encuestas"). */
+  fromName?: string;
+  replyTo?: string;
+}
+
+/** EMAIL_FROM with another display name: "Name <address>". */
+export function withSenderName(from: string, name: string): string {
+  const address = from.match(/<([^>]+)>/)?.[1] ?? from.trim();
+  return `${name} <${address}>`;
 }
 
 export interface SendEmailResult {
@@ -46,15 +55,20 @@ export async function sendEmail({
   html,
   text,
   cc,
+  fromName,
+  replyTo,
 }: SendEmailOptions): Promise<SendEmailResult> {
   const recipients = Array.isArray(to) ? to : [to];
+  const from = fromName ? withSenderName(FROM_EMAIL, fromName) : FROM_EMAIL;
 
   if (IS_DEV_MODE || !resend) {
     console.log("\n========================================");
     console.log("📧 EMAIL (Dev Mode)");
     console.log("========================================");
+    console.log(`From: ${from}`);
     console.log(`To: ${recipients.join(", ")}`);
     if (cc?.length) console.log(`Cc: ${cc.join(", ")}`);
+    if (replyTo) console.log(`Reply-To: ${replyTo}`);
     console.log(`Subject: ${subject}`);
     console.log("----------------------------------------");
     console.log(text || html.replace(/<[^>]*>/g, ""));
@@ -64,12 +78,13 @@ export async function sendEmail({
 
   try {
     const { data, error } = await resend.emails.send({
-      from: FROM_EMAIL,
+      from,
       to: recipients,
       subject,
       html,
       text,
       ...(cc?.length ? { cc } : {}),
+      ...(replyTo ? { replyTo } : {}),
     });
 
     if (error) {
