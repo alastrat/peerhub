@@ -1400,8 +1400,7 @@
     "error": "We couldn't complete the search. Please try again.",
     "empty": "No results for “{query}”",
     "min_chars": "Type at least {count} characters to search",
-    "hint_company": "Search people, surveys, action plans, templates, 360 cycles, departments and teams",
-    "hint_platform": "Search platform companies",
+    "hint": "Search people, surveys, action plans, templates, 360 cycles, departments and teams",
     "groups": {
       "pages": "Go to",
       "person": "People",
@@ -1410,8 +1409,7 @@
       "climateTemplate": "Climate templates",
       "cycle": "360 cycles",
       "department": "Departments",
-      "team": "Teams",
-      "company": "Companies"
+      "team": "Teams"
     },
     "pages": {
       "overview": "Overview",

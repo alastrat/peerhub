@@ -53,7 +53,9 @@ async function searchClimateSurveys(companyId: string, match: Contains): Promise
 
 async function searchActionPlans(companyId: string, match: Contains): Promise<SearchResult[]> {
   const rows = await prisma.actionPlan.findMany({
-    where: { companyId, title: match },
+    // The link and subtitle come from the survey, so it must belong to the
+    // company too, not just the plan.
+    where: { companyId, survey: { companyId }, title: match },
     select: { id: true, title: true, surveyId: true, survey: { select: { name: true } } },
     orderBy: { updatedAt: "desc" },
     take,
@@ -127,7 +129,7 @@ async function searchDepartments(companyId: string, match: Contains): Promise<Se
 async function searchTeams(companyId: string, match: Contains): Promise<SearchResult[]> {
   const rows = await prisma.team.findMany({
     where: { companyId, isActive: true, name: match },
-    select: { id: true, name: true, department: { select: { name: true } } },
+    select: { id: true, name: true, department: { select: { name: true, companyId: true } } },
     orderBy: { name: "asc" },
     take,
   });
@@ -135,35 +137,23 @@ async function searchTeams(companyId: string, match: Contains): Promise<SearchRe
     type: "team",
     id: row.id,
     title: row.name,
-    subtitle: row.department?.name ?? null,
+    // Never show another company's department name, even if a team row
+    // points at one by mistake.
+    subtitle: row.department?.companyId === companyId ? row.department.name : null,
     href: "/settings/company/teams",
   }));
 }
 
-async function searchCompanies(match: Contains): Promise<SearchResult[]> {
-  const rows = await prisma.company.findMany({
-    where: { OR: [{ name: match }, { slug: match }, { domain: match }] },
-    select: { id: true, name: true, slug: true, domain: true },
-    orderBy: { name: "asc" },
-    take,
-  });
-  return rows.map((row) => ({
-    type: "company",
-    id: row.id,
-    title: row.name,
-    subtitle: row.domain || row.slug,
-    href: "/settings/platform/companies",
-  }));
-}
-
 /**
- * Searches what the signed-in user can open from the dashboard.
+ * Searches the records of the company the user is signed into, and nothing
+ * else: there is no cross-company search, not even for SUPER_ADMINs.
  *
- * - Company entities are always scoped to `session.companyUser.companyId` and
- *   only searched for company ADMINs: every page they link to (people, climate
- *   surveys, action plans, templates, 360 cycles, departments, teams) redirects
- *   MANAGER and MEMBER users to /overview.
- * - Companies are only searched for SUPER_ADMINs.
+ * - The company comes only from `session.companyUser.companyId`, which the
+ *   session callback resolves from an active CompanyUser row, never from the
+ *   request.
+ * - Records are only searched for company ADMINs: every page they link to
+ *   (people, climate surveys, action plans, templates, 360 cycles,
+ *   departments, teams) redirects MANAGER and MEMBER users to /overview.
  */
 export async function globalSearch(
   session: Session | null,
@@ -189,10 +179,6 @@ export async function globalSearch(
       searchDepartments(companyId, match),
       searchTeams(companyId, match),
     );
-  }
-
-  if (session.user.globalRole === "SUPER_ADMIN") {
-    searches.push(searchCompanies(match));
   }
 
   const groups = await Promise.all(searches);

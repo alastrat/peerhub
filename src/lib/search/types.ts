@@ -14,7 +14,6 @@ export const SEARCH_RESULT_TYPES = [
   "cycle",
   "department",
   "team",
-  "company",
 ] as const;
 
 export type SearchResultType = (typeof SEARCH_RESULT_TYPES)[number];

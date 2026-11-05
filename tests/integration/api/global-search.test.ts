@@ -157,7 +157,7 @@ describe("globalSearch", () => {
     expect(whereOf("team")).toMatchObject({ name: insensitive("clima"), isActive: true });
   });
 
-  it("does not let a company admin search other companies", async () => {
+  it("never queries the company table", async () => {
     await globalSearch(createAdminSession(), "acme");
 
     expect(mockPrisma.company.findMany).not.toHaveBeenCalled();
@@ -184,7 +184,7 @@ describe("globalSearch", () => {
       { id: "dept-1", name: "Analítica", description: null },
     ]);
     mockPrisma.team.findMany.mockResolvedValue([
-      { id: "team-1", name: "Analytics", department: { name: "Analítica" } },
+      { id: "team-1", name: "Analytics", department: { name: "Analítica", companyId: "company-1" } },
     ]);
 
     const results = await globalSearch(createAdminSession(), "an");
@@ -233,29 +233,16 @@ describe("globalSearch", () => {
     expect(mockPrisma.company.findMany).not.toHaveBeenCalled();
   });
 
-  it("lets a super admin without a company find companies only", async () => {
-    mockPrisma.company.findMany.mockResolvedValue([
-      { id: "company-2", name: "Globex", slug: "globex", domain: "globex.com" },
-      { id: "company-3", name: "Globo", slug: "globo", domain: null },
-    ]);
-
+  it("returns nothing to a super admin who is not signed into a company", async () => {
     const results = await globalSearch(createSuperAdminSession(), "glob");
 
-    expect(whereOf("company")).toEqual({
-      OR: [
-        { name: insensitive("glob") },
-        { slug: insensitive("glob") },
-        { domain: insensitive("glob") },
-      ],
-    });
-    expect(results).toEqual([
-      { type: "company", id: "company-2", title: "Globex", subtitle: "globex.com", href: "/settings/platform/companies" },
-      { type: "company", id: "company-3", title: "Globo", subtitle: "globo", href: "/settings/platform/companies" },
-    ]);
-    expect(mockPrisma.employee.findMany).not.toHaveBeenCalled();
+    expect(results).toEqual([]);
+    for (const model of [...COMPANY_MODELS, "company"] as const) {
+      expect(mockPrisma[model].findMany).not.toHaveBeenCalled();
+    }
   });
 
-  it("lets a super admin acting as company admin find both", async () => {
+  it("limits a super admin acting as company admin to that company", async () => {
     const session = createMockSession({
       globalRole: "SUPER_ADMIN",
       companyUser: {
@@ -270,8 +257,12 @@ describe("globalSearch", () => {
 
     await globalSearch(session, "ini");
 
-    expect(whereOf("employee").companyId).toBe("company-9");
-    expect(mockPrisma.company.findMany).toHaveBeenCalledTimes(1);
+    for (const model of COMPANY_MODELS) {
+      if (model === "climateSurveyTemplate") continue;
+      expect(whereOf(model).companyId).toBe("company-9");
+    }
+    expect(whereOf("climateSurveyTemplate").OR[0].companyId).toBe("company-9");
+    expect(mockPrisma.company.findMany).not.toHaveBeenCalled();
   });
 
   it("keeps a super admin with a non-admin company role out of company entities", async () => {
@@ -287,10 +278,30 @@ describe("globalSearch", () => {
       },
     });
 
-    await globalSearch(session, "ini");
-
+    expect(await globalSearch(session, "ini")).toEqual([]);
     expect(mockPrisma.employee.findMany).not.toHaveBeenCalled();
-    expect(mockPrisma.company.findMany).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.company.findMany).not.toHaveBeenCalled();
+  });
+
+  it("only returns action plans whose survey belongs to the same company", async () => {
+    await globalSearch(createAdminSession("company-1"), "plan");
+
+    expect(whereOf("actionPlan")).toMatchObject({
+      companyId: "company-1",
+      survey: { companyId: "company-1" },
+    });
+  });
+
+  it("hides a team's department name when it belongs to another company", async () => {
+    mockPrisma.team.findMany.mockResolvedValue([
+      { id: "team-1", name: "Ventas", department: { name: "Otra empresa", companyId: "company-2" } },
+    ]);
+
+    const results = await globalSearch(createAdminSession("company-1"), "ventas");
+
+    expect(results).toEqual([
+      { type: "team", id: "team-1", title: "Ventas", subtitle: null, href: "/settings/company/teams" },
+    ]);
   });
 });
 
