@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/design-system/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LanguageSettings } from "@/components/settings/language-settings";
+import { CompanyLogoSettings } from "@/components/settings/company-logo-settings";
 
 interface CompanySettingsContentProps {
   company: {
@@ -12,6 +13,7 @@ interface CompanySettingsContentProps {
     slug: string;
     domain: string | null;
     locale: string;
+    logo: string | null;
     _count: { users: number; cycles: number; departments: number };
     departments: { id: string; name: string }[];
   };
@@ -76,6 +78,9 @@ export function CompanySettingsContent({ company }: CompanySettingsContentProps)
 
         {/* Language */}
         <LanguageSettings currentLocale={company.locale ?? "es"} />
+
+        {/* Logo */}
+        <CompanyLogoSettings currentLogo={company.logo} />
 
         {/* Departments */}
         <Card className="lg:col-span-2">

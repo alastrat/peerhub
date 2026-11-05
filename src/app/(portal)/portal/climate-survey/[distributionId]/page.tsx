@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { getPortalSession } from "@/lib/auth/portal-session";
 import { getPortalLocale } from "@/lib/auth/portal-locale";
 import { prisma } from "@/lib/db/prisma";
+import { getPlatformTheme } from "@/lib/queries/platform-theme";
 import { PageHeader } from "@/components/design-system/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,6 +33,7 @@ export default async function PortalClimateSurveyPage({ params }: PageProps) {
             orderBy: { order: "asc" },
             include: { dimension: { select: { name: true } } },
           },
+          company: { select: { logo: true, name: true } },
         },
       },
       responses: {
@@ -85,9 +87,17 @@ export default async function PortalClimateSurveyPage({ params }: PageProps) {
     }
   }
 
-  // Break out of the portal layout's max-w container so the wallpaper fills full viewport width
+  const platformTheme = await getPlatformTheme();
+  const respondent = await prisma.employee.findUnique({
+    where: { id: session.employeeId },
+    select: { name: true },
+  });
+
+  // Break out of the portal layout's max-w container so the wallpaper fills
+  // full viewport width. The opaque background keeps the portal header from
+  // showing through wallpapers that are partly transparent.
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto">
+    <div data-app-shell="survey" className="fixed inset-0 z-40 overflow-y-auto bg-background">
     <PortalClimateSurveyFlow
       distributionId={distribution.id}
       surveyName={distribution.survey.name}
@@ -103,7 +113,9 @@ export default async function PortalClimateSurveyPage({ params }: PageProps) {
       thankYouTitle={distribution.survey.thankYouTitle}
       thankYouBody={distribution.survey.thankYouBody}
       thankYouCtaText={distribution.survey.thankYouCtaText}
-      logoUrl={distribution.survey.logoUrl}
+      logoUrl={distribution.survey.logoUrl ?? distribution.survey.company.logo}
+      companyName={distribution.survey.company.name}
+      respondentName={respondent?.name}
       questionsPerPage={distribution.survey.questionsPerPage}
       dueDateLabel={formatDate(distribution.dueDate, undefined, locale)}
       daysLeft={daysLeft}
@@ -119,6 +131,7 @@ export default async function PortalClimateSurveyPage({ params }: PageProps) {
         dimensionName: q.dimension?.name ?? null,
       }))}
       draftAnswers={draftAnswers}
+      platformTheme={platformTheme}
     />
     </div>
   );
