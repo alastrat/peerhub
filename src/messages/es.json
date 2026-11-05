@@ -3016,7 +3016,7 @@
       "status_label": "Estado",
       "status_updated": "Estado actualizado",
       "no_evidence": "Sin evidencia",
-      "evidence_failed": "El plan se guardó, pero no se pudo adjuntar la evidencia: {reason} Puedes adjuntarla desde la tarjeta del plan.",
+      "evidence_failed": "El plan se guardó, pero no se pudo adjuntar la evidencia: {reason}",
       "edit": "Editar",
       "delete": "Eliminar",
       "delete_confirm": "¿Eliminar este plan de acción?",

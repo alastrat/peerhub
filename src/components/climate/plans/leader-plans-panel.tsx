@@ -22,6 +22,7 @@ import {
   uploadTaskEvidence,
   type SingleActionStatus,
 } from "@/lib/actions/action-plans";
+import { MAX_EVIDENCE_BYTES, MAX_EVIDENCE_MB } from "@/lib/constants/action-plan-evidence";
 import { CLIMATE_SCALES, getScaleAnchor, getScaleValues } from "@/lib/constants/climate-scales";
 import { BandBadge, formatMean, formatPct } from "../climate-score-ui";
 import { NativeSelect, PlanStatusBadge, toDateInput } from "./plan-ui";
@@ -452,7 +453,16 @@ function PlanForm({
             type="file"
             className="hidden"
             accept="image/png,image/jpeg,image/webp,application/pdf"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => {
+              const picked = e.target.files?.[0] ?? null;
+              e.target.value = "";
+              // Checked here so the plan is never saved with a file the upload would reject
+              if (picked && picked.size > MAX_EVIDENCE_BYTES) {
+                toast.error(tl("errors.file_too_large", { max: MAX_EVIDENCE_MB }));
+                return;
+              }
+              setFile(picked);
+            }}
           />
         </div>
       )}
@@ -494,8 +504,9 @@ function PlanCard({
   onEdit: () => void;
 }) {
   const t = useTranslations("climate_plans.panel");
+  const tl = useTranslations("climate_plans");
   const fileRef = useRef<HTMLInputElement>(null);
-  const single = plan.isSingleAction && plan.action && plan.status !== "DRAFT";
+  const single =plan.isSingleAction && plan.action && plan.status !== "DRAFT";
   const status: SingleActionStatus = plan.status === "COMPLETED" ? "DONE" : ((plan.action?.status as SingleActionStatus) ?? "PENDING");
   const open = plan.status === "ACTIVE" || plan.status === "DRAFT";
 
@@ -570,6 +581,10 @@ function PlanCard({
                   const file = e.target.files?.[0];
                   e.target.value = "";
                   if (!file || !plan.action) return;
+                  if (file.size > MAX_EVIDENCE_BYTES) {
+                    toast.error(tl("errors.file_too_large", { max: MAX_EVIDENCE_MB }));
+                    return;
+                  }
                   const fd = new FormData();
                   fd.append("file", file);
                   run(() => uploadTaskEvidence(plan.action!.taskId, fd));

@@ -50,6 +50,7 @@ import {
   uploadTaskEvidence,
 } from "@/lib/actions/action-plans";
 import type { PlanDetail } from "@/lib/queries/action-plans";
+import { MAX_EVIDENCE_BYTES, MAX_EVIDENCE_MB } from "@/lib/constants/action-plan-evidence";
 import { BUSINESS_TIME_ZONE } from "@/lib/constants/business-time";
 import { CLIMATE_BANDS, bandRank, type ClimateBand } from "@/lib/utils/climate-scoring";
 import { BandBadge, formatMean, formatPct } from "../climate-score-ui";
@@ -743,6 +744,10 @@ function TaskRow({
                   const file = e.target.files?.[0];
                   e.target.value = "";
                   if (!file) return;
+                  if (file.size > MAX_EVIDENCE_BYTES) {
+                    toast.error(t("errors.file_too_large", { max: MAX_EVIDENCE_MB }));
+                    return;
+                  }
                   const fd = new FormData();
                   fd.append("file", file);
                   run(() => uploadTaskEvidence(task.id, fd), t("file_uploaded"));

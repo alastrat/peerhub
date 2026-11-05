@@ -2968,7 +2968,7 @@
       "status_label": "Status",
       "status_updated": "Status updated",
       "no_evidence": "No evidence",
-      "evidence_failed": "The plan was saved, but the evidence couldn't be attached: {reason} You can attach it from the plan card.",
+      "evidence_failed": "The plan was saved, but the evidence couldn't be attached: {reason}",
       "edit": "Edit",
       "delete": "Delete",
       "delete_confirm": "Delete this action plan?",
