@@ -338,7 +338,7 @@ export function CSVImportWizard() {
             {rows.length > 0 && (
               <div className="space-y-2">
                 <h4 className="text-sm font-medium">{t("mapping.preview")}</h4>
-                <ScrollArea className="h-48 rounded border">
+                <ScrollArea horizontal className="h-48 rounded border">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -396,7 +396,7 @@ export function CSVImportWizard() {
               )}
             </div>
 
-            <ScrollArea className="h-96 rounded border">
+            <ScrollArea horizontal className="h-96 rounded border">
               <Table>
                 <TableHeader>
                   <TableRow>
