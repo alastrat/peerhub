@@ -25,8 +25,9 @@ export async function GET(request: Request) {
 
   try {
     // Get all active cycles
+    // Deactivated companies get no scheduled emails
     const activeCycles = await prisma.cycle.findMany({
-      where: { status: "IN_PROGRESS" },
+      where: { status: "IN_PROGRESS", company: { isActive: true } },
       include: {
         company: true,
       },
@@ -44,7 +45,7 @@ export async function GET(request: Request) {
     const pendingAssignments = await prisma.reviewAssignment.findMany({
       where: {
         status: { in: ["PENDING", "IN_PROGRESS"] },
-        cycle: { status: "IN_PROGRESS" },
+        cycle: { status: "IN_PROGRESS", company: { isActive: true } },
         reviewerId: { not: null }, // Only internal reviewers
       },
       include: {
@@ -141,7 +142,7 @@ export async function GET(request: Request) {
 
     // Also send reminders for nomination phase
     const nominationCycles = await prisma.cycle.findMany({
-      where: { status: "NOMINATION" },
+      where: { status: "NOMINATION", company: { isActive: true } },
       include: {
         participants: {
           include: {

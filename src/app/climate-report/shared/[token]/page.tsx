@@ -22,9 +22,9 @@ const loadShared = cache(async (token: string) => {
   if (!token || token.length < 20) return null;
   const survey = await prisma.climateSurvey.findUnique({
     where: { reportToken: token },
-    select: { id: true, companyId: true, status: true },
+    select: { id: true, companyId: true, status: true, company: { select: { isActive: true } } },
   });
-  if (!survey || survey.status !== "CLOSED") return null;
+  if (!survey || survey.status !== "CLOSED" || !survey.company.isActive) return null;
   const report = await getReportSurvey(survey.id, survey.companyId);
   return report ? { ...survey, report } : null;
 });

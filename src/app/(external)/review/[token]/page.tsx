@@ -36,8 +36,8 @@ export default async function ExternalReviewPage({ params }: PageProps) {
     },
   });
 
-  // Check if token exists
-  if (!reviewToken) {
+  // Check if token exists (and its company is still active)
+  if (!reviewToken || !reviewToken.company.isActive) {
     return <TokenExpired reason="invalid" />;
   }
 

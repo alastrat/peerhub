@@ -450,17 +450,20 @@ describe("company actions", () => {
             companyName: "Acme Corp",
             companySlug: "acme-corp",
             role: "ADMIN",
+            isActive: true,
           },
           {
             companyId: "company-2",
             companyName: "Beta Inc",
             companySlug: "beta-inc",
             role: "MEMBER",
+            isActive: true,
           },
         ]);
 
+        // Deactivated companies are left out
         expect(mockPrisma.companyUser.findMany).toHaveBeenCalledWith({
-          where: { userId: "admin-user", isActive: true },
+          where: { userId: "admin-user", isActive: true, company: { isActive: true } },
           include: {
             company: { select: { id: true, name: true, slug: true } },
           },
@@ -484,9 +487,10 @@ describe("company actions", () => {
 
       it("returns all companies with roles from companyUser records", async () => {
         const allCompanies = [
-          { id: "company-1", name: "Acme Corp", slug: "acme-corp" },
-          { id: "company-2", name: "Beta Inc", slug: "beta-inc" },
-          { id: "company-3", name: "Gamma LLC", slug: "gamma-llc" },
+          { id: "company-1", name: "Acme Corp", slug: "acme-corp", isActive: true },
+          { id: "company-2", name: "Beta Inc", slug: "beta-inc", isActive: true },
+          // Super admins also see deactivated companies, to reactivate them
+          { id: "company-3", name: "Gamma LLC", slug: "gamma-llc", isActive: false },
         ];
         const superAdminCompanyUsers = [
           { companyId: "company-1", role: "ADMIN" },
@@ -505,25 +509,28 @@ describe("company actions", () => {
             companyName: "Acme Corp",
             companySlug: "acme-corp",
             role: "ADMIN",
+            isActive: true,
           },
           {
             companyId: "company-2",
             companyName: "Beta Inc",
             companySlug: "beta-inc",
             role: "SUPER_ADMIN",
+            isActive: true,
           },
           {
             companyId: "company-3",
             companyName: "Gamma LLC",
             companySlug: "gamma-llc",
             role: "SUPER_ADMIN",
+            isActive: false,
           },
         ]);
 
         // Verify it fetches all companies
         expect(mockPrisma.company.findMany).toHaveBeenCalledWith({
           orderBy: { name: "asc" },
-          select: { id: true, name: true, slug: true },
+          select: { id: true, name: true, slug: true, isActive: true },
         });
 
         // Verify it fetches super admin's companyUser records
@@ -588,6 +595,7 @@ describe("company actions", () => {
             userId: "admin-user",
             companyId: "company-1",
             isActive: true,
+            company: { isActive: true },
           },
         });
       });

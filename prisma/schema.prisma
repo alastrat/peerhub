@@ -190,6 +190,11 @@ model Company {
   // Locale
   locale String @default("es")
 
+  // A super admin can deactivate a company: its members, employee links and
+  // scheduled emails stop working until it's reactivated.
+  isActive      Boolean   @default(true)
+  deactivatedAt DateTime?
+
   // Feature flags
   featureAts        Boolean @default(false)
   featureOnboarding Boolean @default(false)

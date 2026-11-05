@@ -218,6 +218,7 @@ export async function submitTokenReview(
         token,
         expiresAt: { gt: new Date() },
         usedAt: null,
+        company: { isActive: true },
       },
       include: {
         assignment: {

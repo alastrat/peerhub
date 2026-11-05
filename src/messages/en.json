@@ -1641,7 +1641,9 @@
     },
     "layout": {
       "sign_out": "Sign out",
-      "powered_by": "Powered by Kultiva - 360° Performance Feedback Platform"
+      "powered_by": "Powered by Kultiva - 360° Performance Feedback Platform",
+      "company_inactive_title": "Your company is deactivated",
+      "company_inactive_body": "For now you can't answer surveys or see your results here. If you think this is a mistake, talk to your company's HR team."
     },
     "sign_in": {
       "title": "Employee Portal",
@@ -1739,6 +1741,12 @@
     }
   },
   "dashboard": {
+    "company_inactive": {
+      "title": "This company is deactivated",
+      "body": "A platform administrator deactivated your company, so you can't sign in for now. If you think this is a mistake, write to us at {email}.",
+      "sign_out": "Sign out",
+      "banner": "{company} is deactivated: its members and employees can't sign in and its scheduled emails aren't sent. You can reactivate it in Settings → General."
+    },
     "common": {
       "save": "Save",
       "cancel": "Cancel",
@@ -1757,6 +1765,7 @@
       "search_placeholder": "Search companies...",
       "empty": "No companies found.",
       "all_companies": "All companies",
+      "inactive": "Deactivated",
       "your_companies": "Your companies",
       "create_account": "Create account"
     },
@@ -1864,6 +1873,36 @@
       "departments_count": "Departments",
       "review_cycles": "Review Cycles",
       "no_departments": "No departments created yet",
+      "edit_name": "Edit name",
+      "save_name": "Save name",
+      "cancel_edit": "Cancel",
+      "name_updated": "Company name updated",
+      "name_error": "Couldn't change the name",
+      "danger_zone": {
+        "title": "Danger zone",
+        "description": "Only super admins see these actions.",
+        "deactivate_title": "Deactivate company",
+        "deactivate_desc": "Its members and employees won't be able to sign in, survey and review links stop working and its scheduled emails aren't sent. Nothing is deleted.",
+        "reactivate_title": "Reactivate company",
+        "reactivate_desc": "This company is deactivated.",
+        "inactive_since": "Deactivated since {date}. Reactivating it brings everything back as it was.",
+        "deactivate": "Deactivate",
+        "reactivate": "Reactivate",
+        "deactivate_confirm_title": "Deactivate {company}?",
+        "deactivate_confirm_body": "No one in the company can sign in until you reactivate it. Its data is kept.",
+        "deactivated": "Company deactivated",
+        "reactivated": "Company reactivated",
+        "delete_title": "Delete company",
+        "delete_desc": "Deletes the company and all its data: members, employees, surveys, responses, plans and reviews. This can't be undone.",
+        "delete": "Delete",
+        "delete_confirm_title": "Delete {company} forever?",
+        "delete_confirm_body": "All its data will be erased with no way to recover it. To pause it instead, deactivate it.",
+        "type_name": "Type “{company}” to confirm",
+        "delete_forever": "Delete forever",
+        "deleted": "{company} was deleted",
+        "cancel": "Cancel",
+        "error": "Couldn't complete the action"
+      },
       "language": {
         "title": "Language",
         "description": "Sets the default language for all members of this company.",
@@ -3649,6 +3688,12 @@
     "with_detail": "{message} ({detail})",
     "unauthorized": "Unauthorized",
     "no_active_company": "No active company",
+    "company_name_length": "The company name must be between {min} and {max} characters",
+    "failed_rename_company": "Couldn't rename the company",
+    "company_not_found": "Company not found",
+    "company_name_mismatch": "The name you typed doesn't match the company's",
+    "failed_company_status": "Couldn't change the company's status",
+    "failed_delete_company": "Couldn't delete the company",
     "employee_not_found": "Employee not found",
     "national_id_taken": "Another employee in this company already has this ID number",
     "survey_not_found": "Survey not found",

@@ -273,6 +273,8 @@ describe("portal actions", () => {
         where: {
           token: "some-token",
           expiresAt: { gt: expect.any(Date) },
+          // Not for employees of a deactivated company
+          company: { isActive: true },
           OR: [{ purpose: "EMPLOYEE_PORTAL", usedAt: null }, { purpose: "LEADER_LINK" }],
         },
         include: { employee: true },

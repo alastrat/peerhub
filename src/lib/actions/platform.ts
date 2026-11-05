@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/config";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/types";
+import { actionError, unexpectedActionError } from "@/lib/auth/action-locale";
+import { purgeCompany } from "@/lib/platform/purge-company";
 import {
   domainSchema,
   updateGlobalRoleSchema,
@@ -419,7 +421,7 @@ export async function deletePlatformCompany(
       return { success: false, error: "Company not found" };
     }
 
-    await prisma.company.delete({ where: { id: companyId } });
+    await purgeCompany(prisma, companyId);
 
     revalidatePath("/settings/platform/companies");
     return { success: true };
@@ -429,6 +431,42 @@ export async function deletePlatformCompany(
       error:
         error instanceof Error ? error.message : "Failed to delete company",
     };
+  }
+}
+
+/**
+ * Deactivate or reactivate a company. While inactive, its members can't use
+ * it, employee links stop working and its scheduled emails are skipped;
+ * super admins still see it, to reactivate it.
+ */
+export async function setCompanyActive(companyId: string, active: boolean): Promise<ActionResult> {
+  try {
+    await requireSuperAdmin();
+    const { count } = await prisma.company.updateMany({
+      where: { id: companyId },
+      data: { isActive: active, deactivatedAt: active ? null : new Date() },
+    });
+    if (count === 0) return actionError("company_not_found");
+    revalidatePath("/", "layout");
+    return { success: true };
+  } catch (error) {
+    return unexpectedActionError(error, "failed_company_status");
+  }
+}
+
+/** Permanently delete a company and all its data. The caller types its name to confirm. */
+export async function deleteCompany(companyId: string, confirmName: string): Promise<ActionResult> {
+  try {
+    await requireSuperAdmin();
+    const company = await prisma.company.findUnique({ where: { id: companyId }, select: { name: true } });
+    if (!company) return actionError("company_not_found");
+    if ((confirmName ?? "").trim() !== company.name.trim()) return actionError("company_name_mismatch");
+
+    await purgeCompany(prisma, companyId);
+    revalidatePath("/", "layout");
+    return { success: true };
+  } catch (error) {
+    return unexpectedActionError(error, "failed_delete_company", { withDetail: true });
   }
 }
 

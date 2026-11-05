@@ -22,12 +22,14 @@ export default async function PortalLayout({
   const platformTheme = await getPlatformTheme();
 
   let displayName: string | null = null;
+  let companyInactive = false;
   if (session) {
     const employee = await prisma.employee.findUnique({
       where: { id: session.employeeId },
-      select: { name: true },
+      select: { name: true, company: { select: { isActive: true } } },
     });
     displayName = employee?.name || null;
+    companyInactive = employee?.company.isActive === false;
   }
 
   return (
@@ -55,7 +57,14 @@ export default async function PortalLayout({
       </header>
 
       <main data-app-main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
-        {children}
+        {companyInactive ? (
+          <div className="mx-auto max-w-md rounded-xl border bg-background p-8 text-center">
+            <h1 className="text-lg font-semibold">{t("company_inactive_title")}</h1>
+            <p className="mt-2 text-sm text-muted-foreground">{t("company_inactive_body")}</p>
+          </div>
+        ) : (
+          children
+        )}
       </main>
 
       <footer data-app-footer className="border-t bg-background py-6 mt-auto">

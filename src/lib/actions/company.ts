@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/types";
 import type { Company, CompanyUser } from "@prisma/client";
 import { Prisma } from "@prisma/client";
+import { actionError, unexpectedActionError } from "@/lib/auth/action-locale";
 
 interface CreateCompanyInput {
   name: string;
@@ -185,6 +186,31 @@ export async function updateCompany(
   }
 }
 
+const COMPANY_NAME_MIN = 2;
+const COMPANY_NAME_MAX = 100;
+
+/** Rename the current company. Its admins (and super admins) only. */
+export async function updateCompanyName(name: string): Promise<ActionResult<{ name: string }>> {
+  try {
+    const session = await auth();
+    const companyId = session?.companyUser?.companyId;
+    const isAdmin = session?.user?.globalRole === "SUPER_ADMIN" || session?.companyUser?.role === "ADMIN";
+    if (!session?.user?.id || !companyId || !isAdmin) return actionError("unauthorized");
+
+    const value = (name ?? "").replace(/\s+/g, " ").trim();
+    if (value.length < COMPANY_NAME_MIN || value.length > COMPANY_NAME_MAX) {
+      return actionError("company_name_length", { min: COMPANY_NAME_MIN, max: COMPANY_NAME_MAX });
+    }
+
+    await prisma.company.update({ where: { id: companyId }, data: { name: value } });
+    // The name shows in the header, switcher, reports and emails
+    revalidatePath("/", "layout");
+    return { success: true, data: { name: value } };
+  } catch (error) {
+    return unexpectedActionError(error, "failed_rename_company");
+  }
+}
+
 export async function getCompany(companyId: string): Promise<Company | null> {
   return prisma.company.findUnique({
     where: { id: companyId },
@@ -196,6 +222,8 @@ export interface CompanySwitchOption {
   companyName: string;
   companySlug: string;
   role: string;
+  /** Only super admins see deactivated companies. */
+  isActive: boolean;
 }
 
 export async function getAvailableCompanies(): Promise<CompanySwitchOption[]> {
@@ -206,7 +234,7 @@ export async function getAvailableCompanies(): Promise<CompanySwitchOption[]> {
   if (session.user.globalRole === "SUPER_ADMIN") {
     const companies = await prisma.company.findMany({
       orderBy: { name: "asc" },
-      select: { id: true, name: true, slug: true },
+      select: { id: true, name: true, slug: true, isActive: true },
     });
 
     // For each company, check if user has a CompanyUser record
@@ -222,12 +250,13 @@ export async function getAvailableCompanies(): Promise<CompanySwitchOption[]> {
       companyName: c.name,
       companySlug: c.slug,
       role: roleMap.get(c.id) || "SUPER_ADMIN",
+      isActive: c.isActive,
     }));
   }
 
-  // Regular users see only their companies
+  // Regular users see only their companies, while active
   const companyUsers = await prisma.companyUser.findMany({
-    where: { userId: session.user.id, isActive: true },
+    where: { userId: session.user.id, isActive: true, company: { isActive: true } },
     include: {
       company: { select: { id: true, name: true, slug: true } },
     },
@@ -239,6 +268,7 @@ export async function getAvailableCompanies(): Promise<CompanySwitchOption[]> {
     companyName: cu.company.name,
     companySlug: cu.company.slug,
     role: cu.role,
+    isActive: true,
   }));
 }
 
@@ -286,7 +316,7 @@ export async function switchCompany(
 
   // Regular users can only switch to companies they belong to
   const companyUser = await prisma.companyUser.findFirst({
-    where: { userId: session.user.id, companyId, isActive: true },
+    where: { userId: session.user.id, companyId, isActive: true, company: { isActive: true } },
   });
 
   if (!companyUser) {

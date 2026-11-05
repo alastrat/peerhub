@@ -1687,7 +1687,9 @@
     },
     "layout": {
       "sign_out": "Cerrar sesión",
-      "powered_by": "Desarrollado por Kultiva · Plataforma de retroalimentación 360° y desempeño"
+      "powered_by": "Desarrollado por Kultiva · Plataforma de retroalimentación 360° y desempeño",
+      "company_inactive_title": "Tu empresa está desactivada",
+      "company_inactive_body": "Por ahora no puedes responder encuestas ni ver tus resultados aquí. Si crees que es un error, habla con Recursos Humanos de tu empresa."
     },
     "sign_in": {
       "title": "Portal del colaborador",
@@ -1785,6 +1787,12 @@
     }
   },
   "dashboard": {
+    "company_inactive": {
+      "title": "Esta empresa está desactivada",
+      "body": "Un administrador de la plataforma desactivó tu empresa, así que por ahora no puedes entrar. Si crees que es un error, escríbenos a {email}.",
+      "sign_out": "Cerrar sesión",
+      "banner": "{company} está desactivada: sus miembros y colaboradores no pueden entrar y no se envían sus correos programados. Puedes reactivarla en Configuración → General."
+    },
     "common": {
       "save": "Guardar",
       "cancel": "Cancelar",
@@ -1803,6 +1811,7 @@
       "search_placeholder": "Buscar empresas...",
       "empty": "No se encontraron empresas.",
       "all_companies": "Todas las empresas",
+      "inactive": "Desactivada",
       "your_companies": "Tus empresas",
       "create_account": "Crear cuenta"
     },
@@ -1910,6 +1919,36 @@
       "departments_count": "Departamentos",
       "review_cycles": "Ciclos de Evaluación",
       "no_departments": "Aún no se han creado departamentos",
+      "edit_name": "Editar nombre",
+      "save_name": "Guardar nombre",
+      "cancel_edit": "Cancelar",
+      "name_updated": "Nombre de la empresa actualizado",
+      "name_error": "No se pudo cambiar el nombre",
+      "danger_zone": {
+        "title": "Zona de peligro",
+        "description": "Solo los super administradores ven estas acciones.",
+        "deactivate_title": "Desactivar empresa",
+        "deactivate_desc": "Sus miembros y colaboradores no podrán entrar, los enlaces de encuestas y evaluaciones dejarán de funcionar y no se enviarán sus correos programados. No se borra nada.",
+        "reactivate_title": "Reactivar empresa",
+        "reactivate_desc": "Esta empresa está desactivada.",
+        "inactive_since": "Desactivada desde el {date}. Al reactivarla, todo vuelve a funcionar como antes.",
+        "deactivate": "Desactivar",
+        "reactivate": "Reactivar",
+        "deactivate_confirm_title": "¿Desactivar {company}?",
+        "deactivate_confirm_body": "Nadie de la empresa podrá entrar hasta que la reactives. Sus datos se conservan.",
+        "deactivated": "Empresa desactivada",
+        "reactivated": "Empresa reactivada",
+        "delete_title": "Eliminar empresa",
+        "delete_desc": "Borra la empresa y todos sus datos: miembros, colaboradores, encuestas, respuestas, planes y evaluaciones. No se puede deshacer.",
+        "delete": "Eliminar",
+        "delete_confirm_title": "¿Eliminar {company} para siempre?",
+        "delete_confirm_body": "Se borrarán todos sus datos y no hay forma de recuperarlos. Si solo quieres pausarla, desactívala.",
+        "type_name": "Escribe «{company}» para confirmar",
+        "delete_forever": "Eliminar para siempre",
+        "deleted": "{company} se eliminó",
+        "cancel": "Cancelar",
+        "error": "No se pudo completar la acción"
+      },
       "language": {
         "title": "Idioma",
         "description": "Define el idioma predeterminado para todos los miembros de esta empresa.",
@@ -3697,6 +3736,12 @@
     "with_detail": "{message} ({detail})",
     "unauthorized": "No tienes permiso para hacer esto",
     "no_active_company": "No tienes una empresa activa",
+    "company_name_length": "El nombre de la empresa debe tener entre {min} y {max} caracteres",
+    "failed_rename_company": "No se pudo cambiar el nombre de la empresa",
+    "company_not_found": "No encontramos la empresa",
+    "company_name_mismatch": "El nombre que escribiste no coincide con el de la empresa",
+    "failed_company_status": "No se pudo cambiar el estado de la empresa",
+    "failed_delete_company": "No se pudo eliminar la empresa",
     "employee_not_found": "No encontramos tu perfil de colaborador",
     "national_id_taken": "Ya hay otro colaborador de la empresa con esta cédula",
     "survey_not_found": "No encontramos la encuesta",

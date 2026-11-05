@@ -24,7 +24,7 @@ export async function sendTaskReminders(now = new Date()) {
     where: {
       status: { in: ["PENDING", "IN_PROGRESS"] },
       dueDate: { lte: horizon },
-      plan: { status: "ACTIVE" },
+      plan: { status: "ACTIVE", company: { isActive: true } },
       OR: [{ reminderSentAt: null }, { reminderSentAt: { lt: new Date(now.getTime() - 20 * 60 * 60 * 1000) } }],
     },
     include: { plan: { select: { ownerEmployeeId: true } } },
@@ -69,6 +69,7 @@ export async function sendPlanDeadlineReminders(now = new Date()) {
       instrumentVersion: { not: null },
       planReminderSentAt: null,
       planMinPerLeader: { gt: 0 },
+      company: { isActive: true },
       // Due dates are calendar days at UTC midnight
       planDueDate: { gte: new Date(`${today}T00:00:00.000Z`) },
     },
