@@ -2287,7 +2287,43 @@
       "import_csv": "Importar CSV",
       "add_employee": "Agregar Empleado",
       "no_employees_yet": "Aún no hay empleados",
-      "add_first_member": "Agrega tu primer miembro del equipo para comenzar con la retroalimentación 360°."
+      "add_first_member": "Agrega tu primer miembro del equipo para comenzar con la retroalimentación 360°.",
+      "details_title": "Datos del empleado",
+      "new": {
+        "description": "Agrega un nuevo miembro a tu organización",
+        "details_description": "Ingresa los datos del empleado. Recibirá un correo de invitación para unirse."
+      },
+      "edit": {
+        "title": "Editar a {name}",
+        "title_fallback": "Editar empleado",
+        "description": "Actualiza la información del empleado",
+        "details_description": "Actualiza el rol, el departamento y otros datos del empleado.",
+        "back": "Volver al perfil"
+      },
+      "profile": {
+        "back": "Volver a Personas",
+        "name_fallback": "Empleado",
+        "no_title": "Sin cargo",
+        "edit": "Editar empleado",
+        "inactive": "Inactivo",
+        "reports_to": "Jefe directo: {name}",
+        "started_on": "Ingresó el {date}",
+        "employee_code": "ID: {code}",
+        "review_stats_title": "Estadísticas de evaluación",
+        "review_stats_description": "Resumen de su participación en la retroalimentación",
+        "reviews_received": "Evaluaciones recibidas",
+        "reviews_given": "Evaluaciones realizadas",
+        "times_nominated": "Veces nominado",
+        "direct_reports_title": "Reportes directos",
+        "direct_reports_count": "{count, plural, one {# miembro del equipo} other {# miembros del equipo}}",
+        "teams_title": "Equipos",
+        "teams_count": "{count, plural, one {Miembro de # equipo} other {Miembro de # equipos}}",
+        "team_lead": "Líder",
+        "team_member": "Miembro",
+        "recent_activity_title": "Actividad reciente",
+        "recent_activity_description": "Retroalimentación y evaluaciones recientes",
+        "no_recent_activity": "No hay actividad reciente"
+      }
     },
     "cycles": {
       "title": "Ciclos de Evaluación",

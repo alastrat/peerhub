@@ -2241,7 +2241,43 @@
       "import_csv": "Import CSV",
       "add_employee": "Add Employee",
       "no_employees_yet": "No employees yet",
-      "add_first_member": "Add your first team member to get started with 360° feedback."
+      "add_first_member": "Add your first team member to get started with 360° feedback.",
+      "details_title": "Employee details",
+      "new": {
+        "description": "Add a new team member to your organization",
+        "details_description": "Enter the employee's information. They will receive an invitation email to join."
+      },
+      "edit": {
+        "title": "Edit {name}",
+        "title_fallback": "Edit employee",
+        "description": "Update employee information",
+        "details_description": "Update the employee's role, department, and other information.",
+        "back": "Back to profile"
+      },
+      "profile": {
+        "back": "Back to People",
+        "name_fallback": "Employee",
+        "no_title": "No title",
+        "edit": "Edit employee",
+        "inactive": "Inactive",
+        "reports_to": "Reports to {name}",
+        "started_on": "Started {date}",
+        "employee_code": "ID: {code}",
+        "review_stats_title": "Review statistics",
+        "review_stats_description": "Summary of feedback participation",
+        "reviews_received": "Reviews received",
+        "reviews_given": "Reviews given",
+        "times_nominated": "Times nominated",
+        "direct_reports_title": "Direct reports",
+        "direct_reports_count": "{count, plural, one {# team member} other {# team members}}",
+        "teams_title": "Teams",
+        "teams_count": "{count, plural, one {Member of # team} other {Member of # teams}}",
+        "team_lead": "Lead",
+        "team_member": "Member",
+        "recent_activity_title": "Recent activity",
+        "recent_activity_description": "Recent feedback and reviews",
+        "no_recent_activity": "No recent activity to display"
+      }
     },
     "cycles": {
       "title": "Review Cycles",
