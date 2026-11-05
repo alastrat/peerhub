@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { GENDERS } from "@/lib/constants/demographics";
+import { JOB_LEVELS } from "@/lib/constants/job-levels";
+import { normalizeNationalId } from "@/lib/utils/employee-import";
 
 // Empty form values ("" / "none") clear the field
 const genderSchema = z.preprocess(
@@ -7,6 +9,15 @@ const genderSchema = z.preprocess(
   z.enum(GENDERS).nullable().optional(),
 );
 const optionalDateSchema = z.preprocess((v) => (v === "" ? null : v), z.coerce.date().nullable().optional());
+const jobLevelSchema = z.preprocess(
+  (v) => (v === "" || v === "none" ? null : v),
+  z.enum(JOB_LEVELS).nullable().optional(),
+);
+// Cédula, stored the way the import compares it; blank clears it
+const nationalIdSchema = z.preprocess(
+  (v) => (typeof v === "string" ? normalizeNationalId(v) || null : v),
+  z.string().max(30).nullable().optional(),
+);
 
 // Employee-specific fields (org-chart data on the Employee model)
 export const employeeFieldsSchema = z.object({
@@ -32,6 +43,8 @@ export const createUserSchema = z.object({
   startDate: optionalDateSchema,
   gender: genderSchema,
   birthDate: optionalDateSchema,
+  nationalId: nationalIdSchema,
+  jobLevel: jobLevelSchema,
 });
 
 // Update an employee from the People edit page (by Employee id). Works for
@@ -48,6 +61,8 @@ export const updateEmployeeSchema = z.object({
   startDate: optionalDateSchema,
   gender: genderSchema,
   birthDate: optionalDateSchema,
+  nationalId: nationalIdSchema,
+  jobLevel: jobLevelSchema,
 });
 
 // Update user: CompanyUser fields (role, isActive) + Employee fields (title, dept, etc.)
@@ -96,6 +111,12 @@ export const csvImportRowSchema = z.object({
   startDate: z.string().optional(),
   gender: z.string().optional(),
   birthDate: z.string().optional(),
+  // Kultiva's import format
+  nationalId: z.string().min(1).optional(),
+  hub: z.string().optional(),
+  managerNationalId: z.string().optional(),
+  managerName: z.string().optional(),
+  jobLevel: z.string().optional(),
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;

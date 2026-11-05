@@ -112,6 +112,15 @@ enum Gender {
   PREFER_NOT_TO_SAY
 }
 
+// "Nivel jerárquico" in Kultiva's employee import format, lowest to highest
+enum JobLevel {
+  STAFF
+  COORDINATOR
+  LEADER
+  MANAGER
+  DIRECTOR
+}
+
 // Interpretation bands of the validated climate instrument (mean on 1–4)
 enum ClimateBand {
   MUY_DESFAVORABLE
@@ -233,6 +242,10 @@ model Employee {
   name         String
   title        String?
   employeeCode String?
+  // National ID (Colombian cédula); identifies the person in Kultiva's import
+  // format and links each row to its leader's row
+  nationalId   String?
+  jobLevel     JobLevel?
   managerId    String?
   departmentId String?
   startDate    DateTime?
@@ -267,6 +280,7 @@ model Employee {
   leaderContexts      LeaderSurveyContext[]
 
   @@unique([companyId, email])
+  @@unique([companyId, nationalId])
   @@index([companyId])
   @@index([managerId])
   @@index([departmentId])

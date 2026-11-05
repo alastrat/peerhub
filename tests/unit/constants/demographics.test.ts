@@ -66,6 +66,8 @@ describe("parseGender", () => {
     ["No binario", "NON_BINARY"],
     ["non-binary", "NON_BINARY"],
     ["Prefiero no decirlo", "PREFER_NOT_TO_SAY"],
+    // The value in the import template's dropdown
+    ["Prefiero no decir", "PREFER_NOT_TO_SAY"],
     ["FEMALE", "FEMALE"],
     ["  hombre ", "MALE"],
   ])("%s → %s", (input, expected) => {

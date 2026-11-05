@@ -58,6 +58,6 @@ export function parseGender(value: string | null | undefined): GenderKey | null 
   if (["f", "female", "femenino", "mujer", "woman"].includes(v)) return "FEMALE";
   if (["m", "male", "masculino", "hombre", "man"].includes(v)) return "MALE";
   if (["nb", "no binario", "no binaria", "non-binary", "nonbinary", "non binary", "no-binario"].includes(v)) return "NON_BINARY";
-  if (["prefiero no decirlo", "prefer not to say", "n/a", "na", "no responde"].includes(v)) return "PREFER_NOT_TO_SAY";
+  if (["prefiero no decirlo", "prefiero no decir", "prefer not to say", "n/a", "na", "no responde"].includes(v)) return "PREFER_NOT_TO_SAY";
   return isGender(value?.trim().toUpperCase()) ? (value!.trim().toUpperCase() as GenderKey) : null;
 }

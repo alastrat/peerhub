@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { redirect, notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { ArrowLeft, Mail, Building2, User, Calendar, Briefcase, MapPin, Users } from "lucide-react";
+import { ArrowLeft, Mail, Building2, User, Calendar, Briefcase, MapPin, Users, IdCard, Layers } from "lucide-react";
 import { PageHeader } from "@/components/design-system/page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -102,6 +102,7 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
   const t = await getTranslations({ locale, namespace: "dashboard.people_page.profile" });
   // The people table's role names, so a role reads the same in both places
   const tRoles = await getTranslations({ locale, namespace: "dashboard.people" });
+  const tFields = await getTranslations({ locale, namespace: "employee_fields" });
   const roleKeys = { ADMIN: "admin", MANAGER: "manager", MEMBER: "member" } as const;
 
   return (
@@ -179,6 +180,18 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
                   <div className="flex items-center gap-3 text-sm">
                     <Briefcase className="h-4 w-4 text-muted-foreground" />
                     <span>{t("employee_code", { code: employee.employeeCode })}</span>
+                  </div>
+                )}
+                {employee.nationalId && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <IdCard className="h-4 w-4 text-muted-foreground" />
+                    <span>{tFields("national_id_value", { value: employee.nationalId })}</span>
+                  </div>
+                )}
+                {employee.jobLevel && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Layers className="h-4 w-4 text-muted-foreground" />
+                    <span>{tFields(`job_level_values.${employee.jobLevel}`)}</span>
                   </div>
                 )}
               </div>

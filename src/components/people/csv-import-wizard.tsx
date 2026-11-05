@@ -35,114 +35,69 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { isValidBirthDate, parseGender } from "@/lib/constants/demographics";
 import { getRoleLabel } from "@/lib/constants/roles";
+import {
+  IMPORT_FIELDS,
+  REQUIRED_IMPORT_FIELDS,
+  TEMPLATE_FILENAME,
+  TEMPLATE_HREF,
+  autoMapColumns,
+  orderForImport,
+  validateEmployeeRows,
+  type ColumnMapping,
+  type ImportField,
+  type ImportIssue,
+  type ImportRowResult,
+  type ImportTable,
+} from "@/lib/utils/employee-import";
+import { parseEmployeeFile } from "@/lib/utils/employee-import-file";
 import type { CompanyRole } from "@prisma/client";
 
-interface ParsedRow {
-  email?: string;
-  name?: string;
-  title?: string;
-  department?: string;
-  managerEmail?: string;
-  role?: string;
-  [key: string]: string | undefined;
-}
-
-interface ValidationResult {
-  row: number;
-  errors: string[];
-  data: ParsedRow;
-}
-
-const REQUIRED_COLUMNS = ["email", "name"];
-const OPTIONAL_COLUMNS = ["title", "department", "managerEmail", "role", "startDate", "gender", "birthDate"];
-const ALL_COLUMNS = [...REQUIRED_COLUMNS, ...OPTIONAL_COLUMNS];
-const ROLES = ["ADMIN", "MANAGER", "MEMBER"];
+// Radix Select can't have an empty-string item value
+const SKIP_COLUMN = "__skip";
 
 type WizardStep = "upload" | "mapping" | "review" | "importing" | "complete";
-
-function parseCSVLine(line: string): string[] {
-  const result: string[] = [];
-  let current = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    if (char === '"') {
-      inQuotes = !inQuotes;
-    } else if (char === "," && !inQuotes) {
-      result.push(current.trim());
-      current = "";
-    } else {
-      current += char;
-    }
-  }
-  result.push(current.trim());
-  return result;
-}
 
 export function CSVImportWizard() {
   const t = useTranslations("people_import");
   const locale = useLocale();
   const router = useRouter();
-  const columnLabel = (col: string) => t(`columns.${col}`);
+  const columnLabel = (col: ImportField) => t(`columns.${col}`);
 
   const [step, setStep] = useState<WizardStep>("upload");
   const [file, setFile] = useState<File | null>(null);
-  const [headers, setHeaders] = useState<string[]>([]);
-  const [rows, setRows] = useState<string[][]>([]);
-  const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
-  const [validationResults, setValidationResults] = useState<ValidationResult[]>([]);
+  const [table, setTable] = useState<ImportTable>({ headers: [], rows: [], rowNumbers: [] });
+  const [columnMapping, setColumnMapping] = useState<ColumnMapping>({});
+  const [validationResults, setValidationResults] = useState<ImportRowResult[]>([]);
   const [importProgress, setImportProgress] = useState(0);
   const [importResults, setImportResults] = useState<{
     success: number;
     failed: number;
     errors: string[];
+    warnings: string[];
   } | null>(null);
+  const { headers, rows } = table;
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const csvFile = acceptedFiles[0];
-    if (!csvFile) return;
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const droppedFile = acceptedFiles[0];
+    if (!droppedFile) return;
 
-    setFile(csvFile);
+    let parsed: ImportTable;
+    try {
+      parsed = await parseEmployeeFile(droppedFile);
+    } catch {
+      toast.error(t("errors.file_unreadable"));
+      return;
+    }
+    if (parsed.rows.length === 0) {
+      toast.error(t("errors.file_too_short"));
+      return;
+    }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      const lines = text.split("\n").filter((line) => line.trim());
-
-      if (lines.length < 2) {
-        toast.error(t("errors.file_too_short"));
-        return;
-      }
-
-      const parsedHeaders = parseCSVLine(lines[0]);
-      const parsedRows = lines.slice(1).map(parseCSVLine);
-
-      setHeaders(parsedHeaders);
-      setRows(parsedRows);
-
-      // Auto-map columns
-      const autoMapping: Record<string, string> = {};
-      parsedHeaders.forEach((header, index) => {
-        const normalized = header.toLowerCase().replace(/[^a-z]/g, "");
-        ALL_COLUMNS.forEach((col) => {
-          const normalizedCol = col.toLowerCase();
-          if (
-            normalized === normalizedCol ||
-            normalized.includes(normalizedCol) ||
-            normalizedCol.includes(normalized)
-          ) {
-            autoMapping[col] = index.toString();
-          }
-        });
-      });
-      setColumnMapping(autoMapping);
-
-      setStep("mapping");
-    };
-    reader.readAsText(csvFile);
+    setFile(droppedFile);
+    setTable(parsed);
+    setColumnMapping(autoMapColumns(parsed.headers));
+    setStep("mapping");
   }, [t]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -150,79 +105,46 @@ export function CSVImportWizard() {
     accept: {
       "text/csv": [".csv"],
       "application/vnd.ms-excel": [".csv"],
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
     },
     maxFiles: 1,
   });
 
-  function validateRows(): ValidationResult[] {
-    const results: ValidationResult[] = [];
+  function issueText(issue: ImportIssue): string {
+    const value = issue.value ?? "";
+    switch (issue.code) {
+      case "invalid_date":
+        return t("errors.invalid_date", { column: columnLabel(issue.field!), value });
+      case "birth_date_range":
+        return t("errors.birth_date_range", { column: columnLabel("birthDate") });
+      case "manager_not_in_file":
+        return t("warnings.manager_not_in_file", { value });
+      case "gender_unknown":
+      case "job_level_unknown":
+      case "duplicate_national_id":
+      case "duplicate_email":
+        return t(`errors.${issue.code}`, { value });
+      default:
+        return t(`errors.${issue.code}`);
+    }
+  }
 
-    rows.forEach((row, index) => {
-      const errors: string[] = [];
-      const data: ParsedRow = {};
-
-      // Extract mapped data. Blank cells are left out: the API rejects ""
-      // for optional columns such as managerEmail.
-      Object.entries(columnMapping).forEach(([field, colIndex]) => {
-        if (colIndex !== "" && colIndex !== undefined) {
-          const value = row[parseInt(colIndex)]?.trim();
-          if (value) data[field] = value;
-        }
-      });
-
-      // Validate required fields
-      if (!data.email) {
-        errors.push(t("errors.email_required"));
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-        errors.push(t("errors.email_invalid"));
-      }
-
-      if (!data.name || data.name.length < 2) {
-        errors.push(t("errors.name_too_short"));
-      }
-
-      // Validate role if provided; the API only accepts the uppercase value
-      if (data.role) {
-        if (ROLES.includes(data.role.toUpperCase())) data.role = data.role.toUpperCase();
-        else errors.push(t("errors.role_invalid"));
-      }
-
-      if (data.gender && !parseGender(data.gender)) {
-        errors.push(t("errors.gender_unknown", { value: data.gender }));
-      }
-      for (const key of ["startDate", "birthDate"] as const) {
-        if (data[key] && Number.isNaN(new Date(data[key]!).getTime())) {
-          errors.push(t("errors.invalid_date", { column: columnLabel(key), value: data[key]! }));
-        }
-      }
-      // Same limits as /api/people/import, so these rows fail here, not mid-import
-      if (data.birthDate && !Number.isNaN(new Date(data.birthDate).getTime()) && !isValidBirthDate(new Date(data.birthDate))) {
-        errors.push(t("errors.birth_date_range", { column: columnLabel("birthDate") }));
-      }
-
-      results.push({
-        row: index + 2, // 1-indexed, accounting for header
-        errors,
-        data,
-      });
-    });
-
-    return results;
+  function resetFile() {
+    setFile(null);
+    setTable({ headers: [], rows: [], rowNumbers: [] });
+    setStep("upload");
   }
 
   function handleMapping() {
     // Check required columns are mapped
-    const missingRequired = REQUIRED_COLUMNS.filter(
-      (col) => !columnMapping[col] || columnMapping[col] === ""
-    );
+    const missingRequired = REQUIRED_IMPORT_FIELDS.filter((col) => columnMapping[col] === undefined);
 
     if (missingRequired.length > 0) {
       toast.error(t("errors.map_required", { columns: missingRequired.map(columnLabel).join(", ") }));
       return;
     }
 
-    const results = validateRows();
-    setValidationResults(results);
+    setValidationResults(validateEmployeeRows(table, columnMapping));
     setStep("review");
   }
 
@@ -230,10 +152,12 @@ export function CSVImportWizard() {
     setStep("importing");
     setImportProgress(0);
 
-    const validRows = validationResults.filter((r) => r.errors.length === 0);
+    // Leaders first, so each person's leader already exists when they're imported
+    const validRows = orderForImport(validationResults.filter((r) => r.errors.length === 0));
     let success = 0;
     let failed = 0;
     const errors: string[] = [];
+    const warnings: string[] = [];
 
     for (let i = 0; i < validRows.length; i++) {
       const row = validRows[i];
@@ -247,6 +171,8 @@ export function CSVImportWizard() {
 
         if (response.ok) {
           success++;
+          const result = await response.json();
+          if (result.warning) warnings.push(t("errors.row", { row: row.row, message: result.warning }));
         } else {
           const error = await response.json();
           failed++;
@@ -260,26 +186,11 @@ export function CSVImportWizard() {
       setImportProgress(((i + 1) / validRows.length) * 100);
     }
 
-    setImportResults({ success, failed, errors });
+    setImportResults({ success, failed, errors, warnings });
     setStep("complete");
   }
 
-  function downloadTemplate() {
-    const csvContent = [
-      ["email", "name", "title", "department", "managerEmail", "role", "startDate", "gender", "birthDate"].join(","),
-      ["john@example.com", "John Doe", "Software Engineer", "Engineering", "manager@example.com", "MEMBER", "2022-03-01", "M", "1990-06-15"].join(","),
-      ["jane@example.com", "Jane Smith", "Product Manager", "Product", "", "MANAGER", "2019-08-12", "F", "1985-01-20"].join(","),
-    ].join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "employees_template.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
+  const showRole = columnMapping.role !== undefined;
   const validCount = validationResults.filter((r) => r.errors.length === 0).length;
   const invalidCount = validationResults.filter((r) => r.errors.length > 0).length;
 
@@ -325,9 +236,12 @@ export function CSVImportWizard() {
             </div>
           ))}
         </div>
-        <Button variant="outline" size="sm" onClick={downloadTemplate}>
-          <Download className="mr-2 h-4 w-4" />
-          {t("download_template")}
+        {/* Kultiva's employee format, served as-is from /public */}
+        <Button variant="outline" size="sm" asChild>
+          <a href={TEMPLATE_HREF} download={TEMPLATE_FILENAME}>
+            <Download className="mr-2 h-4 w-4" />
+            {t("download_template")}
+          </a>
         </Button>
       </div>
 
@@ -377,12 +291,7 @@ export function CSVImportWizard() {
                   variant="ghost"
                   size="icon"
                   className="ml-auto h-8 w-8"
-                  onClick={() => {
-                    setFile(null);
-                    setHeaders([]);
-                    setRows([]);
-                    setStep("upload");
-                  }}
+                  onClick={resetFile}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -390,27 +299,30 @@ export function CSVImportWizard() {
             )}
 
             <div className="grid gap-4 md:grid-cols-2">
-              {ALL_COLUMNS.map((col) => (
+              {IMPORT_FIELDS.map((col) => (
                 <div key={col} className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
                     {columnLabel(col)}
-                    {REQUIRED_COLUMNS.includes(col) && (
+                    {REQUIRED_IMPORT_FIELDS.includes(col) && (
                       <Badge variant="destructive" className="text-xs">
                         {t("mapping.required")}
                       </Badge>
                     )}
                   </label>
                   <Select
-                    value={columnMapping[col] || ""}
+                    value={columnMapping[col]?.toString() ?? SKIP_COLUMN}
                     onValueChange={(value) =>
-                      setColumnMapping((prev) => ({ ...prev, [col]: value }))
+                      setColumnMapping((prev) => ({
+                        ...prev,
+                        [col]: value === SKIP_COLUMN ? undefined : Number(value),
+                      }))
                     }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder={t("mapping.select_placeholder")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">{t("mapping.skip")}</SelectItem>
+                      <SelectItem value={SKIP_COLUMN}>{t("mapping.skip")}</SelectItem>
                       {headers.map((header, index) => (
                         <SelectItem key={index} value={index.toString()}>
                           {header}
@@ -454,15 +366,7 @@ export function CSVImportWizard() {
             )}
 
             <div className="flex justify-end gap-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setFile(null);
-                  setHeaders([]);
-                  setRows([]);
-                  setStep("upload");
-                }}
-              >
+              <Button variant="outline" onClick={resetFile}>
                 {t("back")}
               </Button>
               <Button onClick={handleMapping}>{t("continue")}</Button>
@@ -498,11 +402,12 @@ export function CSVImportWizard() {
                   <TableRow>
                     <TableHead className="w-16">{t("review.table.row")}</TableHead>
                     <TableHead className="w-24">{t("review.table.status")}</TableHead>
-                    <TableHead>{t("review.table.email")}</TableHead>
+                    <TableHead>{t("review.table.national_id")}</TableHead>
                     <TableHead>{t("review.table.name")}</TableHead>
-                    <TableHead>{t("review.table.title")}</TableHead>
+                    <TableHead>{t("review.table.email")}</TableHead>
                     <TableHead>{t("review.table.department")}</TableHead>
-                    <TableHead>{t("review.table.role")}</TableHead>
+                    <TableHead>{t("review.table.manager")}</TableHead>
+                    {showRole && <TableHead>{t("review.table.role")}</TableHead>}
                     <TableHead>{t("review.table.errors")}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -520,17 +425,27 @@ export function CSVImportWizard() {
                           <Badge variant="destructive">{t("review.error")}</Badge>
                         )}
                       </TableCell>
-                      <TableCell>{result.data.email || "-"}</TableCell>
+                      <TableCell>{result.data.nationalId || "-"}</TableCell>
                       <TableCell>{result.data.name || "-"}</TableCell>
-                      <TableCell>{result.data.title || "-"}</TableCell>
+                      <TableCell>{result.data.email || "-"}</TableCell>
                       <TableCell>{result.data.department || "-"}</TableCell>
                       <TableCell>
-                        {result.data.role
-                          ? getRoleLabel(result.data.role as CompanyRole, locale)
-                          : t("review.default_role")}
+                        {result.data.managerName || result.data.managerNationalId || result.data.managerEmail || "-"}
                       </TableCell>
-                      <TableCell className="text-destructive text-sm">
-                        {result.errors.join(", ")}
+                      {showRole && (
+                        <TableCell>
+                          {result.data.role
+                            ? getRoleLabel(result.data.role as CompanyRole, locale)
+                            : t("review.default_role")}
+                        </TableCell>
+                      )}
+                      <TableCell className="text-sm">
+                        <span className="text-destructive">{result.errors.map(issueText).join(", ")}</span>
+                        {result.warnings.length > 0 && (
+                          <span className="block text-amber-700 dark:text-amber-400">
+                            {result.warnings.map(issueText).join(", ")}
+                          </span>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -612,16 +527,26 @@ export function CSVImportWizard() {
               </div>
             )}
 
+            {importResults.warnings.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">{t("complete.warnings")}</h4>
+                <ScrollArea className="h-32 rounded border p-4">
+                  <ul className="space-y-1 text-sm text-amber-700 dark:text-amber-400">
+                    {importResults.warnings.map((warning, i) => (
+                      <li key={i}>{warning}</li>
+                    ))}
+                  </ul>
+                </ScrollArea>
+              </div>
+            )}
+
             <div className="flex justify-end gap-4">
               <Button variant="outline" onClick={() => router.push("/people")}>
                 {t("complete.view_people")}
               </Button>
               <Button
                 onClick={() => {
-                  setStep("upload");
-                  setFile(null);
-                  setHeaders([]);
-                  setRows([]);
+                  resetFile();
                   setColumnMapping({});
                   setValidationResults([]);
                   setImportResults(null);

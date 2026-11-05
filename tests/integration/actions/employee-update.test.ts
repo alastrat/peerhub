@@ -51,6 +51,38 @@ describe("updateEmployee", () => {
     });
   });
 
+  it("saves cédula and job level, normalizing the cédula and clearing with empty values", async () => {
+    mockPrisma.employee.findFirst.mockResolvedValueOnce({ id: "emp-1", companyUser: null }).mockResolvedValueOnce(null);
+    expect(await updateEmployee("emp-1", { nationalId: " 52.987.654 ", jobLevel: "MANAGER" })).toEqual({ success: true });
+    // Uniqueness is checked against the company's other employees
+    expect(mockPrisma.employee.findFirst).toHaveBeenLastCalledWith({
+      where: { companyId: "company-1", nationalId: "52987654", id: { not: "emp-1" } },
+      select: { id: true },
+    });
+    expect(mockPrisma.employee.update).toHaveBeenCalledWith({
+      where: { id: "emp-1" },
+      data: { nationalId: "52987654", jobLevel: "MANAGER" },
+    });
+
+    mockPrisma.employee.findFirst.mockResolvedValue({ id: "emp-1", companyUser: null });
+    await updateEmployee("emp-1", { nationalId: "", jobLevel: "none" });
+    expect(mockPrisma.employee.update).toHaveBeenLastCalledWith({
+      where: { id: "emp-1" },
+      data: { nationalId: null, jobLevel: null },
+    });
+  });
+
+  it("rejects a cédula another employee already has", async () => {
+    mockPrisma.employee.findFirst
+      .mockResolvedValueOnce({ id: "emp-1", companyUser: null })
+      .mockResolvedValueOnce({ id: "emp-2" });
+    expect(await updateEmployee("emp-1", { nationalId: "79845123" })).toEqual({
+      success: false,
+      error: "Ya hay otro colaborador de la empresa con esta cédula",
+    });
+    expect(mockPrisma.employee.update).not.toHaveBeenCalled();
+  });
+
   it("updates the linked CompanyUser role and status", async () => {
     mockPrisma.employee.findFirst.mockResolvedValue({ id: "emp-1", companyUser: { id: "cu-1" } });
     await updateEmployee("emp-1", { role: "MANAGER", isActive: false, title: "Lead" });
@@ -126,6 +158,33 @@ describe("createUser demographics", () => {
         error: "Invalid date of birth",
       });
     }
+    expect(mockPrisma.user.create).not.toHaveBeenCalled();
+    expect(mockPrisma.employee.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("createUser cédula and job level", () => {
+  it("stores them, with the cédula normalized", async () => {
+    mockPrisma.employee.findFirst.mockResolvedValue(null);
+    mockPrisma.user.findUnique.mockResolvedValue({ id: "u-1" });
+    mockPrisma.companyUser.findFirst.mockResolvedValue(null);
+    mockPrisma.hub.findFirst.mockResolvedValue(null);
+    mockPrisma.employee.create.mockResolvedValue({ id: "emp-9" });
+    mockPrisma.companyUser.create.mockResolvedValue({ id: "cu-9" });
+
+    await createUser({ email: "a@b.co", name: "Ana", nationalId: "1.032.456.789", jobLevel: "COORDINATOR" });
+
+    expect(mockPrisma.employee.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ nationalId: "1032456789", jobLevel: "COORDINATOR" }),
+    });
+  });
+
+  it("rejects a cédula already in the company before writing anything", async () => {
+    mockPrisma.employee.findFirst.mockResolvedValue({ id: "emp-2" });
+    expect(await createUser({ email: "a@b.co", name: "Ana", nationalId: "79845123" })).toEqual({
+      success: false,
+      error: "Ya hay otro colaborador de la empresa con esta cédula",
+    });
     expect(mockPrisma.user.create).not.toHaveBeenCalled();
     expect(mockPrisma.employee.create).not.toHaveBeenCalled();
   });

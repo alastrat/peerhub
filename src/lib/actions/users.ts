@@ -4,9 +4,11 @@ import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/config";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/types";
-import type { CompanyUser, CompanyRole, Gender, Prisma } from "@prisma/client";
+import type { CompanyUser, CompanyRole, Gender, JobLevel, Prisma } from "@prisma/client";
 import { updateEmployeeSchema, type UpdateEmployeeInput } from "@/lib/validations/user";
 import { isValidBirthDate } from "@/lib/constants/demographics";
+import { normalizeNationalId } from "@/lib/utils/employee-import";
+import { actionError } from "@/lib/auth/action-locale";
 import { sendInvitationEmail } from "@/lib/email/templates";
 import { EmailDeliveryError } from "@/lib/email/resend";
 import { generateInviteToken, getExpiryDate } from "@/lib/utils";
@@ -23,6 +25,17 @@ interface CreateUserInput {
   role?: CompanyRole;
   gender?: Gender | null;
   birthDate?: string | Date | null;
+  nationalId?: string | null;
+  jobLevel?: JobLevel | null;
+}
+
+// Cédulas are unique per company (the import links leaders by them)
+async function nationalIdTaken(companyId: string, nationalId: string, exceptEmployeeId?: string): Promise<boolean> {
+  const other = await prisma.employee.findFirst({
+    where: { companyId, nationalId, ...(exceptEmployeeId && { id: { not: exceptEmployeeId } }) },
+    select: { id: true },
+  });
+  return other !== null;
 }
 
 interface InviteUserInput {
@@ -169,6 +182,8 @@ export async function createUser(
     // Same rule as the edit page and CSV import, checked before anything is written
     const birthDate = input.birthDate ? new Date(input.birthDate) : undefined;
     if (birthDate && !isValidBirthDate(birthDate)) return { success: false, error: "Invalid date of birth" };
+    const nationalId = input.nationalId ? normalizeNationalId(input.nationalId) || null : null;
+    if (nationalId && (await nationalIdTaken(companyId, nationalId))) return actionError("national_id_taken");
 
     // Check if user email exists
     let user = await prisma.user.findUnique({
@@ -221,6 +236,8 @@ export async function createUser(
         startDate: input.startDate ? new Date(input.startDate) : undefined,
         gender: input.gender ?? undefined,
         birthDate,
+        nationalId: nationalId ?? undefined,
+        jobLevel: input.jobLevel ?? undefined,
       },
     });
 
@@ -362,6 +379,7 @@ export async function updateEmployee(employeeId: string, input: UpdateEmployeeIn
       return { success: false, error: "An employee can't be their own manager" };
     }
     if (data.birthDate && !isValidBirthDate(data.birthDate)) return { success: false, error: "Invalid date of birth" };
+    if (data.nationalId && (await nationalIdTaken(companyId, data.nationalId, employeeId))) return actionError("national_id_taken");
 
     const employeeData: Prisma.EmployeeUncheckedUpdateInput = {};
     if (data.name !== undefined) employeeData.name = data.name;
@@ -373,6 +391,8 @@ export async function updateEmployee(employeeId: string, input: UpdateEmployeeIn
     if (data.startDate !== undefined) employeeData.startDate = data.startDate;
     if (data.gender !== undefined) employeeData.gender = data.gender;
     if (data.birthDate !== undefined) employeeData.birthDate = data.birthDate;
+    if (data.nationalId !== undefined) employeeData.nationalId = data.nationalId;
+    if (data.jobLevel !== undefined) employeeData.jobLevel = data.jobLevel;
 
     // One transaction, so the employee and their account never disagree on status
     await prisma.$transaction(async (tx) => {
