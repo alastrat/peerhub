@@ -62,6 +62,16 @@ describe("portal email templates", () => {
     expect(baseTemplate("<p>x</p>", "en")).toContain("please contact your HR administrator");
   });
 
+  it("sends the portal magic link with the shared button and the link spelled out", async () => {
+    await sendPortalMagicLinkEmail("ana@acme.test", "Ana", "https://app.test/portal/verify/t?redirect=%2Fportal%2Fhome&x=1");
+    const { html } = sendEmail.mock.calls[0][0] as { html: string };
+
+    expect(html).toContain("Ingresar al portal</a>");
+    expect(html.split('href="https://app.test/portal/verify/t?redirect=%2Fportal%2Fhome&amp;x=1"')).toHaveLength(3);
+    expect(html).toContain("Si el botón no funciona");
+    expect(html).not.toContain('class="button"');
+  });
+
   it("sends the portal magic link in the company's language", async () => {
     await sendPortalMagicLinkEmail("ana@acme.test", "Ana", "https://app.test/portal/verify/t", "es");
     await sendPortalMagicLinkEmail("ann@acme.test", "Ann", "https://app.test/portal/verify/u", "en");

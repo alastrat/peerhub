@@ -5,6 +5,7 @@ import GoogleProvider from "next-auth/providers/google";
 import EmailProvider from "next-auth/providers/email";
 import { Resend } from "resend";
 import { prisma } from "@/lib/db/prisma";
+import { buildLoginLinkEmail } from "@/lib/email/auth-emails";
 import type { Adapter } from "next-auth/adapters";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
@@ -35,22 +36,14 @@ export const authOptions: NextAuthOptions = {
           return;
         }
 
+        // Spanish like the sign-in page itself: the company's language isn't known before sign-in
+        const { subject, html, text } = buildLoginLinkEmail({ url });
         await resend.emails.send({
-          from: process.env.EMAIL_FROM || "PeerHub <noreply@peerhub.com>",
+          from: process.env.EMAIL_FROM || "Kultiva <noreply@kultiva.com>",
           to: identifier,
-          subject: "Sign in to PeerHub",
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2>Sign in to PeerHub</h2>
-              <p>Click the link below to sign in to your PeerHub account:</p>
-              <a href="${url}" style="display: inline-block; background: #0066FF; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 16px 0;">
-                Sign In
-              </a>
-              <p style="color: #666; font-size: 14px;">
-                If you didn't request this email, you can safely ignore it.
-              </p>
-            </div>
-          `,
+          subject,
+          html,
+          text,
         });
       },
     }),

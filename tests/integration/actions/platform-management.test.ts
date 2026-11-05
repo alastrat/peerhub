@@ -563,6 +563,27 @@ describe("inviteMember", () => {
     expect(mockSendEmail).toHaveBeenCalled();
   });
 
+  it("sends the invitation on the shared layout, in the company's language", async () => {
+    mockPrisma.companyUser.findFirst.mockResolvedValue(null);
+    mockPrisma.invitation.findUnique.mockResolvedValue(null);
+    mockPrisma.invitation.upsert.mockResolvedValue({
+      id: "inv-1",
+      email: "newuser@example.com",
+      token: "abc-token",
+      company: { name: "Acme Corp", locale: "en" },
+    });
+
+    await inviteMember({ email: "newuser@example.com", role: "MEMBER", companyId: "company-1" });
+
+    const mail = mockSendEmail.mock.calls[0][0] as { to: string; subject: string; html: string; text: string };
+    expect(mail.to).toBe("newuser@example.com");
+    expect(mail.subject).toBe("You're invited to join Acme Corp on Kultiva");
+    expect(mail.html).toContain("Accept Invitation</a>");
+    expect(mail.html).toContain("kultiva-logo-white.png");
+    expect(mail.html).toContain("/invite/abc-token");
+    expect(mail.text).toContain("/invite/abc-token");
+  });
+
   it("should reject invitation to a different company", async () => {
     const result = await inviteMember({
       email: "newuser@example.com",
@@ -1218,6 +1239,25 @@ describe("resendInvitation", () => {
       data: { expiresAt: expect.any(Date) },
     });
     expect(mockSendEmail).toHaveBeenCalled();
+  });
+
+  it("re-sends the invitation as a reminder in the company's language", async () => {
+    mockPrisma.invitation.findUnique.mockResolvedValue({
+      id: "inv-1",
+      email: "user@example.com",
+      companyId: "company-1",
+      token: "abc-token",
+      company: { name: "Acme Corp", locale: "es" },
+    });
+    mockPrisma.invitation.update.mockResolvedValue({ id: "inv-1" });
+
+    await resendInvitation("inv-1");
+
+    const mail = mockSendEmail.mock.calls[0][0] as { to: string; subject: string; html: string };
+    expect(mail.to).toBe("user@example.com");
+    expect(mail.subject).toBe("Recordatorio: te invitaron a unirte a Acme Corp en Kultiva");
+    expect(mail.html).toContain("Aceptar invitación</a>");
+    expect(mail.html).toContain("/invite/abc-token");
   });
 
   it("should return error when invitation not found", async () => {

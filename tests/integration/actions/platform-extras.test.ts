@@ -49,9 +49,11 @@ vi.mock("@/lib/supabase/server", () => ({
   SURVEY_ASSETS_BUCKET: "survey-assets",
 }));
 
-// Mock @/i18n/routing so updateCompanyLocale's dynamic import resolves.
+// Mock @/i18n/routing so updateCompanyLocale's dynamic import resolves; the
+// email translator reads routing.defaultLocale.
 vi.mock("@/i18n/routing", () => ({
   SUPPORTED_LOCALES: ["es", "en"],
+  routing: { defaultLocale: "es" },
 }));
 
 import {
@@ -198,6 +200,29 @@ describe("createPlatformCompanyWithAdmin", () => {
     expect(result.data?.inviteUrl).toContain("/invite/tok-xyz");
     expect(result.data?.adminAlreadyExisted).toBe(false);
     expect(mockSendEmail).toHaveBeenCalledTimes(1);
+  });
+
+  it("writes the admin invitation in the new company's language, on the shared layout", async () => {
+    mockPrisma.company.findUnique.mockResolvedValue(null);
+    mockPrisma.user.findUnique.mockResolvedValue(null);
+    mockPrisma.$transaction.mockImplementation(
+      async (fn: (tx: MockPrismaClient) => Promise<unknown>) => {
+        const tx = createMockPrisma();
+        tx.company.create.mockResolvedValue({ id: "comp-new", name: "Acme Inc", locale: "en" });
+        tx.invitation.create.mockResolvedValue({ id: "inv-new", token: "tok-xyz" });
+        return fn(tx);
+      },
+    );
+
+    await createPlatformCompanyWithAdmin({ ...validInput, locale: "en" });
+
+    const mail = mockSendEmail.mock.calls[0][0] as { to: string; subject: string; html: string; text: string };
+    expect(mail.to).toBe("jane@acme.com");
+    expect(mail.subject).toBe("You're invited to administer Acme Inc on Kultiva");
+    expect(mail.html).toContain("Hi Jane,");
+    expect(mail.html).toContain("kultiva-logo-white.png");
+    expect(mail.html).toContain("/invite/tok-xyz");
+    expect(mail.text).toContain("/invite/tok-xyz");
   });
 
   it("reports adminAlreadyExisted when the admin email already has a User row", async () => {
