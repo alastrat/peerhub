@@ -91,6 +91,7 @@ export async function verifyPortalToken(
       where: {
         token,
         expiresAt: { gt: new Date() },
+        company: { isActive: true },
         OR: [
           // Sign-in links work once
           { purpose: "EMPLOYEE_PORTAL", usedAt: null },

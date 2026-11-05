@@ -113,71 +113,48 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.globalRole = (token.globalRole as "SUPER_ADMIN" | "USER") || "USER";
 
-        // If user has a current company, fetch company user data
+        // Members only see active companies; super admins see every company,
+        // to reactivate one
+        const userId = token.id as string;
+        const activeOnly = token.globalRole === "SUPER_ADMIN" ? {} : { company: { isActive: true } };
+        const include = {
+          company: { select: { id: true, name: true, slug: true, locale: true, isActive: true } },
+        } as const;
+
+        // The company picked in the switcher, else the only one the user has
         const currentCompanyId = token.currentCompanyId as string | undefined;
-
-        if (currentCompanyId) {
-          const companyUser = await prisma.companyUser.findFirst({
-            where: {
-              userId: token.id as string,
-              companyId: currentCompanyId,
-              isActive: true,
-            },
-            include: {
-              company: {
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                  locale: true,
-                },
-              },
-            },
-          });
-
-          if (companyUser) {
-            session.companyUser = {
-              id: companyUser.id,
-              companyId: companyUser.companyId,
-              companyName: companyUser.company.name,
-              companySlug: companyUser.company.slug,
-              role: companyUser.role,
-              employeeId: companyUser.employeeId,
-              locale: companyUser.company.locale ?? "es",
-            };
-          }
-        } else {
-          // Auto-select first company if user only has one
+        let companyUser = currentCompanyId
+          ? await prisma.companyUser.findFirst({
+              where: { userId, companyId: currentCompanyId, isActive: true, ...activeOnly },
+              include,
+            })
+          : null;
+        if (!companyUser) {
           const companyUsers = await prisma.companyUser.findMany({
-            where: {
-              userId: token.id as string,
-              isActive: true,
-            },
-            include: {
-              company: {
-                select: {
-                  id: true,
-                  name: true,
-                  slug: true,
-                  locale: true,
-                },
-              },
-            },
+            where: { userId, isActive: true, ...activeOnly },
+            include,
             take: 2,
           });
+          if (companyUsers.length === 1) companyUser = companyUsers[0];
+        }
 
-          if (companyUsers.length === 1) {
-            const cu = companyUsers[0];
-            session.companyUser = {
-              id: cu.id,
-              companyId: cu.companyId,
-              companyName: cu.company.name,
-              companySlug: cu.company.slug,
-              role: cu.role,
-              employeeId: cu.employeeId,
-              locale: cu.company.locale ?? "es",
-            };
-          }
+        if (companyUser) {
+          session.companyUser = {
+            id: companyUser.id,
+            companyId: companyUser.companyId,
+            companyName: companyUser.company.name,
+            companySlug: companyUser.company.slug,
+            role: companyUser.role,
+            employeeId: companyUser.employeeId,
+            locale: companyUser.company.locale ?? "es",
+            companyActive: companyUser.company.isActive,
+          };
+        } else if (token.globalRole !== "SUPER_ADMIN") {
+          // Tell them their company was deactivated rather than sending them to create one
+          session.companyInactive =
+            (await prisma.companyUser.count({
+              where: { userId, isActive: true, company: { isActive: false } },
+            })) > 0;
         }
       }
 
@@ -237,7 +214,11 @@ declare module "next-auth" {
       role: "ADMIN" | "MANAGER" | "MEMBER";
       employeeId: string | null;
       locale: string;
+      /** False when a super admin is looking at a deactivated company. */
+      companyActive: boolean;
     };
+    /** The user only belongs to deactivated companies. */
+    companyInactive?: boolean;
   }
 
   interface User {

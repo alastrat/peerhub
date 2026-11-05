@@ -389,7 +389,8 @@ export function isPastEndDate(survey: EndDateSurvey, now: Date): boolean {
 /** Daily job: close the active surveys whose end date has passed. */
 export async function finishSurveysPastEndDate(now = new Date()) {
   const surveys = await prisma.climateSurvey.findMany({
-    where: { status: "ACTIVE" },
+    // Deactivated companies' surveys stay as they are
+    where: { status: "ACTIVE", company: { isActive: true } },
     select: { id: true, companyId: true, accessEndDate: true, closedAt: true, distributions: { select: { dueDate: true } } },
   });
   let closed = 0;

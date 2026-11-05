@@ -123,6 +123,14 @@ export function CompanySwitcher() {
                     <span className="truncate">{company.companyName}</span>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">
+                    {!company.isActive && (
+                      <Badge
+                        variant="outline"
+                        className="border-amber-300 px-1.5 py-0 text-[10px] text-amber-700"
+                      >
+                        {t("inactive")}
+                      </Badge>
+                    )}
                     <Badge
                       variant="secondary"
                       className="px-1.5 py-0 text-[10px]"

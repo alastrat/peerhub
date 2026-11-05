@@ -6,9 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LanguageSettings } from "@/components/settings/language-settings";
 import { CompanyLogoSettings } from "@/components/settings/company-logo-settings";
+import { CompanyNameEditor } from "@/components/settings/company-name-editor";
+import { CompanyDangerZone } from "@/components/settings/company-danger-zone";
 
 interface CompanySettingsContentProps {
+  isSuperAdmin: boolean;
   company: {
+    id: string;
+    isActive: boolean;
+    deactivatedAt: string | null;
     name: string;
     slug: string;
     domain: string | null;
@@ -19,7 +25,7 @@ interface CompanySettingsContentProps {
   };
 }
 
-export function CompanySettingsContent({ company }: CompanySettingsContentProps) {
+export function CompanySettingsContent({ company, isSuperAdmin }: CompanySettingsContentProps) {
   const t = useTranslations("dashboard.settings");
 
   return (
@@ -38,7 +44,8 @@ export function CompanySettingsContent({ company }: CompanySettingsContentProps)
           <CardContent className="space-y-4">
             <div>
               <p className="text-sm text-muted-foreground">{t("name")}</p>
-              <p className="font-medium">{company.name}</p>
+              {/* Keyed so a refreshed name replaces what the editor remembered */}
+              <CompanyNameEditor key={company.name} name={company.name} />
             </div>
             <div>
               <p className="text-sm text-muted-foreground">{t("slug")}</p>
@@ -103,6 +110,12 @@ export function CompanySettingsContent({ company }: CompanySettingsContentProps)
             )}
           </CardContent>
         </Card>
+
+        {isSuperAdmin && (
+          <CompanyDangerZone
+            company={{ id: company.id, name: company.name, isActive: company.isActive, deactivatedAt: company.deactivatedAt }}
+          />
+        )}
       </div>
     </div>
   );

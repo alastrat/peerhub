@@ -33,7 +33,11 @@ export default async function CompanySettingsPage() {
 
   return (
     <CompanySettingsContent
+      isSuperAdmin={isSuperAdmin}
       company={{
+        id: company.id,
+        isActive: company.isActive,
+        deactivatedAt: company.deactivatedAt?.toISOString() ?? null,
         name: company.name,
         slug: company.slug,
         domain: company.domain,

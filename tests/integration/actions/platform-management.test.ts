@@ -392,6 +392,8 @@ describe("deletePlatformCompany", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockPrisma = createMockPrisma();
+    // The purge runs in a transaction: run it against the same mock
+    mockPrisma.$transaction.mockImplementation((fn: (tx: MockPrismaClient) => Promise<unknown>) => fn(mockPrisma));
     mockSession = createSuperAdminSession();
   });
 
@@ -405,6 +407,10 @@ describe("deletePlatformCompany", () => {
     const result = await deletePlatformCompany("comp-1");
 
     expect(result.success).toBe(true);
+    // Rows that don't cascade from the company go first
+    expect(mockPrisma.cycle.deleteMany).toHaveBeenCalledWith({ where: { companyId: "comp-1" } });
+    expect(mockPrisma.actionPlan.deleteMany).toHaveBeenCalledWith({ where: { companyId: "comp-1" } });
+    expect(mockPrisma.climateSurvey.deleteMany).toHaveBeenCalledWith({ where: { companyId: "comp-1" } });
     expect(mockPrisma.company.delete).toHaveBeenCalledWith({
       where: { id: "comp-1" },
     });

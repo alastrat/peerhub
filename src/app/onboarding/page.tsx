@@ -148,8 +148,10 @@ export default function OnboardingPage() {
 
       if (companies.length > 0) {
         // Returning user with at least one company — bypass everything.
-        await switchCompany(companies[0].companyId);
-        await update({ companyId: companies[0].companyId });
+        // (Super admins also see deactivated companies: start on an active one.)
+        const first = companies.find((c) => c.isActive) ?? companies[0];
+        await switchCompany(first.companyId);
+        await update({ companyId: first.companyId });
         window.location.assign("/overview");
         return;
       }

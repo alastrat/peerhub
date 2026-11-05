@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { LoadingPage } from "@/components/design-system/loading-spinner";
+import { CompanyInactiveBanner, CompanyInactiveNotice } from "@/components/layout/company-inactive";
 
 import esMessages from "@/messages/es.json";
 import enMessages from "@/messages/en.json";
@@ -31,12 +32,19 @@ export default function DashboardLayout({
     redirect("/login");
   }
 
+  const locale = session.companyUser?.locale ?? "es";
+
   // Super admins can access settings even without a company
   if (!session.companyUser && session.user?.globalRole !== "SUPER_ADMIN") {
+    if (session.companyInactive) {
+      return (
+        <NextIntlClientProvider locale={locale} messages={messages[locale] ?? messages.es}>
+          <CompanyInactiveNotice />
+        </NextIntlClientProvider>
+      );
+    }
     redirect("/onboarding");
   }
-
-  const locale = session.companyUser?.locale ?? "es";
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages[locale] ?? messages.es}>
@@ -46,6 +54,9 @@ export default function DashboardLayout({
           <Header />
           <main data-app-main className="flex-1 rounded-tl-2xl bg-background p-6 shadow-sm">
             <div className="mx-auto max-w-6xl">
+              {session.companyUser?.companyActive === false && (
+                <CompanyInactiveBanner companyName={session.companyUser.companyName} />
+              )}
               {children}
             </div>
           </main>
