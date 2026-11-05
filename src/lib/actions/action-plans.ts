@@ -13,10 +13,12 @@ import {
   leaderIdsOf,
   OPEN_PLAN_STATUSES,
   SUBMITTED_PLAN_STATUSES,
+  isSingleActionPlan,
 } from "@/lib/queries/action-plans";
 import { bandRank, isClimateBand, nextBand, type ClimateBand } from "@/lib/utils/climate-scoring";
 import { emailEmployeeViaPortal, emailUsersViaDashboard, planEmails, safely } from "@/lib/email/climate-plan-emails";
 import { businessDayAsDate } from "@/lib/constants/business-time";
+import { MAX_EVIDENCE_BYTES, MAX_EVIDENCE_MB } from "@/lib/constants/action-plan-evidence";
 import { getTranslator } from "@/i18n/translator";
 
 // ---------------------------------------------------------------------------
@@ -69,7 +71,6 @@ const TASK_STATUSES: ActionTaskStatus[] = ["PENDING", "IN_PROGRESS", "DONE", "CA
 const MAX_TEXT = 2000;
 const MAX_TITLE = 200;
 const MAX_TASKS = 30;
-const MAX_EVIDENCE_BYTES = 10 * 1024 * 1024;
 const MAX_EVIDENCE_PER_TASK = 10;
 const EVIDENCE_MIME = new Set(["image/png", "image/jpeg", "image/webp", "application/pdf"]);
 
@@ -755,7 +756,7 @@ export async function uploadTaskEvidence(taskId: string, formData: FormData): Pr
     const file = formData.get("file");
     if (!(file instanceof File) || file.size === 0) fail("choose_file");
     if (!EVIDENCE_MIME.has(file.type)) fail("file_type");
-    if (file.size > MAX_EVIDENCE_BYTES) fail("file_too_large", { max: MAX_EVIDENCE_BYTES / (1024 * 1024) });
+    if (file.size > MAX_EVIDENCE_BYTES) fail("file_too_large", { max: MAX_EVIDENCE_MB });
     const count = await prisma.actionPlanEvidence.count({ where: { taskId: task.id } });
     if (count >= MAX_EVIDENCE_PER_TASK) fail("too_many_files", { max: MAX_EVIDENCE_PER_TASK });
 
@@ -978,8 +979,9 @@ export interface SingleActionPlanInput {
 
 export type SingleActionStatus = "PENDING" | "IN_PROGRESS" | "DONE";
 
-/** The plan's one action (first task that isn't cancelled). */
+/** The plan's one action. Refuses plans written in the full editor, whose texts the one-action form would overwrite. */
 function singleTask(plan: LoadedPlan) {
+  if (!isSingleActionPlan(plan)) fail("not_single_action");
   const task = plan.tasks.find((t) => t.status !== "CANCELLED");
   if (!task) fail("task_not_found");
   return task;

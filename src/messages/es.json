@@ -3079,6 +3079,7 @@
       "status_label": "Estado",
       "status_updated": "Estado actualizado",
       "no_evidence": "Sin evidencia",
+      "evidence_failed": "El plan se guardó, pero no se pudo adjuntar la evidencia: {reason}",
       "edit": "Editar",
       "delete": "Eliminar",
       "delete_confirm": "¿Eliminar este plan de acción?",
@@ -3311,6 +3312,7 @@
     },
     "errors": {
       "admin_only_delete_completed": "Solo RR.HH. puede eliminar un plan completado.",
+      "not_single_action": "Este plan tiene su propio objetivo o varias tareas: edítalo desde el plan completo.",
       "unauthorized": "No tienes permiso para hacer esto",
       "required": "Completa el campo «{field}»",
       "invalid_date": "«{field}» no es una fecha válida",
