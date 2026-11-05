@@ -31,6 +31,8 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 import { completeActionPlan, submitActionPlan } from "@/lib/actions/action-plans";
 
 const leader: ClimateActor = { kind: "employee", companyId: "company-1", userId: null, employeeId: "lead-1", name: "Sara" };
+// Typed follow-up emails (not platform users) ride along with the user ids
+const followUpEmails = ["pablo@cliente.com"];
 
 function plan(overrides: Record<string, unknown> = {}) {
   return {
@@ -42,7 +44,7 @@ function plan(overrides: Record<string, unknown> = {}) {
     scope: "LEADER",
     scopeRefId: "lead-1",
     tasks: [{ id: "task-1", ownerEmployeeId: null, status: "PENDING", title: "Pausas activas", dueDate: new Date("2026-12-01") }],
-    survey: { id: "survey-1", name: "Clima 2026", followUpUserIds: ["hr-1"] },
+    survey: { id: "survey-1", name: "Clima 2026", followUpUserIds: ["hr-1"], followUpEmails },
     dimension: { name: "Calidad de vida" },
     owner: { name: "Sara", email: "sara@acme.com" },
     ...overrides,
@@ -60,7 +62,13 @@ describe("HR plan emails link to Planes de acción", () => {
   it("sends HR to the leader's page when a leader submits a plan", async () => {
     mockPrisma.actionPlan.findFirst.mockResolvedValue(plan());
     expect(await submitActionPlan("plan-1")).toEqual({ success: true });
-    expect(emailUsersViaDashboard).toHaveBeenCalledWith("company-1", ["hr-1"], "/action-plans/survey-1/lead-1", expect.any(Function));
+    expect(emailUsersViaDashboard).toHaveBeenCalledWith(
+      "company-1",
+      ["hr-1"],
+      "/action-plans/survey-1/lead-1",
+      expect.any(Function),
+      followUpEmails,
+    );
   });
 
   it("keeps the plan's own page for organization plans", async () => {
@@ -72,6 +80,7 @@ describe("HR plan emails link to Planes de acción", () => {
       ["hr-1"],
       "/surveys/climate/survey-1/plans/plan-1",
       expect.any(Function),
+      followUpEmails,
     );
   });
 
@@ -81,6 +90,12 @@ describe("HR plan emails link to Planes de acción", () => {
     );
     mockPrisma.actionPlan.findMany.mockResolvedValue([{ status: "COMPLETED" }]);
     expect(await completeActionPlan("plan-1", "Hecho")).toEqual({ success: true });
-    expect(emailUsersViaDashboard).toHaveBeenCalledWith("company-1", ["hr-1"], "/action-plans/survey-1/lead-1", expect.any(Function));
+    expect(emailUsersViaDashboard).toHaveBeenCalledWith(
+      "company-1",
+      ["hr-1"],
+      "/action-plans/survey-1/lead-1",
+      expect.any(Function),
+      followUpEmails,
+    );
   });
 });
