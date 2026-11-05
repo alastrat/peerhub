@@ -30,13 +30,9 @@ export const BAND_STYLES: Record<ClimateBand, { chip: string; bar: string; cell:
   },
 };
 
-export function formatMean(mean: number | null | undefined): string {
-  return mean == null ? "—" : mean.toFixed(2);
-}
-
-export function formatPct(share: number | null | undefined): string {
-  return share == null ? "—" : `${Math.round(share * 100)}%`;
-}
+// Plain helpers live outside this client module so server components can call them
+import { formatMean, formatPct } from "@/lib/utils/climate-scoring";
+export { formatMean, formatPct };
 
 export function BandBadge({ band, className }: { band: ClimateBand | null; className?: string }) {
   const t = useTranslations("climate_scoring.bands");

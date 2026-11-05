@@ -955,3 +955,135 @@ export async function evaluateSurveyImpact(surveyId: string): Promise<ActionResu
     return toResult(error, "failed_evaluate_impact");
   }
 }
+
+// ---------------------------------------------------------------------------
+// Single-action plans (the leader view's "Nuevo plan" form)
+//
+// One action with dates and a status, stored as a submitted plan with one
+// task: emails, reminders, compliance and impact work as for any plan.
+// ---------------------------------------------------------------------------
+
+export interface SingleActionPlanInput {
+  action: string;
+  startDate: string | Date;
+  endDate: string | Date;
+}
+
+export type SingleActionStatus = "PENDING" | "IN_PROGRESS" | "DONE";
+
+/** The plan's one action (first task that isn't cancelled). */
+function singleTask(plan: LoadedPlan) {
+  const task = plan.tasks.find((t) => t.status !== "CANCELLED");
+  if (!task) fail("task_not_found");
+  return task;
+}
+
+export async function createSingleActionPlan(
+  input: SingleActionPlanInput & { surveyId: string; leaderEmployeeId: string; dimensionId: string },
+): Promise<ActionResult<{ id: string; taskId: string }>> {
+  const action = (input.action ?? "").trim();
+  const created = await createActionPlan({
+    surveyId: input.surveyId,
+    dimensionId: input.dimensionId,
+    scope: "LEADER",
+    scopeRefId: input.leaderEmployeeId,
+    ownerEmployeeId: input.leaderEmployeeId,
+    title: action,
+    objective: action,
+    startDate: input.startDate,
+    endDate: input.endDate,
+    tasks: [{ title: action, ownerEmployeeId: null, dueDate: input.endDate }],
+  });
+  if (!created.success) return { success: false, error: created.error };
+
+  const submitted = await submitActionPlan(created.data!.id);
+  if (!submitted.success) {
+    await prisma.actionPlan.delete({ where: { id: created.data!.id } }).catch(() => {});
+    return { success: false, error: submitted.error };
+  }
+  const task = await prisma.actionPlanTask.findFirst({ where: { planId: created.data!.id }, select: { id: true } });
+  return { success: true, data: { id: created.data!.id, taskId: task!.id } };
+}
+
+export async function updateSingleActionPlan(planId: string, input: SingleActionPlanInput): Promise<ActionResult> {
+  try {
+    const actor = await requireClimateActor();
+    const plan = await loadPlan(planId, actor);
+    assertCanManage(actor, plan);
+    assertOpen(plan);
+    const task = singleTask(plan);
+    const action = cleanText(input.action, "title", MAX_TITLE)!;
+    const startDate = parseDate(input.startDate, "start_date");
+    const endDate = parseDate(input.endDate, "end_date");
+    if (startDate > endDate) fail("start_after_end");
+
+    await prisma.$transaction([
+      prisma.actionPlan.update({ where: { id: plan.id }, data: { title: action, objective: action, startDate, endDate } }),
+      prisma.actionPlanTask.update({ where: { id: task.id }, data: { title: action, dueDate: endDate } }),
+    ]);
+    revalidatePlan(plan);
+    return { success: true };
+  } catch (error) {
+    return toResult(error, "failed_update_plan");
+  }
+}
+
+/** Pendiente / En progreso / Completado: the task's status; Completado also completes the plan. */
+export async function setSingleActionPlanStatus(planId: string, status: SingleActionStatus): Promise<ActionResult> {
+  try {
+    const actor = await requireClimateActor();
+    if (!["PENDING", "IN_PROGRESS", "DONE"].includes(status)) fail("invalid_status");
+    const plan = await loadPlan(planId, actor);
+    assertCanManage(actor, plan);
+    if (plan.status === "CANCELLED") fail("already_closed");
+    const task = singleTask(plan);
+
+    // Moving a completed action back reopens its plan
+    if (plan.status === "COMPLETED" && status !== "DONE") {
+      await prisma.actionPlan.update({
+        where: { id: plan.id },
+        data: { status: "ACTIVE", completedAt: null, closingNote: null },
+      });
+      await logUpdate(actor, { planId: plan.id, note: "", statusFrom: "COMPLETED", statusTo: "ACTIVE" });
+    }
+    if (plan.status === "DRAFT") {
+      const submitted = await submitActionPlan(plan.id);
+      if (!submitted.success) return submitted;
+    }
+
+    const updated = await setActionPlanTaskStatus(task.id, status);
+    if (!updated.success) return updated;
+    if (status === "DONE" && plan.status !== "COMPLETED") return completeActionPlan(plan.id, plan.title);
+
+    revalidatePlan(plan);
+    return { success: true };
+  } catch (error) {
+    return toResult(error, "failed_update_task");
+  }
+}
+
+/** Leaders delete their own unfinished actions; admins can delete any. */
+export async function deleteSingleActionPlan(planId: string): Promise<ActionResult> {
+  try {
+    const actor = await requireClimateActor();
+    const plan = await loadPlan(planId, actor);
+    assertCanManage(actor, plan);
+    if (plan.status === "COMPLETED" && !isAdmin(actor)) fail("admin_only_delete_completed");
+
+    const evidence = await prisma.actionPlanEvidence.findMany({
+      where: { task: { planId: plan.id } },
+      select: { storagePath: true },
+    });
+    await prisma.actionPlan.delete({ where: { id: plan.id } });
+    if (evidence.length > 0) {
+      await safely("delete plan evidence files", async () => {
+        const { createSupabaseStorageClient, CLIMATE_EVIDENCE_BUCKET } = await import("@/lib/supabase/server");
+        await createSupabaseStorageClient().storage.from(CLIMATE_EVIDENCE_BUCKET).remove(evidence.map((e) => e.storagePath));
+      });
+    }
+    revalidatePlan(plan);
+    return { success: true };
+  } catch (error) {
+    return toResult(error, "failed_delete_plan");
+  }
+}
