@@ -117,6 +117,8 @@ export const csvImportRowSchema = z.object({
   managerNationalId: z.string().optional(),
   managerName: z.string().optional(),
   jobLevel: z.string().optional(),
+  // Email a platform invitation once the employee is created
+  invite: z.boolean().optional(),
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;

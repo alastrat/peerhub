@@ -3688,7 +3688,9 @@
       "valid": "Válida",
       "error": "Error",
       "default_role": "Colaborador",
-      "import": "{count, plural, one {Importar # colaborador} other {Importar # colaboradores}}"
+      "import": "{count, plural, one {Importar # colaborador} other {Importar # colaboradores}}",
+      "invite_label": "Enviar invitación por correo a los colaboradores importados",
+      "invite_hint": "Recibirán un enlace para crear su cuenta en la plataforma. Si no la marcas, se cargan sin enviarles ningún correo."
     },
     "importing": {
       "title": "Importando...",
@@ -3705,7 +3707,8 @@
       "errors": "Errores:",
       "view_people": "Ver colaboradores",
       "import_more": "Importar más",
-      "warnings": "Avisos:"
+      "warnings": "Avisos:",
+      "invited": "{count, plural, =0 {No se envió ninguna invitación} one {# invitación enviada por correo} other {# invitaciones enviadas por correo}}"
     },
     "errors": {
       "file_too_short": "El archivo debe tener una fila de encabezados y al menos una fila de datos",
@@ -3743,7 +3746,8 @@
       "failed": "No se pudo importar el colaborador",
       "already_exists_national_id": "Ya existe un colaborador con la cédula {value} en la empresa",
       "unknown_job_level": "Nivel jerárquico desconocido \"{value}\"",
-      "manager_not_found": "se importó sin líder porque no encontramos a «{manager}»"
+      "manager_not_found": "se importó sin líder porque no encontramos a «{manager}»",
+      "invite_failed": "se importó, pero no se pudo enviar la invitación por correo"
     }
   },
   "action_errors": {

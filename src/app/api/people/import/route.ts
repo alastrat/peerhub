@@ -5,7 +5,10 @@ import { csvImportRowSchema, type CSVImportRow } from "@/lib/validations/user";
 import { isValidBirthDate, parseGender } from "@/lib/constants/demographics";
 import { parseJobLevel } from "@/lib/constants/job-levels";
 import { normalizeNationalId } from "@/lib/utils/employee-import";
+import { generateInviteToken, getExpiryDate } from "@/lib/utils";
+import { sendInvitationEmail } from "@/lib/email/templates";
 import { getTranslator } from "@/i18n/translator";
+import type { CompanyRole, Employee } from "@prisma/client";
 
 // Kultiva's format points at the leader by cédula, falling back to the name;
 // the old CSV template by email
@@ -34,6 +37,54 @@ async function findManagerId(companyId: string, data: CSVImportRow): Promise<str
     if (matches.length === 1) return matches[0].id;
   }
   return undefined;
+}
+
+/**
+ * Invite an imported employee to the platform (a fresh link, even if an older
+ * invitation exists). Accepting it links their account to this Employee by
+ * email. A brand-new invitation whose email can't be delivered is removed,
+ * since nobody could reach its link; the error is rethrown.
+ */
+async function inviteImportedEmployee(
+  employee: Employee,
+  role: CompanyRole,
+  inviterName: string | null | undefined,
+): Promise<void> {
+  const { companyId, email } = employee;
+  const existing = await prisma.invitation.findUnique({
+    where: { email_companyId: { email, companyId } },
+    select: { id: true },
+  });
+  const fields = {
+    role,
+    departmentId: employee.departmentId,
+    managerId: employee.managerId,
+    hubId: employee.hubId,
+    token: generateInviteToken(),
+    expiresAt: getExpiryDate(7),
+    acceptedAt: null,
+  };
+  const invitation = await prisma.invitation.upsert({
+    where: { email_companyId: { email, companyId } },
+    create: { email, companyId, ...fields },
+    update: fields,
+  });
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { name: true, locale: true },
+  });
+  try {
+    await sendInvitationEmail({
+      to: email,
+      inviterName,
+      companyName: company?.name,
+      inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL}/invite/${invitation.token}`,
+      locale: company?.locale,
+    });
+  } catch (error) {
+    if (!existing) await prisma.invitation.delete({ where: { id: invitation.id } });
+    throw error;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -168,9 +219,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Optionally create User + CompanyUser for platform access
-    if (data.role) {
-      const role = data.role.toUpperCase() as "ADMIN" | "MANAGER" | "MEMBER";
+    const role = (data.role?.toUpperCase() ?? "MEMBER") as CompanyRole;
+    const warnings: string[] = [];
+    if (managerRef && !managerId) warnings.push(t("manager_not_found", { manager: data.managerName || managerRef }));
+
+    // With the wizard's "send invitations" box, platform access comes from the
+    // invitation (with the file's role, if any). Without it, only a role
+    // column grants access, directly and without any email.
+    let invited = false;
+    if (data.invite) {
+      try {
+        await inviteImportedEmployee(employee, role, session.user?.name);
+        invited = true;
+      } catch (error) {
+        console.error("Import invitation failed:", error);
+        warnings.push(t("invite_failed"));
+      }
+    } else if (data.role) {
       let user = await prisma.user.findUnique({
         where: { email: data.email },
       });
@@ -197,7 +262,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: t("imported"),
       data: employee,
-      ...(managerRef && !managerId && { warning: t("manager_not_found", { manager: data.managerName || managerRef }) }),
+      invited,
+      ...(warnings.length > 0 && { warnings }),
     });
   } catch (error) {
     console.error("Import error:", error);

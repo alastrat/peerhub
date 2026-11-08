@@ -3640,7 +3640,9 @@
       "valid": "Valid",
       "error": "Error",
       "default_role": "Employee",
-      "import": "{count, plural, one {Import # Employee} other {Import # Employees}}"
+      "import": "{count, plural, one {Import # Employee} other {Import # Employees}}",
+      "invite_label": "Email an invitation to the imported employees",
+      "invite_hint": "They'll get a link to create their account on the platform. Leave it unchecked to import them without sending any email."
     },
     "importing": {
       "title": "Importing...",
@@ -3657,7 +3659,8 @@
       "errors": "Errors:",
       "view_people": "View Employees",
       "import_more": "Import More",
-      "warnings": "Notices:"
+      "warnings": "Notices:",
+      "invited": "{count, plural, =0 {No invitations were sent} one {# invitation emailed} other {# invitations emailed}}"
     },
     "errors": {
       "file_too_short": "The file must have a header row and at least one data row",
@@ -3695,7 +3698,8 @@
       "failed": "Failed to import employee",
       "already_exists_national_id": "An employee with ID number {value} already exists in this company",
       "unknown_job_level": "Unknown job level \"{value}\"",
-      "manager_not_found": "imported without a leader because we couldn't find \"{manager}\""
+      "manager_not_found": "imported without a leader because we couldn't find \"{manager}\"",
+      "invite_failed": "imported, but the invitation email couldn't be sent"
     }
   },
   "action_errors": {
