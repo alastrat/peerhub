@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/db/prisma";
+import { getActionErrors } from "@/lib/auth/action-locale";
 import { auth } from "@/lib/auth/config";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/types";
@@ -336,15 +337,21 @@ export async function launchCycle(
       data: { status: nextStatus },
     });
 
-    // Send emails — track failures so the action can surface them as a warning
+    // Send emails — track failures so the action can surface them as a warning.
+    // People without an email get none and aren't attempts: they're reported.
     let emailAttempts = 0;
     let emailFailures = 0;
+    const withoutEmail = new Set<string>();
     if (sendEmails) {
 
       if (nextStatus === "NOMINATION") {
         // Send nomination request emails to all participants
         for (const participant of cycle.participants) {
           const employee = participant.employee;
+          if (!employee.email) {
+            withoutEmail.add(employee.id);
+            continue;
+          }
           emailAttempts++;
           try {
             await notifyEmployee({
@@ -381,7 +388,9 @@ export async function launchCycle(
             (p) => p.employeeId === reviewerId
           )?.employee;
 
-          if (reviewer) {
+          if (reviewer && !reviewer.email) {
+            withoutEmail.add(reviewer.id);
+          } else if (reviewer) {
             const reviewerAssignments = assignments.filter((a) => a.reviewerId === reviewerId);
             for (const assignment of reviewerAssignments) {
               const reviewee = cycle.participants.find(
@@ -428,11 +437,16 @@ export async function launchCycle(
     }
 
     revalidatePath("/surveys/360");
-    const warning =
-      emailFailures > 0
-        ? `${emailFailures} of ${emailAttempts} notification email${emailAttempts !== 1 ? "s" : ""} failed to send. Check the server logs for details.`
-        : undefined;
-    return { success: true, data: updatedCycle, warning };
+    const warnings: string[] = [];
+    if (emailFailures > 0) {
+      warnings.push(
+        `${emailFailures} of ${emailAttempts} notification email${emailAttempts !== 1 ? "s" : ""} failed to send. Check the server logs for details.`,
+      );
+    }
+    if (withoutEmail.size > 0) {
+      warnings.push((await getActionErrors())("cycle_participants_without_email", { count: withoutEmail.size }));
+    }
+    return { success: true, data: updatedCycle, warning: warnings.length > 0 ? warnings.join(" ") : undefined };
   } catch (error) {
     console.error("Failed to launch cycle:", error);
     return { success: false, error: "Failed to launch cycle" };

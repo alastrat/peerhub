@@ -23,8 +23,11 @@ interface PageProps {
  */
 export default async function SurveyLinkPage({ params }: PageProps) {
   const { token } = await params;
-  const [state, session, locale] = await Promise.all([describeSurveyLink(token), getPortalSession(), getPortalLocale()]);
+  const [state, locale] = await Promise.all([describeSurveyLink(token), getPortalLocale()]);
   const t = await getTranslations({ locale, namespace: "portal.survey_link" });
+  // Signed in here as the link's person, for its survey (the link's own session or a full one)
+  const session = state.status === "invalid" ? null : await getPortalSession({ distributionId: state.distributionId });
+  const signedInHere = !!session && state.status !== "invalid" && session.employeeId === state.employeeId && session.companyId === state.companyId;
 
   let title: string;
   let body: string;
@@ -41,9 +44,13 @@ export default async function SurveyLinkPage({ params }: PageProps) {
         </form>
       );
       break;
-    case "used":
+    case "closed":
+      title = t("closed_title");
+      body = t("closed_body", { survey: state.surveyName });
+      break;
+    default:
       // Opened before in this browser: they're still signed in as themselves
-      if (session?.employeeId === state.employeeId && session.companyId === state.companyId) {
+      if (state.status === "used" && signedInHere) {
         title = t("used_here_title");
         body = t("used_here_body");
         action = (
@@ -52,21 +59,11 @@ export default async function SurveyLinkPage({ params }: PageProps) {
           </Button>
         );
       } else {
-        title = t("used_title");
-        body = t("used_body");
+        // One message for used, expired and replaced links: it mustn't tell
+        // whoever holds it whether the person already started the survey
+        title = t("unavailable_title");
+        body = t("unavailable_body");
       }
-      break;
-    case "expired":
-      title = t("expired_title");
-      body = t("expired_body");
-      break;
-    case "closed":
-      title = t("closed_title");
-      body = t("closed_body", { survey: state.surveyName });
-      break;
-    default:
-      title = t("invalid_title");
-      body = t("invalid_body");
   }
 
   return (

@@ -12,7 +12,7 @@ import {
   UserCheck,
   BarChart3,
 } from "lucide-react";
-import { getPortalSession } from "@/lib/auth/portal-session";
+import { getPortalIdentity, getPortalSession } from "@/lib/auth/portal-session";
 import { getPortalLocale } from "@/lib/auth/portal-locale";
 import { getPortalDashboard } from "@/lib/actions/portal";
 import { prisma } from "@/lib/db/prisma";
@@ -331,6 +331,9 @@ async function DashboardContent() {
 export default async function PortalHomePage() {
   const session = await getPortalSession();
   if (!session) {
+    // A survey link's session only opens its survey
+    const identity = await getPortalIdentity();
+    if (identity?.surveyDistributionId) redirect(`/portal/climate-survey/${identity.surveyDistributionId}`);
     redirect("/portal");
   }
 

@@ -35,9 +35,10 @@ function validateAnswers(
   return null;
 }
 
-async function requireEmployee() {
-  // Portal session takes precedence (employees signing in through /portal)
-  const portalSession = await getPortalSession();
+async function requireEmployee(distributionId: string) {
+  // Portal session takes precedence (employees signing in through /portal);
+  // a survey link's session only for its own survey
+  const portalSession = await getPortalSession({ distributionId });
   if (portalSession) {
     const employee = await prisma.employee.findUnique({
       where: { id: portalSession.employeeId },
@@ -67,7 +68,7 @@ export async function saveSurveyDraft(input: {
   answers: { questionId: string; ratingValue?: number; textValue?: string }[];
 }): Promise<ActionResult> {
   try {
-    const { employeeId, companyId } = await requireEmployee();
+    const { employeeId, companyId } = await requireEmployee(input.distributionId);
 
     const distribution = await prisma.surveyDistribution.findUnique({
       where: { id: input.distributionId },
@@ -130,7 +131,7 @@ export async function submitSurveyResponse(input: {
   answers: { questionId: string; ratingValue?: number; textValue?: string }[];
 }): Promise<ActionResult> {
   try {
-    const { employeeId, companyId } = await requireEmployee();
+    const { employeeId, companyId } = await requireEmployee(input.distributionId);
 
     // Get the distribution with survey questions
     const distribution = await prisma.surveyDistribution.findUnique({

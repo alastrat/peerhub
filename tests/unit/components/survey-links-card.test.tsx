@@ -1,6 +1,6 @@
 /**
- * SurveyLinksCard (Participantes): people without an email first, and their
- * personal link copied or sent by WhatsApp.
+ * SurveyLinksCard (Participantes): the participants without an email who
+ * haven't answered, and their personal link copied or sent by WhatsApp.
  */
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup, fireEvent, waitFor, within } from "@testing-library/react";
@@ -19,9 +19,8 @@ vi.mock("sonner", () => ({ toast: { success: vi.fn(), warning: vi.fn(), error: v
 import { SurveyLinksCard } from "@/components/climate/survey-links-card";
 
 const people = [
-  { employeeId: "ana", name: "Ana María Gómez", email: null, phone: "300 123 4567", nationalId: "101" },
-  { employeeId: "beto", name: "Beto Ruiz", email: "beto@acme.com", phone: null, nationalId: "102" },
-  { employeeId: "carla", name: "Carla Díaz", email: null, phone: null, nationalId: "103" },
+  { employeeId: "ana", name: "Ana María Gómez", phone: "300 123 4567", nationalId: "101" },
+  { employeeId: "carla", name: "Carla Díaz", phone: null, nationalId: "103" },
 ];
 
 function renderCard() {
@@ -40,12 +39,12 @@ afterEach(() => {
 });
 
 describe("SurveyLinksCard", () => {
-  it("starts with the people without an email, and says how many", () => {
+  it("says how many people without an email still need their link", () => {
     renderCard();
-    expect(screen.getByText(/2 personas no tienen correo y no recibieron la invitación por correo/)).toBeTruthy();
-    expect(screen.queryByText("Beto Ruiz")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Todos (3)" }));
-    expect(screen.getByText("Beto Ruiz")).toBeTruthy();
+    expect(screen.getByText("2 personas sin correo aún no han respondido: comparte su enlace.")).toBeTruthy();
+    fireEvent.change(screen.getByPlaceholderText("Buscar por nombre o cédula..."), { target: { value: "103" } });
+    expect(screen.queryByText("Ana María Gómez")).toBeNull();
+    expect(screen.getByText("Carla Díaz")).toBeTruthy();
   });
 
   it("offers WhatsApp only to people with a mobile number", () => {

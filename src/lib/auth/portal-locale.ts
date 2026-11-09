@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { prisma } from "@/lib/db/prisma";
-import { getPortalSession } from "@/lib/auth/portal-session";
+import { getPortalIdentity } from "@/lib/auth/portal-session";
 import { toSupportedLocale } from "@/i18n/translator";
 import type { SupportedLocale } from "@/i18n/routing";
 
@@ -11,7 +11,8 @@ import type { SupportedLocale } from "@/i18n/routing";
  * to getTranslations / getMessages instead.
  */
 export const getPortalLocale = cache(async (): Promise<SupportedLocale> => {
-  const session = await getPortalSession();
+  // Any session, including a survey link's: only for the language
+  const session = await getPortalIdentity();
   if (!session) return toSupportedLocale(null);
   const company = await prisma.company.findUnique({
     where: { id: session.companyId },
