@@ -22,8 +22,8 @@ describe("rosterAccess", () => {
     expect(rosterAccess({ role: "ADMIN", isActive: false }, { role: "MEMBER" })).toEqual({ role: "MEMBER", access: "INVITED" });
   });
 
-  it("counts a deactivated account as no access, keeping its role", () => {
-    expect(rosterAccess({ role: "MANAGER", isActive: false }, null)).toEqual({ role: "MANAGER", access: "NONE" });
+  it("shows a deactivated account as such, keeping its role", () => {
+    expect(rosterAccess({ role: "MANAGER", isActive: false }, null)).toEqual({ role: "MANAGER", access: "DEACTIVATED" });
   });
 });
 

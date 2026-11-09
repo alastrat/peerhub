@@ -69,7 +69,6 @@ import { getSurveyResults } from "@/lib/queries/climate-reports";
 import { getLeaderTeamView, getPlanDetail, getSurveyPlansOverview, getMyTasks, listLeaderSurveys } from "@/lib/queries/action-plans";
 import { sendPlanDeadlineReminders, sendTaskReminders } from "@/lib/queries/action-plan-reminders";
 import { emailUsersViaDashboard, planEmails } from "@/lib/email/climate-plan-emails";
-import { businessDayAsDate } from "@/lib/constants/business-time";
 import { INSTRUMENT_DIMENSIONS, INSTRUMENT_VERSION, instrumentItemConfig } from "@/lib/constants/climate-instrument";
 
 // ---------------------------------------------------------------------------
@@ -384,10 +383,9 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     expect(state.emails).toHaveLength(0);
 
     const survey = await prisma.climateSurvey.findUniqueOrThrow({ where: { id: ctx.surveyA } });
-    // Default deadline: the business day 15 days after release, stored at UTC midnight
-    expect(survey.planDueDate!.toISOString()).toBe(
-      businessDayAsDate(new Date(survey.resultsReleasedAt!.getTime() + 15 * DAY)).toISOString(),
-    );
+    // No default plan deadline yet: it's set when the leaders get their email, at the close
+    expect(survey.resultsReleasedAt).not.toBeNull();
+    expect(survey.planDueDate).toBeNull();
     expect((await releaseSurveyResults(ctx.surveyA)).error).toBe("Los resultados ya se publicaron");
   });
 
@@ -664,11 +662,16 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
 
     await prisma.climateSurvey.update({ where: { id: ctx.surveyA }, data: { planDueDate: new Date(Date.now() + 2 * DAY), planReminderSentAt: null } });
     state.emails = [];
+    // Never before the leaders' results email (Modelo 1), which goes out at the close
+    expect((await sendPlanDeadlineReminders()).emails).toBe(0);
+    await prisma.climateSurvey.update({ where: { id: ctx.surveyA }, data: { resultsEmailedAt: new Date() } });
     const nudge = await sendPlanDeadlineReminders();
     expect(emailsTo(ctx.marco.email).some((e) => e.subject.startsWith("Recordatorio: tu plan de acción"))).toBe(true);
     expect(emailsTo(ctx.lina.email)).toHaveLength(0); // Lina met her minimum
     expect(nudge.emails).toBeGreaterThanOrEqual(1);
     expect((await sendPlanDeadlineReminders()).emails).toBe(0);
+    // Undone, so the close below sends the results email
+    await prisma.climateSurvey.update({ where: { id: ctx.surveyA }, data: { resultsEmailedAt: null } });
   });
 
   // =========================================================================

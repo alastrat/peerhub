@@ -172,6 +172,30 @@ describe("finishSurvey", () => {
     expect(emailsTo("maria@acme.com")[0].text).toContain("El 10 de diciembre cada líder recibió");
   });
 
+  it("sets the default plan deadline when leaders get their email: 15 days after the close", async () => {
+    // Released while active: no deadline until the results email goes out
+    wireSurvey({ resultsReleasedAt: new Date("2026-12-01T12:00:00Z"), planDueDate: null });
+    await finishSurvey("survey-1", "company-1", NOW);
+
+    expect(survey.planDueDate).toEqual(new Date("2026-12-25T00:00:00Z"));
+    expect(emailsTo("lina@acme.com")[0].text).toContain("25 de diciembre de 2026");
+  });
+
+  it("undoes the results email when every send failed, so it can be retried", async () => {
+    sendEmail.mockImplementation(async ({ to }: { to: string }) => {
+      if (to !== "lina@acme.com" && to !== "marco@acme.com") return { success: true };
+      throw new Error("provider down");
+    });
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const result = await finishSurvey("survey-1", "company-1", NOW);
+    spy.mockRestore();
+
+    expect(result.leaderEmails.sent).toBe(0);
+    expect(survey.resultsEmailedAt).toBeNull();
+    // The admins aren't told the leaders got it
+    expect(emailsTo("maria@acme.com")[0].text).not.toContain("cada líder recibió");
+  });
+
   it("just closes a survey without the validated instrument", async () => {
     wireSurvey({ instrumentVersion: null });
     expect((await finishSurvey("survey-1", "company-1", NOW)).closed).toBe(true);

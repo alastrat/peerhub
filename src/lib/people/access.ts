@@ -1,7 +1,10 @@
 import type { CompanyRole } from "@prisma/client";
 
-/** Whether someone on the roster can use the platform: an account, a pending invitation, or neither. */
-export const ACCESS_STATUSES = ["ACTIVE", "INVITED", "NONE"] as const;
+/**
+ * Whether someone on the roster can use the platform: an account, a pending
+ * invitation, a deactivated account, or none of these.
+ */
+export const ACCESS_STATUSES = ["ACTIVE", "INVITED", "DEACTIVATED", "NONE"] as const;
 export type AccessStatus = (typeof ACCESS_STATUSES)[number];
 
 export interface RosterAccess {
@@ -12,7 +15,8 @@ export interface RosterAccess {
 /**
  * Everyone on the roster is a member, platform account or not; only their
  * account (or the pending invitation that will create it) can give them
- * another role. A deactivated account counts as no access.
+ * another role. A deactivated account keeps its role, which comes back if
+ * it's reactivated.
  */
 export function rosterAccess(
   account: { role: CompanyRole; isActive: boolean } | null | undefined,
@@ -20,7 +24,8 @@ export function rosterAccess(
 ): RosterAccess {
   if (account?.isActive) return { role: account.role, access: "ACTIVE" };
   if (pendingInvitation) return { role: pendingInvitation.role, access: "INVITED" };
-  return { role: account?.role ?? "MEMBER", access: "NONE" };
+  if (account) return { role: account.role, access: "DEACTIVATED" };
+  return { role: "MEMBER", access: "NONE" };
 }
 
 /** Invitations of a company that can still be accepted. */

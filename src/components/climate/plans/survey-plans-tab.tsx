@@ -52,6 +52,8 @@ export function SurveyPlansTab({ overview, dimensions, groups, employees }: Surv
   // Leaders get their results email once the survey closes, not at release
   const closed = survey.status === "CLOSED";
   const missing = leaders.filter((l) => !l.meetsMinimum);
+  // As in the admins' closing email: leaders only get it when their team reached the threshold
+  const leadersEmailed = !!survey.resultsEmailedAt && leaders.some((l) => !l.suppressed);
 
   function run(fn: () => Promise<{ success: boolean; error?: string }>, ok: (r: never) => string) {
     startTransition(async () => {
@@ -72,19 +74,23 @@ export function SurveyPlansTab({ overview, dimensions, groups, employees }: Surv
         <CardHeader>
           <CardTitle>{t("release_title")}</CardTitle>
           <CardDescription>
-            {released
-              ? t("released_on", {
-                  date: formatDay(survey.resultsReleasedAt, locale, BUSINESS_TIME_ZONE),
-                  due: formatDay(survey.planDueDate, locale),
-                })
-              : t("release_desc")}
+            {!released
+              ? t("release_desc")
+              : survey.planDueDate
+                ? t("released_on", {
+                    date: formatDay(survey.resultsReleasedAt, locale, BUSINESS_TIME_ZONE),
+                    due: formatDay(survey.planDueDate, locale),
+                  })
+                : t("released_on_due_at_close", { date: formatDay(survey.resultsReleasedAt, locale, BUSINESS_TIME_ZONE) })}
             {released && (
               <span className="block">
-                {survey.resultsEmailedAt
+                {leadersEmailed
                   ? t("results_emailed_on", { date: formatDay(survey.resultsEmailedAt, locale, BUSINESS_TIME_ZONE) })
-                  : closed
-                    ? t("results_not_emailed")
-                    : t("results_email_on_close")}
+                  : survey.resultsEmailedAt
+                    ? t("results_no_leader_qualified")
+                    : closed
+                      ? t("results_not_emailed")
+                      : t("results_email_on_close")}
               </span>
             )}
           </CardDescription>

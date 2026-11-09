@@ -103,9 +103,15 @@ export function EditEmployeeForm({
 
   function onSubmit(data: UpdateEmployeeInput) {
     startTransition(async () => {
+      // Role and status only when the admin changed them: an unchanged role
+      // must not overwrite one changed meanwhile (by another admin or an
+      // import), nor an unchanged status reactivate a deactivated account
+      const { role: newRole, isActive, ...rest } = data;
       // Clean up "none" values
       const cleanedData = {
-        ...data,
+        ...rest,
+        ...(newRole !== role && { role: newRole }),
+        ...(isActive !== employee.isActive && { isActive }),
         departmentId: data.departmentId === "none" ? null : data.departmentId,
         managerId: data.managerId === "none" ? null : data.managerId,
         hubId: data.hubId === "none" ? null : data.hubId,
@@ -207,7 +213,13 @@ export function EditEmployeeForm({
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  {access === "NONE" ? t("roleNoAccess") : access === "INVITED" ? t("roleInvited") : t("roleDescription")}
+                  {access === "NONE"
+                    ? t("roleNoAccess")
+                    : access === "INVITED"
+                      ? t("roleInvited")
+                      : access === "DEACTIVATED"
+                        ? t("roleDeactivated")
+                        : t("roleDescription")}
                 </FormDescription>
                 <FormMessage />
               </FormItem>

@@ -2025,11 +2025,13 @@
       "access_status": {
         "ACTIVE": "Activo",
         "INVITED": "Invitado",
+        "DEACTIVATED": "Cuenta desactivada",
         "NONE": "Sin acceso"
       },
       "access_hint": {
         "ACTIVE": "Tiene cuenta en la plataforma",
         "INVITED": "Tiene una invitación pendiente por aceptar",
+        "DEACTIVATED": "Su cuenta está desactivada: conserva su rol, que recupera si se reactiva",
         "NONE": "No tiene cuenta ni invitación pendiente"
       },
       "title": "Cargo",
@@ -2088,6 +2090,7 @@
       "selectRole": "Seleccionar un rol",
       "roleDescription": "Los administradores pueden gestionar toda la configuración, los managers pueden ver reportes de equipo",
       "roleInvited": "Es el rol de su invitación pendiente: lo tendrá al aceptarla.",
+      "roleDeactivated": "Su cuenta está desactivada: conserva este rol, que recupera si la reactivas.",
       "roleNoAccess": "Aún no tiene acceso a la plataforma, así que es Miembro. Otro rol se le da con la invitación.",
       "department": "Departamento",
       "selectDepartment": "Seleccionar un departamento",
@@ -2390,6 +2393,7 @@
         "access_detail": {
           "ACTIVE": "Tiene cuenta en la plataforma.",
           "INVITED": "Tiene una invitación pendiente que vence el {date}.",
+          "DEACTIVATED": "Su cuenta en la plataforma está desactivada. Conserva su rol, que recupera si la reactivas.",
           "NONE": "No tiene cuenta en la plataforma ni una invitación pendiente."
         },
         "details_title": "Datos del colaborador",
@@ -3300,12 +3304,14 @@
     "release_title": "Resultados para líderes",
     "release_desc": "Cuando publiques los resultados, cada líder con al menos el mínimo de respuestas verá los de su equipo y podrá registrar planes. El correo con su enlace personal les llega cuando se cierra la encuesta (de inmediato si ya está cerrada). Al cerrarse la encuesta, los resultados se publican solos.",
     "released_on": "Publicados el {date}. Fecha límite para planes: {due}.",
+    "released_on_due_at_close": "Publicados el {date}. La fecha límite para planes se fija cuando los líderes reciben el correo, al cerrar la encuesta (15 días después), salvo que la definas antes.",
     "release": "Publicar resultados a líderes",
     "released_toast": "Resultados publicados: {emailed} de {leaders} líderes recibieron su correo",
     "released_toast_on_close": "Resultados publicados. Los líderes recibirán su correo cuando se cierre la encuesta.",
     "results_email_on_close": "Los líderes recibirán el correo con sus resultados cuando se cierre la encuesta.",
     "results_emailed_on": "Los líderes recibieron el correo con sus resultados el {date}.",
-    "results_not_emailed": "Los líderes aún no han recibido el correo con sus resultados.",
+    "results_not_emailed": "Los líderes aún no han recibido el correo con sus resultados: no se ha enviado o el envío falló. Puedes enviarlo ahora.",
+    "results_no_leader_qualified": "No se envió ningún correo de resultados: ningún líder alcanzó el mínimo de respuestas para ver los de su equipo.",
     "send_results_emails": "Enviar correo de resultados",
     "results_emails_sent": "{count, plural, =0 {Ningún líder tenía resultados para enviar} one {# líder recibió su correo} other {# líderes recibieron su correo}}",
     "retract": "Ocultar resultados",
@@ -3466,6 +3472,7 @@
       "release_needs_instrument": "Solo las encuestas que usan el instrumento validado tienen resultados por líder",
       "already_released": "Los resultados ya se publicaron",
       "results_already_emailed": "El correo de resultados ya se envió",
+      "results_emails_failed": "No se pudo enviar el correo de resultados a ningún líder. Inténtalo de nuevo más tarde.",
       "results_email_on_close": "Los líderes reciben el correo de resultados cuando se cierra la encuesta",
       "admin_only_hide": "Solo un administrador puede ocultar los resultados",
       "plans_already_submitted": "Los líderes ya enviaron planes para estos resultados",
@@ -3796,6 +3803,7 @@
     "failed_delete_company": "No se pudo eliminar la empresa",
     "employee_not_found": "No encontramos tu perfil de colaborador",
     "national_id_taken": "Ya hay otro colaborador de la empresa con esta cédula",
+    "invitation_not_pending": "No se guardó: la invitación de esta persona venció o ya no existe, así que su rol no se puede cambiar. Envíale una invitación nueva con el rol que quieras.",
     "employee_email_taken": "Ya hay un colaborador de la empresa con este correo",
     "invalid_employee": "Revisa los datos del colaborador",
     "invalid_birth_date": "La fecha de nacimiento debe estar entre 1900 y hoy",

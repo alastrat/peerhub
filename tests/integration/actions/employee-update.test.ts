@@ -98,9 +98,16 @@ describe("updateEmployee", () => {
     expect(mockPrisma.invitation.updateMany).not.toHaveBeenCalled();
   });
 
+  it("saving other fields leaves the account's role and status alone", async () => {
+    mockPrisma.employee.findFirst.mockResolvedValue({ id: "emp-1", companyUser: { id: "cu-1" } });
+    expect((await updateEmployee("emp-1", { title: "Lead" })).success).toBe(true);
+    expect(mockPrisma.companyUser.update).not.toHaveBeenCalled();
+  });
+
   it("without an account, changes the role their pending invitation gives", async () => {
     mockPrisma.employee.findFirst.mockResolvedValue({ id: "emp-1", email: "ana@acme.com", companyUser: null });
-    await updateEmployee("emp-1", { role: "ADMIN" });
+    mockPrisma.invitation.updateMany.mockResolvedValue({ count: 1 });
+    expect((await updateEmployee("emp-1", { role: "ADMIN" })).success).toBe(true);
     expect(mockPrisma.invitation.updateMany).toHaveBeenCalledWith({
       where: {
         companyId: "company-1",
@@ -111,6 +118,17 @@ describe("updateEmployee", () => {
       data: { role: "ADMIN" },
     });
     expect(mockPrisma.companyUser.update).not.toHaveBeenCalled();
+  });
+
+  it("says so when the invitation expired or is gone, instead of saving", async () => {
+    mockPrisma.employee.findFirst.mockResolvedValue({ id: "emp-1", email: "ana@acme.com", companyUser: null });
+    mockPrisma.invitation.updateMany.mockResolvedValue({ count: 0 });
+    const result = await updateEmployee("emp-1", { role: "ADMIN", title: "Lead" });
+    expect(result).toEqual({
+      success: false,
+      error:
+        "No se guardó: la invitación de esta persona venció o ya no existe, así que su rol no se puede cambiar. Envíale una invitación nueva con el rol que quieras.",
+    });
   });
 
   it("rejects invalid input, self-management and other companies' employees", async () => {

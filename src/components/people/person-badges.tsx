@@ -15,6 +15,7 @@ const ROLE_STYLES: Record<CompanyRole, string> = {
 const ACCESS_STYLES: Record<AccessStatus, string> = {
   ACTIVE: "bg-emerald-50 text-emerald-700 border-emerald-200",
   INVITED: "bg-amber-50 text-amber-800 border-amber-200",
+  DEACTIVATED: "bg-red-50 text-red-700 border-red-200",
   NONE: "bg-muted text-muted-foreground border-border",
 };
 

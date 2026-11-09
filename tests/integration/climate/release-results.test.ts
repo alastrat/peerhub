@@ -22,7 +22,7 @@ vi.mock("@/lib/auth/climate-actor", () => ({
 vi.mock("@/lib/email/resend", () => ({ sendEmail: vi.fn() }));
 
 const sendLeaderResultsEmails = vi.hoisted(() =>
-  vi.fn(async () => ({ sent: 2, skipped: [], claimed: true, leaders: 3, leadersWithGaps: 1 })),
+  vi.fn(async () => ({ sent: 2, skipped: [] as { name: string; reason: string }[], claimed: true, failed: 0, leaders: 3, leadersWithGaps: 1 })),
 );
 vi.mock("@/lib/climate/survey-finish", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/climate/survey-finish")>()),
@@ -65,8 +65,16 @@ describe("releaseSurveyResults", () => {
 
     expect(res).toEqual({ success: true, data: { leaders: 0, leadersWithGaps: 0, emailed: 0, emailOnClose: true } });
     expect(survey.resultsReleasedAt).toBeInstanceOf(Date);
-    expect(survey.planDueDate).toBeInstanceOf(Date);
+    // The default plan deadline waits for the results email, at the close
+    expect(survey.planDueDate).toBeNull();
     expect(sendLeaderResultsEmails).not.toHaveBeenCalled();
+  });
+
+  it("keeps a plan deadline the admin already set", async () => {
+    const due = new Date("2026-12-01T00:00:00Z");
+    wireSurvey({ planDueDate: due });
+    await releaseSurveyResults("survey-1");
+    expect(survey.planDueDate).toBe(due);
   });
 
   it("emails the leaders right away for a closed survey", async () => {
@@ -91,6 +99,21 @@ describe("sendSurveyResultsEmails", () => {
     wireSurvey({ status: "CLOSED", resultsReleasedAt: new Date() });
     expect(await sendSurveyResultsEmails("survey-1")).toEqual({ success: true, data: { emailed: 2 } });
     expect(sendLeaderResultsEmails).toHaveBeenCalledWith("survey-1", "company-1");
+  });
+
+  it("says so when every send failed, so the admin can retry", async () => {
+    wireSurvey({ status: "CLOSED", resultsReleasedAt: new Date() });
+    sendLeaderResultsEmails.mockResolvedValueOnce({
+      sent: 0,
+      skipped: [{ name: "Sara", reason: "boom" }],
+      claimed: false,
+      failed: 1,
+      leaders: 1,
+      leadersWithGaps: 0,
+    });
+    expect((await sendSurveyResultsEmails("survey-1")).error).toBe(
+      "No se pudo enviar el correo de resultados a ningún líder. Inténtalo de nuevo más tarde.",
+    );
   });
 
   it("refuses when it already went out", async () => {
