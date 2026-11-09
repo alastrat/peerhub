@@ -1,6 +1,6 @@
 /**
- * Avances tab: each person's leader, except on anonymous surveys, where row by
- * row it would tie a small team to the answers in Respuestas.
+ * Avances tab: each person's leader and sede, except on anonymous surveys,
+ * where row by row they would tie a small group to the answers in Respuestas.
  */
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
@@ -18,7 +18,7 @@ const row: ParticipantRow = {
   employeeEmail: "ana@acme.com",
   employeeTitle: null,
   leaderName: "Laura Leader",
-  hubName: null,
+  hubName: "Main Office",
   isComplete: true,
   submittedAt: new Date("2026-11-01"),
   updatedAt: new Date("2026-11-01"),
@@ -32,7 +32,9 @@ function renderTab(isAnonymous: boolean) {
       <SurveyParticipantsTab
         surveyId="survey-1"
         surveyStatus="ACTIVE"
-        responses={[isAnonymous ? { ...row, leaderName: null } : row]}
+        responses={[
+          isAnonymous ? { ...row, employeeName: "", employeeEmail: "", leaderName: null, hubName: null } : row,
+        ]}
         employees={[]}
         hubs={[]}
         departments={[]}
@@ -48,16 +50,19 @@ function renderTab(isAnonymous: boolean) {
 afterEach(cleanup);
 
 describe("SurveyParticipantsTab (Avances)", () => {
-  it("shows each person's leader on a named survey", () => {
+  it("shows each person's leader and sede on a named survey", () => {
     renderTab(false);
     expect(screen.getByRole("button", { name: "Líder" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Sede" })).toBeTruthy();
     expect(screen.getByText("Laura Leader")).toBeTruthy();
+    expect(screen.getByText("Main Office")).toBeTruthy();
   });
 
-  it("has no leader column on an anonymous survey", () => {
+  it("has no leader or sede column on an anonymous survey", () => {
     renderTab(true);
     expect(screen.queryByRole("button", { name: "Líder" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Sede" })).toBeNull();
     expect(screen.getByText("Anónimo")).toBeTruthy();
-    expect(screen.getAllByRole("columnheader")).toHaveLength(5);
+    expect(screen.getAllByRole("columnheader")).toHaveLength(4);
   });
 });

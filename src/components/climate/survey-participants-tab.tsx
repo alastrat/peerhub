@@ -49,6 +49,7 @@ export interface ParticipantRow {
   employeeTitle: string | null;
   /** Direct manager when they answered, else their current one. Null on anonymous surveys. */
   leaderName: string | null;
+  /** Null on anonymous surveys. */
   hubName: string | null;
   isComplete: boolean;
   submittedAt: Date | null;
@@ -272,21 +273,23 @@ function ResponderTable({
                 sort={sort}
                 onSort={setSort}
               />
-              {/* Anonymous: a row's leader would tie a small team to the answers in Respuestas */}
+              {/* Anonymous: a row's leader or sede would tie a small group to the answers in Respuestas */}
               {!isAnonymous && (
-                <SortableHead
-                  field="leader"
-                  label={t("col_leader")}
-                  sort={sort}
-                  onSort={setSort}
-                />
+                <>
+                  <SortableHead
+                    field="leader"
+                    label={t("col_leader")}
+                    sort={sort}
+                    onSort={setSort}
+                  />
+                  <SortableHead
+                    field="hub"
+                    label={t("col_hub")}
+                    sort={sort}
+                    onSort={setSort}
+                  />
+                </>
               )}
-              <SortableHead
-                field="hub"
-                label={t("col_hub")}
-                sort={sort}
-                onSort={setSort}
-              />
               <SortableHead
                 field="progress"
                 label={t("col_progress")}
@@ -331,13 +334,15 @@ function ResponderTable({
                   )}
                 </TableCell>
                 {!isAnonymous && (
-                  <TableCell className="text-sm text-muted-foreground">
-                    {r.leaderName ?? "—"}
-                  </TableCell>
+                  <>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {r.leaderName ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {r.hubName ?? "—"}
+                    </TableCell>
+                  </>
                 )}
-                <TableCell className="text-sm text-muted-foreground">
-                  {r.hubName ?? "—"}
-                </TableCell>
                 <TableCell className="text-sm">
                   {r.answeredCount}/{r.totalQuestions}
                 </TableCell>
@@ -360,7 +365,7 @@ function ResponderTable({
             {visible.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={isAnonymous ? 5 : 6}
+                  colSpan={isAnonymous ? 4 : 6}
                   className="py-8 text-center text-sm text-muted-foreground"
                 >
                   {t("no_matches")}

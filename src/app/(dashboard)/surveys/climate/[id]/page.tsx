@@ -214,13 +214,13 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
       ? requestedTab
       : "insights";
 
-  // Each person's leader (Avances tab): the one when they answered, else their current manager.
-  // Not on anonymous surveys: row by row, it would tie a small team to the answers in Respuestas.
-  const leaderIdOf = (r: (typeof survey.distributions)[number]["responses"][number]) =>
-    survey.isAnonymous ? null : leaderOf(r.segmentSnapshot, r.employee?.managerId);
-  const leaderIds = [
-    ...new Set(survey.distributions.flatMap((d) => d.responses.map(leaderIdOf)).filter((id) => id != null)),
-  ];
+  type Response = (typeof survey.distributions)[number]["responses"][number];
+
+  // Each person's leader (Avances tab): the one when they answered, else their current manager
+  const leaderIdOf = (r: Response) => leaderOf(r.segmentSnapshot, r.employee?.managerId);
+  const leaderIds = survey.isAnonymous
+    ? []
+    : [...new Set(survey.distributions.flatMap((d) => d.responses.map(leaderIdOf)).filter((id) => id != null))];
   const leaderNames = new Map(
     leaderIds.length
       ? (
@@ -232,16 +232,26 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
       : [],
   );
 
+  // Who each response belongs to. Anonymous surveys send none of it to the
+  // browser: the tabs show "Anónimo" / "Participante N", and the page data
+  // mustn't be able to tie a response to a person either.
+  const identityOf = (r: Response) =>
+    survey.isAnonymous
+      ? { employeeName: "", employeeEmail: "", employeeTitle: null, departmentName: null, hubName: null, leaderName: null }
+      : {
+          employeeName: r.employee?.name ?? "Anonymous",
+          employeeEmail: r.employee?.email ?? "—",
+          employeeTitle: r.employee?.title ?? null,
+          departmentName: r.employee?.department?.name ?? null,
+          hubName: r.employee?.hub?.name ?? null,
+          leaderName: leaderNames.get(leaderIdOf(r) ?? "") ?? null,
+        };
+
   // Flatten all responses for the Answers tab
   const allResponses = survey.distributions.flatMap((d) =>
     d.responses.map((r) => ({
       id: r.id,
-      employeeName: r.employee?.name ?? "Anonymous",
-      employeeEmail: r.employee?.email ?? "—",
-      employeeTitle: r.employee?.title ?? null,
-      departmentName: r.employee?.department?.name ?? null,
-      hubName: r.employee?.hub?.name ?? null,
-      leaderName: leaderNames.get(leaderIdOf(r) ?? "") ?? null,
+      ...identityOf(r),
       isComplete: r.isComplete,
       submittedAt: r.submittedAt,
       createdAt: r.createdAt,
