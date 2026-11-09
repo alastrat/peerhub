@@ -10,6 +10,7 @@ import {
   scoreGroup,
   scoreSegments,
   findGaps,
+  isBelowGoalPct,
   classifyImpact,
   isInstrumentSurvey,
   type ScoringQuestion,
@@ -306,15 +307,23 @@ describe("findGaps", () => {
   it("returns banded dimensions below the goal, lowest first", () => {
     const qs = [instrumentQ("A-1", "a"), instrumentQ("B-1", "b"), instrumentQ("C-1", "c"), likert5("x", "x")];
     const r = scoreGroup(qs, [resp({ "A-1": 4, "B-1": 2, "C-1": 1, x: 1 })]);
-    const gaps = findGaps(r.dimensions, "FAVORABLE");
+    const gaps = findGaps(r.dimensions, 75);
     expect(gaps.map((g) => g.dimensionId)).toEqual(["c", "b"]);
   });
 
-  it("respects a stricter goal", () => {
-    // mean 3.5 → Favorable
-    const r = scoreGroup([instrumentQ("A-1", "a")], [resp({ "A-1": 3 }), resp({ "A-1": 4 })]);
-    expect(findGaps(r.dimensions, "FAVORABLE")).toHaveLength(0);
-    expect(findGaps(r.dimensions, "MUY_FAVORABLE")).toHaveLength(1);
+  it("compares the % of favorable answers with the survey's goal", () => {
+    // One answer of two is favorable: 50%
+    const r = scoreGroup([instrumentQ("A-1", "a")], [resp({ "A-1": 2 }), resp({ "A-1": 4 })]);
+    expect(findGaps(r.dimensions, 50)).toHaveLength(0);
+    expect(findGaps(r.dimensions, 75)).toHaveLength(1);
+  });
+});
+
+describe("isBelowGoalPct", () => {
+  it("reads the favorability as the rounded % shown on screen", () => {
+    expect(isBelowGoalPct(0.744, 75)).toBe(true);
+    expect(isBelowGoalPct(0.745, 75)).toBe(false);
+    expect(isBelowGoalPct(null, 75)).toBe(false);
   });
 });
 

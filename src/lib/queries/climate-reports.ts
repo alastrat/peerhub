@@ -6,9 +6,9 @@ import {
   scoreGroup,
   scoreSegments,
   findGaps,
-  isBelowGoal,
+  isBelowGoalPct,
   isInstrumentSurvey,
-  DEFAULT_GOAL_BAND,
+  DEFAULT_GOAL_PCT,
   type ClimateBand,
   type DimensionScore,
   type GroupScore,
@@ -93,7 +93,8 @@ export interface SurveyResults {
   isInstrument: boolean;
   instrumentVersion: string | null;
   anonymityThreshold: number;
-  goalBand: ClimateBand;
+  /** Survey goal: % of favorable answers */
+  goalPct: number;
   resultsReleasedAt: Date | null;
   /** True when the whole survey has fewer completed responses than the minimum. */
   suppressed: boolean;
@@ -135,7 +136,7 @@ export interface ScoringSurvey {
   name: string;
   companyId: string;
   anonymityThreshold: number;
-  goalBand: ClimateBand;
+  goalPct: number;
   instrumentVersion: string | null;
   resultsReleasedAt: Date | null;
   questions: (ScoringQuestion & {
@@ -178,7 +179,7 @@ export async function loadSurveyForScoring(surveyId: string, companyId: string):
     name: survey.name,
     companyId: survey.companyId,
     anonymityThreshold: survey.anonymityThreshold ?? 5,
-    goalBand: (survey.goalBand as ClimateBand | undefined) ?? DEFAULT_GOAL_BAND,
+    goalPct: survey.goalPct ?? DEFAULT_GOAL_PCT,
     instrumentVersion: survey.instrumentVersion ?? null,
     resultsReleasedAt: survey.resultsReleasedAt ?? null,
     questions: survey.questions.map((q) => ({
@@ -358,14 +359,14 @@ export async function getSurveyResults(surveyId: string, companyId: string): Pro
   );
 
   const dimensionScores = suppressed ? [] : toDimensionResults(company, survey);
-  const gaps = isInstrument ? (findGaps(dimensionScores, survey.goalBand) as DimensionResult[]) : [];
+  const gaps = isInstrument ? (findGaps(dimensionScores, survey.goalPct) as DimensionResult[]) : [];
 
   const attentionSegments: AttentionSegment[] = [];
   if (isInstrument && !suppressed) {
     const collect = (type: SegmentType, list: SegmentResult[]) => {
       for (const s of list) {
         if (s.suppressed || !s.index?.band || s.index.mean == null) continue;
-        if (!isBelowGoal(s.index.band, survey.goalBand)) continue;
+        if (!isBelowGoalPct(s.index.favorability, survey.goalPct)) continue;
         attentionSegments.push({
           type,
           segmentId: s.segmentId,
@@ -395,7 +396,7 @@ export async function getSurveyResults(surveyId: string, companyId: string): Pro
     isInstrument,
     instrumentVersion: survey.instrumentVersion,
     anonymityThreshold: k,
-    goalBand: survey.goalBand,
+    goalPct: survey.goalPct,
     resultsReleasedAt: survey.resultsReleasedAt,
     suppressed,
     index: suppressed ? null : company.index,

@@ -7,7 +7,6 @@ import type { ActionResult } from "@/types";
 import { Prisma, type ClimateSurvey, type SurveyQuestion, type SurveyQuestionType } from "@prisma/client";
 import { applyInstrumentRules, instrumentDimensionCodes } from "@/lib/utils/climate-instrument-guard";
 import { isLockedQuestion } from "@/lib/constants/climate-instrument";
-import { isClimateBand, type ClimateBand } from "@/lib/utils/climate-scoring";
 import { getTranslator } from "@/i18n/translator";
 import { isEmailAddress } from "@/lib/utils/email";
 import { actionError, getActionLocale, unexpectedActionError } from "@/lib/auth/action-locale";
@@ -73,6 +72,37 @@ interface CreateSurveyInput {
   wallpaperConfig?: Record<string, unknown> | null;
   colorConfig?: Record<string, unknown> | null;
   questionsPerPage?: number | null;
+  /** "Meta": % of favorable answers, 1–100 */
+  goalPct?: number;
+  /** When people can start and stop answering ("" or null: no limit) */
+  accessStartDate?: Date | string | null;
+  accessEndDate?: Date | string | null;
+}
+
+/** A whole % from 1 to 100, else null. */
+function validGoalPct(value: number): number | null {
+  return Number.isInteger(value) && value >= 1 && value <= 100 ? value : null;
+}
+
+/**
+ * The answer window's start and end as given (undefined = not given, null =
+ * cleared), or an error key when a date is invalid or the end isn't after
+ * the start. `current` fills in the side that wasn't given.
+ */
+function readAccessWindow(
+  input: { accessStartDate?: Date | string | null; accessEndDate?: Date | string | null },
+  current: { accessStartDate: Date | null; accessEndDate: Date | null } = { accessStartDate: null, accessEndDate: null },
+): { start?: Date | null; end?: Date | null } | { error: string } {
+  const parse = (v: Date | string | null | undefined) => (v === undefined ? undefined : v ? new Date(v) : null);
+  const start = parse(input.accessStartDate);
+  const end = parse(input.accessEndDate);
+  if ((start && Number.isNaN(start.getTime())) || (end && Number.isNaN(end.getTime()))) return { error: "invalid_access_dates" };
+  // Saving anything else never trips over dates stored before this check existed
+  if (start === undefined && end === undefined) return {};
+  const s = start === undefined ? current.accessStartDate : start;
+  const e = end === undefined ? current.accessEndDate : end;
+  if (s && e && e.getTime() <= s.getTime()) return { error: "access_end_before_start" };
+  return { start, end };
 }
 
 type SurveyWithQuestions = ClimateSurvey & {
@@ -95,6 +125,11 @@ export async function createClimateSurvey(
     const guarded = await guardInstrumentQuestions(input.questions);
     if (!guarded.ok) return actionError(`instrument.${guarded.code}`, guarded.values);
     const questions = guarded.questions;
+
+    const goalPct = input.goalPct === undefined ? undefined : validGoalPct(input.goalPct);
+    if (goalPct === null) return actionError("invalid_goal_pct");
+    const window = readAccessWindow(input);
+    if ("error" in window) return actionError(window.error);
 
     const survey = await prisma.climateSurvey.create({
       data: {
@@ -120,6 +155,9 @@ export async function createClimateSurvey(
         wallpaperConfig: input.wallpaperConfig ? (input.wallpaperConfig as Prisma.InputJsonValue) : Prisma.JsonNull,
         colorConfig: input.colorConfig ? (input.colorConfig as Prisma.InputJsonValue) : Prisma.JsonNull,
         questionsPerPage: input.questionsPerPage ?? null,
+        ...(goalPct !== undefined && { goalPct }),
+        accessStartDate: window.start ?? null,
+        accessEndDate: window.end ?? null,
         questions: {
           create: questions.map((q) => ({
             text: q.text,
@@ -183,8 +221,17 @@ export async function updateClimateSurvey(
         wallpaperConfig: input.wallpaperConfig,
         colorConfig: input.colorConfig,
         questionsPerPage: input.questionsPerPage,
+        // Settings rather than structure: editable after sending too
+        goalPct: input.goalPct,
+        accessStartDate: input.accessStartDate,
+        accessEndDate: input.accessEndDate,
       };
     }
+
+    const goalPct = input.goalPct === undefined ? undefined : validGoalPct(input.goalPct);
+    if (goalPct === null) return actionError("invalid_goal_pct");
+    const window = readAccessWindow(input, existing);
+    if ("error" in window) return actionError(window.error);
 
     // Reject empty questions array
     if (input.questions && input.questions.length === 0) {
@@ -219,6 +266,9 @@ export async function updateClimateSurvey(
       ...(input.questionsPerPage !== undefined && {
         questionsPerPage: input.questionsPerPage ?? null,
       }),
+      ...(goalPct !== undefined && { goalPct }),
+      ...(window.start !== undefined && { accessStartDate: window.start }),
+      ...(window.end !== undefined && { accessEndDate: window.end }),
     };
 
     // If questions are provided, delete and recreate atomically in a transaction
@@ -336,6 +386,7 @@ export async function duplicateClimateSurvey(
         questionsPerPage: original.questionsPerPage,
         instrumentVersion: original.instrumentVersion,
         goalBand: original.goalBand,
+        goalPct: original.goalPct,
         planMinPerLeader: original.planMinPerLeader,
         followUpUserIds: original.followUpUserIds,
         reportExtraDuration: original.reportExtraDuration,
@@ -380,7 +431,8 @@ export interface SurveySettingsInput {
   logoUrl?: string | null;
   accessStartDate?: Date | string | null;
   accessEndDate?: Date | string | null;
-  goalBand?: ClimateBand;
+  /** "Meta": % of favorable answers, 1–100 */
+  goalPct?: number;
   planMinPerLeader?: number;
   planDueDate?: Date | string | null;
   /** When leaders short of plans get their reminder; null = 3 days before the due date. */
@@ -435,13 +487,14 @@ export async function updateSurveySettings(
     }
     if (input.questionsPerPage !== undefined) data.questionsPerPage = input.questionsPerPage;
     if (input.logoUrl !== undefined) data.logoUrl = input.logoUrl?.trim() || null;
-    if (input.accessStartDate !== undefined)
-      data.accessStartDate = input.accessStartDate ? new Date(input.accessStartDate) : null;
-    if (input.accessEndDate !== undefined)
-      data.accessEndDate = input.accessEndDate ? new Date(input.accessEndDate) : null;
-    if (input.goalBand !== undefined) {
-      if (!isClimateBand(input.goalBand)) return actionError("invalid_goal_band");
-      data.goalBand = input.goalBand;
+    const window = readAccessWindow(input, existing);
+    if ("error" in window) return actionError(window.error);
+    if (window.start !== undefined) data.accessStartDate = window.start;
+    if (window.end !== undefined) data.accessEndDate = window.end;
+    if (input.goalPct !== undefined) {
+      const goalPct = validGoalPct(input.goalPct);
+      if (goalPct === null) return actionError("invalid_goal_pct");
+      data.goalPct = goalPct;
     }
     if (input.planMinPerLeader !== undefined) {
       if (!Number.isFinite(input.planMinPerLeader)) return actionError("invalid_plan_minimum");
