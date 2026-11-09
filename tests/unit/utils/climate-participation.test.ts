@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { buildParticipation, leaderParticipation } from "@/lib/utils/climate-participation";
-import { leaderOf, type SegmentSnapshot } from "@/lib/utils/climate-segments";
+import { leaderOf, participationSegments, type SegmentSnapshot } from "@/lib/utils/climate-segments";
+import { notAnsweredAsOf } from "@/lib/climate/survey-end";
 
 function invitee(isComplete: boolean, segments: Partial<SegmentSnapshot> = {}) {
   return {
@@ -23,14 +24,104 @@ describe("leaderOf", () => {
     expect(leaderOf({ teamIds: [], leaderEmployeeId: "lead-2" }, "lead-1")).toBe("lead-2");
   });
 
-  it("keeps a snapshot without a leader, even if they have a manager now", () => {
-    expect(leaderOf({ teamIds: [], leaderEmployeeId: null }, "lead-1")).toBeNull();
+  it("falls back to the current manager when the snapshot has no leader (answered before managers were loaded)", () => {
+    expect(leaderOf({ teamIds: [], leaderEmployeeId: null }, "lead-1")).toBe("lead-1");
+    expect(leaderOf({ teamIds: [], leaderEmployeeId: null }, null)).toBeNull();
   });
 
   it("falls back to the current manager when there's no snapshot (not answered yet)", () => {
     expect(leaderOf(null, "lead-1")).toBe("lead-1");
     expect(leaderOf(null, null)).toBeNull();
     expect(leaderOf(undefined, undefined)).toBeNull();
+  });
+});
+
+describe("participationSegments", () => {
+  const AT = new Date("2026-06-30");
+  const now = {
+    departmentId: "dept-2",
+    hubId: null,
+    managerId: "lead-1",
+    teamMemberships: [],
+    gender: "FEMALE",
+    birthDate: new Date("1990-05-01"),
+    startDate: new Date("2025-01-15"),
+  };
+
+  it("takes each value from the snapshot when it's set", () => {
+    const snapshot = {
+      departmentId: "dept-1",
+      hubId: null,
+      teamIds: ["team-1"],
+      leaderEmployeeId: "lead-2",
+      gender: "MALE",
+      generation: "GEN_X",
+      tenure: "OVER_5",
+    };
+    expect(participationSegments(snapshot, now, AT)).toEqual(snapshot);
+  });
+
+  it("fills leader and demographics missing from the snapshot with current data, field by field", () => {
+    // answered before managers and demographics were loaded
+    const snapshot = { departmentId: "dept-1", hubId: null, teamIds: [], leaderEmployeeId: null, gender: "MALE" };
+    expect(participationSegments(snapshot, now, AT)).toEqual({
+      departmentId: "dept-1",
+      hubId: null,
+      teamIds: [],
+      leaderEmployeeId: "lead-1",
+      gender: "MALE",
+      generation: "MILLENNIALS",
+      // measured at `at`, not today
+      tenure: "1_TO_3",
+    });
+  });
+
+  it("uses current data when there's no snapshot (not answered yet)", () => {
+    expect(participationSegments(null, now, AT)).toMatchObject({
+      departmentId: "dept-2",
+      leaderEmployeeId: "lead-1",
+      gender: "FEMALE",
+      tenure: "1_TO_3",
+    });
+  });
+
+  it("leaves a value unset when neither the snapshot nor the employee has it", () => {
+    const s = participationSegments({ teamIds: [], leaderEmployeeId: null }, null, AT);
+    expect([s.leaderEmployeeId, s.gender, s.generation, s.tenure]).toEqual([null, null, null, null]);
+  });
+});
+
+describe("notAnsweredAsOf", () => {
+  const NOW = new Date("2026-11-08T12:00:00Z");
+  const base = { accessEndDate: null, closedAt: null, distributions: [] };
+
+  it("is now while the survey is open, even past its end date", () => {
+    expect(notAnsweredAsOf({ ...base, status: "ACTIVE", accessEndDate: new Date("2026-01-31") }, NOW)).toBe(NOW);
+    expect(notAnsweredAsOf({ ...base, status: "DRAFT" }, NOW)).toBe(NOW);
+  });
+
+  it("is when it closed once it's closed", () => {
+    const closedAt = new Date("2026-02-03");
+    expect(
+      notAnsweredAsOf({ ...base, status: "CLOSED", closedAt, accessEndDate: new Date("2026-01-31") }, NOW),
+    ).toBe(closedAt);
+    expect(notAnsweredAsOf({ ...base, status: "ARCHIVED", closedAt }, NOW)).toBe(closedAt);
+  });
+
+  it("falls back to the access end date, then the latest due date, then now", () => {
+    const end = new Date("2026-01-31");
+    expect(notAnsweredAsOf({ ...base, status: "CLOSED", accessEndDate: end }, NOW)).toBe(end);
+    expect(
+      notAnsweredAsOf(
+        {
+          ...base,
+          status: "CLOSED",
+          distributions: [{ dueDate: new Date("2026-03-01") }, { dueDate: new Date("2026-03-15") }],
+        },
+        NOW,
+      ),
+    ).toEqual(new Date("2026-03-15"));
+    expect(notAnsweredAsOf({ ...base, status: "CLOSED" }, NOW)).toBe(NOW);
   });
 });
 

@@ -5,7 +5,7 @@
 import { GENDERS, GENERATIONS, TENURES } from "@/lib/constants/demographics";
 import type { SegmentSnapshot } from "@/lib/utils/climate-segments";
 
-/** One invited person: their snapshot if they answered, else where they sit now. */
+/** One invited person, placed as in participationSegments (climate-segments). */
 export interface ParticipationInvitee {
   isComplete: boolean;
   segments: SegmentSnapshot;

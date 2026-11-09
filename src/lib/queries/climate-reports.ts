@@ -19,6 +19,7 @@ import {
 } from "@/lib/utils/climate-scoring";
 import {
   resolveSegments,
+  participationSegments,
   inScope,
   type SegmentScope,
   type SegmentSnapshot,
@@ -28,6 +29,7 @@ import {
   type ParticipationInvitee,
   type SurveyParticipation,
 } from "@/lib/utils/climate-participation";
+import { notAnsweredAsOf } from "@/lib/climate/survey-end";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -172,9 +174,7 @@ export async function loadSurveyForScoring(surveyId: string, companyId: string):
   if (!survey) return null;
 
   const all = survey.distributions.flatMap((d) => d.responses);
-  // Tenure of people who haven't answered: at the survey's end once it's over, so it doesn't drift
-  const now = new Date();
-  const notAnsweredAt = survey.accessEndDate && survey.accessEndDate < now ? survey.accessEndDate : now;
+  const notAnsweredAt = notAnsweredAsOf(survey, new Date());
   return {
     id: survey.id,
     name: survey.name,
@@ -201,7 +201,7 @@ export async function loadSurveyForScoring(surveyId: string, companyId: string):
       })),
     invitees: all.map((r) => ({
       isComplete: r.isComplete,
-      segments: resolveSegments(r.segmentSnapshot, r.employee ?? null, r.submittedAt ?? notAnsweredAt),
+      segments: participationSegments(r.segmentSnapshot, r.employee ?? null, r.submittedAt ?? notAnsweredAt),
     })),
   };
 }

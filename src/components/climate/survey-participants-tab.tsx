@@ -47,7 +47,7 @@ export interface ParticipantRow {
   employeeName: string;
   employeeEmail: string;
   employeeTitle: string | null;
-  /** Direct manager when they answered, else their current one. */
+  /** Direct manager when they answered, else their current one. Null on anonymous surveys. */
   leaderName: string | null;
   hubName: string | null;
   isComplete: boolean;
@@ -272,12 +272,15 @@ function ResponderTable({
                 sort={sort}
                 onSort={setSort}
               />
-              <SortableHead
-                field="leader"
-                label={t("col_leader")}
-                sort={sort}
-                onSort={setSort}
-              />
+              {/* Anonymous: a row's leader would tie a small team to the answers in Respuestas */}
+              {!isAnonymous && (
+                <SortableHead
+                  field="leader"
+                  label={t("col_leader")}
+                  sort={sort}
+                  onSort={setSort}
+                />
+              )}
               <SortableHead
                 field="hub"
                 label={t("col_hub")}
@@ -327,9 +330,11 @@ function ResponderTable({
                     </div>
                   )}
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {r.leaderName ?? "—"}
-                </TableCell>
+                {!isAnonymous && (
+                  <TableCell className="text-sm text-muted-foreground">
+                    {r.leaderName ?? "—"}
+                  </TableCell>
+                )}
                 <TableCell className="text-sm text-muted-foreground">
                   {r.hubName ?? "—"}
                 </TableCell>
@@ -355,7 +360,7 @@ function ResponderTable({
             {visible.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={isAnonymous ? 5 : 6}
                   className="py-8 text-center text-sm text-muted-foreground"
                 >
                   {t("no_matches")}

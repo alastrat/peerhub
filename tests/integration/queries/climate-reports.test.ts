@@ -429,7 +429,7 @@ describe("getSurveyResults", () => {
             isComplete: false,
             employee: employee({ gender: "FEMALE", birthDate: new Date("2000-03-01"), startDate: null }),
           }),
-          // a legacy snapshot without demographics counts as "not set"
+          // a legacy snapshot without demographics, and none on file now, counts as "not set"
           buildResponse({ segmentSnapshot: { departmentId: "dept-1", hubId: null, teamIds: [], leaderEmployeeId: "lead-1" } }),
         ]),
       );
@@ -451,13 +451,63 @@ describe("getSurveyResults", () => {
       ]);
     });
 
-    it("measures the tenure of people who didn't answer at the survey's end once it's over", async () => {
+    it("places people who answered before managers and demographics were loaded where they sit now", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+        withResponses([
+          buildResponse({
+            segmentSnapshot: snap(null, null, null, null),
+            submittedAt: new Date("2025-03-01"),
+            employee: employee({
+              managerId: "lead-2",
+              gender: "FEMALE",
+              birthDate: new Date("1990-05-01"),
+              startDate: new Date("2024-06-01"),
+            }),
+          }),
+          buildResponse({ isComplete: false, employee: employee({ managerId: "lead-2", gender: "FEMALE" }) }),
+        ]),
+      );
+      const r = (await getSurveyResults("survey-1", "company-1"))!;
+      expect(r.participation.leaders).toEqual([{ id: "lead-2", name: "Mario Manager", invited: 2, answered: 1 }]);
+      expect(r.participation.gender).toEqual([{ id: "FEMALE", name: "FEMALE", invited: 2, answered: 1 }]);
+      // the respondent's tenure is measured when they answered
+      expect(r.participation.tenure.map((g) => [g.id, g.invited, g.answered])).toEqual([
+        ["UP_TO_1", 1, 1],
+        [null, 1, 0],
+      ]);
+    });
+
+    it("measures the tenure of people who didn't answer when the survey closed", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(
         withResponses([buildResponse({ isComplete: false, employee: employee({ startDate: new Date("2024-06-01") }) })], {
-          accessEndDate: new Date("2025-01-31"),
+          status: "CLOSED",
+          closedAt: new Date("2025-01-31"),
+          // closed early: the close wins over the end date
+          accessEndDate: new Date("2025-07-31"),
         }),
       );
       const r = (await getSurveyResults("survey-1", "company-1"))!;
+      expect(r.participation.tenure).toEqual([{ id: "UP_TO_1", name: "UP_TO_1", invited: 1, answered: 0 }]);
+    });
+
+    it("measures it at the latest due date for a closed survey without a close or end date", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+        buildSurveyData({
+          status: "CLOSED",
+          closedAt: null,
+          accessEndDate: null,
+          distributions: [
+            { id: "dist-1", dueDate: new Date("2024-01-15"), responses: [] },
+            {
+              id: "dist-2",
+              dueDate: new Date("2025-01-31"),
+              responses: [buildResponse({ isComplete: false, employee: employee({ startDate: new Date("2024-06-01") }) })],
+            },
+          ],
+        }),
+      );
+      const r = (await getSurveyResults("survey-1", "company-1"))!;
+      // under a year on the last due date (not started yet on the first, over a year today)
       expect(r.participation.tenure).toEqual([{ id: "UP_TO_1", name: "UP_TO_1", invited: 1, answered: 0 }]);
     });
 

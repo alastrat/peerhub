@@ -214,9 +214,10 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
       ? requestedTab
       : "insights";
 
-  // Each person's leader (Avances tab): the one when they answered, else their current manager
+  // Each person's leader (Avances tab): the one when they answered, else their current manager.
+  // Not on anonymous surveys: row by row, it would tie a small team to the answers in Respuestas.
   const leaderIdOf = (r: (typeof survey.distributions)[number]["responses"][number]) =>
-    leaderOf(r.segmentSnapshot, r.employee?.managerId);
+    survey.isAnonymous ? null : leaderOf(r.segmentSnapshot, r.employee?.managerId);
   const leaderIds = [
     ...new Set(survey.distributions.flatMap((d) => d.responses.map(leaderIdOf)).filter((id) => id != null)),
   ];
