@@ -89,6 +89,40 @@ export const updateEmployeeDetailsSchema = z.object({
   startDate: z.coerce.date().optional().nullable(),
 });
 
+// Empty selects ("" / "none") mean no selection
+const optionalIdSchema = z.preprocess(
+  (v) => (v === "" || v === "none" ? null : v),
+  z.string().nullable().optional(),
+);
+
+/**
+ * Add employee form: the same fields and rules as one row of the employee
+ * import (Kultiva's format). The form passes its translated messages.
+ */
+export function addEmployeeSchema(
+  messages: { nationalIdRequired?: string; nameTooShort?: string; emailInvalid?: string } = {},
+) {
+  return z.object({
+    nationalId: z.preprocess(
+      (v) => (typeof v === "string" ? normalizeNationalId(v) : v),
+      z.string().min(1, messages.nationalIdRequired).max(30),
+    ),
+    name: z.string().trim().min(2, messages.nameTooShort),
+    email: z.string().trim().toLowerCase().email(messages.emailInvalid),
+    title: z.string().trim().optional(),
+    hubId: optionalIdSchema,
+    departmentId: optionalIdSchema,
+    managerId: optionalIdSchema,
+    startDate: optionalDateSchema,
+    gender: genderSchema,
+    birthDate: optionalDateSchema,
+    jobLevel: jobLevelSchema,
+    // As in the import, platform access comes only with an emailed invitation
+    invite: z.boolean().default(false),
+    role: z.enum(["ADMIN", "MANAGER", "MEMBER"]).default("MEMBER"),
+  });
+}
+
 export const inviteUserSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   role: z.enum(["ADMIN", "MANAGER", "MEMBER"]).default("MEMBER"),
@@ -117,6 +151,8 @@ export const csvImportRowSchema = z.object({
   managerNationalId: z.string().optional(),
   managerName: z.string().optional(),
   jobLevel: z.string().optional(),
+  // Email a platform invitation once the employee is created
+  invite: z.boolean().optional(),
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
@@ -127,3 +163,4 @@ export type EmployeeFields = z.infer<typeof employeeFieldsSchema>;
 export type InviteUserInput = z.infer<typeof inviteUserSchema>;
 export type BulkInviteInput = z.infer<typeof bulkInviteSchema>;
 export type CSVImportRow = z.infer<typeof csvImportRowSchema>;
+export type AddEmployeeInput = z.input<ReturnType<typeof addEmployeeSchema>>;

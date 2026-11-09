@@ -5,7 +5,13 @@ import { auth } from "@/lib/auth/config";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "@/types";
 import type { CompanyUser, CompanyRole, Gender, JobLevel, Prisma } from "@prisma/client";
-import { updateEmployeeSchema, type UpdateEmployeeInput } from "@/lib/validations/user";
+import {
+  addEmployeeSchema,
+  updateEmployeeSchema,
+  type AddEmployeeInput,
+  type UpdateEmployeeInput,
+} from "@/lib/validations/user";
+import { findEmployeeConflict, inviteEmployee } from "@/lib/people/new-employee";
 import { isValidBirthDate } from "@/lib/constants/demographics";
 import { normalizeNationalId } from "@/lib/utils/employee-import";
 import { actionError } from "@/lib/auth/action-locale";
@@ -36,6 +42,75 @@ async function nationalIdTaken(companyId: string, nationalId: string, exceptEmpl
     select: { id: true },
   });
   return other !== null;
+}
+
+/**
+ * Add one employee by hand: the same fields and rules as a row of the
+ * employee import. The person is created right away (so surveys can include
+ * them); platform access comes only with the optional emailed invitation.
+ */
+export async function addEmployee(
+  input: AddEmployeeInput,
+): Promise<ActionResult<{ employeeId: string; invited: boolean }>> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id || session.companyUser?.role !== "ADMIN") return actionError("unauthorized");
+    const companyId = session.companyUser.companyId;
+
+    const parsed = addEmployeeSchema().safeParse(input);
+    if (!parsed.success) return actionError("invalid_employee");
+    const data = parsed.data;
+    if (data.birthDate && !isValidBirthDate(data.birthDate)) return actionError("invalid_birth_date");
+
+    const conflict = await findEmployeeConflict(companyId, data.email, data.nationalId);
+    if (conflict === "email") return actionError("employee_email_taken");
+    if (conflict === "national_id") return actionError("national_id_taken");
+
+    // The selects only offer this company's records, but one may have been deleted since
+    const [department, manager, hub] = await Promise.all([
+      data.departmentId ? prisma.department.findFirst({ where: { id: data.departmentId, companyId }, select: { id: true } }) : null,
+      data.managerId ? prisma.employee.findFirst({ where: { id: data.managerId, companyId }, select: { id: true } }) : null,
+      data.hubId ? prisma.hub.findFirst({ where: { id: data.hubId, companyId }, select: { id: true } }) : null,
+    ]);
+    if ((data.departmentId && !department) || (data.managerId && !manager) || (data.hubId && !hub)) {
+      return actionError("selection_not_found");
+    }
+
+    const employee = await prisma.employee.create({
+      data: {
+        companyId,
+        nationalId: data.nationalId,
+        name: data.name,
+        email: data.email,
+        title: data.title || null,
+        hubId: hub?.id,
+        departmentId: department?.id,
+        managerId: manager?.id,
+        startDate: data.startDate ?? null,
+        gender: data.gender ?? null,
+        birthDate: data.birthDate ?? null,
+        jobLevel: data.jobLevel ?? null,
+      },
+    });
+
+    let invited = false;
+    let warning: string | undefined;
+    if (data.invite) {
+      try {
+        await inviteEmployee(employee, data.role, session.user.name);
+        invited = true;
+      } catch (error) {
+        console.error("Add employee invitation failed:", error);
+        warning = (await actionError("invite_failed")).error;
+      }
+    }
+
+    revalidatePath("/people");
+    return { success: true, data: { employeeId: employee.id, invited }, ...(warning && { warning }) };
+  } catch (error) {
+    console.error("Failed to add employee:", error);
+    return actionError("failed_add_employee");
+  }
 }
 
 interface InviteUserInput {

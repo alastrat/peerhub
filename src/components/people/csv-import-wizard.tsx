@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -56,6 +57,10 @@ import type { CompanyRole } from "@prisma/client";
 // Radix Select can't have an empty-string item value
 const SKIP_COLUMN = "__skip";
 
+// With invitations each row sends an email; the email provider accepts about
+// two per second, so rows go no faster than this
+const INVITE_ROW_INTERVAL_MS = 600;
+
 type WizardStep = "upload" | "mapping" | "review" | "importing" | "complete";
 
 export function CSVImportWizard() {
@@ -70,9 +75,13 @@ export function CSVImportWizard() {
   const [columnMapping, setColumnMapping] = useState<ColumnMapping>({});
   const [validationResults, setValidationResults] = useState<ImportRowResult[]>([]);
   const [importProgress, setImportProgress] = useState(0);
+  // Off by default: importing people sends them nothing unless asked
+  const [sendInvites, setSendInvites] = useState(false);
   const [importResults, setImportResults] = useState<{
     success: number;
     failed: number;
+    /** Invitations sent, or null when none were requested. */
+    invited: number | null;
     errors: string[];
     warnings: string[];
   } | null>(null);
@@ -156,23 +165,28 @@ export function CSVImportWizard() {
     const validRows = orderForImport(validationResults.filter((r) => r.errors.length === 0));
     let success = 0;
     let failed = 0;
+    let invited = 0;
     const errors: string[] = [];
     const warnings: string[] = [];
 
     for (let i = 0; i < validRows.length; i++) {
       const row = validRows[i];
+      const startedAt = Date.now();
 
       try {
         const response = await fetch("/api/people/import", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(row.data),
+          body: JSON.stringify(sendInvites ? { ...row.data, invite: true } : row.data),
         });
 
         if (response.ok) {
           success++;
           const result = await response.json();
-          if (result.warning) warnings.push(t("errors.row", { row: row.row, message: result.warning }));
+          if (result.invited) invited++;
+          for (const warning of result.warnings ?? []) {
+            warnings.push(t("errors.row", { row: row.row, message: warning }));
+          }
         } else {
           const error = await response.json();
           failed++;
@@ -184,9 +198,13 @@ export function CSVImportWizard() {
       }
 
       setImportProgress(((i + 1) / validRows.length) * 100);
+      if (sendInvites && i < validRows.length - 1) {
+        const wait = INVITE_ROW_INTERVAL_MS - (Date.now() - startedAt);
+        if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
+      }
     }
 
-    setImportResults({ success, failed, errors, warnings });
+    setImportResults({ success, failed, invited: sendInvites ? invited : null, errors, warnings });
     setStep("complete");
   }
 
@@ -455,6 +473,18 @@ export function CSVImportWizard() {
               </Table>
             </ScrollArea>
 
+            <label className="flex cursor-pointer items-start gap-3 rounded-lg border p-4">
+              <Checkbox
+                checked={sendInvites}
+                onCheckedChange={(checked) => setSendInvites(checked === true)}
+                className="mt-0.5"
+              />
+              <span className="space-y-1">
+                <span className="block text-sm font-medium">{t("review.invite_label")}</span>
+                <span className="block text-sm text-muted-foreground">{t("review.invite_hint")}</span>
+              </span>
+            </label>
+
             <div className="flex justify-end gap-4">
               <Button variant="outline" onClick={() => setStep("mapping")}>
                 {t("back")}
@@ -503,6 +533,11 @@ export function CSVImportWizard() {
                 <div>
                   <p className="font-medium">{t("complete.imported", { count: importResults.success })}</p>
                   <p className="text-sm text-muted-foreground">{t("complete.imported_hint")}</p>
+                  {importResults.invited !== null && (
+                    <p className="text-sm text-muted-foreground">
+                      {t("complete.invited", { count: importResults.invited })}
+                    </p>
+                  )}
                 </div>
               </div>
               {importResults.failed > 0 && (
@@ -552,6 +587,7 @@ export function CSVImportWizard() {
                   setColumnMapping({});
                   setValidationResults([]);
                   setImportResults(null);
+                  setSendInvites(false);
                 }}
               >
                 {t("complete.import_more")}
