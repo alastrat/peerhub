@@ -1,5 +1,6 @@
-// Demographic groups used to segment climate results (spec §3.5). Only
-// aggregated, suppressed results are ever shown — never a person's values.
+// Demographic groups (spec §3.5). Climate reports only count participation
+// per group (answered or not); results are never broken down by them, and a
+// person's values are never shown.
 
 export const GENDERS = ["FEMALE", "MALE", "NON_BINARY", "PREFER_NOT_TO_SAY"] as const;
 export type GenderKey = (typeof GENDERS)[number];

@@ -44,8 +44,9 @@
   }
 
   /* Dimension names read bottom to top, so a dozen columns fit the page.
-     Anything wider than the page makes Chrome shrink every page to fit. */
-  [data-climate-report] thead th:not(:first-child) {
+     Anything wider than the page makes Chrome shrink every page to fit.
+     Participation tables have few columns and keep their headers level. */
+  [data-climate-report] table:not([data-participation]) thead th:not(:first-child) {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     white-space: nowrap;

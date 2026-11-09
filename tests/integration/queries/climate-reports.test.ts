@@ -354,48 +354,15 @@ describe("getSurveyResults", () => {
       expect(r.hubBreakdown).toEqual([]);
     });
 
-    it("builds demographic breakdowns in natural order, with suppression", async () => {
-      const snap = (gender: string, generation: string, tenure: string) => ({
-        departmentId: "dept-1",
-        hubId: null,
-        teamIds: [],
-        leaderEmployeeId: "lead-1",
-        gender,
-        generation,
-        tenure,
-      });
-      mockPrisma.climateSurvey.findFirst.mockResolvedValue(
-        withResponses(
-          [
-            buildResponse({ answers: [ans("q1", 5)], segmentSnapshot: snap("MALE", "GEN_X", "OVER_5") }),
-            buildResponse({ answers: [ans("q1", 3)], segmentSnapshot: snap("FEMALE", "GEN_Z", "UP_TO_1") }),
-            buildResponse({ answers: [ans("q1", 1)], segmentSnapshot: snap("FEMALE", "GEN_Z", "UP_TO_1") }),
-            // a legacy snapshot without demographics is left out of these cuts
-            buildResponse({
-              answers: [ans("q1", 4)],
-              segmentSnapshot: { departmentId: "dept-1", hubId: null, teamIds: [], leaderEmployeeId: "lead-1" },
-            }),
-          ],
-          { questions: [buildQuestion()], anonymityThreshold: 2 },
-        ),
-      );
-      const r = (await getSurveyResults("survey-1", "company-1"))!;
-      expect(r.genderBreakdown.map((s) => [s.segmentId, s.respondents, s.suppressed])).toEqual([
-        ["FEMALE", 2, false],
-        ["MALE", 1, true],
-      ]);
-      expect(r.genderBreakdown[0].index?.mean).toBe(2);
-      expect(r.generationBreakdown.map((s) => s.segmentId)).toEqual(["GEN_Z", "GEN_X"]);
-      expect(r.tenureBreakdown.map((s) => s.segmentId)).toEqual(["UP_TO_1", "OVER_5"]);
-    });
-
-    it("lists demographic groups below the goal as attention points", async () => {
+    it("never lists demographic groups as attention points", async () => {
       const qs = [
         instrumentQuestion("LID-1", "lid", "Liderazgo", 1),
       ];
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(
         withResponses(
           [
+            // MALE alone would be far below the goal
+            buildResponse({ answers: [ans("LID-1", 1)], segmentSnapshot: { teamIds: [], gender: "MALE" } }),
             buildResponse({ answers: [ans("LID-1", 1)], segmentSnapshot: { teamIds: [], gender: "MALE" } }),
             buildResponse({ answers: [ans("LID-1", 4)], segmentSnapshot: { teamIds: [], gender: "FEMALE" } }),
           ],
@@ -403,8 +370,9 @@ describe("getSurveyResults", () => {
         ),
       );
       const r = (await getSurveyResults("survey-1", "company-1"))!;
-      expect(r.attentionSegments).toContainEqual(expect.objectContaining({ type: "gender", segmentId: "MALE" }));
-      expect(r.attentionSegments.find((s) => s.segmentId === "FEMALE")).toBeUndefined();
+      expect(r.gaps.map((g) => g.dimensionId)).toEqual(["lid"]);
+      expect(r.attentionSegments).toEqual([]);
+      expect(r).not.toHaveProperty("genderBreakdown");
     });
 
     it("skips responses with no employee and no snapshot", async () => {
@@ -415,6 +383,94 @@ describe("getSurveyResults", () => {
       expect(r.totalResponded).toBe(1);
       expect(r.departmentBreakdown).toEqual([]);
       expect(r.leaderBreakdown).toEqual([]);
+    });
+  });
+
+  describe("participation", () => {
+    const snap = (leaderEmployeeId: string | null, gender: string | null, generation: string | null, tenure: string | null) => ({
+      departmentId: "dept-1",
+      hubId: null,
+      teamIds: [],
+      leaderEmployeeId,
+      gender,
+      generation,
+      tenure,
+    });
+
+    it("counts answered vs. invited per leader, with the people who haven't answered under their manager", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+        withResponses([
+          // answered while reporting to lead-2, reports to lead-1 now: counts for lead-2
+          buildResponse({ segmentSnapshot: snap("lead-2", null, null, null), employee: employee({ managerId: "lead-1" }) }),
+          buildResponse({ isComplete: false, employee: employee({ managerId: "lead-1" }) }),
+          buildResponse({ isComplete: false, employee: employee({ managerId: "lead-2" }) }),
+          buildResponse({ employee: employee({ managerId: "lead-2" }) }),
+          buildResponse({ isComplete: false, employee: employee({ managerId: null }) }),
+        ]),
+      );
+      const r = (await getSurveyResults("survey-1", "company-1"))!;
+      expect(r.participation.leaders).toEqual([
+        { id: "lead-1", name: "Laura Leader", invited: 1, answered: 0 },
+        { id: "lead-2", name: "Mario Manager", invited: 3, answered: 2 },
+        { id: null, name: null, invited: 1, answered: 0 },
+      ]);
+      // names cover leaders whose people haven't answered
+      expect(mockPrisma.employee.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { companyId: "company-1", id: { in: expect.arrayContaining(["lead-1", "lead-2"]) } } }),
+      );
+    });
+
+    it("counts answered vs. not answered per gender, generation and tenure, in natural order", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+        withResponses([
+          buildResponse({ segmentSnapshot: snap("lead-1", "MALE", "GEN_X", "OVER_5") }),
+          buildResponse({ segmentSnapshot: snap("lead-1", "FEMALE", "GEN_Z", "UP_TO_1") }),
+          buildResponse({
+            isComplete: false,
+            employee: employee({ gender: "FEMALE", birthDate: new Date("2000-03-01"), startDate: null }),
+          }),
+          // a legacy snapshot without demographics counts as "not set"
+          buildResponse({ segmentSnapshot: { departmentId: "dept-1", hubId: null, teamIds: [], leaderEmployeeId: "lead-1" } }),
+        ]),
+      );
+      const r = (await getSurveyResults("survey-1", "company-1"))!;
+      expect(r.participation.gender).toEqual([
+        { id: "FEMALE", name: "FEMALE", invited: 2, answered: 1 },
+        { id: "MALE", name: "MALE", invited: 1, answered: 1 },
+        { id: null, name: null, invited: 1, answered: 1 },
+      ]);
+      expect(r.participation.generation.map((g) => [g.id, g.invited, g.answered])).toEqual([
+        ["GEN_Z", 2, 1],
+        ["GEN_X", 1, 1],
+        [null, 1, 1],
+      ]);
+      expect(r.participation.tenure.map((g) => [g.id, g.invited, g.answered])).toEqual([
+        ["UP_TO_1", 1, 1],
+        ["OVER_5", 1, 1],
+        [null, 2, 1],
+      ]);
+    });
+
+    it("measures the tenure of people who didn't answer at the survey's end once it's over", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+        withResponses([buildResponse({ isComplete: false, employee: employee({ startDate: new Date("2024-06-01") }) })], {
+          accessEndDate: new Date("2025-01-31"),
+        }),
+      );
+      const r = (await getSurveyResults("survey-1", "company-1"))!;
+      expect(r.participation.tenure).toEqual([{ id: "UP_TO_1", name: "UP_TO_1", invited: 1, answered: 0 }]);
+    });
+
+    it("shows participation even when the results are hidden", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+        withResponses([buildResponse({ answers: [ans("q1", 4)] }), buildResponse({ isComplete: false })], {
+          questions: [buildQuestion()],
+          anonymityThreshold: 5,
+        }),
+      );
+      const r = (await getSurveyResults("survey-1", "company-1"))!;
+      expect(r.suppressed).toBe(true);
+      expect(r.participation.leaders).toEqual([{ id: "lead-1", name: "Laura Leader", invited: 2, answered: 1 }]);
     });
   });
 });

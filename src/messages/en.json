@@ -2395,6 +2395,7 @@
         "tabs": {
           "answers": "Answers",
           "participants": "Participants",
+          "progress": "Progress",
           "questions": "Questions",
           "settings": "Settings",
           "insights": "Insights"
@@ -2487,7 +2488,7 @@
           "more_responses": "+{count, plural, one {# more response} other {# more responses}}"
         },
         "participants_tab": {
-          "title": "Participants",
+          "title": "Progress",
           "summary": "{total} total · {completed} completed · {pending} in progress",
           "empty_title": "No participants yet",
           "empty_hint": "Participants will appear here once they start responding to the survey.",
@@ -2495,7 +2496,7 @@
           "col_participant": "Participant",
           "col_email": "Email",
           "col_title": "Title",
-          "col_department": "Department",
+          "col_leader": "Leader",
           "col_hub": "Hub",
           "col_team": "Team",
           "col_progress": "Progress",
@@ -2996,10 +2997,7 @@
       "department": "Department",
       "team": "Team",
       "hub": "Hub",
-      "leader": "Leader",
-      "gender": "Gender",
-      "generation": "Generation",
-      "tenure": "Tenure"
+      "leader": "Leader"
     },
     "heatmap_department": "Heatmap by department",
     "heatmap_team": "Heatmap by team",
@@ -3014,9 +3012,23 @@
     "scale_label": "Scale",
     "scale_FREQ_4": "Frequency (Never–Always, 1–4)",
     "scale_AGREE_5": "Agreement (1–5)",
-    "heatmap_gender": "Heatmap by gender",
-    "heatmap_generation": "Heatmap by generation",
-    "heatmap_tenure": "Heatmap by tenure"
+    "participation": {
+      "leaders_title": "Progress by leader",
+      "leaders_desc": "How many of the people invited answered, by their direct manager.",
+      "demographics_title": "Participation by gender, generation and tenure",
+      "demographics_desc": "Only how many people answered and how many didn't: results aren't broken down by these groups.",
+      "col_leader": "Leader",
+      "col_group": "Group",
+      "col_answered": "Answered",
+      "col_not_answered": "Not answered",
+      "col_invited": "Invited",
+      "col_progress": "Progress",
+      "no_leader": "No leader assigned",
+      "no_data": "Not set",
+      "gender": "Gender",
+      "generation": "Generation",
+      "tenure": "Tenure"
+    }
   },
   "climate_plans": {
     "leaders": {
@@ -3455,7 +3467,7 @@
       "start_date": "Start date",
       "not_set": "Not set",
       "section_title": "Demographics",
-      "privacy_hint": "Used only for aggregated climate results (groups with at least the minimum number of responses); never shown per person."
+      "privacy_hint": "Used only to count climate survey participation (how many people in each group answered); never shown per person or crossed with answers."
     }
   },
   "employee_fields": {
@@ -3848,6 +3860,7 @@
       "rate": "Response rate",
       "dimensions": "Dimensions",
       "questions": "Questions",
+      "participation_title": "Participation",
       "summary": "Summary",
       "band_legend": "Bands:",
       "dimensions_title": "Results by dimension",

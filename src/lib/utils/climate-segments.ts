@@ -93,6 +93,15 @@ export function resolveSegments(
   };
 }
 
+/**
+ * A respondent's leader: the one frozen when they answered, else their
+ * current manager (people who haven't answered yet), as in resolveSegments.
+ */
+export function leaderOf(snapshot: unknown, managerId: string | null | undefined): string | null {
+  const parsed = parseSegmentSnapshot(snapshot);
+  return parsed ? parsed.leaderEmployeeId : (managerId ?? null);
+}
+
 /** Does a response with these segments belong to the given scope? */
 export function inScope(segments: SegmentSnapshot, scope: SegmentScope, scopeRefId: string | null): boolean {
   switch (scope) {

@@ -2441,6 +2441,7 @@
         "tabs": {
           "answers": "Respuestas",
           "participants": "Participantes",
+          "progress": "Avances",
           "questions": "Preguntas",
           "settings": "Configuración",
           "insights": "Análisis"
@@ -2533,7 +2534,7 @@
           "more_responses": "+{count, plural, one {# respuesta más} other {# respuestas más}}"
         },
         "participants_tab": {
-          "title": "Participantes",
+          "title": "Avances",
           "summary": "{total} en total · {completed} completadas · {pending} en curso",
           "empty_title": "Aún no hay participantes",
           "empty_hint": "Los participantes aparecerán aquí cuando comiencen a responder la encuesta.",
@@ -2541,7 +2542,7 @@
           "col_participant": "Participante",
           "col_email": "Email",
           "col_title": "Cargo",
-          "col_department": "Departamento",
+          "col_leader": "Líder",
           "col_hub": "Sede",
           "col_team": "Equipo",
           "col_progress": "Progreso",
@@ -3044,10 +3045,7 @@
       "department": "Departamento",
       "team": "Equipo",
       "hub": "Sede",
-      "leader": "Líder",
-      "gender": "Género",
-      "generation": "Generación",
-      "tenure": "Antigüedad"
+      "leader": "Líder"
     },
     "heatmap_department": "Mapa de calor por departamento",
     "heatmap_team": "Mapa de calor por equipo",
@@ -3062,9 +3060,23 @@
     "scale_label": "Escala",
     "scale_FREQ_4": "Frecuencia (Nunca–Siempre, 1–4)",
     "scale_AGREE_5": "Acuerdo (1–5)",
-    "heatmap_gender": "Mapa de calor por género",
-    "heatmap_generation": "Mapa de calor por generación",
-    "heatmap_tenure": "Mapa de calor por antigüedad"
+    "participation": {
+      "leaders_title": "Avance por líder",
+      "leaders_desc": "Cuántas personas respondieron de las invitadas, según su jefe directo.",
+      "demographics_title": "Participación por género, generación y antigüedad",
+      "demographics_desc": "Solo cuántas personas respondieron y cuántas no: los resultados no se cruzan con estos datos.",
+      "col_leader": "Líder",
+      "col_group": "Grupo",
+      "col_answered": "Respondieron",
+      "col_not_answered": "No respondieron",
+      "col_invited": "Invitados",
+      "col_progress": "Avance",
+      "no_leader": "Sin líder asignado",
+      "no_data": "Sin dato",
+      "gender": "Género",
+      "generation": "Generación",
+      "tenure": "Antigüedad"
+    }
   },
   "climate_plans": {
     "leaders": {
@@ -3503,7 +3515,7 @@
       "start_date": "Fecha de ingreso",
       "not_set": "Sin especificar",
       "section_title": "Datos demográficos",
-      "privacy_hint": "Se usan solo para resultados agregados de clima (grupos de al menos el mínimo de respuestas); nunca se muestran por persona."
+      "privacy_hint": "Se usan solo para contar la participación en las encuestas de clima (cuántas personas de cada grupo respondieron); nunca se muestran por persona ni se cruzan con las respuestas."
     }
   },
   "employee_fields": {
@@ -3896,6 +3908,7 @@
       "rate": "Tasa de respuesta",
       "dimensions": "Dimensiones",
       "questions": "Preguntas",
+      "participation_title": "Participación",
       "summary": "Resumen",
       "band_legend": "Niveles:",
       "dimensions_title": "Resultados por dimensión",

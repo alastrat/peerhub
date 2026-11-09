@@ -20,6 +20,7 @@ import {
   formatPct,
 } from "./climate-score-ui";
 import { ClimateHeatmap } from "./climate-heatmap";
+import { DemographicParticipation, LeaderProgress } from "./climate-participation";
 
 interface SurveyInsightsTabProps {
   results: SurveyResults;
@@ -120,10 +121,7 @@ export function SurveyInsightsTab({
 }: SurveyInsightsTabProps) {
   const t = useTranslations("dashboard.climate.detail.insights_tab");
   const ts = useTranslations("climate_scoring");
-  const td = useTranslations("demographics");
   const locale = useLocale();
-  const demographicLabel = (type: "gender" | "generation" | "tenure") => (s: { segmentName: string }) =>
-    td(`${type}.${s.segmentName}`);
   const hasNPS = results.questionResults.some((q) => q.type === "NPS");
   const k = results.anonymityThreshold;
 
@@ -189,6 +187,10 @@ export function SurveyInsightsTab({
           </CardContent>
         </Card>
       </div>
+
+      {/* Participation: counts only, so it shows even when results are hidden */}
+      <LeaderProgress leaders={results.participation.leaders} />
+      <DemographicParticipation participation={results.participation} />
 
       {results.suppressed ? (
         <Card>
@@ -340,11 +342,7 @@ export function SurveyInsightsTab({
                               <Badge variant="outline" className="text-xs">
                                 {ts(`segment_types.${s.type}`)}
                               </Badge>
-                              <span className="font-medium">
-                                {s.type === "gender" || s.type === "generation" || s.type === "tenure"
-                                  ? td(`${s.type}.${s.segmentName}`)
-                                  : s.segmentName}
-                              </span>
+                              <span className="font-medium">{s.segmentName}</span>
                               <span className="tabular-nums text-muted-foreground">{formatMean(s.mean)}</span>
                               <BandBadge band={s.band} />
                             </div>
@@ -384,27 +382,6 @@ export function SurveyInsightsTab({
             segments={results.leaderBreakdown}
             dimensions={dimensionColumns}
             minGroupSize={k}
-          />
-          <ClimateHeatmap
-            title={ts("heatmap_gender")}
-            segments={results.genderBreakdown}
-            dimensions={dimensionColumns}
-            minGroupSize={k}
-            segmentLabel={demographicLabel("gender")}
-          />
-          <ClimateHeatmap
-            title={ts("heatmap_generation")}
-            segments={results.generationBreakdown}
-            dimensions={dimensionColumns}
-            minGroupSize={k}
-            segmentLabel={demographicLabel("generation")}
-          />
-          <ClimateHeatmap
-            title={ts("heatmap_tenure")}
-            segments={results.tenureBreakdown}
-            dimensions={dimensionColumns}
-            minGroupSize={k}
-            segmentLabel={demographicLabel("tenure")}
           />
 
           {/* Question-level Results */}

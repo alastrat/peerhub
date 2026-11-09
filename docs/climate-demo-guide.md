@@ -34,9 +34,12 @@ npx tsx scripts/demo-links.ts                 # sign-in links for each role
 Open the admin link. It lands on **Clima organizacional 2026 (demo) → Análisis**.
 
 - **Índice de Clima:** the 1–4 mean, its level (Muy favorable / Favorable / Desfavorable / Muy desfavorable), the % of favorable answers (Casi siempre or Siempre), and the goal.
+- **Avance por líder:** answered / invited per leader (each person's direct manager), people who haven't answered included.
+- **Participación por género, generación y antigüedad:** answered vs. not answered per group. Demographics only appear here; results are never broken down by them.
 - **Puntajes por dimensión:** the 12 dimensions, each with its mean, level and favorability.
-- **Puntos de atención:** dimensions and groups below the goal, lowest first.
-- **Heatmaps** by department, leader, **gender, generation and tenure**. Groups with fewer than 5 responses show a lock instead of numbers (e.g. "Ana Ruiz (2)", "No binario (2)").
+- **Puntos de atención:** dimensions and groups (department, hub, team, leader) below the goal, lowest first.
+- **Heatmaps** by department, team, hub and leader. Groups with fewer than 5 responses show a lock instead of numbers (e.g. "Ana Ruiz (2)").
+- **Avances tab** (Participantes while the survey is a draft): each person's progress, with their leader's name.
 - **Resultados por pregunta:** Nunca…Siempre distributions per item, each tagged "Ítem validado · LID-1"…
 
 ## 2. The instrument is locked

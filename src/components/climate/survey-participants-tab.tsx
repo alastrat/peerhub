@@ -47,7 +47,8 @@ export interface ParticipantRow {
   employeeName: string;
   employeeEmail: string;
   employeeTitle: string | null;
-  departmentName: string | null;
+  /** Direct manager when they answered, else their current one. */
+  leaderName: string | null;
   hubName: string | null;
   isComplete: boolean;
   submittedAt: Date | null;
@@ -172,7 +173,7 @@ function compare(a: unknown, b: unknown, dir: SortDir) {
 
 type ResponderSortKey =
   | "name"
-  | "department"
+  | "leader"
   | "hub"
   | "progress"
   | "status"
@@ -205,8 +206,8 @@ function ResponderTable({
         switch (sort.key) {
           case "name":
             return isAnonymous ? null : r.employeeName;
-          case "department":
-            return r.departmentName;
+          case "leader":
+            return r.leaderName;
           case "hub":
             return r.hubName;
           case "progress":
@@ -272,8 +273,8 @@ function ResponderTable({
                 onSort={setSort}
               />
               <SortableHead
-                field="department"
-                label={t("col_department")}
+                field="leader"
+                label={t("col_leader")}
                 sort={sort}
                 onSort={setSort}
               />
@@ -327,7 +328,7 @@ function ResponderTable({
                   )}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {r.departmentName ?? "—"}
+                  {r.leaderName ?? "—"}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {r.hubName ?? "—"}
