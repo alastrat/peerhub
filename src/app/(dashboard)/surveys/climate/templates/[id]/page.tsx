@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
-import { ArrowLeft, Edit } from "lucide-react";
+import { ArrowLeft, Edit, Send } from "lucide-react";
 import { PageHeader } from "@/components/design-system/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -55,16 +55,22 @@ export default async function ClimateTemplateDetailPage({ params }: PageProps) {
           title={template.name}
           description={template.description || t("no_description")}
         />
-        {isOwned && (
-          <div className="ml-auto flex gap-2">
+        <div className="ml-auto flex gap-2">
+          {isOwned && (
             <Button variant="outline" asChild>
               <Link href={`/surveys/climate/templates/${id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" />
                 {t("edit")}
               </Link>
             </Button>
-          </div>
-        )}
+          )}
+          <Button asChild>
+            <Link href={`/surveys/climate/new?template=${id}`}>
+              <Send className="mr-2 h-4 w-4" />
+              {t("use_template")}
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}

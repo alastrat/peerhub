@@ -5,7 +5,13 @@ import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/design-system/page-header";
 import { SurveyWizard } from "@/components/climate/survey-wizard";
 
-export default async function NewSurveyPage() {
+export default async function NewSurveyPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ template?: string }>;
+}) {
+  // "Crear encuesta" on a template opens the wizard with it applied
+  const { template: initialTemplateId } = await searchParams;
   const session = await auth();
   if (!session?.companyUser || session.companyUser.role !== "ADMIN") {
     redirect("/overview");
@@ -90,6 +96,7 @@ export default async function NewSurveyPage() {
         teams={teams}
         hubs={hubs}
         featureHubs={company?.featureHubs ?? false}
+        initialTemplateId={initialTemplateId}
       />
     </div>
   );

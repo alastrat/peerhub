@@ -2749,7 +2749,8 @@
           "mode_preview": "Preview",
           "mode_edit": "Edit",
           "reload_preview": "Reload",
-          "preview_unavailable": "Save a draft to see the live preview here."
+          "preview_unavailable": "Name the survey and write at least one question to see the preview.",
+          "preparing_preview": "Saving the draft to show the preview…"
         },
         "wallpaper": {
           "style_label": "Wallpaper style",
@@ -3815,6 +3816,7 @@
     "title": "Climate templates",
     "description": "Reusable survey templates for organizational climate assessments",
     "create": "Create template",
+    "use_template": "Create survey",
     "empty_title": "No templates yet",
     "empty_desc": "Create reusable survey templates to quickly launch climate assessments.",
     "built_in": "Built-in",

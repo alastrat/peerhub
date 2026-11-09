@@ -112,6 +112,8 @@ interface SurveyWizardProps {
   teams?: NamedOption[];
   hubs?: NamedOption[];
   featureHubs?: boolean;
+  /** Create mode: start from this template ("Crear encuesta" on a template) */
+  initialTemplateId?: string;
 }
 
 const STEP_KEYS = ["basics", "questions", "participants", "preview"] as const;
@@ -180,6 +182,7 @@ export function SurveyWizard({
   teams = [],
   hubs = [],
   featureHubs = false,
+  initialTemplateId,
 }: SurveyWizardProps) {
   const router = useRouter();
   const t = useTranslations("dashboard.climate.wizard");
@@ -195,14 +198,15 @@ export function SurveyWizard({
     );
   };
 
-  // Basics
+  // Basics (prefilled from the template it was opened with, if any)
+  const startTemplate = mode === "create" ? templates.find((tpl) => tpl.id === initialTemplateId) : undefined;
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
-    initialData?.templateId ?? "",
+    initialData?.templateId ?? startTemplate?.id ?? "",
   );
-  const [name, setName] = useState(initialData?.name ?? "");
-  const [description, setDescription] = useState(initialData?.description ?? "");
+  const [name, setName] = useState(initialData?.name ?? startTemplate?.name ?? "");
+  const [description, setDescription] = useState(initialData?.description ?? startTemplate?.description ?? "");
   const [surveyType, setSurveyType] = useState<"CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE">(
-    initialData?.type ?? "CLIMATE",
+    initialData?.type ?? startTemplate?.type ?? "CLIMATE",
   );
   const [frequency, setFrequency] = useState(initialData?.frequency ?? "ONCE");
   const [isAnonymous, setIsAnonymous] = useState(initialData?.isAnonymous ?? true);
@@ -221,7 +225,9 @@ export function SurveyWizard({
   const [questions, setQuestions] = useState<QuestionRow[]>(
     initialData?.questions && initialData.questions.length > 0
       ? initialData.questions
-      : [{ text: "", type: "LIKERT", dimensionId: "", isRequired: true }],
+      : startTemplate && startTemplate.questions.length > 0
+        ? startTemplate.questions
+        : [{ text: "", type: "LIKERT", dimensionId: "", isRequired: true }],
   );
 
   // Welcome page
@@ -280,9 +286,7 @@ export function SurveyWizard({
   // Step-3 mode: "iframe" shows a browser mockup of the saved survey;
   // "edit" shows the editor panels. Default to iframe whenever a persisted
   // survey id exists (edit mode or post-draft create mode).
-  const [previewViewMode, setPreviewViewMode] = useState<"iframe" | "edit">(
-    initialData?.id ? "iframe" : "edit",
-  );
+  const [previewViewMode, setPreviewViewMode] = useState<"iframe" | "edit">("iframe");
   const [iframeRefreshKey, setIframeRefreshKey] = useState(0);
   // 0 = all on one page; >0 = N questions per page
   const [questionsPerPage, setQuestionsPerPage] = useState(
@@ -448,24 +452,47 @@ export function SurveyWizard({
     questions.some((q) => q.text.trim().length > 0) &&
     !isPending;
 
+  // Saves the draft (creating it the first time); its id, or null when it failed
+  const saveDraft = async (): Promise<string | null> => {
+    setError(null);
+    const snapshot = currentSnapshot;
+    const result = effectiveSurveyId
+      ? await updateClimateSurvey(effectiveSurveyId, buildPayload(true))
+      : await createClimateSurvey(buildPayload(true));
+    if (!result.success) {
+      setError(result.error || "Failed to save draft");
+      return null;
+    }
+    if (!effectiveSurveyId && result.data?.id) setCreatedId(result.data.id);
+    savedSnapshotRef.current = snapshot;
+    setSavedSnapshot(snapshot);
+    return effectiveSurveyId ?? result.data?.id ?? null;
+  };
+
   const handleSaveDraft = () => {
     if (!canSaveDraft) return;
-    setError(null);
-    const payload = buildPayload(true);
     startTransition(async () => {
-      const result = effectiveSurveyId
-        ? await updateClimateSurvey(effectiveSurveyId, payload)
-        : await createClimateSurvey(payload);
-      if (result.success) {
-        if (!effectiveSurveyId && result.data?.id) setCreatedId(result.data.id);
-        const snapshot = currentSnapshot;
-        savedSnapshotRef.current = snapshot;
-        setSavedSnapshot(snapshot);
-        toast.success(t("actions.draft_saved"));
-      } else {
-        setError(result.error || "Failed to save draft");
-      }
+      if (await saveDraft()) toast.success(t("actions.draft_saved"));
     });
+  };
+
+  // The preview is the survey as respondents see it, so changes are saved as
+  // a draft first (created the first time): no need to "Guardar borrador"
+  const openPreview = () => {
+    if (!canSaveDraft) {
+      setPreviewViewMode("edit");
+      return;
+    }
+    startTransition(async () => {
+      if ((!effectiveSurveyId || isDirty) && !(await saveDraft())) return;
+      setPreviewViewMode("iframe");
+      setIframeRefreshKey((k) => k + 1);
+    });
+  };
+
+  const goToStep = (next: number) => {
+    setStep(next);
+    if (next === 3 && previewViewMode === "iframe" && (!effectiveSurveyId || isDirty)) openPreview();
   };
 
   const handleSubmit = () => {
@@ -496,12 +523,12 @@ export function SurveyWizard({
   const resolvedThankYouBody = thankYouBody.trim() || DEFAULT_THANK_YOU_BODY;
   const resolvedThankYouCta = thankYouCtaText.trim() || DEFAULT_THANK_YOU_CTA;
 
-  const NavButtons = () => (
+  const navButtons = (
     <div className="flex shrink-0 items-center gap-2">
       <Button
         variant="outline"
         size="sm"
-        onClick={() => (step === 0 ? router.push("/surveys/climate") : setStep(step - 1))}
+        onClick={() => (step === 0 ? router.push("/surveys/climate") : goToStep(step - 1))}
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
         {step === 0 ? t("actions.cancel") : t("actions.previous")}
@@ -517,7 +544,7 @@ export function SurveyWizard({
         {isPending ? t("actions.saving") : t("actions.save_draft")}
       </Button>
       {step < STEPS.length - 1 ? (
-        <Button size="sm" onClick={() => setStep(step + 1)} disabled={!canProceed()}>
+        <Button size="sm" onClick={() => goToStep(step + 1)} disabled={!canProceed()}>
           {t("actions.next")}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
@@ -548,7 +575,7 @@ export function SurveyWizard({
               <button
                 type="button"
                 onClick={() => {
-                  if (isDone) setStep(i);
+                  if (isDone) goToStep(i);
                 }}
                 className={cn(
                   "flex items-center gap-2 rounded-full px-4 py-2 transition-colors",
@@ -849,13 +876,8 @@ export function SurveyWizard({
           const toolbar = (
             <div className="flex items-center justify-end gap-2">
               {showIframe && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIframeRefreshKey((k) => k + 1)}
-                >
-                  <RefreshCw className="mr-2 h-4 w-4" />
+                <Button type="button" variant="outline" size="sm" onClick={openPreview} disabled={isPending}>
+                  <RefreshCw className={cn("mr-2 h-4 w-4", isPending && "animate-spin")} />
                   {t("preview.reload_preview")}
                 </Button>
               )}
@@ -863,10 +885,8 @@ export function SurveyWizard({
                 type="button"
                 variant={showIframe ? "default" : "outline"}
                 size="sm"
-                onClick={() =>
-                  setPreviewViewMode((m) => (m === "iframe" ? "edit" : "iframe"))
-                }
-                disabled={previewViewMode === "edit" && !effectiveSurveyId}
+                onClick={() => (previewViewMode === "iframe" ? setPreviewViewMode("edit") : openPreview())}
+                disabled={isPending || (previewViewMode === "edit" && !canSaveDraft)}
               >
                 {showIframe ? (
                   <>
@@ -905,10 +925,10 @@ export function SurveyWizard({
                     className="block h-[680px] w-full border-0 bg-white"
                   />
                 </div>
-              ) : !effectiveSurveyId ? (
-                /* Create mode without a draft yet: nothing to iframe. */
+              ) : previewViewMode === "iframe" ? (
+                /* Saving the draft the preview shows, or there's nothing to show yet */
                 <div className="rounded-xl border bg-muted/30 p-8 text-center text-sm text-muted-foreground">
-                  {t("preview.preview_unavailable")}
+                  {isPending ? t("preview.preparing_preview") : t("preview.preview_unavailable")}
                 </div>
               ) : null}
 
@@ -1413,7 +1433,7 @@ export function SurveyWizard({
       {/* Wizard navigation: stays pinned to the bottom of the page so it
           doesn't compete with the step indicator for attention. */}
       <div className="flex justify-end">
-        <NavButtons />
+        {navButtons}
       </div>
     </div>
   );
