@@ -75,6 +75,7 @@ export default async function EditClimateSurveyPage({ params }: PageProps) {
 
   const initialData = {
     id: survey.id,
+    status: survey.status,
     name: survey.name,
     description: survey.description,
     type: survey.type,

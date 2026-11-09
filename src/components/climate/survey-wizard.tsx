@@ -65,6 +65,8 @@ export interface TemplateOption {
 
 export interface SurveyWizardInitialData {
   id: string;
+  /** Once sent, questions are locked: saving sends everything else */
+  status: "DRAFT" | "ACTIVE" | "CLOSED" | "ARCHIVED";
   name: string;
   description: string | null;
   type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
@@ -389,6 +391,11 @@ export function SurveyWizard({
     };
   };
 
+  // A sent survey's questions are locked: its saves send everything else
+  const questionsLocked = !!initialData && initialData.status !== "DRAFT";
+  const forUpdate = (payload: ReturnType<typeof buildPayload>) =>
+    questionsLocked ? { ...payload, questions: undefined } : payload;
+
   // Snapshot of the last saved state. Used to detect unsaved changes for the
   // beforeunload guard. Initialized after first render so editing initialData
   // doesn't flag as dirty on mount.
@@ -454,7 +461,7 @@ export function SurveyWizard({
     const payload = buildPayload(true);
     startTransition(async () => {
       const result = effectiveSurveyId
-        ? await updateClimateSurvey(effectiveSurveyId, payload)
+        ? await updateClimateSurvey(effectiveSurveyId, forUpdate(payload))
         : await createClimateSurvey(payload);
       if (result.success) {
         if (!effectiveSurveyId && result.data?.id) setCreatedId(result.data.id);
@@ -474,7 +481,7 @@ export function SurveyWizard({
 
     startTransition(async () => {
       const result = effectiveSurveyId
-        ? await updateClimateSurvey(effectiveSurveyId, payload)
+        ? await updateClimateSurvey(effectiveSurveyId, forUpdate(payload))
         : await createClimateSurvey(payload);
 
       if (result.success) {
