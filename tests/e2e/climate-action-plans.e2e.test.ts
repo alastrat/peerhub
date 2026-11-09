@@ -371,19 +371,17 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     expect((await releaseSurveyResults(ctx.surveyA)).error).toBe("Solo un administrador puede publicar los resultados");
   });
 
-  it("releases results and emails leaders with gaps", async () => {
+  it("releases results while the survey is open, leaving the leaders' email for the close", async () => {
     asAdmin();
     state.emails = [];
-    // A double click / retry: only one release (and one email per leader)
+    // A double click / retry: only one release
     const [first, second] = await Promise.all([releaseSurveyResults(ctx.surveyA), releaseSurveyResults(ctx.surveyA)]);
     expect([first.success, second.success].filter(Boolean)).toHaveLength(1);
     const res = first.success ? first : second;
     expect((first.success ? second : first).error).toBe("Los resultados ya se publicaron");
-    // Lina (CVI, SPS) and Marco (LID) get their results; Nora's team is suppressed
-    expect(res.data).toEqual({ leaders: 3, leadersWithGaps: 2, emailed: 2 });
-    expect(emailsTo(ctx.lina.email)[0].subject).toContain("Ya puedes ver los resultados de tu equipo");
-    expect(emailsTo(ctx.marco.email)).toHaveLength(1);
-    expect(emailsTo(ctx.nora.email)).toHaveLength(0);
+    // Still active: leaders see their results but get no email yet
+    expect(res.data).toEqual({ leaders: 0, leadersWithGaps: 0, emailed: 0, emailOnClose: true });
+    expect(state.emails).toHaveLength(0);
 
     const survey = await prisma.climateSurvey.findUniqueOrThrow({ where: { id: ctx.surveyA } });
     // Default deadline: the business day 15 days after release, stored at UTC midnight
@@ -679,7 +677,14 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
 
   it("evaluates plan impact when a follow-up survey closes", async () => {
     asAdmin();
+    state.emails = [];
     expect((await closeSurvey(ctx.surveyA)).success).toBe(true);
+    // Results were released earlier: the leaders get their email at the close.
+    // Lina (CVI, SPS) and Marco (LID) get their results; Nora's team is suppressed
+    expect(emailsTo(ctx.lina.email).filter((e) => e.subject.includes("Ya puedes ver los resultados de tu equipo"))).toHaveLength(1);
+    expect(emailsTo(ctx.marco.email).filter((e) => e.subject.includes("Ya puedes ver los resultados de tu equipo"))).toHaveLength(1);
+    expect(emailsTo(ctx.nora.email)).toHaveLength(0);
+    expect((await prisma.climateSurvey.findUniqueOrThrow({ where: { id: ctx.surveyA } })).resultsEmailedAt).not.toBeNull();
 
     const res = await createClimateSurvey({ name: `Pulso ${RUN}`, type: "CLIMATE", anonymityThreshold: 5, questions: instrumentQuestions(DIMS) });
     ctx.surveyB = res.data!.id;

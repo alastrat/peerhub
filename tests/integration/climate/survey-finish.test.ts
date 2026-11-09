@@ -1,7 +1,7 @@
 /**
  * Finishing a climate survey (by hand, on its end date or once everyone has
  * answered): results to leaders (Modelo 1) and the closing report to admins
- * (Modelo 3), each once.
+ * (Modelo 3), each once. Leaders are only emailed once the survey has closed.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createMockPrisma, type MockPrismaClient } from "../../helpers/mock-prisma";
@@ -159,6 +159,19 @@ describe("finishSurvey", () => {
     expect(emailsTo("maria@acme.com")[0].text).toContain("El 1 de diciembre cada líder recibió");
   });
 
+  it("emails the leaders at the close when results were released while it was active", async () => {
+    const releasedAt = new Date("2026-12-01T12:00:00Z");
+    wireSurvey({ resultsReleasedAt: releasedAt });
+    const result = await finishSurvey("survey-1", "company-1", NOW);
+
+    // The earlier release and its deadline stay; the email goes out now
+    expect(survey).toMatchObject({ status: "CLOSED", resultsReleasedAt: releasedAt, resultsEmailedAt: NOW });
+    expect(result.leaderEmails.sent).toBe(2);
+    expect(emailsTo("lina@acme.com")).toHaveLength(1);
+    expect(emailsTo("marco@acme.com")).toHaveLength(1);
+    expect(emailsTo("maria@acme.com")[0].text).toContain("El 10 de diciembre cada líder recibió");
+  });
+
   it("just closes a survey without the validated instrument", async () => {
     wireSurvey({ instrumentVersion: null });
     expect((await finishSurvey("survey-1", "company-1", NOW)).closed).toBe(true);
@@ -178,6 +191,38 @@ describe("finishSurvey", () => {
   });
 });
 
+describe("sendLeaderResultsEmails", () => {
+  it("waits for the close: released results of an active survey email nobody", async () => {
+    wireSurvey({ resultsReleasedAt: new Date("2026-12-01T12:00:00Z") });
+
+    const early = await sendLeaderResultsEmails("survey-1", "company-1", NOW);
+    expect(early.claimed).toBe(false);
+    expect(survey.resultsEmailedAt).toBeNull();
+    expect(sendEmail).not.toHaveBeenCalled();
+
+    survey.status = "CLOSED";
+    expect((await sendLeaderResultsEmails("survey-1", "company-1", NOW)).sent).toBe(2);
+    // Claimed once: a second run (a double click, the close racing it) sends nothing
+    expect((await sendLeaderResultsEmails("survey-1", "company-1", NOW)).claimed).toBe(false);
+    expect(sendEmail).toHaveBeenCalledTimes(2);
+  });
+
+  it("only claims the email for a closed survey", async () => {
+    wireSurvey({ status: "CLOSED", resultsReleasedAt: NOW });
+    await sendLeaderResultsEmails("survey-1", "company-1", NOW);
+    expect(mockPrisma.climateSurvey.updateMany).toHaveBeenCalledWith({
+      where: { id: "survey-1", status: "CLOSED", resultsEmailedAt: null },
+      data: { resultsEmailedAt: NOW },
+    });
+  });
+
+  it("does nothing before results are released", async () => {
+    wireSurvey({ status: "CLOSED" });
+    expect((await sendLeaderResultsEmails("survey-1", "company-1", NOW)).claimed).toBe(false);
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+});
+
 describe("finishIfEveryoneAnswered", () => {
   it("waits while someone hasn't answered", async () => {
     expect(await finishIfEveryoneAnswered("survey-1", "company-1")).toBe(false);
@@ -190,6 +235,7 @@ describe("finishIfEveryoneAnswered", () => {
     );
     expect(await finishIfEveryoneAnswered("survey-1", "company-1")).toBe(true);
     expect(survey.status).toBe("CLOSED");
+    expect(emailsTo("lina@acme.com")).toHaveLength(1);
   });
 });
 
@@ -230,5 +276,15 @@ describe("finishSurveysPastEndDate", () => {
     expect(mockPrisma.climateSurvey.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: "survey-1", companyId: "company-1", status: "ACTIVE" } }),
     );
+  });
+
+  it("emails the leaders of a survey whose results were released before its end date", async () => {
+    wireSurvey({ resultsReleasedAt: new Date("2026-12-01T12:00:00Z") });
+    mockPrisma.climateSurvey.findMany.mockResolvedValue([
+      { id: "survey-1", companyId: "company-1", accessEndDate: null, closedAt: null, distributions: [{ dueDate: new Date("2026-12-09T00:00:00Z") }] },
+    ]);
+    await finishSurveysPastEndDate(NOW);
+    expect(survey.resultsEmailedAt).toBe(NOW);
+    expect(emailsTo("lina@acme.com")).toHaveLength(1);
   });
 });

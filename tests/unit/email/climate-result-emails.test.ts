@@ -80,6 +80,11 @@ describe("Modelo 1 · leader results", () => {
     expect(email.subject).toBe("You can now see your team's results — Clima 2026");
     expect(email.html).toContain("See my results");
   });
+
+  it("tells the leader the survey closed, since it only goes out after the close", () => {
+    expect(leaderResultsEmail(leader).text).toMatch(/^La encuesta Clima 2026 de Acme ya cerró/m);
+    expect(leaderResultsEmail(leader, "en").text).toMatch(/^The Clima 2026 survey at Acme has closed/m);
+  });
 });
 
 describe("Modelo 2 · plan reminder", () => {

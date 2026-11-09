@@ -49,6 +49,8 @@ export function SurveyPlansTab({ overview, dimensions, groups, employees }: Surv
   }
 
   const released = !!survey.resultsReleasedAt;
+  // Leaders get their results email once the survey closes, not at release
+  const closed = survey.status === "CLOSED";
   const missing = leaders.filter((l) => !l.meetsMinimum);
 
   function run(fn: () => Promise<{ success: boolean; error?: string }>, ok: (r: never) => string) {
@@ -76,7 +78,15 @@ export function SurveyPlansTab({ overview, dimensions, groups, employees }: Surv
                   due: formatDay(survey.planDueDate, locale),
                 })
               : t("release_desc")}
-            {released && !survey.resultsEmailedAt && <span className="block">{t("results_not_emailed")}</span>}
+            {released && (
+              <span className="block">
+                {survey.resultsEmailedAt
+                  ? t("results_emailed_on", { date: formatDay(survey.resultsEmailedAt, locale, BUSINESS_TIME_ZONE) })
+                  : closed
+                    ? t("results_not_emailed")
+                    : t("results_email_on_close")}
+              </span>
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
@@ -86,8 +96,10 @@ export function SurveyPlansTab({ overview, dimensions, groups, employees }: Surv
               onClick={() =>
                 run(
                   () => releaseSurveyResults(survey.id),
-                  (r: { data: { leaders: number; emailed: number } }) =>
-                    t("released_toast", { leaders: r.data.leaders, emailed: r.data.emailed }),
+                  (r: { data: { leaders: number; emailed: number; emailOnClose: boolean } }) =>
+                    r.data.emailOnClose
+                      ? t("released_toast_on_close")
+                      : t("released_toast", { leaders: r.data.leaders, emailed: r.data.emailed }),
                 )
               }
             >
@@ -96,7 +108,7 @@ export function SurveyPlansTab({ overview, dimensions, groups, employees }: Surv
             </Button>
           ) : (
             <>
-              {!survey.resultsEmailedAt && (
+              {closed && !survey.resultsEmailedAt && (
                 <Button
                   disabled={pending}
                   onClick={() =>
