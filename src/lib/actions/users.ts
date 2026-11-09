@@ -12,6 +12,7 @@ import {
   type UpdateEmployeeInput,
 } from "@/lib/validations/user";
 import { findEmployeeConflict, inviteEmployee } from "@/lib/people/new-employee";
+import { pendingInvitationsWhere } from "@/lib/people/access";
 import { isValidBirthDate } from "@/lib/constants/demographics";
 import { normalizeNationalId } from "@/lib/utils/employee-import";
 import { actionError } from "@/lib/auth/action-locale";
@@ -428,6 +429,8 @@ export async function deleteUser(userId: string): Promise<ActionResult> {
   }
 }
 
+class InvitationNotPendingError extends Error {}
+
 /**
  * Update an employee from the People edit page, by Employee id. Unlike
  * updateUser (CompanyUser id), this also works for people without platform
@@ -447,7 +450,7 @@ export async function updateEmployee(employeeId: string, input: UpdateEmployeeIn
 
     const employee = await prisma.employee.findFirst({
       where: { id: employeeId, companyId },
-      select: { id: true, companyUser: { select: { id: true } } },
+      select: { id: true, email: true, companyUser: { select: { id: true } } },
     });
     if (!employee) return { success: false, error: "Employee not found" };
     if (data.managerId && data.managerId === employeeId) {
@@ -469,7 +472,10 @@ export async function updateEmployee(employeeId: string, input: UpdateEmployeeIn
     if (data.nationalId !== undefined) employeeData.nationalId = data.nationalId;
     if (data.jobLevel !== undefined) employeeData.jobLevel = data.jobLevel;
 
-    // One transaction, so the employee and their account never disagree on status
+    // One transaction, so the employee and their account never disagree on
+    // status. The form only sends role and status when the admin changed
+    // them, so saving other fields never reactivates a deactivated account
+    // or overwrites a role changed meanwhile.
     await prisma.$transaction(async (tx) => {
       await tx.employee.update({ where: { id: employee.id }, data: employeeData });
       if (employee.companyUser && (data.role !== undefined || data.isActive !== undefined)) {
@@ -480,6 +486,14 @@ export async function updateEmployee(employeeId: string, input: UpdateEmployeeIn
             ...(data.isActive !== undefined && { isActive: data.isActive }),
           },
         });
+      } else if (!employee.companyUser && data.role !== undefined) {
+        // No account yet: the role is the one their pending invitation will give
+        const { count } = await tx.invitation.updateMany({
+          where: { ...pendingInvitationsWhere(companyId), email: { equals: employee.email, mode: "insensitive" } },
+          data: { role: data.role },
+        });
+        // It expired or was removed since the form opened: nothing changed
+        if (count === 0) throw new InvitationNotPendingError();
       }
     });
 
@@ -487,6 +501,7 @@ export async function updateEmployee(employeeId: string, input: UpdateEmployeeIn
     revalidatePath(`/people/${employeeId}`);
     return { success: true };
   } catch (error) {
+    if (error instanceof InvitationNotPendingError) return actionError("invitation_not_pending");
     console.error("Failed to update employee:", error);
     return { success: false, error: "Failed to update employee" };
   }

@@ -111,10 +111,15 @@ describe("sendPlanDeadlineReminders (Modelo 2)", () => {
     expect(email.text).toContain("Equipo Kultiva · Kultiva SAS");
     expect(email).toMatchObject({ fromName: "Kultiva Encuestas", replyTo: "comercial@kultiva.com.co" });
     expect(mockPrisma.climateSurvey.update).toHaveBeenCalledWith({ where: { id: "survey-1" }, data: { planReminderSentAt: now } });
-    // Only surveys not reminded yet, whose deadline hasn't passed
+    // Only surveys not reminded yet, whose deadline hasn't passed, and never
+    // before the leaders got their results email (Modelo 1, at the close)
     expect(mockPrisma.climateSurvey.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: expect.objectContaining({ planReminderSentAt: null, planDueDate: { gte: new Date("2026-12-15T00:00:00Z") } }),
+        where: expect.objectContaining({
+          planReminderSentAt: null,
+          resultsEmailedAt: { not: null },
+          planDueDate: { gte: new Date("2026-12-15T00:00:00Z") },
+        }),
       }),
     );
   });

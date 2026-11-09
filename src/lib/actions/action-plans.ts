@@ -15,7 +15,6 @@ import {
 } from "@/lib/queries/action-plans";
 import { bandRank, isClimateBand, nextBand, type ClimateBand } from "@/lib/utils/climate-scoring";
 import { emailEmployeeViaPortal, emailUsersViaDashboard, planEmails, safely } from "@/lib/email/climate-plan-emails";
-import { businessDayAsDate } from "@/lib/constants/business-time";
 import {
   firstName,
   followUpPeople,
@@ -926,15 +925,20 @@ export async function saveLeaderContext(
 // Results release & impact (admin)
 // ---------------------------------------------------------------------------
 
+/**
+ * Leaders see their results once released. Their results email (Modelo 1)
+ * goes out when the survey closes: right away for a closed survey, otherwise
+ * finishSurvey sends it at the close (`emailOnClose`).
+ */
 export async function releaseSurveyResults(
   surveyId: string,
-): Promise<ActionResult<{ leaders: number; leadersWithGaps: number; emailed: number }>> {
+): Promise<ActionResult<{ leaders: number; leadersWithGaps: number; emailed: number; emailOnClose: boolean }>> {
   try {
     const actor = await requireClimateActor();
     if (!isAdmin(actor)) fail("admin_only_release");
     const meta = await prisma.climateSurvey.findFirst({
       where: { id: surveyId, companyId: actor.companyId },
-      select: { id: true, name: true, status: true, instrumentVersion: true, resultsReleasedAt: true, planDueDate: true, planMinPerLeader: true },
+      select: { id: true, name: true, status: true, instrumentVersion: true, resultsReleasedAt: true },
     });
     if (!meta) fail("survey_not_found");
     if (meta.status !== "ACTIVE" && meta.status !== "CLOSED") fail("release_needs_sent");
@@ -942,40 +946,46 @@ export async function releaseSurveyResults(
     if (meta.resultsReleasedAt) fail("already_released");
 
     const releasedAt = new Date();
-    // Default deadline: a calendar day, stored like a date input (UTC midnight)
-    const planDueDate =
-      meta.planDueDate ?? businessDayAsDate(new Date(releasedAt.getTime() + 15 * 24 * 60 * 60 * 1000));
+    // No default plan deadline here: it's set when leaders get their results
+    // email (at the close), so it never starts before they hear about it
     // Conditional update: a double click or retry can't release (and email) twice
     const { count } = await prisma.climateSurvey.updateMany({
       where: { id: meta.id, resultsReleasedAt: null },
-      data: { resultsReleasedAt: releasedAt, planDueDate },
+      data: { resultsReleasedAt: releasedAt },
     });
     if (count === 0) fail("already_released");
 
-    // Every leader with a visible report gets their results (Modelo 1)
-    const { leaders, leadersWithGaps, sent } = await sendLeaderResultsEmails(meta.id, actor.companyId, releasedAt);
+    // Every leader with a visible report gets their results (Modelo 1), but
+    // only once the survey has closed
+    const emailOnClose = meta.status !== "CLOSED";
+    const { leaders, leadersWithGaps, sent } = emailOnClose
+      ? { leaders: 0, leadersWithGaps: 0, sent: 0 }
+      : await sendLeaderResultsEmails(meta.id, actor.companyId, releasedAt);
 
     revalidatePath(`/surveys/climate/${meta.id}`);
     revalidatePath("/portal/home");
-    return { success: true, data: { leaders, leadersWithGaps, emailed: sent } };
+    return { success: true, data: { leaders, leadersWithGaps, emailed: sent, emailOnClose } };
   } catch (error) {
     return toResult(error, "failed_release_results");
   }
 }
 
-/** Results email to every leader, for results released before it went out (or when it failed). */
+/** Results email to every leader of a closed survey, when it didn't go out at the close (or failed). */
 export async function sendSurveyResultsEmails(surveyId: string): Promise<ActionResult<{ emailed: number }>> {
   try {
     const actor = await requireClimateActor();
     if (!isAdmin(actor)) fail("admin_only_release");
     const meta = await prisma.climateSurvey.findFirst({
       where: { id: surveyId, companyId: actor.companyId },
-      select: { id: true, resultsReleasedAt: true, resultsEmailedAt: true },
+      select: { id: true, status: true, resultsReleasedAt: true, resultsEmailedAt: true },
     });
     if (!meta) fail("survey_not_found");
     if (!meta.resultsReleasedAt) fail("results_not_released");
+    if (meta.status !== "CLOSED") fail("results_email_on_close");
     if (meta.resultsEmailedAt) fail("results_already_emailed");
-    const { claimed, sent } = await sendLeaderResultsEmails(meta.id, actor.companyId);
+    const { claimed, sent, failed } = await sendLeaderResultsEmails(meta.id, actor.companyId);
+    // Every send failed: the run was undone, so the button stays for a retry
+    if (sent === 0 && failed > 0) fail("results_emails_failed");
     if (!claimed) fail("results_already_emailed");
     revalidatePath(`/surveys/climate/${meta.id}`);
     return { success: true, data: { emailed: sent } };
