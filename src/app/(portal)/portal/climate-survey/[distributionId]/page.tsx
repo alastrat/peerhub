@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PortalClimateSurveyFlow } from "@/components/portal/portal-climate-survey-flow";
 import { formatDate, daysUntil, isDateInPast } from "@/lib/utils/dates";
+import { answerWindowState } from "@/lib/climate/answer-window";
+import { BUSINESS_TIME_ZONE } from "@/lib/constants/business-time";
 
 interface PageProps {
   params: Promise<{ distributionId: string }>;
@@ -67,6 +69,35 @@ export default async function PortalClimateSurveyPage({ params }: PageProps) {
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-muted-foreground">{t("already_completed_body")}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Outside its start and end date-time it takes no answers
+  const window = answerWindowState(distribution.survey);
+  if (window === "not_started" || window === "ended") {
+    const t = await getTranslations({ locale, namespace: "portal.climate_survey" });
+    const at = window === "not_started" ? distribution.survey.accessStartDate! : distribution.survey.accessEndDate!;
+    const date = new Intl.DateTimeFormat(locale === "en" ? "en-US" : "es-CO", {
+      dateStyle: "long",
+      timeStyle: "short",
+      timeZone: BUSINESS_TIME_ZONE,
+    }).format(at);
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Link href="/portal/home">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <PageHeader title={distribution.survey.name} description={t(`${window}_title`)} />
+        </div>
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p className="text-muted-foreground">{t(`${window}_body`, { date })}</p>
           </CardContent>
         </Card>
       </div>

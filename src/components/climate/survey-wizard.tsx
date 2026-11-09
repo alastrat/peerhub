@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, ArrowLeft, ArrowRight, Check, Eye, FileText, ShieldCheck, ClipboardCheck, Pencil, RefreshCw, Lock, Users, ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getQuestionScale, getScaleFace, getScaleValues } from "@/lib/constants/climate-scales";
 import { createClimateSurvey, updateClimateSurvey } from "@/lib/actions/climate-surveys";
 import { WallpaperPicker } from "@/components/climate/wallpaper-picker";
 import { SurveyQuestionsBuilder } from "@/components/climate/survey-questions-builder";
@@ -64,6 +65,8 @@ export interface TemplateOption {
 
 export interface SurveyWizardInitialData {
   id: string;
+  /** Once sent, questions are locked: saving sends everything else */
+  status: "DRAFT" | "ACTIVE" | "CLOSED" | "ARCHIVED";
   name: string;
   description: string | null;
   type: "CLIMATE" | "PULSE" | "ENPS" | "LEADERSHIP" | "CULTURE" | "PERFORMANCE";
@@ -82,6 +85,9 @@ export interface SurveyWizardInitialData {
   thankYouTitle: string | null;
   thankYouBody: string | null;
   thankYouCtaText: string | null;
+  goalPct: number;
+  accessStartDate: Date | null;
+  accessEndDate: Date | null;
   questions: QuestionRow[];
 }
 
@@ -123,14 +129,48 @@ const DEFAULT_THEME_COLOR = "#613171";
 const DEFAULT_THANK_YOU_BODY =
   "Gracias por completar nuestra encuesta. Tu opinión es muy valiosa para seguir mejorando nuestro ambiente laboral.";
 const DEFAULT_THANK_YOU_CTA = "Ir a Inicio";
+const DEFAULT_GOAL_PCT = 75;
 
-// 4-point Spanish Likert scale — matches the portal form
-const LIKERT_OPTIONS = [
-  { value: 1, label: "Nunca" },
-  { value: 2, label: "Casi nunca" },
-  { value: 3, label: "Casi siempre" },
-  { value: 4, label: "Siempre" },
-];
+/** A Date as a datetime-local input value, in the browser's time zone. */
+function toDatetimeLocal(d: Date | null | undefined): string {
+  if (!d) return "";
+  const date = new Date(d);
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
+
+/** A Likert question's options as respondents see them (faces on the faces scale). */
+function LikertPreviewOptions({ question }: { question: QuestionRow }) {
+  const locale = useLocale();
+  const scale = getQuestionScale(question)!;
+  const values = getScaleValues(scale);
+  const isFaces = scale.kind === "faces";
+  return (
+    <div
+      className={cn(
+        "grid gap-2",
+        isFaces ? "grid-cols-5" : values.length === 5 ? "grid-cols-2 sm:grid-cols-5" : "grid-cols-2 sm:grid-cols-4",
+      )}
+    >
+      {values.map((v) => {
+        const face = getScaleFace(scale, v);
+        const anchor = scale.anchors?.[v];
+        return (
+          <div
+            key={v}
+            className="flex flex-col items-center gap-1 rounded-lg border border-border px-2 py-2 text-center text-xs font-medium"
+          >
+            {face && (
+              <span aria-hidden className="text-2xl leading-none">
+                {face}
+              </span>
+            )}
+            <span>{anchor ? (locale === "en" ? anchor.en : anchor.es) : v}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function SurveyWizard({
   dimensions: initialDimensions,
@@ -171,6 +211,13 @@ export function SurveyWizard({
   const [anonymityThreshold, setAnonymityThreshold] = useState<number>(
     initialData?.anonymityThreshold ?? 5,
   );
+  // "Meta" (% of favorable answers) and when people can answer
+  const [goalPct, setGoalPct] = useState(String(initialData?.goalPct ?? DEFAULT_GOAL_PCT));
+  const [accessStart, setAccessStart] = useState(toDatetimeLocal(initialData?.accessStartDate));
+  const [accessEnd, setAccessEnd] = useState(toDatetimeLocal(initialData?.accessEndDate));
+  const goalValue = Number(goalPct);
+  const goalValid = goalPct !== "" && Number.isInteger(goalValue) && goalValue >= 1 && goalValue <= 100;
+  const windowValid = !accessStart || !accessEnd || new Date(accessEnd) > new Date(accessStart);
 
   // Questions
   const [questions, setQuestions] = useState<QuestionRow[]>(
@@ -285,7 +332,7 @@ export function SurveyWizard({
   };
 
   const canProceed = () => {
-    if (step === 0) return name.trim().length > 0;
+    if (step === 0) return name.trim().length > 0 && goalValid && windowValid;
     if (step === 1) {
       // Every question must have non-empty text AND a real dimension assigned.
       // Forcing dimensions matches the section-based editor's contract: there
@@ -317,6 +364,9 @@ export function SurveyWizard({
       frequency,
       isAnonymous,
       anonymityThreshold,
+      ...(goalValid && { goalPct: goalValue }),
+      accessStartDate: accessStart ? new Date(accessStart).toISOString() : null,
+      accessEndDate: accessEnd ? new Date(accessEnd).toISOString() : null,
       templateId: selectedTemplateId || undefined,
       welcomeTitle: welcomeTitle.trim() || undefined,
       welcomeBody: welcomeBody || undefined,
@@ -341,6 +391,11 @@ export function SurveyWizard({
     };
   };
 
+  // A sent survey's questions are locked: its saves send everything else
+  const questionsLocked = !!initialData && initialData.status !== "DRAFT";
+  const forUpdate = (payload: ReturnType<typeof buildPayload>) =>
+    questionsLocked ? { ...payload, questions: undefined } : payload;
+
   // Snapshot of the last saved state. Used to detect unsaved changes for the
   // beforeunload guard. Initialized after first render so editing initialData
   // doesn't flag as dirty on mount.
@@ -354,6 +409,9 @@ export function SurveyWizard({
       frequency,
       isAnonymous,
       anonymityThreshold,
+      goalPct,
+      accessStart,
+      accessEnd,
       selectedTemplateId,
       welcomeTitle,
       welcomeBody,
@@ -392,6 +450,8 @@ export function SurveyWizard({
 
   const canSaveDraft =
     name.trim().length > 0 &&
+    goalValid &&
+    windowValid &&
     questions.some((q) => q.text.trim().length > 0) &&
     !isPending;
 
@@ -401,7 +461,7 @@ export function SurveyWizard({
     const payload = buildPayload(true);
     startTransition(async () => {
       const result = effectiveSurveyId
-        ? await updateClimateSurvey(effectiveSurveyId, payload)
+        ? await updateClimateSurvey(effectiveSurveyId, forUpdate(payload))
         : await createClimateSurvey(payload);
       if (result.success) {
         if (!effectiveSurveyId && result.data?.id) setCreatedId(result.data.id);
@@ -421,7 +481,7 @@ export function SurveyWizard({
 
     startTransition(async () => {
       const result = effectiveSurveyId
-        ? await updateClimateSurvey(effectiveSurveyId, payload)
+        ? await updateClimateSurvey(effectiveSurveyId, forUpdate(payload))
         : await createClimateSurvey(payload);
 
       if (result.success) {
@@ -606,6 +666,53 @@ export function SurveyWizard({
                 />
                 <p className="text-xs text-muted-foreground">
                   {t("basics.anonymity_threshold_hint")}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="survey-goal">{t("basics.goal_label")}</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="survey-goal"
+                    type="number"
+                    min={1}
+                    max={100}
+                    step={1}
+                    value={goalPct}
+                    onChange={(e) => setGoalPct(e.target.value)}
+                    className="w-24"
+                    aria-invalid={!goalValid}
+                  />
+                  <span className="text-sm text-muted-foreground">%</span>
+                </div>
+                <p className={cn("text-xs", goalValid ? "text-muted-foreground" : "text-destructive")}>
+                  {goalValid ? t("basics.goal_hint") : t("basics.goal_invalid")}
+                </p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="survey-start">{t("basics.start_label")}</Label>
+                  <Input
+                    id="survey-start"
+                    type="datetime-local"
+                    value={accessStart}
+                    onChange={(e) => setAccessStart(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="survey-end">{t("basics.end_label")}</Label>
+                  <Input
+                    id="survey-end"
+                    type="datetime-local"
+                    value={accessEnd}
+                    min={accessStart || undefined}
+                    onChange={(e) => setAccessEnd(e.target.value)}
+                    aria-invalid={!windowValid}
+                  />
+                </div>
+                <p className={cn("text-xs sm:col-span-2", windowValid ? "text-muted-foreground" : "text-destructive")}>
+                  {windowValid ? t("basics.window_hint") : t("basics.window_invalid")}
                 </p>
               </div>
 
@@ -1181,18 +1288,7 @@ export function SurveyWizard({
                               </div>
 
                               <div className="pointer-events-none">
-                                {q.type === "LIKERT" && (
-                                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                                    {LIKERT_OPTIONS.map((opt) => (
-                                      <div
-                                        key={opt.value}
-                                        className="rounded-lg border border-border px-3 py-2 text-center text-xs font-medium"
-                                      >
-                                        {opt.label}
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
+                                {q.type === "LIKERT" && <LikertPreviewOptions question={q} />}
                                 {q.type === "RATING" && (
                                   <div className="grid grid-cols-5 gap-2">
                                     {[1, 2, 3, 4, 5].map((v) => (
@@ -1254,13 +1350,7 @@ export function SurveyWizard({
                                     )}
                                   </div>
                                   <div className="pointer-events-none">
-                                    {q.type === "LIKERT" && (
-                                      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                                        {LIKERT_OPTIONS.map((opt) => (
-                                          <div key={opt.value} className="rounded-lg border border-border px-3 py-2 text-center text-xs font-medium">{opt.label}</div>
-                                        ))}
-                                      </div>
-                                    )}
+                                    {q.type === "LIKERT" && <LikertPreviewOptions question={q} />}
                                     {q.type === "RATING" && (
                                       <div className="grid grid-cols-5 gap-2">
                                         {[1, 2, 3, 4, 5].map((v) => (

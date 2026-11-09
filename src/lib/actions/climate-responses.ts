@@ -8,6 +8,7 @@ import { after } from "next/server";
 import { finishIfEveryoneAnswered } from "@/lib/climate/survey-finish";
 import type { Prisma } from "@prisma/client";
 import type { ActionResult } from "@/types";
+import { answerWindowError } from "@/lib/climate/answer-window";
 import { getQuestionScale } from "@/lib/constants/climate-scales";
 import { buildSegmentSnapshot } from "@/lib/utils/climate-segments";
 import { actionError, unexpectedActionError } from "@/lib/auth/action-locale";
@@ -71,11 +72,24 @@ export async function saveSurveyDraft(input: {
 
     const distribution = await prisma.surveyDistribution.findUnique({
       where: { id: input.distributionId },
-      include: { survey: { select: { companyId: true, questions: { select: { id: true, type: true, config: true } } } } },
+      include: {
+        survey: {
+          select: {
+            companyId: true,
+            status: true,
+            accessStartDate: true,
+            accessEndDate: true,
+            closedAt: true,
+            questions: { select: { id: true, type: true, config: true } },
+          },
+        },
+      },
     });
     if (!distribution || distribution.survey.companyId !== companyId) {
       return actionError("survey_not_found");
     }
+    const closed = answerWindowError(distribution.survey);
+    if (closed) return actionError(closed);
     const invalid = validateAnswers(distribution.survey.questions, input.answers);
     if (invalid) return actionError(invalid);
 
@@ -145,6 +159,8 @@ export async function submitSurveyResponse(input: {
     if (!distribution || distribution.survey.companyId !== companyId) {
       return actionError("survey_not_found");
     }
+    const closed = answerWindowError(distribution.survey);
+    if (closed) return actionError(closed);
 
     const invalid = validateAnswers(distribution.survey.questions, input.answers);
     if (invalid) return actionError(invalid);

@@ -66,7 +66,7 @@ export function LeaderPlansPanel({ view, canEdit, canAnswerContext, planDetailBa
   const formRef = useRef<HTMLDivElement>(null);
 
   const { survey, leader, gaps, plans } = view;
-  const goal = ts(`bands.${survey.goalBand}`);
+  const goal = ts("favorable_pct", { pct: survey.goalPct });
   const gapIds = new Set(gaps.gaps.map((g) => g.dimensionId));
 
   function run(fn: () => Promise<{ success: boolean; error?: string }>, ok?: string, after?: () => void) {

@@ -64,7 +64,7 @@ export function LeaderReport({ survey, view, generatedOn, backHref }: LeaderRepo
               { label: t("team_respondents"), value: gaps.respondents },
               { label: t("questions"), value: cover.questionCount },
               { label: t("dimensions"), value: cover.dimensions.length },
-              { label: t("goal"), value: ts(`bands.${view.survey.goalBand}`) },
+              { label: t("goal"), value: ts("favorable_pct", { pct: view.survey.goalPct }) },
             ]}
           />
 
@@ -75,7 +75,7 @@ export function LeaderReport({ survey, view, generatedOn, backHref }: LeaderRepo
           ) : (
             <>
               <ReportSection title={t("summary")}>
-                <IndexSummary index={gaps.index} isInstrument goalBand={view.survey.goalBand} />
+                <IndexSummary index={gaps.index} isInstrument goalPct={view.survey.goalPct} />
                 <BandLegend />
               </ReportSection>
 

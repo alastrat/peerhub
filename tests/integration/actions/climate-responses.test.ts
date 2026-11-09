@@ -85,6 +85,9 @@ const sampleDistribution = {
   survey: {
     id: "survey-1",
     companyId: "company-1",
+    status: "ACTIVE",
+    accessStartDate: null,
+    accessEndDate: null,
     questions: [
       { id: "q-1", type: "LIKERT", config: { scale: "AGREE_5" }, isRequired: true },
       { id: "q-2", type: "TEXT", config: null, isRequired: true },
@@ -422,6 +425,9 @@ describe("climate response actions", () => {
         survey: {
           id: "survey-1",
           companyId: "company-1",
+          status: "ACTIVE",
+          accessStartDate: null,
+          accessEndDate: null,
           questions: [{ id: "q-1", type: "LIKERT", config: { scale: "AGREE_5" }, isRequired: true }],
         },
       });
@@ -528,6 +534,25 @@ describe("climate response actions", () => {
       });
     });
 
+    it("takes no answers outside the survey's start and end, or once it's not active", async () => {
+      mockEmployeeLookup();
+      const cases: [Record<string, unknown>, string][] = [
+        [{ accessStartDate: new Date(Date.now() + 86_400_000) }, "La encuesta aún no ha abierto"],
+        [{ accessEndDate: new Date(Date.now() - 60_000) }, "La encuesta ya cerró"],
+        [{ status: "CLOSED" }, "Esta encuesta no está recibiendo respuestas"],
+      ];
+      for (const [change, error] of cases) {
+        mockPrisma.surveyDistribution.findUnique.mockResolvedValue({
+          ...sampleDistribution,
+          survey: { ...sampleDistribution.survey, ...change },
+        });
+        expect(await submitSurveyResponse({ distributionId: "dist-1", answers: sampleAnswers })).toEqual({ success: false, error });
+        expect(await saveSurveyDraft({ distributionId: "dist-1", answers: sampleAnswers })).toEqual({ success: false, error });
+      }
+      expect(mockPrisma.$transaction).not.toHaveBeenCalled();
+      expect(mockPrisma.surveyAnswer.upsert).not.toHaveBeenCalled();
+    });
+
     it("rejects a distribution from another company", async () => {
       mockEmployeeLookup();
       mockPrisma.surveyDistribution.findUnique.mockResolvedValue({
@@ -618,6 +643,9 @@ describe("climate response actions", () => {
         survey: {
           id: "survey-1",
           companyId: "company-1",
+          status: "ACTIVE",
+          accessStartDate: null,
+          accessEndDate: null,
           questions: [{ id: "q-1", type: "LIKERT", config: { scale: "AGREE_5" }, isRequired: true }],
         },
       });
@@ -643,6 +671,9 @@ describe("climate response actions", () => {
         survey: {
           id: "survey-1",
           companyId: "company-1",
+          status: "ACTIVE",
+          accessStartDate: null,
+          accessEndDate: null,
           questions: [], // No questions at all
         },
       });

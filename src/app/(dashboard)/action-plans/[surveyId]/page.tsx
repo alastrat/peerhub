@@ -44,7 +44,7 @@ export default async function SurveyLeadersPage({ params }: PageProps) {
         <div className="space-y-1">
           <p className="text-xs font-bold uppercase tracking-wider text-lime-600">{t("eyebrow", { company: cu.companyName })}</p>
           <h1 className="text-2xl font-semibold">{survey.name}</h1>
-          <p className="text-muted-foreground">{t("description", { goal: ts(`bands.${survey.goalBand}`) })}</p>
+          <p className="text-muted-foreground">{t("description", { goal: ts("favorable_pct", { pct: survey.goalPct }) })}</p>
         </div>
         <SurveySwitcher surveys={surveys} currentId={survey.id} basePath="/action-plans" label={t("survey_label")} />
       </div>

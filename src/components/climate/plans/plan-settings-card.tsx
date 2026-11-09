@@ -10,14 +10,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateSurveySettings } from "@/lib/actions/climate-surveys";
-import { CLIMATE_BANDS, type ClimateBand } from "@/lib/utils/climate-scoring";
-import { NativeSelect, toDateInput } from "./plan-ui";
+import { toDateInput } from "./plan-ui";
 import { FollowUpPicker } from "./follow-up-picker";
 
 interface PlanSettingsCardProps {
   surveyId: string;
   initial: {
-    goalBand: ClimateBand;
+    /** "Meta": % of favorable answers */
+    goalPct: number;
     planMinPerLeader: number;
     planDueDate: Date | null;
     planReminderDate: Date | null;
@@ -30,10 +30,9 @@ interface PlanSettingsCardProps {
 
 export function PlanSettingsCard({ surveyId, initial, users }: PlanSettingsCardProps) {
   const t = useTranslations("climate_plans.settings");
-  const tb = useTranslations("climate_scoring.bands");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [goalBand, setGoalBand] = useState<ClimateBand>(initial.goalBand);
+  const [goalPct, setGoalPct] = useState(String(initial.goalPct));
   const [planMin, setPlanMin] = useState(String(initial.planMinPerLeader));
   const [due, setDue] = useState(toDateInput(initial.planDueDate));
   const [reminder, setReminder] = useState(toDateInput(initial.planReminderDate));
@@ -45,7 +44,7 @@ export function PlanSettingsCard({ surveyId, initial, users }: PlanSettingsCardP
   function save() {
     startTransition(async () => {
       const res = await updateSurveySettings(surveyId, {
-        goalBand,
+        goalPct: Number(goalPct),
         planMinPerLeader: Number(planMin),
         planDueDate: due || null,
         planReminderDate: reminder || null,
@@ -71,13 +70,19 @@ export function PlanSettingsCard({ surveyId, initial, users }: PlanSettingsCardP
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <div className="space-y-1.5">
             <Label htmlFor="ps-goal">{t("goal")}</Label>
-            <NativeSelect id="ps-goal" value={goalBand} onChange={(e) => setGoalBand(e.target.value as ClimateBand)}>
-              {CLIMATE_BANDS.filter((b) => b !== "MUY_DESFAVORABLE").map((b) => (
-                <option key={b} value={b}>
-                  {tb(b)}
-                </option>
-              ))}
-            </NativeSelect>
+            <div className="flex items-center gap-2">
+              <Input
+                id="ps-goal"
+                type="number"
+                min={1}
+                max={100}
+                step={1}
+                value={goalPct}
+                onChange={(e) => setGoalPct(e.target.value)}
+                className="w-24"
+              />
+              <span className="text-sm text-muted-foreground">%</span>
+            </div>
             <p className="text-xs text-muted-foreground">{t("goal_hint")}</p>
           </div>
           <div className="space-y-1.5">
@@ -122,7 +127,10 @@ export function PlanSettingsCard({ surveyId, initial, users }: PlanSettingsCardP
             </p>
           )}
         </div>
-        <Button onClick={save} disabled={pending || planMin === "" || Number.isNaN(Number(planMin))}>
+        <Button
+          onClick={save}
+          disabled={pending || planMin === "" || Number.isNaN(Number(planMin)) || goalPct === "" || Number.isNaN(Number(goalPct))}
+        >
           {pending && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
           {t("save")}
         </Button>
