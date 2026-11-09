@@ -13,8 +13,12 @@
  *
  * - Only touches the company it's given. Re-running replaces the surveys it
  *   imported (and their plans) and updates the people; nothing else is deleted.
- * - Sends no email. People get Resend's test inbox (delivered+<user>@resend.dev)
- *   and the survey is marked as already emailed.
+ *   It refuses when the company has worked on those surveys since (launched
+ *   the draft, added plans or progress), so in-app work is never wiped.
+ * - Sends no email itself. People get Resend's test inbox
+ *   (delivered+<user>@resend.dev) and the survey is marked as already
+ *   emailed. The plans keep the POC's dates, so while their tasks are open
+ *   the daily task reminder emails those two leaders' test inboxes.
  * - Left out: the POC company's own profile (name, NIT, city, contact), and the
  *   "Pulso de bienestar" survey, whose choice and yes/no questions have no type
  *   here yet (it has no responses).
@@ -196,6 +200,9 @@ async function main() {
   const select = { id: true, name: true, slug: true } as const;
   let company = await prisma.company.findUnique({ where: { slug }, select });
   const createAs = arg("create");
+  if (company && createAs && company.name !== createAs) {
+    throw new Error(`"${slug}" is already "${company.name}"; --create only makes a new company`);
+  }
   if (!company && createAs) {
     // A company of its own for the POC, with the POC company's NIT
     company = await prisma.company.create({ data: { name: createAs, slug, taxId: pocCompany!.data.identificacion || "PENDING" }, select });
@@ -237,6 +244,30 @@ async function main() {
     if (id && !dimensionIdOf.has(q.dimension)) dimensionIdOf.set(q.dimension, id);
   }
 
+  // Surveys from an earlier run, checked before anything is written: worked on
+  // in the app since (draft launched, plans or progress added) → stop
+  const pocPlanTimes = new Set((results.actionPlans ?? []).map((p) => p.createdAt));
+  const old = await prisma.climateSurvey.findMany({
+    where: {
+      companyId: company.id,
+      OR: [results, draft].map((s) => ({ name: s.title, createdAt: new Date(s.createdAt) })),
+    },
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      _count: { select: { distributions: true } },
+      actionPlans: { select: { createdAt: true, _count: { select: { updates: true } } } },
+    },
+  });
+  for (const o of old) {
+    const touched =
+      o.name === draft.title
+        ? o.status !== "DRAFT" || o._count.distributions > 0
+        : o.status !== "CLOSED" || o.actionPlans.some((p) => !pocPlanTimes.has(p.createdAt.getTime()) || p._count.updates > 0);
+    if (touched) throw new Error(`"${o.name}" was worked on in the app after the import; not replacing it`);
+  }
+
   const admins = await prisma.companyUser.findMany({
     where: { companyId: company.id, role: "ADMIN", isActive: true },
     select: { userId: true },
@@ -276,7 +307,6 @@ async function main() {
       nationalId,
       birthDate: u.fechaNacimiento ? new Date(`${u.fechaNacimiento}T00:00:00Z`) : null,
       startDate: u.fechaIngreso ? new Date(`${u.fechaIngreso}T00:00:00Z`) : null,
-      isActive: true,
     };
     const existing = await prisma.employee.findFirst({
       where: { companyId: company.id, OR: [{ nationalId }, { email }] },
@@ -284,7 +314,7 @@ async function main() {
     });
     const e = existing
       ? await prisma.employee.update({ where: { id: existing.id }, data, select: { id: true } })
-      : await prisma.employee.create({ data: { companyId: company.id, ...data }, select: { id: true } });
+      : await prisma.employee.create({ data: { companyId: company.id, ...data, isActive: true }, select: { id: true } });
     employeeIdOf.set(u.id, e.id);
     employeeIdByName.set(norm(u.nombres), e.id);
   }
@@ -296,13 +326,6 @@ async function main() {
   console.log(`✓ ${deptIds.size} departments, ${hubIds.size} hubs, ${employeeIdOf.size} people`);
 
   // --- Replace surveys from an earlier run (their plans first) ---------------
-  const old = await prisma.climateSurvey.findMany({
-    where: {
-      companyId: company.id,
-      OR: [results, draft].map((s) => ({ name: s.title, createdAt: new Date(s.createdAt) })),
-    },
-    select: { id: true },
-  });
   if (old.length) {
     await prisma.actionPlan.deleteMany({ where: { surveyId: { in: old.map((o) => o.id) } } });
     await prisma.climateSurvey.deleteMany({ where: { id: { in: old.map((o) => o.id) } } });
@@ -510,7 +533,7 @@ async function main() {
   console.log(`✓ "${draft.title}" as a draft`);
 
   if (surveys.has(SKIPPED_SURVEY)) console.log(`  skipped "${surveys.get(SKIPPED_SURVEY)!.title}": its question types don't exist here yet`);
-  console.log("Done. Nothing was emailed.");
+  console.log("Done. The import itself sent no email.");
 }
 
 main()
