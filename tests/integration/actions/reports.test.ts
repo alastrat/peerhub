@@ -507,6 +507,18 @@ describe("report actions", () => {
       });
     });
 
+    it("leaves the email empty for someone without one", async () => {
+      mockGetCycleReportSummary.mockResolvedValue({
+        ...sampleCycleSummary,
+        participants: [{ ...sampleCycleSummary.participants[0], email: null }],
+      });
+
+      const result = await exportReportCSV("cycle-1");
+
+      expect(result.data).toContain('"John Doe","",5,6,Yes');
+      expect(result.data).not.toContain("null");
+    });
+
     it("returns error when individual report not found", async () => {
       mockGetEmployeeReport.mockResolvedValue(null);
 

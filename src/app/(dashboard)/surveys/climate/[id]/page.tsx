@@ -272,21 +272,20 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
   );
   const totalResponses = allResponses.length;
 
-  // Everyone invited, once, for their personal links (no answers or progress
-  // here, so an anonymous survey's card doesn't tell who answered)
+  // Who can get a personal link: invited without an email and not answered
+  // yet (the same rule the server applies), once each
   const linkPeople = [
     ...new Map(
       survey.distributions
         .flatMap((d) => d.responses)
         .flatMap((r) =>
-          r.employee
+          r.employee && !r.employee.email && !r.isComplete
             ? [
                 [
                   r.employee.id,
                   {
                     employeeId: r.employee.id,
                     name: r.employee.name,
-                    email: r.employee.email,
                     phone: r.employee.phone,
                     nationalId: r.employee.nationalId,
                   },

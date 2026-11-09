@@ -21,7 +21,8 @@ interface PageProps {
 export default async function PortalClimateSurveyPage({ params }: PageProps) {
   const { distributionId } = await params;
 
-  const session = await getPortalSession();
+  // A survey link's session counts here, for its own survey only
+  const session = await getPortalSession({ distributionId });
   if (!session) {
     redirect("/portal");
   }

@@ -323,6 +323,26 @@ describe("cycle lifecycle actions", () => {
       });
     });
 
+    it("reports participants without an email instead of counting them as sends", async () => {
+      const cycle = {
+        ...launchableCycle,
+        participants: [
+          launchableCycle.participants[0],
+          { ...launchableCycle.participants[1], employee: { ...launchableCycle.participants[1].employee, email: null } },
+        ],
+      };
+      mockPrisma.cycle.findFirst.mockResolvedValue(cycle);
+      mockPrisma.reviewAssignment.createMany.mockResolvedValue({ count: 3 });
+      mockPrisma.cycle.update.mockResolvedValue({ ...baseCycle, status: "NOMINATION" });
+
+      const result = await launchCycle("cycle-1", true);
+
+      expect(result.success).toBe(true);
+      expect(result.warning).toBe("1 persona sin correo no recibirá notificaciones del ciclo.");
+      expect(vi.mocked(notifyEmployee)).toHaveBeenCalledTimes(1);
+      expect(vi.mocked(notifyEmployee)).toHaveBeenCalledWith(expect.objectContaining({ employeeId: "emp-1" }));
+    });
+
     it("transitions directly to IN_PROGRESS when peer review disabled", async () => {
       const noPeerCycle = {
         ...launchableCycle,

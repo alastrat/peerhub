@@ -4,21 +4,19 @@ import { useMemo, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Copy, Download, Link2, Loader2, MessageCircle, Search } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 import { createSurveyLink, createSurveyLinksWithoutEmail } from "@/lib/actions/survey-links";
 import { whatsAppUrl } from "@/lib/people/phone";
 import { toCsv } from "@/lib/utils/csv";
 import { formatDate } from "@/lib/utils/dates";
 
+/** A participant without an email who hasn't answered yet: the only people who get links. */
 export interface LinkPerson {
   employeeId: string;
   name: string;
-  email: string | null;
   phone: string | null;
   nationalId: string | null;
 }
@@ -31,16 +29,13 @@ interface SurveyLinksCardProps {
 }
 
 /**
- * Personal survey links (a proposal to validate with Kultiva): for people
- * without a corporate email, who get no invitation, the admin copies their
- * single-use link or sends it by WhatsApp. Shows who was invited, never
- * their progress, so it works for anonymous surveys too.
+ * Personal survey links (a proposal to validate with Kultiva): participants
+ * without a corporate email get no invitation, so the admin copies their
+ * single-use link or sends it by WhatsApp.
  */
 export function SurveyLinksCard({ surveyId, surveyName, companyName, people }: SurveyLinksCardProps) {
   const t = useTranslations("dashboard.climate.detail.participants_tab.links");
   const locale = useLocale();
-  const withoutEmail = people.filter((p) => !p.email);
-  const [onlyWithoutEmail, setOnlyWithoutEmail] = useState(withoutEmail.length > 0);
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
   // The last link made per person, shown in the row when copying or opening WhatsApp fails
@@ -49,10 +44,8 @@ export function SurveyLinksCard({ surveyId, surveyName, companyName, people }: S
 
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase();
-    return (onlyWithoutEmail ? withoutEmail : people).filter(
-      (p) => !term || p.name.toLowerCase().includes(term) || (p.nationalId ?? "").includes(term),
-    );
-  }, [people, withoutEmail, onlyWithoutEmail, search]);
+    return people.filter((p) => !term || p.name.toLowerCase().includes(term) || (p.nationalId ?? "").includes(term));
+  }, [people, search]);
 
   async function newLink(person: LinkPerson) {
     const result = await createSurveyLink(surveyId, person.employeeId);
@@ -117,7 +110,7 @@ export function SurveyLinksCard({ surveyId, surveyName, companyName, people }: S
         toast.error(result.error ?? t("copy_failed"));
         return;
       }
-      const links = result.data;
+      const { links, ended } = result.data;
       if (links.length > 0) {
         const csv = toCsv([
           [t("csv_name"), t("csv_national_id"), t("csv_phone"), t("csv_link"), t("csv_expires")],
@@ -132,6 +125,8 @@ export function SurveyLinksCard({ surveyId, surveyName, companyName, people }: S
         URL.revokeObjectURL(href);
       }
       toast.success(t("csv_downloaded", { count: links.length }));
+      // Someone whose invitation is past its due date gets no link; the others still do
+      if (ended.length > 0) toast.warning(t("csv_ended", { names: ended.map((e) => e.name).join(", ") }));
     });
   }
 
@@ -146,42 +141,17 @@ export function SurveyLinksCard({ surveyId, surveyName, companyName, people }: S
             </CardTitle>
             <CardDescription className="max-w-2xl">{t("description")}</CardDescription>
           </div>
-          {withoutEmail.length > 0 && (
-            <Button variant="outline" onClick={downloadCsv} disabled={downloading} title={t("download_hint")}>
-              {downloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-              {t("download_csv")}
-            </Button>
-          )}
+          <Button variant="outline" onClick={downloadCsv} disabled={downloading} title={t("download_hint")}>
+            {downloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+            {t("download_csv")}
+          </Button>
         </div>
-        {withoutEmail.length > 0 && (
-          <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            {t("without_email_hint", { count: withoutEmail.length })}
-          </p>
-        )}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex rounded-md border p-0.5" role="group">
-            {[
-              { value: true, label: t("filter_without_email", { count: withoutEmail.length }) },
-              { value: false, label: t("filter_all", { count: people.length }) },
-            ].map((option) => (
-              <button
-                key={String(option.value)}
-                type="button"
-                aria-pressed={onlyWithoutEmail === option.value}
-                onClick={() => setOnlyWithoutEmail(option.value)}
-                className={cn(
-                  "rounded px-3 py-1 text-sm",
-                  onlyWithoutEmail === option.value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <div className="relative w-full max-w-xs">
-            <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("search_placeholder")} className="ps-10" />
-          </div>
+        <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          {t("without_email_hint", { count: people.length })}
+        </p>
+        <div className="relative w-full max-w-xs">
+          <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("search_placeholder")} className="ps-10" />
         </div>
       </CardHeader>
       <CardContent>
@@ -199,13 +169,6 @@ export function SurveyLinksCard({ surveyId, surveyName, companyName, people }: S
                 <TableRow key={p.employeeId}>
                   <TableCell>
                     <span className="block font-medium">{p.name}</span>
-                    {p.email ? (
-                      <span className="block text-xs text-muted-foreground">{p.email}</span>
-                    ) : (
-                      <Badge variant="outline" className="mt-0.5 border-sky-200 bg-sky-50 text-xs text-sky-800">
-                        {t("no_email")}
-                      </Badge>
-                    )}
                     {shown[p.employeeId] && (
                       <span className="mt-1 block text-xs">
                         {t("generated_link")}{" "}
