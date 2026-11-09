@@ -24,18 +24,32 @@ vi.mock("next/headers", () => ({
   // Posted from a portal page
   headers: vi.fn(async () => new Map([["referer", "http://localhost/portal/climate-survey/dist-1"]])),
 }));
-vi.mock("next/server", () => ({ after: vi.fn() }));
+vi.mock("next/server", () => ({
+  after: vi.fn(),
+  NextResponse: { json: (body: unknown, init?: { status?: number }) => Response.json(body, { status: init?.status ?? 200 }) },
+}));
 vi.mock("@/lib/climate/survey-finish", () => ({ finishIfEveryoneAnswered: vi.fn() }));
 
 import { createPortalSession, getPortalSession } from "@/lib/auth/portal-session";
 import { saveSurveyDraft } from "@/lib/actions/climate-responses";
 import { getClimateActor } from "@/lib/auth/climate-actor";
+import { POST as saveDraftBeacon } from "@/app/api/climate-survey/save-draft/route";
 
 beforeEach(async () => {
   jar.clear();
   mockPrisma = createMockPrisma();
   mockPrisma.employee.findUnique.mockResolvedValue({ id: "emp-1", name: "Jhon", companyId: "company-1", isActive: true });
-  mockPrisma.surveyDistribution.findUnique.mockResolvedValue({ id: "dist-1", survey: { companyId: "company-1", questions: [] } });
+  mockPrisma.surveyDistribution.findUnique.mockResolvedValue({
+    id: "dist-1",
+    survey: {
+      companyId: "company-1",
+      status: "ACTIVE",
+      accessStartDate: null,
+      accessEndDate: null,
+      closedAt: null,
+      questions: [{ id: "q-1", type: "TEXT", config: null }],
+    },
+  });
   mockPrisma.surveyResponse.findFirst.mockResolvedValue({ id: "resp-1", isComplete: false });
   await createPortalSession("emp-1", "company-1", null, { distributionId: "dist-1", expiresAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) });
 });
@@ -43,6 +57,17 @@ beforeEach(async () => {
 describe("a survey link's session", () => {
   it("can save answers to its own survey", async () => {
     expect(await saveSurveyDraft({ distributionId: "dist-1", answers: [] })).toMatchObject({ success: true });
+  });
+
+  it("can save its draft from the page-unload beacon too", async () => {
+    const res = await saveDraftBeacon(
+      new Request("http://localhost/api/climate-survey/save-draft", {
+        method: "POST",
+        body: JSON.stringify({ distributionId: "dist-1", answers: [{ questionId: "q-1", textValue: "Hola" }] }),
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(mockPrisma.surveyAnswer.upsert).toHaveBeenCalled();
   });
 
   it("can't answer another survey", async () => {
