@@ -35,3 +35,25 @@ export function formatDay(value: Date | string | null | undefined, locale: strin
     timeZone,
   });
 }
+
+/**
+ * When a calendar day (stored at UTC midnight, like a due date) ends in the
+ * business time zone: the next day's midnight there.
+ */
+export function endOfBusinessDay(day: Date, timeZone = BUSINESS_TIME_ZONE): Date {
+  const nextUtcMidnight = Date.parse(`${day.toISOString().slice(0, 10)}T00:00:00.000Z`) + 24 * 60 * 60 * 1000;
+  // The zone's offset at that moment: its wall clock minus UTC
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(new Date(nextUtcMidnight));
+  const part = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  const wallClock = Date.UTC(part("year"), part("month") - 1, part("day"), part("hour"), part("minute"), part("second"));
+  return new Date(nextUtcMidnight - (wallClock - nextUtcMidnight));
+}

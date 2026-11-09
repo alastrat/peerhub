@@ -63,7 +63,7 @@ export async function addEmployee(
     const data = parsed.data;
     if (data.birthDate && !isValidBirthDate(data.birthDate)) return actionError("invalid_birth_date");
 
-    const conflict = await findEmployeeConflict(companyId, data.email, data.nationalId);
+    const conflict = await findEmployeeConflict(companyId, data.email ?? null, data.nationalId);
     if (conflict === "email") return actionError("employee_email_taken");
     if (conflict === "national_id") return actionError("national_id_taken");
 
@@ -82,7 +82,8 @@ export async function addEmployee(
         companyId,
         nationalId: data.nationalId,
         name: data.name,
-        email: data.email,
+        email: data.email ?? null,
+        phone: data.phone ?? null,
         title: data.title || null,
         hubId: hub?.id,
         departmentId: department?.id,
@@ -96,9 +97,12 @@ export async function addEmployee(
 
     let invited = false;
     let warning: string | undefined;
-    if (data.invite) {
+    if (data.invite && !employee.email) {
+      // Nowhere to send it: they answer surveys from a personal link
+      warning = (await actionError("invite_needs_email")).error;
+    } else if (data.invite && employee.email) {
       try {
-        await inviteEmployee(employee, data.role, session.user.name);
+        await inviteEmployee({ ...employee, email: employee.email }, data.role, session.user.name);
         invited = true;
       } catch (error) {
         console.error("Add employee invitation failed:", error);
@@ -458,6 +462,9 @@ export async function updateEmployee(employeeId: string, input: UpdateEmployeeIn
     }
     if (data.birthDate && !isValidBirthDate(data.birthDate)) return { success: false, error: "Invalid date of birth" };
     if (data.nationalId && (await nationalIdTaken(companyId, data.nationalId, employeeId))) return actionError("national_id_taken");
+    // An email can be added to someone who has none, never changed
+    const newEmail = !employee.email && data.email ? data.email : null;
+    if (newEmail && (await findEmployeeConflict(companyId, newEmail, null))) return actionError("employee_email_taken");
 
     const employeeData: Prisma.EmployeeUncheckedUpdateInput = {};
     if (data.name !== undefined) employeeData.name = data.name;
@@ -471,6 +478,8 @@ export async function updateEmployee(employeeId: string, input: UpdateEmployeeIn
     if (data.birthDate !== undefined) employeeData.birthDate = data.birthDate;
     if (data.nationalId !== undefined) employeeData.nationalId = data.nationalId;
     if (data.jobLevel !== undefined) employeeData.jobLevel = data.jobLevel;
+    if (data.phone !== undefined) employeeData.phone = data.phone;
+    if (newEmail) employeeData.email = newEmail;
 
     // One transaction, so the employee and their account never disagree on
     // status. The form only sends role and status when the admin changed
@@ -486,7 +495,7 @@ export async function updateEmployee(employeeId: string, input: UpdateEmployeeIn
             ...(data.isActive !== undefined && { isActive: data.isActive }),
           },
         });
-      } else if (!employee.companyUser && data.role !== undefined) {
+      } else if (!employee.companyUser && employee.email && data.role !== undefined) {
         // No account yet: the role is the one their pending invitation will give
         const { count } = await tx.invitation.updateMany({
           where: { ...pendingInvitationsWhere(companyId), email: { equals: employee.email, mode: "insensitive" } },

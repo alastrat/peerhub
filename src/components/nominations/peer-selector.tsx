@@ -21,7 +21,7 @@ import { createNominations } from "@/lib/actions/nominations";
 interface Colleague {
   id: string;
   name: string | null;
-  email: string;
+  email: string | null;
   image: string | null;
   title: string | null;
   department: string | null;
@@ -61,7 +61,7 @@ export function PeerSelector({
     const searchLower = search.toLowerCase();
     return (
       (c.name?.toLowerCase().includes(searchLower) ?? false) ||
-      c.email.toLowerCase().includes(searchLower) ||
+      (c.email ?? "").toLowerCase().includes(searchLower) ||
       (c.title?.toLowerCase().includes(searchLower) ?? false)
     );
   });
@@ -172,7 +172,7 @@ export function PeerSelector({
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={colleague.image || undefined} />
                     <AvatarFallback>
-                      {getInitials(colleague.name || colleague.email)}
+                      {getInitials(colleague.name || colleague.email || "")}
                     </AvatarFallback>
                   </Avatar>
 

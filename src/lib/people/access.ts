@@ -2,9 +2,11 @@ import type { CompanyRole } from "@prisma/client";
 
 /**
  * Whether someone on the roster can use the platform: an account, a pending
- * invitation, a deactivated account, or none of these.
+ * invitation, a deactivated account, or none of these. People without an
+ * email can't have either (invitations and accounts are by email): they
+ * answer surveys from a personal link.
  */
-export const ACCESS_STATUSES = ["ACTIVE", "INVITED", "DEACTIVATED", "NONE"] as const;
+export const ACCESS_STATUSES = ["ACTIVE", "INVITED", "DEACTIVATED", "NONE", "NO_EMAIL"] as const;
 export type AccessStatus = (typeof ACCESS_STATUSES)[number];
 
 export interface RosterAccess {
@@ -21,8 +23,10 @@ export interface RosterAccess {
 export function rosterAccess(
   account: { role: CompanyRole; isActive: boolean } | null | undefined,
   pendingInvitation: { role: CompanyRole } | null | undefined,
+  hasEmail = true,
 ): RosterAccess {
   if (account?.isActive) return { role: account.role, access: "ACTIVE" };
+  if (!hasEmail && !account) return { role: "MEMBER", access: "NO_EMAIL" };
   if (pendingInvitation) return { role: pendingInvitation.role, access: "INVITED" };
   if (account) return { role: account.role, access: "DEACTIVATED" };
   return { role: "MEMBER", access: "NONE" };

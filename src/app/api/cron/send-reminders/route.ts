@@ -202,7 +202,7 @@ export async function GET(request: Request) {
             `Failed to send nomination reminder to ${participant.employee.email}:`,
             error
           );
-          errors.push(participant.employee.email);
+          errors.push(participant.employee.email ?? participant.employeeId);
         }
       }
     }

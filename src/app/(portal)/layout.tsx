@@ -2,7 +2,7 @@ import Link from "next/link";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { Logo } from "@/components/design-system/logo";
-import { getPortalSession } from "@/lib/auth/portal-session";
+import { getPortalIdentity } from "@/lib/auth/portal-session";
 import { getPortalLocale } from "@/lib/auth/portal-locale";
 import { getPlatformTheme } from "@/lib/queries/platform-theme";
 import { prisma } from "@/lib/db/prisma";
@@ -14,7 +14,8 @@ export default async function PortalLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getPortalSession();
+  // Who is signed in, for the header (a survey link's session included)
+  const session = await getPortalIdentity();
   const locale = await getPortalLocale();
   const messages = await getMessages({ locale });
   const t = await getTranslations({ locale, namespace: "portal.layout" });

@@ -65,7 +65,8 @@ export async function POST(request: NextRequest) {
     const nationalId = data.nationalId ? normalizeNationalId(data.nationalId) : null;
 
     // Same email or cédula as someone already in the company
-    const conflict = await findEmployeeConflict(companyId, data.email, nationalId);
+    const email = data.email?.toLowerCase() ?? null;
+    const conflict = await findEmployeeConflict(companyId, email, nationalId);
     if (conflict === "email") {
       return NextResponse.json({ message: t("already_exists") }, { status: 400 });
     }
@@ -138,7 +139,8 @@ export async function POST(request: NextRequest) {
     const employee = await prisma.employee.create({
       data: {
         companyId,
-        email: data.email,
+        email,
+        phone: data.phone ?? null,
         name: data.name,
         title: data.title || null,
         employeeCode: data.employeeCode || null,
@@ -163,24 +165,28 @@ export async function POST(request: NextRequest) {
     // With the wizard's "send invitations" box, platform access comes from the
     // invitation (with the file's role, if any). Without it, only a role
     // column grants access, directly and without any email.
+    // Without an email there's no invitation or account: they answer
+    // surveys from a personal link
     let invited = false;
-    if (data.invite) {
+    if ((data.invite || data.role) && !email) {
+      if (data.invite) warnings.push(t("invite_needs_email"));
+    } else if (data.invite && email) {
       try {
-        await inviteEmployee(employee, role, session.user?.name);
+        await inviteEmployee({ ...employee, email }, role, session.user?.name);
         invited = true;
       } catch (error) {
         console.error("Import invitation failed:", error);
         warnings.push(t("invite_failed"));
       }
-    } else if (data.role) {
+    } else if (data.role && email) {
       let user = await prisma.user.findUnique({
-        where: { email: data.email },
+        where: { email },
       });
 
       if (!user) {
         user = await prisma.user.create({
           data: {
-            email: data.email,
+            email,
             name: data.name,
           },
         });

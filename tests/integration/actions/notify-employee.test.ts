@@ -47,6 +47,23 @@ describe("notifyEmployee", () => {
     expect(sendPortalMagicLinkEmail).not.toHaveBeenCalled();
   });
 
+  it("sends nothing to someone without an email (they answer from a survey link)", async () => {
+    mockPrisma.employee.findUnique.mockResolvedValue({
+      id: "emp-2",
+      email: null,
+      name: "Sin Correo",
+      companyId: "company-1",
+      companyUser: null,
+    });
+    const sendMemberEmail = vi.fn();
+
+    await notifyEmployee({ employeeId: "emp-2", subject: "Test", dashboardUrl: "/my-reviews", sendMemberEmail });
+
+    expect(sendMemberEmail).not.toHaveBeenCalled();
+    expect(sendPortalMagicLinkEmail).not.toHaveBeenCalled();
+    expect(mockPrisma.accessToken.create).not.toHaveBeenCalled();
+  });
+
   it("sends dashboard email when employee has CompanyUser", async () => {
     mockPrisma.employee.findUnique.mockResolvedValue({
       id: "emp-1",

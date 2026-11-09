@@ -16,15 +16,18 @@ vi.mock("next/headers", () => ({
 // Mock jose for JWT operations
 // We use a module-level variable so we can spy on calls from tests.
 // vi.hoisted ensures the variable is available when the factory runs.
-const { mockSignFn } = vi.hoisted(() => ({
+const { mockSignFn, mockClaims, mockExpiration } = vi.hoisted(() => ({
   mockSignFn: vi.fn().mockResolvedValue("mock-jwt-token"),
+  mockClaims: vi.fn(),
+  mockExpiration: vi.fn(),
 }));
 
 vi.mock("jose", () => {
   class SignJWT {
+    constructor(claims: unknown) { mockClaims(claims); }
     setProtectedHeader() { return this; }
     setIssuedAt() { return this; }
-    setExpirationTime() { return this; }
+    setExpirationTime(exp: unknown) { mockExpiration(exp); return this; }
     sign() { return mockSignFn(); }
   }
   return { SignJWT, jwtVerify: vi.fn() };
@@ -33,6 +36,7 @@ vi.mock("jose", () => {
 // Import AFTER mocks
 import {
   createPortalSession,
+  getPortalIdentity,
   getPortalSession,
   clearPortalSession,
 } from "@/lib/auth/portal-session";
@@ -98,6 +102,21 @@ describe("portal-session", () => {
       ).rejects.toThrow("Missing PORTAL_SECRET or NEXTAUTH_SECRET");
     });
 
+    it("a survey link's session only names its survey, and ends with the link (at most 7 days)", async () => {
+      vi.useFakeTimers({ now: new Date("2026-11-10T12:00:00Z"), toFake: ["Date"] });
+      await createPortalSession("emp-1", "company-1", null, {
+        distributionId: "dist-1",
+        expiresAt: new Date("2026-11-12T12:00:00Z"),
+      });
+      expect(mockClaims).toHaveBeenCalledWith({ employeeId: "emp-1", companyId: "company-1", email: null, surveyDistributionId: "dist-1" });
+      expect(mockExpiration).toHaveBeenCalledWith(`${2 * 24 * 60 * 60}s`);
+      expect(mockCookieStore.set).toHaveBeenCalledWith("portal-session", "mock-jwt-token", expect.objectContaining({ maxAge: 2 * 24 * 60 * 60 }));
+
+      await createPortalSession("emp-1", "company-1", null, { distributionId: "dist-1", expiresAt: new Date("2026-12-10T12:00:00Z") });
+      expect(mockCookieStore.set).toHaveBeenLastCalledWith("portal-session", "mock-jwt-token", expect.objectContaining({ maxAge: 7 * 24 * 60 * 60 }));
+      vi.useRealTimers();
+    });
+
     it("falls back to NEXTAUTH_SECRET when PORTAL_SECRET is missing", async () => {
       delete process.env.PORTAL_SECRET;
       process.env.NEXTAUTH_SECRET = "nextauth-fallback-secret";
@@ -150,6 +169,7 @@ describe("portal-session", () => {
         employeeId: "emp-1",
         companyId: "company-1",
         email: "alice@acme.com",
+        surveyDistributionId: null,
       });
     });
 
@@ -194,20 +214,46 @@ describe("portal-session", () => {
       expect(result).toBeNull();
     });
 
-    it("returns null when payload is missing email", async () => {
+    it("accepts a session without email (signed in by a survey link)", async () => {
       mockCookieStore.get.mockReturnValue({ value: "jwt-token" });
       vi.mocked(jwtVerify).mockResolvedValue({
         payload: {
           employeeId: "emp-1",
           companyId: "company-1",
-          email: "",
+          email: null,
         },
         protectedHeader: { alg: "HS256" },
       } as never);
 
       const result = await getPortalSession();
 
-      expect(result).toBeNull();
+      expect(result).toEqual({ employeeId: "emp-1", companyId: "company-1", email: null, surveyDistributionId: null });
+    });
+  });
+
+  describe("a survey link's session", () => {
+    beforeEach(() => {
+      mockCookieStore.get.mockReturnValue({ value: "link-jwt" });
+      vi.mocked(jwtVerify).mockResolvedValue({
+        payload: { employeeId: "emp-1", companyId: "company-1", email: null, surveyDistributionId: "dist-1" },
+        protectedHeader: { alg: "HS256" },
+      } as never);
+    });
+
+    it("only counts for its own survey distribution", async () => {
+      expect(await getPortalSession({ distributionId: "dist-1" })).toEqual({
+        employeeId: "emp-1",
+        companyId: "company-1",
+        email: null,
+        surveyDistributionId: "dist-1",
+      });
+      // Every other portal page and action sees nobody signed in
+      expect(await getPortalSession()).toBeNull();
+      expect(await getPortalSession({ distributionId: "dist-2" })).toBeNull();
+    });
+
+    it("still names the person for the header and language", async () => {
+      expect(await getPortalIdentity()).toMatchObject({ employeeId: "emp-1", surveyDistributionId: "dist-1" });
     });
   });
 

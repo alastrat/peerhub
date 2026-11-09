@@ -3,11 +3,18 @@ import { SignJWT, jwtVerify } from "jose";
 
 const COOKIE_NAME = "portal-session";
 const EXPIRY_DAYS = 7;
+const DAY_SECONDS = 24 * 60 * 60;
 
 interface PortalSessionPayload {
   employeeId: string;
   companyId: string;
-  email: string;
+  /** Null for people without a corporate email, signed in by a survey link */
+  email: string | null;
+  /**
+   * Set for a session opened by a personal survey link: it can only open and
+   * answer this survey distribution, nothing else in the portal.
+   */
+  surveyDistributionId: string | null;
 }
 
 function getSecret(): Uint8Array {
@@ -23,12 +30,22 @@ function getSecret(): Uint8Array {
 export async function createPortalSession(
   employeeId: string,
   companyId: string,
-  email: string
+  email: string | null,
+  /** A survey link's session: only that distribution, until `expiresAt` (at most the usual 7 days) */
+  surveyOnly?: { distributionId: string; expiresAt: Date },
 ): Promise<void> {
-  const token = await new SignJWT({ employeeId, companyId, email })
+  const maxAge = surveyOnly
+    ? Math.max(60, Math.min(EXPIRY_DAYS * DAY_SECONDS, Math.floor((surveyOnly.expiresAt.getTime() - Date.now()) / 1000)))
+    : EXPIRY_DAYS * DAY_SECONDS;
+  const token = await new SignJWT({
+    employeeId,
+    companyId,
+    email,
+    ...(surveyOnly && { surveyDistributionId: surveyOnly.distributionId }),
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime(`${EXPIRY_DAYS}d`)
+    .setExpirationTime(surveyOnly ? `${maxAge}s` : `${EXPIRY_DAYS}d`)
     .sign(getSecret());
 
   const cookieStore = await cookies();
@@ -37,11 +54,12 @@ export async function createPortalSession(
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: EXPIRY_DAYS * 24 * 60 * 60,
+    maxAge,
   });
 }
 
-export async function getPortalSession(): Promise<PortalSessionPayload | null> {
+/** The signed-in portal person, whatever their session may open (for showing their name or language). */
+export async function getPortalIdentity(): Promise<PortalSessionPayload | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
 
@@ -51,16 +69,28 @@ export async function getPortalSession(): Promise<PortalSessionPayload | null> {
 
   try {
     const { payload } = await jwtVerify(token, getSecret());
-    const { employeeId, companyId, email } = payload as unknown as PortalSessionPayload;
+    const { employeeId, companyId, email, surveyDistributionId } = payload as unknown as PortalSessionPayload;
 
-    if (!employeeId || !companyId || !email) {
+    if (!employeeId || !companyId) {
       return null;
     }
 
-    return { employeeId, companyId, email };
+    return { employeeId, companyId, email: email || null, surveyDistributionId: surveyDistributionId || null };
   } catch {
     return null;
   }
+}
+
+/**
+ * The portal session, for pages and actions that give access. A survey
+ * link's session only counts for its own survey distribution: everywhere
+ * else it's as if nobody were signed in.
+ */
+export async function getPortalSession(options: { distributionId?: string } = {}): Promise<PortalSessionPayload | null> {
+  const session = await getPortalIdentity();
+  if (!session) return null;
+  if (session.surveyDistributionId && session.surveyDistributionId !== options.distributionId) return null;
+  return session;
 }
 
 export async function clearPortalSession(): Promise<void> {

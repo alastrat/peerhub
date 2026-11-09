@@ -49,7 +49,7 @@ interface AddExternalRaterDialogProps {
     employeeId: string;
     employee: {
       name: string;
-      email: string;
+      email: string | null;
     };
   }>;
   children?: React.ReactNode;

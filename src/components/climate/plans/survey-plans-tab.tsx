@@ -53,7 +53,7 @@ export function SurveyPlansTab({ overview, dimensions, groups, employees }: Surv
   const closed = survey.status === "CLOSED";
   const missing = leaders.filter((l) => !l.meetsMinimum);
   // As in the admins' closing email: leaders only get it when their team reached the threshold
-  const leadersEmailed = !!survey.resultsEmailedAt && leaders.some((l) => !l.suppressed);
+  const leadersEmailed = !!survey.resultsEmailedAt && leaders.some((l) => !l.suppressed && l.hasEmail);
 
   function run(fn: () => Promise<{ success: boolean; error?: string }>, ok: (r: never) => string) {
     startTransition(async () => {
@@ -177,7 +177,13 @@ export function SurveyPlansTab({ overview, dimensions, groups, employees }: Surv
               <tbody>
                 {leaders.map((l) => (
                   <tr key={l.leaderEmployeeId} className="border-t align-top">
-                    <td className="px-2 py-2 font-medium">{l.name}</td>
+                    <td className="px-2 py-2 font-medium">
+                      {l.name}
+                      {/* No results email for them: their results are in the portal, by link */}
+                      {!l.hasEmail && !l.suppressed && (
+                        <span className="block text-xs font-normal text-muted-foreground">{t("leader_no_email")}</span>
+                      )}
+                    </td>
                     <td className="px-2 py-2 tabular-nums">{l.respondents}</td>
                     <td className="px-2 py-2">
                       {l.suppressed ? (

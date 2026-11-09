@@ -50,7 +50,7 @@ async function getSurvey(companyId: string, surveyId: string) {
   return prisma.climateSurvey.findFirst({
     where: { id: surveyId, companyId },
     include: {
-      company: { select: { logo: true } },
+      company: { select: { logo: true, name: true } },
       questions: {
         include: { dimension: { select: { id: true, name: true } } },
         orderBy: { order: "asc" },
@@ -65,6 +65,8 @@ async function getSurvey(companyId: string, surveyId: string) {
                   id: true,
                   name: true,
                   email: true,
+                  phone: true,
+                  nationalId: true,
                   title: true,
                   managerId: true,
                   department: { select: { name: true } },
@@ -269,6 +271,30 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
     }))
   );
   const totalResponses = allResponses.length;
+
+  // Who can get a personal link: invited without an email and not answered
+  // yet (the same rule the server applies), once each
+  const linkPeople = [
+    ...new Map(
+      survey.distributions
+        .flatMap((d) => d.responses)
+        .flatMap((r) =>
+          r.employee && !r.employee.email && !r.isComplete
+            ? [
+                [
+                  r.employee.id,
+                  {
+                    employeeId: r.employee.id,
+                    name: r.employee.name,
+                    phone: r.employee.phone,
+                    nationalId: r.employee.nationalId,
+                  },
+                ] as const,
+              ]
+            : [],
+        ),
+    ).values(),
+  ].sort((a, b) => a.name.localeCompare(b.name, "es"));
   const completedResponses = allResponses.filter((r) => r.isComplete).length;
   const pendingResponses = totalResponses - completedResponses;
 
@@ -462,6 +488,9 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
             surveyId={survey.id}
             surveyStatus={survey.status}
             responses={allResponses}
+            linkPeople={linkPeople}
+            surveyName={survey.name}
+            companyName={survey.company.name}
             isAnonymous={survey.isAnonymous}
             accessEndDate={survey.accessEndDate}
             employees={

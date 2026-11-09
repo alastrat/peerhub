@@ -35,7 +35,7 @@ interface IdNamePair {
 }
 
 interface EmployeeOption extends IdNamePair {
-  email: string;
+  email: string | null;
 }
 
 interface DistributeDialogProps {
@@ -118,7 +118,7 @@ export function DistributeDialog({
     ? employees.filter(
         (e) =>
           e.name.toLowerCase().includes(employeeSearch.toLowerCase()) ||
-          e.email.toLowerCase().includes(employeeSearch.toLowerCase()),
+          (e.email ?? "").toLowerCase().includes(employeeSearch.toLowerCase()),
       )
     : employees;
 
@@ -215,7 +215,7 @@ export function DistributeDialog({
                       <div className="min-w-0 flex-1">
                         <div className="text-sm">{emp.name}</div>
                         <div className="truncate text-xs text-muted-foreground">
-                          {emp.email}
+                          {emp.email ?? "—"}
                         </div>
                       </div>
                     </label>

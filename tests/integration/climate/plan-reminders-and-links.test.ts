@@ -92,6 +92,14 @@ describe("sendPlanDeadlineReminders (Modelo 2)", () => {
     mockPrisma.accessToken.findFirst.mockResolvedValue({ token: "kept" });
   }
 
+  it("skips a leader without an email", async () => {
+    wire(new Date("2026-12-15T00:00:00Z"));
+    mockPrisma.employee.findFirst.mockResolvedValue({ ...lina, name: "Lina Pérez", email: null });
+    expect(await sendPlanDeadlineReminders(new Date("2026-12-15T13:00:00Z"))).toEqual({ surveys: 1, emails: 0 });
+    expect(sendEmail).not.toHaveBeenCalled();
+    expect(mockPrisma.accessToken.create).not.toHaveBeenCalled();
+  });
+
   it("waits for the reminder day", async () => {
     wire(new Date("2026-12-15T00:00:00Z"));
     expect(await sendPlanDeadlineReminders(new Date("2026-12-14T15:00:00Z"))).toEqual({ surveys: 0, emails: 0 });

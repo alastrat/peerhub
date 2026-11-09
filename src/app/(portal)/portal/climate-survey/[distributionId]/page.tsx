@@ -21,13 +21,15 @@ interface PageProps {
 export default async function PortalClimateSurveyPage({ params }: PageProps) {
   const { distributionId } = await params;
 
-  const session = await getPortalSession();
+  // A survey link's session counts here, for its own survey only
+  const session = await getPortalSession({ distributionId });
   if (!session) {
     redirect("/portal");
   }
 
   const distribution = await prisma.surveyDistribution.findFirst({
-    where: { id: distributionId },
+    // Only the signed-in person's company's surveys
+    where: { id: distributionId, survey: { companyId: session.companyId } },
     include: {
       survey: {
         include: {

@@ -63,6 +63,7 @@ describe("addEmployee", () => {
         nationalId: "1032456789",
         name: "Daniela Ospina Cárdenas",
         email: "daniela.ospina@acme.com.co",
+        phone: null,
         title: "Analista de Talento Humano",
         hubId: "hub-bog",
         departmentId: "dept-th",
@@ -90,6 +91,18 @@ describe("addEmployee", () => {
       jobLevel: null,
       gender: null,
     });
+  });
+
+  it("adds someone without an email, with their mobile number, and never invites them", async () => {
+    const result = await addEmployee({ nationalId: "52987654", name: "Luisa", email: "", phone: "300 123 4567", invite: true });
+    expect(result).toEqual({
+      success: true,
+      data: { employeeId: "emp-new", invited: false },
+      warning: "El colaborador se agregó sin invitación porque no tiene correo. Responderá las encuestas desde su enlace personal.",
+    });
+    expect(mockPrisma.employee.create.mock.calls[0][0].data).toMatchObject({ email: null, phone: "3001234567" });
+    expect(mockPrisma.invitation.upsert).not.toHaveBeenCalled();
+    expect(sendInvitationEmail).not.toHaveBeenCalled();
   });
 
   it("rejects a missing cédula, like the import", async () => {

@@ -15,7 +15,7 @@ vi.mock("@/lib/db/prisma", () => ({
 }));
 vi.mock("@/lib/email/resend", () => ({ sendEmail: (...args: unknown[]) => sendEmail(...args) }));
 
-import { emailUsersViaDashboard, planEmails } from "@/lib/email/climate-plan-emails";
+import { emailEmployeeViaPortal, emailUsersViaDashboard, planEmails } from "@/lib/email/climate-plan-emails";
 
 const build = planEmails.planSubmitted("Sara", "Pausas activas", "Calidad de vida", "Clima 2026");
 
@@ -57,5 +57,20 @@ describe("emailUsersViaDashboard", () => {
   it("sends nothing when nobody follows up", async () => {
     expect(await emailUsersViaDashboard("company-1", [], "/", build)).toBe(0);
     expect(sendEmail).not.toHaveBeenCalled();
+  });
+});
+
+describe("emailEmployeeViaPortal", () => {
+  it("emails a task owner a portal link", async () => {
+    mockPrisma.employee.findUnique.mockResolvedValue({ id: "e1", name: "Santi", email: "santi@acme.com", companyId: "company-1", isActive: true, company: { locale: "es" } });
+    expect(await emailEmployeeViaPortal("e1", "/portal/my-tasks", build)).toBe(true);
+    expect(sendEmail).toHaveBeenCalledWith(expect.objectContaining({ to: "santi@acme.com" }));
+  });
+
+  it("sends nothing, and makes no sign-in link, for someone without an email", async () => {
+    mockPrisma.employee.findUnique.mockResolvedValue({ id: "e2", name: "Sin Correo", email: null, companyId: "company-1", isActive: true, company: { locale: "es" } });
+    expect(await emailEmployeeViaPortal("e2", "/portal/my-tasks", build)).toBe(false);
+    expect(sendEmail).not.toHaveBeenCalled();
+    expect(mockPrisma.accessToken.create).not.toHaveBeenCalled();
   });
 });

@@ -128,6 +128,10 @@ export function CSVImportWizard() {
         return t("errors.birth_date_range", { column: columnLabel("birthDate") });
       case "manager_not_in_file":
         return t("warnings.manager_not_in_file", { value });
+      case "no_email":
+      case "role_without_email":
+        return t(`warnings.${issue.code}`);
+      case "phone_invalid":
       case "gender_unknown":
       case "job_level_unknown":
       case "duplicate_national_id":

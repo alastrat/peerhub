@@ -35,6 +35,9 @@ function renderTab(isAnonymous: boolean) {
         responses={[
           isAnonymous ? { ...row, employeeName: "", employeeEmail: "", leaderName: null, hubName: null } : row,
         ]}
+        linkPeople={[]}
+        surveyName="Clima 2026"
+        companyName="Acme"
         employees={[]}
         hubs={[]}
         departments={[]}

@@ -43,7 +43,7 @@ import {
 const NOW = new Date("2026-12-10T15:00:00Z");
 let survey: Record<string, unknown>;
 
-const employees: Record<string, { name: string; email: string }> = {
+const employees: Record<string, { name: string; email: string | null }> = {
   lina: { name: "Lina Pérez", email: "lina@acme.com" },
   nora: { name: "Nora Díaz", email: "nora@acme.com" },
   marco: { name: "Marco Ruiz", email: "marco@acme.com" },
@@ -105,6 +105,10 @@ beforeEach(() => {
   ]);
   mockPrisma.user.findMany.mockResolvedValue([{ name: "Ana Gómez", email: "ana@acme.com" }]);
   mockPrisma.platformSetting.findUnique.mockResolvedValue({ value: "Consultores Kultiva" });
+  // Leaders with a corporate email among those whose team reached the threshold
+  mockPrisma.employee.count.mockImplementation(async ({ where }: { where: { id: { in: string[] } } }) =>
+    where.id.in.filter((id) => !!employees[id]?.email).length,
+  );
 });
 
 describe("finishSurvey", () => {
@@ -193,6 +197,30 @@ describe("finishSurvey", () => {
     expect(result.leaderEmails.sent).toBe(0);
     expect(survey.resultsEmailedAt).toBeNull();
     // The admins aren't told the leaders got it
+    expect(emailsTo("maria@acme.com")[0].text).not.toContain("cada líder recibió");
+  });
+
+  it("skips a leader without an email, lists them for the admins and keeps the run", async () => {
+    employees.marco.email = null;
+    const result = await finishSurvey("survey-1", "company-1", NOW);
+    employees.marco.email = "marco@acme.com";
+
+    expect(result.leaderEmails.sent).toBe(1);
+    expect(result.leaderEmails.skipped).toEqual([{ name: "Marco Ruiz", reason: "missing email" }]);
+    expect(sendEmail.mock.calls.map(([o]) => o.to)).not.toContain(null);
+    expect(survey.resultsEmailedAt).toEqual(NOW);
+  });
+
+  it("doesn't tell the admins the leaders got it when none has an email", async () => {
+    employees.lina.email = null;
+    employees.marco.email = null;
+    const result = await finishSurvey("survey-1", "company-1", NOW);
+    employees.lina.email = "lina@acme.com";
+    employees.marco.email = "marco@acme.com";
+
+    expect(result.leaderEmails.sent).toBe(0);
+    // Nothing failed, so there's nothing to retry
+    expect(survey.resultsEmailedAt).toEqual(NOW);
     expect(emailsTo("maria@acme.com")[0].text).not.toContain("cada líder recibió");
   });
 

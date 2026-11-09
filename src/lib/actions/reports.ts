@@ -248,7 +248,7 @@ export async function exportReportCSV(
 
       summary.participants.forEach((p) => {
         rows.push(
-          `"${p.participantName}","${p.email}",${p.completedReviews},${p.totalReviews},${p.releasedAt ? "Yes" : "No"}`
+          `"${p.participantName}","${p.email ?? ""}",${p.completedReviews},${p.totalReviews},${p.releasedAt ? "Yes" : "No"}`
         );
       });
 

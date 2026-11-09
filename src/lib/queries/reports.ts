@@ -349,7 +349,7 @@ export async function getEmployeeReport(
     cycleId: cycle.id,
     cycleName: cycle.name,
     participantId: employeeId,
-    participantName: participant.employee.name || participant.employee.email,
+    participantName: participant.employee.name || participant.employee.email || "",
     overallScore: overallScoreResult?.score ?? null,
     responseCounts,
     sections,
@@ -396,7 +396,7 @@ export async function getCycleReportSummary(options: ReportQueryOptions) {
 
     return {
       participantId: participant.employeeId,
-      participantName: participant.employee.name || participant.employee.email,
+      participantName: participant.employee.name || participant.employee.email || "",
       email: participant.employee.email,
       avatarUrl: null,
       completedReviews: completedCount,

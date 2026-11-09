@@ -164,6 +164,11 @@ export async function sendLeaderResultsEmails(surveyId: string, companyId: strin
       select: { id: true, name: true, email: true, companyId: true },
     });
     if (!leader) continue;
+    // No corporate email: listed for the admins (Modelo 3) as not emailed
+    if (!leader.email) {
+      result.skipped.push({ name: leader.name, reason: "missing email" });
+      continue;
+    }
     try {
       const email = leaderResultsEmail(
         {
@@ -286,8 +291,12 @@ export async function sendAdminClosingEmails(surveyId: string, companyId: string
     loadSurveyForScoring(surveyId, companyId),
   ]);
   // Leaders only got a link when their team reached the anonymity threshold
+  // and they have a corporate email
+  const qualifying = scoring ? leaderIdsOf(scoring).filter((id) => !leaderGaps(scoring, id, 0).suppressed) : [];
   const leadersEmailed =
-    !!meta.resultsEmailedAt && !!scoring && leaderIdsOf(scoring).some((id) => !leaderGaps(scoring, id, 0).suppressed);
+    !!meta.resultsEmailedAt &&
+    qualifying.length > 0 &&
+    (await prisma.employee.count({ where: { id: { in: qualifying }, companyId, email: { not: null } } })) > 0;
 
   const seen = new Set<string>();
   for (const { user } of admins) {
