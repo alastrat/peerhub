@@ -6,9 +6,9 @@
 // because questions are copied per survey, that key freezes the scale for
 // every survey that already exists.
 
-export type ScaleKey = "FREQ_4" | "AGREE_5" | "NUMERIC_5" | "NPS_11";
+export type ScaleKey = "FREQ_4" | "AGREE_5" | "FACES_5" | "NUMERIC_5" | "NPS_11";
 
-export type ScaleKind = "frequency" | "agreement" | "numeric" | "nps";
+export type ScaleKind = "frequency" | "agreement" | "faces" | "numeric" | "nps";
 
 export interface ScaleDefinition {
   key: ScaleKey;
@@ -18,6 +18,8 @@ export interface ScaleDefinition {
   anchors: Record<number, { es: string; en: string }> | null;
   /** Lowest value counted as favorable; null when favorability doesn't apply. */
   favorableMin: number | null;
+  /** Shown as faces (emoji per value) instead of plain options. */
+  faces?: Record<number, string>;
 }
 
 export const CLIMATE_SCALES: Record<ScaleKey, ScaleDefinition> = {
@@ -50,6 +52,22 @@ export const CLIMATE_SCALES: Record<ScaleKey, ScaleDefinition> = {
     },
     favorableMin: 4,
   },
+  // "Escala de caritas": five faces, worst to best (Kultiva's POC)
+  FACES_5: {
+    key: "FACES_5",
+    kind: "faces",
+    min: 1,
+    max: 5,
+    anchors: {
+      1: { es: "Muy mal", en: "Very bad" },
+      2: { es: "Mal", en: "Bad" },
+      3: { es: "Regular", en: "Okay" },
+      4: { es: "Bien", en: "Good" },
+      5: { es: "Muy bien", en: "Very good" },
+    },
+    favorableMin: 4,
+    faces: { 1: "😠", 2: "🙁", 3: "😐", 4: "🙂", 5: "😄" },
+  },
   // RATING questions: plain 1-5 numbers
   NUMERIC_5: {
     key: "NUMERIC_5",
@@ -80,7 +98,7 @@ export const DEFAULT_LIKERT_SCALE: ScaleKey = "FREQ_4";
 export const INSTRUMENT_SCALE: ScaleKey = "FREQ_4";
 
 /** Scales a user can pick for a LIKERT question. */
-export const SELECTABLE_LIKERT_SCALES: ScaleKey[] = ["FREQ_4", "AGREE_5"];
+export const SELECTABLE_LIKERT_SCALES: ScaleKey[] = ["FREQ_4", "AGREE_5", "FACES_5"];
 
 export function isScaleKey(value: unknown): value is ScaleKey {
   return typeof value === "string" && value in CLIMATE_SCALES;
@@ -125,7 +143,15 @@ export function getScaleAnchor(
 ): string | null {
   const anchor = scale.anchors?.[value];
   if (!anchor) return null;
-  return locale === "en" ? anchor.en : anchor.es;
+  const label = locale === "en" ? anchor.en : anchor.es;
+  // Face scales lead with the face, so results read like the survey did
+  const face = getScaleFace(scale, value);
+  return face ? `${face} ${label}` : label;
+}
+
+/** The face shown for a value on a face scale ("escala de caritas"), else null. */
+export function getScaleFace(scale: ScaleDefinition, value: number): string | null {
+  return scale.faces?.[value] ?? null;
 }
 
 /** Short label for the question-type picker, e.g. "Likert (1-4)". */

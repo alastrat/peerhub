@@ -227,7 +227,7 @@ export function SurveyInsightsTab({
                 )}
                 {results.isInstrument && (
                   <span className="text-sm text-muted-foreground">
-                    {ts("goal", { band: ts(`bands.${results.goalBand}`) })}
+                    {ts("goal", { band: ts("favorable_pct", { pct: results.goalPct }) })}
                   </span>
                 )}
               </CardContent>
@@ -306,7 +306,7 @@ export function SurveyInsightsTab({
                   {ts("attention_title")}
                 </CardTitle>
                 <CardDescription>
-                  {ts("attention_desc", { band: ts(`bands.${results.goalBand}`) })}
+                  {ts("attention_desc", { band: ts("favorable_pct", { pct: results.goalPct }) })}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">

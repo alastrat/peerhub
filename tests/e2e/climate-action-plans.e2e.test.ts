@@ -275,9 +275,9 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
 
   it("validates plan settings", async () => {
     asAdmin();
-    expect((await updateSurveySettings(ctx.surveyA, { goalBand: "GOOD" as never })).error).toBe("Nivel meta inválido");
+    expect((await updateSurveySettings(ctx.surveyA, { goalPct: 120 })).error).toBe("La meta debe ser un porcentaje entero entre 1 y 100");
     expect((await updateSurveySettings(ctx.surveyA, { followUpUserIds: [ctx.otherAdminUserId] })).error).toBe("Uno de los usuarios de seguimiento no pertenece a la empresa");
-    const ok = await updateSurveySettings(ctx.surveyA, { goalBand: "FAVORABLE", planMinPerLeader: 1, followUpUserIds: [ctx.adminUserId] });
+    const ok = await updateSurveySettings(ctx.surveyA, { goalPct: 75, planMinPerLeader: 1, followUpUserIds: [ctx.adminUserId] });
     expect(ok.success).toBe(true);
   });
 

@@ -159,11 +159,12 @@ export function BandLegend() {
 export function IndexSummary({
   index,
   isInstrument,
-  goalBand,
+  goalPct,
 }: {
   index: IndexScore | null;
   isInstrument: boolean;
-  goalBand: ClimateBand;
+  /** Survey goal: % of favorable answers */
+  goalPct: number;
 }) {
   const ts = useTranslations("climate_scoring");
   const scale = index ? CLIMATE_SCALES[index.scaleKey] : null;
@@ -194,7 +195,7 @@ export function IndexSummary({
             </span>
           )}
           {isInstrument && (
-            <span className="text-sm text-muted-foreground">{ts("goal", { band: ts(`bands.${goalBand}`) })}</span>
+            <span className="text-sm text-muted-foreground">{ts("goal", { band: ts("favorable_pct", { pct: goalPct }) })}</span>
           )}
         </>
       )}

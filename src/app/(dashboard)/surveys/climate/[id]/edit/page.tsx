@@ -93,6 +93,9 @@ export default async function EditClimateSurveyPage({ params }: PageProps) {
     wallpaperConfig: survey.wallpaperConfig,
     colorConfig: survey.colorConfig,
     questionsPerPage: survey.questionsPerPage,
+    goalPct: survey.goalPct,
+    accessStartDate: survey.accessStartDate,
+    accessEndDate: survey.accessEndDate,
     questions: survey.questions.map((q) => ({
       text: q.text,
       type: q.type as "LIKERT" | "TEXT" | "NPS" | "RATING",

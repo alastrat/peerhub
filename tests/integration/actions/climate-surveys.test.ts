@@ -734,6 +734,75 @@ describe("climate survey actions", () => {
   // updateSurveySettings
   // =========================================================================
 
+  describe("survey goal and answer window", () => {
+    it("creates a survey with its goal and start and end", async () => {
+      mockPrisma.climateSurvey.create.mockResolvedValue(sampleSurveyWithQuestions);
+      const result = await createClimateSurvey({
+        name: "Clima 2027",
+        type: "CLIMATE",
+        questions: sampleQuestions,
+        goalPct: 80,
+        accessStartDate: "2027-01-12T13:00:00.000Z",
+        accessEndDate: "2027-01-30T22:00:00.000Z",
+      });
+      expect(result.success).toBe(true);
+      expect(mockPrisma.climateSurvey.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            goalPct: 80,
+            accessStartDate: new Date("2027-01-12T13:00:00.000Z"),
+            accessEndDate: new Date("2027-01-30T22:00:00.000Z"),
+          }),
+        }),
+      );
+    });
+
+    it("rejects a goal that isn't a whole % from 1 to 100", async () => {
+      for (const goalPct of [0, 101, 72.5]) {
+        const result = await createClimateSurvey({ name: "X", type: "CLIMATE", questions: sampleQuestions, goalPct });
+        expect(result).toEqual({ success: false, error: "La meta debe ser un porcentaje entero entre 1 y 100" });
+      }
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);
+      expect((await updateSurveySettings("survey-1", { goalPct: 0 })).success).toBe(false);
+      expect(mockPrisma.climateSurvey.create).not.toHaveBeenCalled();
+      expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
+    });
+
+    it("rejects an end that isn't after the start, also against the saved dates", async () => {
+      const result = await createClimateSurvey({
+        name: "X",
+        type: "CLIMATE",
+        questions: sampleQuestions,
+        accessStartDate: "2027-01-30T22:00:00.000Z",
+        accessEndDate: "2027-01-12T13:00:00.000Z",
+      });
+      expect(result).toEqual({ success: false, error: "La fecha de finalización debe ser posterior a la de inicio" });
+
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue({
+        ...sampleSurvey,
+        accessStartDate: new Date("2027-01-12T13:00:00.000Z"),
+        accessEndDate: null,
+      });
+      const settings = await updateSurveySettings("survey-1", { accessEndDate: "2027-01-01T00:00:00.000Z" });
+      expect(settings.success).toBe(false);
+      expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
+    });
+
+    it("lets a sent survey's goal and dates change from the wizard", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue({ ...sampleSurvey, status: "ACTIVE" });
+      mockPrisma.climateSurvey.update.mockResolvedValue(sampleSurveyWithQuestions);
+      const result = await updateClimateSurvey("survey-1", {
+        name: "Ignored after sending",
+        goalPct: 70,
+        accessEndDate: "2027-02-05T22:00:00.000Z",
+      });
+      expect(result.success).toBe(true);
+      const { data } = mockPrisma.climateSurvey.update.mock.calls[0][0];
+      expect(data).toMatchObject({ goalPct: 70, accessEndDate: new Date("2027-02-05T22:00:00.000Z") });
+      expect(data.name).toBeUndefined();
+    });
+  });
+
   describe("updateSurveySettings", () => {
     it("updates name successfully", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(sampleSurvey);

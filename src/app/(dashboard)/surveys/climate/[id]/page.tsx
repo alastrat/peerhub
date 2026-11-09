@@ -509,7 +509,7 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
             <PlanSettingsCard
               surveyId={survey.id}
               initial={{
-                goalBand: survey.goalBand,
+                goalPct: survey.goalPct,
                 planMinPerLeader: survey.planMinPerLeader,
                 planDueDate: survey.planDueDate,
                 planReminderDate: survey.planReminderDate,

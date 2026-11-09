@@ -789,8 +789,11 @@ model ClimateSurvey {
   // Scoring & action plans (docs/climate-scoring-and-action-plans-spec.md)
   // Copied from the template; scores only compare across the same version.
   instrumentVersion String?
-  // A dimension or group "has a gap" when its band is below this one.
+  // No longer read: the goal is goalPct. Kept for surveys scored before it.
   goalBand          ClimateBand @default(FAVORABLE)
+  // Survey goal ("Meta"): % of favorable answers. A dimension or group below
+  // it "has a gap", and leaders plan on their gaps.
+  goalPct           Int         @default(75)
   planMinPerLeader  Int         @default(1)
   planDueDate       DateTime?
   // Leaders see their team results (and can plan) only after release.
