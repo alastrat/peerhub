@@ -97,6 +97,8 @@ function readAccessWindow(
   const start = parse(input.accessStartDate);
   const end = parse(input.accessEndDate);
   if ((start && Number.isNaN(start.getTime())) || (end && Number.isNaN(end.getTime()))) return { error: "invalid_access_dates" };
+  // Saving anything else never trips over dates stored before this check existed
+  if (start === undefined && end === undefined) return {};
   const s = start === undefined ? current.accessStartDate : start;
   const e = end === undefined ? current.accessEndDate : end;
   if (s && e && e.getTime() <= s.getTime()) return { error: "access_end_before_start" };

@@ -346,11 +346,11 @@ export function isBelowGoalPct(favorability: number | null, goalPct: number): bo
   return favorability != null && Math.round(favorability * 100) < goalPct;
 }
 
-/** Instrument dimensions below the goal, lowest mean first. */
+/** Instrument dimensions below the goal, furthest from it first (lowest % favorable, then mean). */
 export function findGaps(dimensions: DimensionScore[], goalPct: number): DimensionScore[] {
   return dimensions
     .filter((d) => d.band != null && d.mean != null && isBelowGoalPct(d.favorability, goalPct))
-    .sort((a, b) => a.mean! - b.mean!);
+    .sort((a, b) => a.favorability! - b.favorability! || a.mean! - b.mean!);
 }
 
 export type ImpactResult = "IMPROVED" | "UNCHANGED" | "WORSENED" | "NOT_EVALUABLE";

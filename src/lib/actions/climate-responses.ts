@@ -79,6 +79,7 @@ export async function saveSurveyDraft(input: {
             status: true,
             accessStartDate: true,
             accessEndDate: true,
+            closedAt: true,
             questions: { select: { id: true, type: true, config: true } },
           },
         },

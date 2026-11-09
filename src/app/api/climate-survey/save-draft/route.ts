@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
-import { getPortalSession } from "@/lib/auth/portal-session";
-import { auth } from "@/lib/auth/config";
+import { saveSurveyDraft } from "@/lib/actions/climate-responses";
 
 /**
  * Beacon-friendly endpoint for saving survey draft answers.
  * Called by navigator.sendBeacon on page unload as a last-resort save,
- * and can also be called by regular fetch.
+ * and can also be called by regular fetch. It saves exactly like the form's
+ * own draft save: the respondent's company, the survey's questions and
+ * scales, and its start and end are all checked there.
  */
 export async function POST(request: Request) {
   try {
@@ -20,70 +20,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
 
-    // Resolve the employee — try portal session first, then dashboard auth
-    let employeeId: string | null = null;
-
-    const portalSession = await getPortalSession();
-    if (portalSession) {
-      employeeId = portalSession.employeeId;
-    } else {
-      const session = await auth();
-      if (session?.user?.id && session.companyUser?.companyId) {
-        const companyUser = await prisma.companyUser.findFirst({
-          where: {
-            userId: session.user.id,
-            companyId: session.companyUser.companyId,
-            isActive: true,
-          },
-          include: { employee: { select: { id: true } } },
-        });
-        employeeId = companyUser?.employee?.id ?? null;
-      }
-    }
-
-    if (!employeeId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Find or create response
-    let response = await prisma.surveyResponse.findFirst({
-      where: { distributionId, employeeId },
-    });
-
-    if (!response) {
-      response = await prisma.surveyResponse.create({
-        data: { distributionId, employeeId },
-      });
-    }
-
-    if (response.isComplete) {
-      return NextResponse.json({ error: "Already submitted" }, { status: 409 });
-    }
-
-    // Upsert answers
-    await Promise.all(
-      answers.map((a) =>
-        prisma.surveyAnswer.upsert({
-          where: {
-            responseId_questionId: {
-              responseId: response!.id,
-              questionId: a.questionId,
-            },
-          },
-          create: {
-            responseId: response!.id,
-            questionId: a.questionId,
-            ratingValue: a.ratingValue ?? null,
-            textValue: a.textValue ?? null,
-          },
-          update: {
-            ratingValue: a.ratingValue ?? null,
-            textValue: a.textValue ?? null,
-          },
-        }),
-      ),
-    );
-
+    const result = await saveSurveyDraft({ distributionId, answers });
+    if (!result.success) return NextResponse.json({ error: result.error }, { status: 400 });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[api/climate-survey/save-draft] Error:", error);

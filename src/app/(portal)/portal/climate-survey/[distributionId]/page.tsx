@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PortalClimateSurveyFlow } from "@/components/portal/portal-climate-survey-flow";
 import { formatDate, daysUntil, isDateInPast } from "@/lib/utils/dates";
 import { answerWindowState } from "@/lib/climate/answer-window";
+import { BUSINESS_TIME_ZONE } from "@/lib/constants/business-time";
 
 interface PageProps {
   params: Promise<{ distributionId: string }>;
@@ -82,7 +83,7 @@ export default async function PortalClimateSurveyPage({ params }: PageProps) {
     const date = new Intl.DateTimeFormat(locale === "en" ? "en-US" : "es-CO", {
       dateStyle: "long",
       timeStyle: "short",
-      timeZone: "America/Bogota",
+      timeZone: BUSINESS_TIME_ZONE,
     }).format(at);
     return (
       <div className="space-y-6">

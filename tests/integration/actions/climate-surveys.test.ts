@@ -788,6 +788,16 @@ describe("climate survey actions", () => {
       expect(mockPrisma.climateSurvey.update).not.toHaveBeenCalled();
     });
 
+    it("saves other settings even when the stored dates are out of order", async () => {
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue({
+        ...sampleSurvey,
+        accessStartDate: new Date("2027-01-30T00:00:00.000Z"),
+        accessEndDate: new Date("2027-01-12T00:00:00.000Z"),
+      });
+      mockPrisma.climateSurvey.update.mockResolvedValue({});
+      expect((await updateSurveySettings("survey-1", { goalPct: 80 })).success).toBe(true);
+    });
+
     it("lets a sent survey's goal and dates change from the wizard", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue({ ...sampleSurvey, status: "ACTIVE" });
       mockPrisma.climateSurvey.update.mockResolvedValue(sampleSurveyWithQuestions);
