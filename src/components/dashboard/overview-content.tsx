@@ -55,7 +55,7 @@ interface EmployeeStats {
 interface PendingReview {
   id: string;
   reviewerType: string;
-  reviewee: { name: string | null; email: string };
+  reviewee: { name: string | null; email: string | null };
   cycle: { name: string; reviewEndDate: Date };
 }
 
@@ -307,7 +307,7 @@ function EmployeeDashboardContent({
                           <AvatarImage src={undefined} />
                           <AvatarFallback>
                             {getInitials(
-                              review.reviewee.name || review.reviewee.email
+                              review.reviewee.name || review.reviewee.email || ""
                             )}
                           </AvatarFallback>
                         </Avatar>

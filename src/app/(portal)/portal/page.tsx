@@ -131,6 +131,9 @@ export default function PortalLoginPage() {
               <p className="text-xs text-center text-muted-foreground">
                 {t("hint")}
               </p>
+              <p className="text-xs text-center text-muted-foreground">
+                {t("no_email_hint")}
+              </p>
             </form>
           )}
         </CardContent>

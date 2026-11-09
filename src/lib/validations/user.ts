@@ -2,6 +2,7 @@ import { z } from "zod";
 import { GENDERS } from "@/lib/constants/demographics";
 import { JOB_LEVELS } from "@/lib/constants/job-levels";
 import { normalizeNationalId } from "@/lib/utils/employee-import";
+import { normalizePhone } from "@/lib/people/phone";
 
 // Empty form values ("" / "none") clear the field
 const genderSchema = z.preprocess(
@@ -18,6 +19,19 @@ const nationalIdSchema = z.preprocess(
   (v) => (typeof v === "string" ? normalizeNationalId(v) || null : v),
   z.string().max(30).nullable().optional(),
 );
+
+// Mobile number, stored normalized ("+57 300 123 4567" → "+573001234567"); blank clears it
+const phoneSchema = (message?: string) =>
+  z.preprocess(
+    (v) => (typeof v === "string" ? (v.trim() === "" ? null : (normalizePhone(v) ?? v)) : v),
+    z.string().regex(/^\+?\d{7,15}$/, message).nullable().optional(),
+  );
+// Optional email: blank means the person has none
+const optionalEmailSchema = (message?: string) =>
+  z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+    z.string().trim().toLowerCase().email(message).optional(),
+  );
 
 // Employee-specific fields (org-chart data on the Employee model)
 export const employeeFieldsSchema = z.object({
@@ -63,6 +77,9 @@ export const updateEmployeeSchema = z.object({
   birthDate: optionalDateSchema,
   nationalId: nationalIdSchema,
   jobLevel: jobLevelSchema,
+  phone: phoneSchema(),
+  // Only for someone without one yet: an email can't be changed once set
+  email: optionalEmailSchema(),
 });
 
 // Update user: CompanyUser fields (role, isActive) + Employee fields (title, dept, etc.)
@@ -100,7 +117,7 @@ const optionalIdSchema = z.preprocess(
  * import (Kultiva's format). The form passes its translated messages.
  */
 export function addEmployeeSchema(
-  messages: { nationalIdRequired?: string; nameTooShort?: string; emailInvalid?: string } = {},
+  messages: { nationalIdRequired?: string; nameTooShort?: string; emailInvalid?: string; phoneInvalid?: string } = {},
 ) {
   return z.object({
     nationalId: z.preprocess(
@@ -108,7 +125,10 @@ export function addEmployeeSchema(
       z.string().min(1, messages.nationalIdRequired).max(30),
     ),
     name: z.string().trim().min(2, messages.nameTooShort),
-    email: z.string().trim().toLowerCase().email(messages.emailInvalid),
+    // Without an email they get no invitation or email, and answer surveys
+    // from a personal link
+    email: optionalEmailSchema(messages.emailInvalid),
+    phone: phoneSchema(messages.phoneInvalid),
     title: z.string().trim().optional(),
     hubId: optionalIdSchema,
     departmentId: optionalIdSchema,
@@ -135,7 +155,8 @@ export const bulkInviteSchema = z.object({
 });
 
 export const csvImportRowSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email().optional(),
+  phone: phoneSchema(),
   name: z.string().min(1),
   title: z.string().optional(),
   department: z.string().optional(),

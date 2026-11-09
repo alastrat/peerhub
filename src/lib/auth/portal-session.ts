@@ -7,7 +7,8 @@ const EXPIRY_DAYS = 7;
 interface PortalSessionPayload {
   employeeId: string;
   companyId: string;
-  email: string;
+  /** Null for people without a corporate email, signed in by a survey link */
+  email: string | null;
 }
 
 function getSecret(): Uint8Array {
@@ -23,7 +24,7 @@ function getSecret(): Uint8Array {
 export async function createPortalSession(
   employeeId: string,
   companyId: string,
-  email: string
+  email: string | null
 ): Promise<void> {
   const token = await new SignJWT({ employeeId, companyId, email })
     .setProtectedHeader({ alg: "HS256" })
@@ -53,11 +54,11 @@ export async function getPortalSession(): Promise<PortalSessionPayload | null> {
     const { payload } = await jwtVerify(token, getSecret());
     const { employeeId, companyId, email } = payload as unknown as PortalSessionPayload;
 
-    if (!employeeId || !companyId || !email) {
+    if (!employeeId || !companyId) {
       return null;
     }
 
-    return { employeeId, companyId, email };
+    return { employeeId, companyId, email: email || null };
   } catch {
     return null;
   }

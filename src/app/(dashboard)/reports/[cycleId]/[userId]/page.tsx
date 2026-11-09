@@ -152,7 +152,7 @@ async function ReportContent({
       {/* Report Header */}
       <ReportHeader
         participantName={report.participantName}
-        participantEmail={participant?.employee.email}
+        participantEmail={participant?.employee.email ?? undefined}
         participantImage={null}
         cycleName={report.cycleName}
         overallScore={report.overallScore}

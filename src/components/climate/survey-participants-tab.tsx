@@ -38,6 +38,7 @@ import {
   ParticipantScopePicker,
   type ParticipantScopeValue,
 } from "@/components/climate/participant-scope-picker";
+import { SurveyLinksCard, type LinkPerson } from "@/components/climate/survey-links-card";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -66,7 +67,7 @@ interface IdNamePair {
 export interface InviteeRow {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   title: string | null;
   department: IdNamePair | null;
   hub: IdNamePair | null;
@@ -77,6 +78,10 @@ interface SurveyParticipantsTabProps {
   surveyId: string;
   surveyStatus: "DRAFT" | "ACTIVE" | "CLOSED" | "ARCHIVED";
   responses: ParticipantRow[];
+  /** Everyone invited, for their personal links (people without an email) */
+  linkPeople: LinkPerson[];
+  surveyName: string;
+  companyName: string;
   employees: InviteeRow[];
   hubs: IdNamePair[];
   departments: IdNamePair[];
@@ -99,7 +104,20 @@ export function SurveyParticipantsTab(props: SurveyParticipantsTabProps) {
   if (props.surveyStatus === "DRAFT") {
     return <InvitePicker {...props} />;
   }
-  return <ResponderTable {...props} />;
+  return (
+    <div className="space-y-6">
+      {/* Links only work while the survey takes answers */}
+      {props.surveyStatus === "ACTIVE" && props.linkPeople.length > 0 && (
+        <SurveyLinksCard
+          surveyId={props.surveyId}
+          surveyName={props.surveyName}
+          companyName={props.companyName}
+          people={props.linkPeople}
+        />
+      )}
+      <ResponderTable {...props} />
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -429,7 +447,8 @@ function InvitePicker({
         toast.error(result.error || t("invite_failed"));
         return;
       }
-      toast.success(t("invite_sent"));
+      if (result.warning) toast.warning(result.warning);
+      else toast.success(t("invite_sent"));
       setPicker({ scope: "CUSTOM", scopeIds: [], participantIds: [] });
       router.refresh();
     });

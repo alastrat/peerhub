@@ -13,6 +13,7 @@ const person = (overrides: Partial<PersonRow>): PersonRow => ({
   id: "e1",
   name: "Ana Gómez",
   email: "ana@acme.com",
+  phone: null,
   nationalId: null,
   title: null,
   department: null,
@@ -41,6 +42,7 @@ const people: PersonRow[] = [
     birthDate: new Date("1990-05-02T00:00:00Z"),
   }),
   person({ id: "e2", name: "Bruno Díaz", email: "bruno@acme.com", role: "MANAGER", access: "INVITED" }),
+  person({ id: "e4", name: "Diego Mora", email: null, phone: "3001234567", access: "NO_EMAIL" }),
   person({ id: "e3", name: "Carla Ruiz", email: "carla@acme.com", role: "ADMIN", access: "ACTIVE" }),
 ];
 
@@ -84,6 +86,14 @@ describe("PeopleTable", () => {
     expect(within(rowOf("Bruno Díaz")).getByText("Invitado")).toBeTruthy();
     expect(within(rowOf("Carla Ruiz")).getByText("Admin")).toBeTruthy();
     expect(within(rowOf("Carla Ruiz")).getByText("Activo")).toBeTruthy();
+  });
+
+  it("shows the mobile number and who has no email", () => {
+    renderTable();
+    expect(screen.getByRole("columnheader", { name: "Celular" })).toBeTruthy();
+    const diego = within(rowOf("Diego Mora"));
+    expect(diego.getByText("3001234567")).toBeTruthy();
+    expect(diego.getByText("Sin correo")).toBeTruthy();
   });
 
   it("has a filter for access next to the role filter", () => {

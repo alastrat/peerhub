@@ -43,7 +43,8 @@ export async function emailEmployeeViaPortal(
     where: { id: employeeId },
     select: { id: true, name: true, email: true, companyId: true, isActive: true, company: { select: { locale: true } } },
   });
-  if (!employee || !employee.isActive) return false;
+  // No corporate email, no channel (task owners and leaders included)
+  if (!employee || !employee.isActive || !employee.email) return false;
 
   const token = randomUUID();
   await prisma.accessToken.create({

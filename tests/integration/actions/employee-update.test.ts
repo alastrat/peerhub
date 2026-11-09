@@ -98,6 +98,33 @@ describe("updateEmployee", () => {
     expect(mockPrisma.invitation.updateMany).not.toHaveBeenCalled();
   });
 
+  it("saves the mobile number, and an email for someone who has none", async () => {
+    mockPrisma.employee.findFirst.mockImplementation(async ({ where }: { where: { id?: string; email?: unknown } }) =>
+      where.email ? null : { id: "emp-1", email: null, companyUser: null },
+    );
+    expect((await updateEmployee("emp-1", { phone: "+57 300 123 4567", email: "Nuevo@Acme.com" })).success).toBe(true);
+    expect(mockPrisma.employee.update).toHaveBeenCalledWith({
+      where: { id: "emp-1" },
+      data: { phone: "+573001234567", email: "nuevo@acme.com" },
+    });
+  });
+
+  it("never changes an email once set, and refuses one already taken", async () => {
+    mockPrisma.employee.findFirst.mockResolvedValue({ id: "emp-1", email: "ana@acme.com", companyUser: null });
+    await updateEmployee("emp-1", { email: "otra@acme.com", title: "Lead" });
+    expect(mockPrisma.employee.update).toHaveBeenCalledWith({ where: { id: "emp-1" }, data: { title: "Lead" } });
+
+    mockPrisma.employee.update.mockClear();
+    mockPrisma.employee.findFirst.mockImplementation(async ({ where }: { where: { email?: unknown } }) =>
+      where.email ? { id: "emp-2" } : { id: "emp-1", email: null, companyUser: null },
+    );
+    expect(await updateEmployee("emp-1", { email: "ana@acme.com" })).toEqual({
+      success: false,
+      error: "Ya hay un colaborador de la empresa con este correo",
+    });
+    expect(mockPrisma.employee.update).not.toHaveBeenCalled();
+  });
+
   it("saving other fields leaves the account's role and status alone", async () => {
     mockPrisma.employee.findFirst.mockResolvedValue({ id: "emp-1", companyUser: { id: "cu-1" } });
     expect((await updateEmployee("emp-1", { title: "Lead" })).success).toBe(true);

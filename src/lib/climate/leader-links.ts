@@ -15,7 +15,7 @@ const MIN_REMAINING_DAYS = 30;
 
 /** The leader's personal link to one survey's results: reuses their current token when it has time left. */
 export async function getLeaderLink(
-  employee: { id: string; email: string; companyId: string },
+  employee: { id: string; email: string | null; companyId: string },
   surveyId: string,
   now = new Date(),
 ): Promise<string> {

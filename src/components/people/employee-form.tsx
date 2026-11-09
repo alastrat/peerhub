@@ -84,10 +84,13 @@ export function EmployeeForm({
     },
   });
   const invite = useWatch({ control: form.control, name: "invite" });
+  // Without an email there's nobody to invite: they answer surveys from a link
+  const email = useWatch({ control: form.control, name: "email" });
+  const hasEmail = typeof email === "string" && email.trim() !== "";
 
   function onSubmit(data: AddEmployeeInput) {
     startTransition(async () => {
-      const result = await addEmployee(data);
+      const result = await addEmployee(hasEmail ? data : { ...data, invite: false });
 
       if (result.success) {
         toast.success(result.data?.invited ? t("employeeAddedInvited") : t("employeeAdded"));
@@ -133,6 +136,7 @@ export function EmployeeForm({
                     type="email"
                     placeholder={t("emailPlaceholder")}
                     {...field}
+                    value={(field.value as string | undefined) ?? ""}
                   />
                 </FormControl>
                 <FormDescription>{t("createEmailDesc")}</FormDescription>
@@ -140,6 +144,8 @@ export function EmployeeForm({
               </FormItem>
             )}
           />
+
+          <JobFields control={form.control} fields={["phone"]} />
 
           <FormField
             control={form.control}
@@ -258,14 +264,17 @@ export function EmployeeForm({
                 <label className="flex cursor-pointer items-start gap-3">
                   <FormControl>
                     <Checkbox
-                      checked={field.value === true}
+                      checked={field.value === true && hasEmail}
                       onCheckedChange={(checked) => field.onChange(checked === true)}
+                      disabled={!hasEmail}
                       className="mt-0.5"
                     />
                   </FormControl>
                   <span className="space-y-1">
                     <span className="block text-sm font-medium">{t("inviteLabel")}</span>
-                    <span className="block text-sm text-muted-foreground">{t("inviteHint")}</span>
+                    <span className="block text-sm text-muted-foreground">
+                      {hasEmail ? t("inviteHint") : t("inviteNeedsEmail")}
+                    </span>
                   </span>
                 </label>
               </FormItem>
@@ -273,7 +282,7 @@ export function EmployeeForm({
           />
 
           {/* The role only exists through the invitation, as in the import */}
-          {invite && (
+          {invite && hasEmail && (
             <FormField
               control={form.control}
               name="role"

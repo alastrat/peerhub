@@ -87,7 +87,8 @@ export default async function ExternalReviewPage({ params }: PageProps) {
       token={token}
       revieweeName={
         reviewToken.assignment.reviewee.name ||
-        reviewToken.assignment.reviewee.email
+        reviewToken.assignment.reviewee.email ||
+        ""
       }
       companyName={reviewToken.company.name}
       cycleName={reviewToken.assignment.cycle.name}

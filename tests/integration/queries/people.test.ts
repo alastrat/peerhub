@@ -49,6 +49,8 @@ beforeEach(() => {
       manager: null,
       companyUser: null,
     },
+    // Without a corporate email: answers surveys from a personal link
+    { id: "e4", name: "Diego Mora", email: null, phone: "3001234567", ...imported, companyUser: null },
   ]);
   mockPrisma.invitation.findMany.mockResolvedValue([{ email: "bruno@acme.com", role: "MANAGER" }]);
 });
@@ -79,12 +81,17 @@ describe("listPeople", () => {
     expect(carla).toMatchObject({ role: "MEMBER", access: "NONE", department: null, startDate: null });
   });
 
+  it("shows people without an email as such, with their mobile number", async () => {
+    const people = await listPeople("company-1", NOW);
+    expect(people[3]).toMatchObject({ email: null, phone: "3001234567", role: "MEMBER", access: "NO_EMAIL" });
+  });
+
   it("selects the imported fields and only pending invitations", async () => {
     await listPeople("company-1", NOW);
 
     const { where, select } = mockPrisma.employee.findMany.mock.calls[0][0];
     expect(where).toEqual({ companyId: "company-1", isActive: true });
-    for (const field of ["nationalId", "email", "title", "jobLevel", "startDate", "gender", "birthDate", "department", "hub", "manager"]) {
+    for (const field of ["nationalId", "email", "phone", "title", "jobLevel", "startDate", "gender", "birthDate", "department", "hub", "manager"]) {
       expect(select).toHaveProperty(field);
     }
     expect(mockPrisma.invitation.findMany).toHaveBeenCalledWith({

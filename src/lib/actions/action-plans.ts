@@ -215,7 +215,9 @@ async function emailPlanCopy(plan: LoadedPlan) {
     }),
     prisma.company.findUnique({ where: { id: plan.companyId }, select: { locale: true } }),
   ]);
-  if (!leader) return;
+  // No corporate email, no copy: the plan is still on their portal page
+  if (!leader?.email) return;
+  const leaderEmail = leader.email;
   const locale = company?.locale ?? "es";
   const [signature, followUp, link] = await Promise.all([
     getEmailSignature(),
@@ -236,7 +238,7 @@ async function emailPlanCopy(plan: LoadedPlan) {
     },
     locale,
   );
-  await sendSurveyEmail(leader.email, email);
+  await sendSurveyEmail(leaderEmail, email);
 }
 
 function formatDay(d: Date) {

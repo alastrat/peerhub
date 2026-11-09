@@ -72,7 +72,7 @@ export default async function EditEmployeePage({ params }: PageProps) {
 
   // Without an account, the role is the one their pending invitation gives
   const invitation = employee.companyUser?.isActive ? null : await findPendingInvitation(companyId, employee.email);
-  const { role, access } = rosterAccess(employee.companyUser, invitation);
+  const { role, access } = rosterAccess(employee.companyUser, invitation, !!employee.email);
 
   return (
     <div className="space-y-6">

@@ -94,7 +94,7 @@ export interface SurveyWizardInitialData {
 export interface EmployeeOption {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   title: string | null;
   departmentId: string | null;
 }

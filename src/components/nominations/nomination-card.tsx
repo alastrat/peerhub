@@ -29,13 +29,13 @@ interface NominationCardProps {
     nominee: {
       id: string;
       name: string;
-      email: string;
+      email: string | null;
       title: string | null;
     };
     reviewee: {
       id: string;
       name: string;
-      email: string;
+      email: string | null;
     };
   };
   showReviewee?: boolean;
@@ -125,7 +125,7 @@ export function NominationCard({
       <Avatar className="h-10 w-10">
         <AvatarImage src={undefined} />
         <AvatarFallback>
-          {getInitials(nomination.nominee.name || nomination.nominee.email)}
+          {getInitials(nomination.nominee.name || nomination.nominee.email || "")}
         </AvatarFallback>
       </Avatar>
 

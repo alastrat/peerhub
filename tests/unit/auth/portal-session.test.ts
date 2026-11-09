@@ -194,20 +194,20 @@ describe("portal-session", () => {
       expect(result).toBeNull();
     });
 
-    it("returns null when payload is missing email", async () => {
+    it("accepts a session without email (signed in by a survey link)", async () => {
       mockCookieStore.get.mockReturnValue({ value: "jwt-token" });
       vi.mocked(jwtVerify).mockResolvedValue({
         payload: {
           employeeId: "emp-1",
           companyId: "company-1",
-          email: "",
+          email: null,
         },
         protectedHeader: { alg: "HS256" },
       } as never);
 
       const result = await getPortalSession();
 
-      expect(result).toBeNull();
+      expect(result).toEqual({ employeeId: "emp-1", companyId: "company-1", email: null });
     });
   });
 

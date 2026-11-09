@@ -38,6 +38,7 @@ type SortField =
   | "role"
   | "access"
   | "nationalId"
+  | "phone"
   | "title"
   | "department"
   | "hub"
@@ -82,7 +83,7 @@ export function PeopleTable({ data, showHubs = false }: { data: PersonRow[]; sho
     if (search) {
       const q = search.toLowerCase();
       result = result.filter((p) =>
-        [p.name, p.email, p.nationalId, p.title, p.department, p.hub, p.manager].some((v) => v?.toLowerCase().includes(q)),
+        [p.name, p.email, p.phone, p.nationalId, p.title, p.department, p.hub, p.manager].some((v) => v?.toLowerCase().includes(q)),
       );
     }
 
@@ -135,7 +136,7 @@ export function PeopleTable({ data, showHubs = false }: { data: PersonRow[]; sho
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages - 1);
   const paged = sorted.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
-  const columnCount = showHubs ? 12 : 11;
+  const columnCount = showHubs ? 13 : 12;
 
   function toggleSort(field: SortField) {
     if (sortField === field) {
@@ -235,6 +236,7 @@ export function PeopleTable({ data, showHubs = false }: { data: PersonRow[]; sho
               {sortHeader("role", t("role"))}
               {sortHeader("access", t("access"))}
               {sortHeader("nationalId", tFields("national_id"))}
+              {sortHeader("phone", tFields("phone"))}
               {sortHeader("title", t("title"))}
               {showHubs && sortHeader("hub", t("hub"))}
               {sortHeader("department", t("department"))}
@@ -281,6 +283,7 @@ export function PeopleTable({ data, showHubs = false }: { data: PersonRow[]; sho
                   <TableCell className="text-muted-foreground tabular-nums whitespace-nowrap">
                     {person.nationalId || empty}
                   </TableCell>
+                  <TableCell className="text-muted-foreground tabular-nums whitespace-nowrap">{person.phone || empty}</TableCell>
                   <TableCell className="text-muted-foreground">{person.title || empty}</TableCell>
                   {showHubs && <TableCell className="text-muted-foreground">{person.hub || empty}</TableCell>}
                   <TableCell className="text-muted-foreground">{person.department || empty}</TableCell>

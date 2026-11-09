@@ -582,7 +582,7 @@ export async function addExternalRater(
       await sendExternalReviewRequestEmail({
         to: input.email,
         reviewerName: input.name,
-        revieweeName: reviewee.name || reviewee.email,
+        revieweeName: reviewee.name || reviewee.email || "",
         companyName: cycle.company.name,
         cycleName: cycle.name,
         dueDate: formatDate(cycle.reviewEndDate, undefined, cycle.company.locale),

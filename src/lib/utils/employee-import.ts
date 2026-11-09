@@ -1,11 +1,13 @@
 import { isValidBirthDate, parseGender } from "@/lib/constants/demographics";
 import { parseJobLevel } from "@/lib/constants/job-levels";
+import { normalizePhone } from "@/lib/people/phone";
 
 /** Fields the employee import can fill, in the order the mapping step shows them. */
 export const IMPORT_FIELDS = [
   "nationalId",
   "name",
   "email",
+  "phone",
   "title",
   "hub",
   "department",
@@ -20,9 +22,9 @@ export const IMPORT_FIELDS = [
 ] as const;
 export type ImportField = (typeof IMPORT_FIELDS)[number];
 
-// Kultiva's format requires cédula and name; email is required too because
-// every Employee needs one (it's how invitations and sign-in reach them)
-export const REQUIRED_IMPORT_FIELDS: readonly ImportField[] = ["nationalId", "name", "email"];
+// Kultiva's format requires cédula and name. Email is optional: people
+// without one get no email and answer surveys from a personal link
+export const REQUIRED_IMPORT_FIELDS: readonly ImportField[] = ["nationalId", "name"];
 
 /** The downloadable template (Kultiva's format) and the sheet people fill in. */
 export const TEMPLATE_HREF = "/employees-import-template.xlsx";
@@ -49,9 +51,11 @@ export type ImportIssueCode =
   | "national_id_required"
   | "duplicate_national_id"
   | "example_row"
-  | "email_required"
+  | "no_email"
+  | "role_without_email"
   | "email_invalid"
   | "duplicate_email"
+  | "phone_invalid"
   | "name_too_short"
   | "role_invalid"
   | "gender_unknown"
@@ -93,6 +97,7 @@ const HEADER_ALIASES: Record<ImportField, string[]> = {
   nationalId: ["cedula", "cedula de ciudadania", "numero de cedula", "documento", "numero de documento", "documento de identidad", "identificacion", "national id"],
   name: ["nombres y apellidos", "nombre completo", "nombre", "nombres", "name", "full name"],
   email: ["correo corporativo", "correo", "correo electronico", "email", "e mail"],
+  phone: ["celular", "numero de celular", "telefono celular", "movil", "telefono movil", "whatsapp", "telefono", "numero de telefono", "phone", "mobile", "phone number"],
   title: ["cargo", "puesto", "title", "job title"],
   hub: ["sede", "hub", "site", "location"],
   department: ["area", "departamento", "department"],
@@ -220,9 +225,19 @@ export function validateEmployeeRows(table: ImportTable, mapping: ColumnMapping,
       errors.push({ code: "duplicate_national_id", value: data.nationalId });
     }
 
-    if (!data.email) errors.push({ code: "email_required" });
-    else if (!EMAIL_RE.test(data.email)) errors.push({ code: "email_invalid" });
+    // Without an email the row still loads: no invitation or email reaches
+    // them, and they answer surveys from a personal link
+    if (!data.email) {
+      warnings.push({ code: "no_email" });
+      if (data.role) warnings.push({ code: "role_without_email" });
+    } else if (!EMAIL_RE.test(data.email)) errors.push({ code: "email_invalid" });
     else if (emailCounts.get(data.email)! > 1) errors.push({ code: "duplicate_email", value: data.email });
+
+    if (data.phone) {
+      const phone = normalizePhone(data.phone);
+      if (phone) data.phone = phone;
+      else errors.push({ code: "phone_invalid", value: data.phone });
+    }
 
     if (!data.name || data.name.length < 2) errors.push({ code: "name_too_short" });
 

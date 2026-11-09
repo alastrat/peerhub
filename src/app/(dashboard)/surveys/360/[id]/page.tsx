@@ -486,7 +486,7 @@ export default async function CycleDetailPage({ params }: PageProps) {
                             <Avatar className="h-10 w-10">
                               <AvatarImage src={undefined} />
                               <AvatarFallback>
-                                {getInitials(data.reviewee.name || data.reviewee.email)}
+                                {getInitials(data.reviewee.name || data.reviewee.email || "")}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1">

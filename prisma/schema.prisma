@@ -68,6 +68,9 @@ enum AccessTokenPurpose {
   COMPLETE_REVIEW
   // A leader's personal results link: reusable until it expires
   LEADER_LINK
+  // A personal survey link for someone without a corporate email (shared by
+  // WhatsApp): signs them into the portal once and opens that survey
+  SURVEY_LINK
 }
 
 // Climate Survey enums
@@ -245,7 +248,11 @@ model User {
 model Employee {
   id           String    @id @default(cuid())
   companyId    String
-  email        String
+  // Corporate email. People without one get no email at all (invitations,
+  // reminders, results); they answer surveys from a personal link instead
+  email        String?
+  // Mobile number ("Celular"), for sharing survey links by WhatsApp
+  phone        String?
   name         String
   title        String?
   employeeCode String?
@@ -627,19 +634,24 @@ model ReviewToken {
 model AccessToken {
   id         String             @id @default(cuid())
   token      String             @unique
-  email      String
+  // Null for SURVEY_LINK tokens of people without an email
+  email      String?
   companyId  String
   employeeId String?
+  // SURVEY_LINK: the survey distribution the link opens
+  distributionId String?
   purpose    AccessTokenPurpose
   expiresAt  DateTime
   usedAt     DateTime?
   createdAt  DateTime           @default(now())
 
-  company  Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  employee Employee? @relation(fields: [employeeId], references: [id])
+  company      Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employee     Employee?           @relation(fields: [employeeId], references: [id])
+  distribution SurveyDistribution? @relation(fields: [distributionId], references: [id], onDelete: Cascade)
 
   @@index([token])
   @@index([email])
+  @@index([distributionId, employeeId])
 }
 
 // ============================================
@@ -885,8 +897,9 @@ model SurveyDistribution {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
-  survey    ClimateSurvey    @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-  responses SurveyResponse[]
+  survey       ClimateSurvey    @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  responses    SurveyResponse[]
+  accessTokens AccessToken[]
 
   @@index([surveyId])
 }

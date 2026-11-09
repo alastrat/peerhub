@@ -1640,6 +1640,23 @@
     }
   },
   "portal": {
+    "survey_link": {
+      "page_title": "Tu encuesta",
+      "greeting": "Hola, {name}",
+      "valid_body": "{company} te invita a responder la encuesta «{survey}». Este enlace es personal y sirve una sola vez: al comenzar entras directo a tu encuesta.",
+      "start": "Comenzar encuesta",
+      "used_here_title": "Ya abriste este enlace",
+      "used_here_body": "Puedes seguir con tu encuesta en este dispositivo.",
+      "continue": "Continuar encuesta",
+      "used_title": "Este enlace ya se usó",
+      "used_body": "Cada enlace sirve una sola vez. Si necesitas entrar de nuevo, pide un enlace nuevo a quien te lo envió.",
+      "expired_title": "Este enlace venció",
+      "expired_body": "Pide un enlace nuevo a quien te lo envió.",
+      "closed_title": "Esta encuesta ya no recibe respuestas",
+      "closed_body": "La encuesta «{survey}» se cerró o no está disponible. Gracias por tu interés.",
+      "invalid_title": "Este enlace no es válido",
+      "invalid_body": "Puede que esté incompleto o que se haya reemplazado por uno más reciente. Pide un enlace nuevo a quien te lo envió."
+    },
     "climate_survey": {
       "preview_mode_no_save": "Modo de vista previa — los cambios no se guardan",
       "preview_banner_label": "Vista previa",
@@ -1708,7 +1725,8 @@
       "email_placeholder": "tu@empresa.com",
       "sending": "Enviando...",
       "submit": "Enviar enlace de acceso",
-      "hint": "Recibirás un correo con un enlace seguro para ingresar. No necesitas contraseña."
+      "hint": "Recibirás un correo con un enlace seguro para ingresar. No necesitas contraseña.",
+      "no_email_hint": "¿No tienes correo corporativo? Pide a tu empresa tu enlace personal a la encuesta."
     },
     "home": {
       "welcome": "Hola, {name}",
@@ -2030,13 +2048,15 @@
         "ACTIVE": "Activo",
         "INVITED": "Invitado",
         "DEACTIVATED": "Cuenta desactivada",
-        "NONE": "Sin acceso"
+        "NONE": "Sin acceso",
+        "NO_EMAIL": "Sin correo"
       },
       "access_hint": {
         "ACTIVE": "Tiene cuenta en la plataforma",
         "INVITED": "Tiene una invitación pendiente por aceptar",
         "DEACTIVATED": "Su cuenta está desactivada: conserva su rol, que recupera si se reactiva",
-        "NONE": "No tiene cuenta ni invitación pendiente"
+        "NONE": "No tiene cuenta ni invitación pendiente",
+        "NO_EMAIL": "No tiene correo: no recibe invitaciones ni correos y responde las encuestas desde su enlace personal"
       },
       "title": "Cargo",
       "department": "Departamento",
@@ -2053,7 +2073,7 @@
       "emailAddress": "Correo electrónico",
       "emailPlaceholder": "juan@empresa.com",
       "inviteEmailDesc": "Se enviará una invitación a este correo",
-      "createEmailDesc": "El correo electrónico laboral del empleado",
+      "createEmailDesc": "Opcional. Sin correo no recibirá invitaciones ni correos: responderá las encuestas desde su enlace personal, que puedes enviarle por WhatsApp.",
       "fullName": "Nombre completo",
       "namePlaceholder": "Juan Pérez",
       "jobTitle": "Cargo",
@@ -2081,6 +2101,7 @@
       "emailInvalid": "Escribe un correo válido",
       "inviteLabel": "Enviar invitación por correo",
       "inviteHint": "Recibirá un enlace para crear su cuenta en la plataforma. Si no la marcas, se agrega sin enviarle ningún correo.",
+      "inviteNeedsEmail": "Agrega un correo para invitarlo. Sin correo responderá las encuestas desde su enlace personal.",
       "employeeAddedInvited": "Empleado agregado e invitación enviada"
     },
     "editEmployeeForm": {
@@ -2095,6 +2116,8 @@
       "roleDescription": "Los administradores pueden gestionar toda la configuración, los managers pueden ver reportes de equipo",
       "roleInvited": "Es el rol de su invitación pendiente: lo tendrá al aceptarla.",
       "roleDeactivated": "Su cuenta está desactivada: conserva este rol, que recupera si la reactivas.",
+      "roleNoEmail": "Sin correo no puede tener cuenta en la plataforma, así que es Miembro. Agrégale un correo para poder invitarlo con otro rol.",
+      "emailAddHint": "No tiene correo, así que no recibe invitaciones ni correos. Si le agregas uno podrás invitarlo; después no se puede cambiar.",
       "roleNoAccess": "Aún no tiene acceso a la plataforma, así que es Miembro. Otro rol se le da con la invitación.",
       "department": "Departamento",
       "selectDepartment": "Seleccionar un departamento",
@@ -2398,7 +2421,8 @@
           "ACTIVE": "Tiene cuenta en la plataforma.",
           "INVITED": "Tiene una invitación pendiente que vence el {date}.",
           "DEACTIVATED": "Su cuenta en la plataforma está desactivada. Conserva su rol, que recupera si la reactivas.",
-          "NONE": "No tiene cuenta en la plataforma ni una invitación pendiente."
+          "NONE": "No tiene cuenta en la plataforma ni una invitación pendiente.",
+          "NO_EMAIL": "No tiene correo corporativo: no recibe invitaciones ni correos de la plataforma. Responde las encuestas desde su enlace personal, que puedes copiar o enviar por WhatsApp en la pestaña Participantes de cada encuesta."
         },
         "details_title": "Datos del colaborador",
         "details_description": "La información cargada en la importación o al agregarlo.",
@@ -2573,6 +2597,36 @@
           "more_responses": "+{count, plural, one {# respuesta más} other {# respuestas más}}"
         },
         "participants_tab": {
+          "links": {
+            "title": "Enlaces personales",
+            "description": "Quienes no tienen correo no reciben la invitación: comparte su enlace personal. Cada enlace entra directo a la encuesta, sirve una sola vez y vence al cierre de la encuesta o a los 30 días. Generar uno nuevo anula el anterior que no se haya usado.",
+            "without_email_hint": "{count, plural, one {# persona no tiene correo y no recibió la invitación por correo: comparte su enlace.} other {# personas no tienen correo y no recibieron la invitación por correo: comparte su enlace.}}",
+            "filter_without_email": "Sin correo ({count})",
+            "filter_all": "Todos ({count})",
+            "search_placeholder": "Buscar por nombre o cédula...",
+            "col_person": "Persona",
+            "col_phone": "Celular",
+            "col_actions": "Enlace",
+            "no_email": "Sin correo",
+            "copy": "Copiar enlace",
+            "whatsapp": "Enviar por WhatsApp",
+            "copied": "Enlace copiado. Sirve una sola vez y vence el {date}.",
+            "copy_failed": "No se pudo copiar automáticamente: copia el enlace de la fila.",
+            "whatsapp_blocked": "El navegador bloqueó la ventana de WhatsApp: copia el enlace de la fila.",
+            "no_phone": "Sin celular",
+            "download_csv": "Descargar enlaces (CSV)",
+            "download_hint": "Genera enlaces nuevos para todas las personas sin correo: los anteriores sin usar dejan de funcionar.",
+            "csv_downloaded": "{count, plural, =0 {No hay personas sin correo} one {Se descargó # enlace} other {Se descargaron # enlaces}}",
+            "csv_filename": "enlaces-{survey}.csv",
+            "csv_name": "Nombre",
+            "csv_national_id": "Cédula",
+            "csv_phone": "Celular",
+            "csv_link": "Enlace",
+            "csv_expires": "Vence",
+            "empty": "No hay personas que coincidan.",
+            "generated_link": "Enlace generado (sirve una sola vez):",
+            "whatsapp_message": "Hola {name}, {company} te invita a responder la encuesta «{survey}». Entra con tu enlace personal, sirve una sola vez: {link}"
+          },
           "title": "Avances",
           "summary": "{total} en total · {completed} completadas · {pending} en curso",
           "empty_title": "Aún no hay participantes",
@@ -3339,7 +3393,8 @@
     "results_email_on_close": "Los líderes recibirán el correo con sus resultados cuando se cierre la encuesta.",
     "results_emailed_on": "Los líderes recibieron el correo con sus resultados el {date}.",
     "results_not_emailed": "Los líderes aún no han recibido el correo con sus resultados: no se ha enviado o el envío falló. Puedes enviarlo ahora.",
-    "results_no_leader_qualified": "No se envió ningún correo de resultados: ningún líder alcanzó el mínimo de respuestas para ver los de su equipo.",
+    "results_no_leader_qualified": "No se envió ningún correo de resultados: ningún líder con correo alcanzó el mínimo de respuestas para ver los de su equipo.",
+    "leader_no_email": "Sin correo: no recibe el correo de resultados",
     "send_results_emails": "Enviar correo de resultados",
     "results_emails_sent": "{count, plural, =0 {Ningún líder tenía resultados para enviar} one {# líder recibió su correo} other {# líderes recibieron su correo}}",
     "retract": "Ocultar resultados",
@@ -3579,6 +3634,10 @@
   "employee_fields": {
     "national_id": "Cédula",
     "national_id_placeholder": "Ej. 1020304050",
+    "phone": "Celular",
+    "phone_placeholder": "Ej. 300 123 4567",
+    "phone_description": "Opcional. Para enviarle por WhatsApp su enlace a las encuestas.",
+    "phone_invalid": "Celular inválido: usa solo números, por ejemplo 3001234567 o +57 300 123 4567",
     "job_level": "Nivel jerárquico",
     "not_set": "Sin especificar",
     "job_level_values": {
@@ -3708,6 +3767,7 @@
     "continue": "Continuar",
     "columns": {
       "email": "Correo electrónico",
+      "phone": "Celular",
       "name": "Nombre completo",
       "title": "Cargo",
       "department": "Departamento",
@@ -3781,7 +3841,7 @@
     },
     "errors": {
       "file_too_short": "El archivo debe tener una fila de encabezados y al menos una fila de datos",
-      "email_required": "El correo es obligatorio",
+      "phone_invalid": "Celular inválido \"{value}\" (usa solo números, por ejemplo 3001234567 o +57 300 123 4567)",
       "email_invalid": "Formato de correo inválido",
       "name_too_short": "El nombre debe tener al menos 2 caracteres",
       "role_invalid": "El rol debe ser Admin, Manager o Member",
@@ -3801,7 +3861,9 @@
       "own_manager": "La cédula del líder es la de la misma persona"
     },
     "warnings": {
-      "manager_not_in_file": "El líder «{value}» no está en el archivo: se buscará entre los colaboradores ya registrados"
+      "manager_not_in_file": "El líder «{value}» no está en el archivo: se buscará entre los colaboradores ya registrados",
+      "no_email": "Sin correo: no recibirá invitaciones ni correos; responderá las encuestas desde su enlace personal",
+      "role_without_email": "El rol se ignora porque sin correo no puede tener cuenta en la plataforma"
     },
     "api": {
       "unauthorized": "No autorizado",
@@ -3816,7 +3878,8 @@
       "already_exists_national_id": "Ya existe un colaborador con la cédula {value} en la empresa",
       "unknown_job_level": "Nivel jerárquico desconocido \"{value}\"",
       "manager_not_found": "se importó sin líder porque no encontramos a «{manager}»",
-      "invite_failed": "se importó, pero no se pudo enviar la invitación por correo"
+      "invite_failed": "se importó, pero no se pudo enviar la invitación por correo",
+      "invite_needs_email": "se importó sin invitación porque no tiene correo"
     }
   },
   "action_errors": {
@@ -3837,6 +3900,7 @@
     "invalid_birth_date": "La fecha de nacimiento debe estar entre 1900 y hoy",
     "selection_not_found": "Una de las opciones elegidas ya no existe. Recarga la página e inténtalo de nuevo.",
     "invite_failed": "El colaborador se agregó, pero no se pudo enviar la invitación por correo",
+    "invite_needs_email": "El colaborador se agregó sin invitación porque no tiene correo. Responderá las encuestas desde su enlace personal.",
     "failed_add_employee": "No se pudo agregar al colaborador",
     "survey_not_found": "No encontramos la encuesta",
     "select_hub": "Selecciona al menos una sede",
@@ -3845,6 +3909,11 @@
     "select_employee": "Selecciona al menos una persona",
     "no_employees": "No hay colaboradores activos en el grupo seleccionado",
     "emails_failed": "La encuesta se envió a {count, plural, one {# colaborador} other {# colaboradores}}, pero {failed, plural, one {# correo de notificación no se pudo entregar} other {# correos de notificación no se pudieron entregar}}.",
+    "survey_link_failed": "No se pudo generar el enlace",
+    "survey_link_not_active": "Solo se generan enlaces mientras la encuesta está activa",
+    "survey_link_ended": "La fecha de cierre de la encuesta ya pasó. Amplíala en Configuración para generar enlaces.",
+    "survey_link_not_participant": "Esta persona no está invitada a la encuesta",
+    "participants_without_email": "{count, plural, one {# persona no tiene correo y no recibió la invitación} other {# personas no tienen correo y no recibieron la invitación}}: comparte su enlace desde Participantes.",
     "failed_distribute": "No se pudo enviar la encuesta",
     "close_only_active": "Solo se pueden cerrar encuestas activas",
     "failed_close": "No se pudo cerrar la encuesta",
