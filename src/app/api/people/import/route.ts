@@ -5,10 +5,9 @@ import { csvImportRowSchema, type CSVImportRow } from "@/lib/validations/user";
 import { isValidBirthDate, parseGender } from "@/lib/constants/demographics";
 import { parseJobLevel } from "@/lib/constants/job-levels";
 import { normalizeNationalId } from "@/lib/utils/employee-import";
-import { generateInviteToken, getExpiryDate } from "@/lib/utils";
-import { sendInvitationEmail } from "@/lib/email/templates";
+import { findEmployeeConflict, inviteEmployee } from "@/lib/people/new-employee";
 import { getTranslator } from "@/i18n/translator";
-import type { CompanyRole, Employee } from "@prisma/client";
+import type { CompanyRole } from "@prisma/client";
 
 // Kultiva's format points at the leader by cédula, falling back to the name;
 // the old CSV template by email
@@ -39,54 +38,6 @@ async function findManagerId(companyId: string, data: CSVImportRow): Promise<str
   return undefined;
 }
 
-/**
- * Invite an imported employee to the platform (a fresh link, even if an older
- * invitation exists). Accepting it links their account to this Employee by
- * email. A brand-new invitation whose email can't be delivered is removed,
- * since nobody could reach its link; the error is rethrown.
- */
-async function inviteImportedEmployee(
-  employee: Employee,
-  role: CompanyRole,
-  inviterName: string | null | undefined,
-): Promise<void> {
-  const { companyId, email } = employee;
-  const existing = await prisma.invitation.findUnique({
-    where: { email_companyId: { email, companyId } },
-    select: { id: true },
-  });
-  const fields = {
-    role,
-    departmentId: employee.departmentId,
-    managerId: employee.managerId,
-    hubId: employee.hubId,
-    token: generateInviteToken(),
-    expiresAt: getExpiryDate(7),
-    acceptedAt: null,
-  };
-  const invitation = await prisma.invitation.upsert({
-    where: { email_companyId: { email, companyId } },
-    create: { email, companyId, ...fields },
-    update: fields,
-  });
-  const company = await prisma.company.findUnique({
-    where: { id: companyId },
-    select: { name: true, locale: true },
-  });
-  try {
-    await sendInvitationEmail({
-      to: email,
-      inviterName,
-      companyName: company?.name,
-      inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL}/invite/${invitation.token}`,
-      locale: company?.locale,
-    });
-  } catch (error) {
-    if (!existing) await prisma.invitation.delete({ where: { id: invitation.id } });
-    throw error;
-  }
-}
-
 export async function POST(request: NextRequest) {
   // Messages are shown per row in the import wizard, in the company's language
   let t = getTranslator(null, "people_import.api");
@@ -113,27 +64,13 @@ export async function POST(request: NextRequest) {
     const data = parsed.data;
     const nationalId = data.nationalId ? normalizeNationalId(data.nationalId) : null;
 
-    // Check if employee with this email already exists in the company
-    const existingEmployee = await prisma.employee.findFirst({
-      where: { companyId, email: { equals: data.email, mode: "insensitive" } },
-      select: { id: true },
-    });
-
-    if (existingEmployee) {
-      return NextResponse.json(
-        { message: t("already_exists") },
-        { status: 400 }
-      );
+    // Same email or cédula as someone already in the company
+    const conflict = await findEmployeeConflict(companyId, data.email, nationalId);
+    if (conflict === "email") {
+      return NextResponse.json({ message: t("already_exists") }, { status: 400 });
     }
-
-    if (nationalId) {
-      const sameNationalId = await prisma.employee.findUnique({
-        where: { companyId_nationalId: { companyId, nationalId } },
-        select: { id: true },
-      });
-      if (sameNationalId) {
-        return NextResponse.json({ message: t("already_exists_national_id", { value: nationalId }) }, { status: 400 });
-      }
+    if (conflict === "national_id") {
+      return NextResponse.json({ message: t("already_exists_national_id", { value: nationalId! }) }, { status: 400 });
     }
 
     const jobLevel = data.jobLevel ? parseJobLevel(data.jobLevel) : null;
@@ -229,7 +166,7 @@ export async function POST(request: NextRequest) {
     let invited = false;
     if (data.invite) {
       try {
-        await inviteImportedEmployee(employee, role, session.user?.name);
+        await inviteEmployee(employee, role, session.user?.name);
         invited = true;
       } catch (error) {
         console.error("Import invitation failed:", error);

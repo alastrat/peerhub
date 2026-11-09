@@ -93,7 +93,9 @@ export default async function EditEmployeePage({ params }: PageProps) {
             departments={departments}
             managers={managers}
             hubs={hubs}
-            featureHubs={company?.featureHubs ?? false}
+            // Sede is also filled by the import, which creates hubs even
+            // with the hubs feature off
+            featureHubs={(company?.featureHubs ?? false) || hubs.length > 0}
           />
         </CardContent>
       </Card>

@@ -2011,7 +2011,13 @@
       "addEmployee": "Add Employee",
       "invitationSent": "Invitation sent successfully",
       "employeeAdded": "Employee added successfully",
-      "somethingWrong": "Something went wrong"
+      "somethingWrong": "Something went wrong",
+      "nationalIdRequired": "ID number (cédula) is required",
+      "nameTooShort": "Name must be at least 2 characters",
+      "emailInvalid": "Enter a valid email address",
+      "inviteLabel": "Email an invitation",
+      "inviteHint": "They'll get a link to create their account on the platform. Leave it unchecked to add them without sending any email.",
+      "employeeAddedInvited": "Employee added and invitation sent"
     },
     "editEmployeeForm": {
       "emailAddress": "Email address",
@@ -2306,7 +2312,7 @@
       "details_title": "Employee details",
       "new": {
         "description": "Add a new team member to your organization",
-        "details_description": "Enter the employee's information. They will receive an invitation email to join."
+        "details_description": "The same details as the import template. They only get an email if you check the invitation."
       },
       "edit": {
         "title": "Edit {name}",
@@ -3714,6 +3720,12 @@
     "failed_delete_company": "Couldn't delete the company",
     "employee_not_found": "Employee not found",
     "national_id_taken": "Another employee in this company already has this ID number",
+    "employee_email_taken": "An employee in this company already has this email",
+    "invalid_employee": "Check the employee's details",
+    "invalid_birth_date": "Date of birth must be between 1900 and today",
+    "selection_not_found": "One of the selected options no longer exists. Reload the page and try again.",
+    "invite_failed": "The employee was added, but the invitation email couldn't be sent",
+    "failed_add_employee": "Failed to add the employee",
     "survey_not_found": "Survey not found",
     "select_hub": "Select at least one hub",
     "select_department": "Select at least one department",
