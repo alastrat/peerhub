@@ -66,6 +66,8 @@ export async function sendPlanDeadlineReminders(now = new Date()) {
   const surveys = await prisma.climateSurvey.findMany({
     where: {
       resultsReleasedAt: { not: null },
+      // Never before the results email (Modelo 1), which goes out at the close
+      resultsEmailedAt: { not: null },
       instrumentVersion: { not: null },
       planReminderSentAt: null,
       planMinPerLeader: { gt: 0 },

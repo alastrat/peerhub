@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ClipboardList, Plus } from "lucide-react";
+import { ClipboardList, Plus, Send } from "lucide-react";
 import { getClimateSurveyTypeLabel } from "@/lib/constants/climate-survey";
 
 function TemplatesLoading() {
@@ -65,13 +65,17 @@ async function TemplatesList() {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {templates.map((template) => (
-        <Link key={template.id} href={`/surveys/climate/templates/${template.id}`}>
-          <Card className="transition-shadow hover:shadow-md h-full">
+        // The whole card opens the template; its button starts a survey from it
+        <Card key={template.id} className="relative transition-shadow hover:shadow-md h-full">
             <CardContent className="pt-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start gap-2 mb-1">
-                    <h3 className="text-base font-semibold leading-snug line-clamp-2">{template.name}</h3>
+                    <h3 className="text-base font-semibold leading-snug line-clamp-2">
+                      <Link href={`/surveys/climate/templates/${template.id}`} className="after:absolute after:inset-0">
+                        {template.name}
+                      </Link>
+                    </h3>
                     {template.isDefault && (
                       <Badge variant="outline" className="text-xs shrink-0">
                         {t("built_in")}
@@ -98,9 +102,16 @@ async function TemplatesList() {
                   </div>
                 </div>
               </div>
+              <div className="mt-4 flex justify-end">
+                <Button asChild size="sm" variant="outline" className="relative z-10">
+                  <Link href={`/surveys/climate/new?template=${template.id}`}>
+                    <Send className="mr-1.5 h-4 w-4" />
+                    {t("use_template")}
+                  </Link>
+                </Button>
+              </div>
             </CardContent>
-          </Card>
-        </Link>
+        </Card>
       ))}
     </div>
   );

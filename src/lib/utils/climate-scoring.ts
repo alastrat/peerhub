@@ -26,6 +26,9 @@ export type ClimateBand = (typeof CLIMATE_BANDS)[number];
 
 export const DEFAULT_GOAL_BAND: ClimateBand = "FAVORABLE";
 
+/** Default survey goal: % of favorable answers (Kultiva's POC used 75). */
+export const DEFAULT_GOAL_PCT = 75;
+
 /**
  * Round a mean to one decimal, half up, before banding. The epsilon keeps a
  * mean that should be exactly x.x5 (e.g. 71/20 = 3.55) from being stored as
@@ -338,11 +341,16 @@ export function scoreSegments<R extends ScoringResponse>(
 // Gaps and impact
 // ---------------------------------------------------------------------------
 
-/** Instrument dimensions below the goal band, lowest mean first. */
-export function findGaps(dimensions: DimensionScore[], goal: ClimateBand): DimensionScore[] {
+/** Whether a favorability (0–1) misses the survey goal (a whole %), as the rounded % on screen reads. */
+export function isBelowGoalPct(favorability: number | null, goalPct: number): boolean {
+  return favorability != null && Math.round(favorability * 100) < goalPct;
+}
+
+/** Instrument dimensions below the goal, furthest from it first (lowest % favorable, then mean). */
+export function findGaps(dimensions: DimensionScore[], goalPct: number): DimensionScore[] {
   return dimensions
-    .filter((d) => d.band != null && d.mean != null && isBelowGoal(d.band, goal))
-    .sort((a, b) => a.mean! - b.mean!);
+    .filter((d) => d.band != null && d.mean != null && isBelowGoalPct(d.favorability, goalPct))
+    .sort((a, b) => a.favorability! - b.favorability! || a.mean! - b.mean!);
 }
 
 export type ImpactResult = "IMPROVED" | "UNCHANGED" | "WORSENED" | "NOT_EVALUABLE";

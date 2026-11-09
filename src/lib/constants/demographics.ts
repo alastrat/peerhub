@@ -1,6 +1,7 @@
 // Demographic groups (spec §3.5). Climate reports only count participation
-// per group (answered or not); results are never broken down by them, and a
-// person's values are never shown.
+// per group (answered or not); results are never broken down by them. A
+// person's values only appear in Personas, to admins (and to the person on
+// their own page).
 
 export const GENDERS = ["FEMALE", "MALE", "NON_BINARY", "PREFER_NOT_TO_SAY"] as const;
 export type GenderKey = (typeof GENDERS)[number];

@@ -120,7 +120,7 @@ export function ClimateReport({ survey, results, generatedOn, backHref }: Climat
             ) : (
               <>
                 <ReportSection title={t("summary")}>
-                  <IndexSummary index={results.index} isInstrument={results.isInstrument} goalBand={results.goalBand} />
+                  <IndexSummary index={results.index} isInstrument={results.isInstrument} goalPct={results.goalPct} />
                   {nps && (
                     <div className="flex flex-wrap items-center gap-x-6 gap-y-1 rounded-xl border px-5 py-3 text-sm break-inside-avoid">
                       <span className="font-semibold text-gray-900">{ti("enps_score", { score: results.npsScore! })}</span>
@@ -157,7 +157,7 @@ export function ClimateReport({ survey, results, generatedOn, backHref }: Climat
                 {results.isInstrument && (
                   <ReportSection
                     title={ts("attention_title")}
-                    description={ts("attention_desc", { band: ts(`bands.${results.goalBand}`) })}
+                    description={ts("attention_desc", { band: ts("favorable_pct", { pct: results.goalPct }) })}
                   >
                     {results.gaps.length === 0 && results.attentionSegments.length === 0 ? (
                       <p className="mb-0 text-sm text-muted-foreground">{ts("attention_none")}</p>

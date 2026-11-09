@@ -35,7 +35,7 @@ function buildSurveyData(overrides: Record<string, unknown> = {}) {
     type: "CLIMATE",
     status: "ACTIVE",
     anonymityThreshold: 1,
-    goalBand: "FAVORABLE",
+    goalPct: 75,
     instrumentVersion: null,
     resultsReleasedAt: null,
     questions: [],
@@ -281,16 +281,20 @@ describe("getSurveyResults", () => {
       expect(r.attentionSegments[0].mean).toBeLessThanOrEqual(r.attentionSegments.at(-1)!.mean);
     });
 
-    it("uses a stricter goal band", async () => {
+    it("uses the survey's goal %", async () => {
+      // Half the answers are favorable in both dimensions: 50%
+      const answers = answersOf({ "LID-1": 2, "LID-2": 4, "CVI-1": 2, "CVI-2": 4 });
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(
-        withResponses([buildResponse({ answers: answersOf({ "LID-1": 3, "LID-2": 4, "CVI-1": 3, "CVI-2": 4 }) })], {
-          questions,
-          goalBand: "MUY_FAVORABLE",
-        }),
+        withResponses([buildResponse({ answers })], { questions, goalPct: 50 }),
       );
       const r = (await getSurveyResults("survey-1", "company-1"))!;
-      expect(r.goalBand).toBe("MUY_FAVORABLE");
-      expect(r.gaps).toHaveLength(2); // both Favorable (3.5) < Muy favorable
+      expect(r.goalPct).toBe(50);
+      expect(r.gaps).toHaveLength(0);
+
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(
+        withResponses([buildResponse({ answers })], { questions, goalPct: 75 }),
+      );
+      expect((await getSurveyResults("survey-1", "company-1"))!.gaps).toHaveLength(2);
     });
   });
 

@@ -17,8 +17,20 @@ vi.mock("@/lib/auth/config", () => ({
   auth: vi.fn(() => Promise.resolve(mockSession)),
 }));
 
+vi.mock("@/lib/email/templates", () => ({
+  sendInvitationEmail: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@/lib/utils", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/utils")>()),
+  generateInviteToken: vi.fn(() => "invite-token-1"),
+  getExpiryDate: vi.fn(() => new Date("2026-11-15T00:00:00Z")),
+}));
+
 // Import AFTER mocks
 import { POST } from "@/app/api/people/import/route";
+import { sendInvitationEmail } from "@/lib/email/templates";
+import { EmailDeliveryError } from "@/lib/email/resend";
 
 function request(body: Record<string, unknown>) {
   return new Request("http://localhost/api/people/import", {
@@ -45,6 +57,7 @@ const ROW = {
 };
 
 beforeEach(() => {
+  vi.clearAllMocks();
   mockPrisma = createMockPrisma();
   mockSession = createAdminSession("company-1");
   mockPrisma.employee.findFirst.mockResolvedValue(null);
@@ -73,7 +86,8 @@ describe("POST /api/people/import", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body.warning).toBeUndefined();
+    expect(body.warnings).toBeUndefined();
+    expect(body.invited).toBe(false);
     expect(mockPrisma.hub.create).toHaveBeenCalledWith({
       data: { name: "Bogotá", companyId: "company-1" },
       select: { id: true },
@@ -92,8 +106,10 @@ describe("POST /api/people/import", () => {
         }),
       }),
     );
-    // No role column → no platform access
+    // No role column and no invitation → no platform access, no email
     expect(mockPrisma.companyUser.create).not.toHaveBeenCalled();
+    expect(mockPrisma.invitation.upsert).not.toHaveBeenCalled();
+    expect(sendInvitationEmail).not.toHaveBeenCalled();
   });
 
   it("reuses an existing hub whatever its case", async () => {
@@ -124,7 +140,7 @@ describe("POST /api/people/import", () => {
     expect(mockPrisma.employee.create.mock.calls[0][0].data.managerId).toBeUndefined();
     // Imported anyway; the wizard lists the notice
     expect(response.status).toBe(200);
-    expect(body.warning).toBe("se importó sin líder porque no encontramos a «Luisa Fernanda Martínez Ochoa»");
+    expect(body.warnings).toEqual(["se importó sin líder porque no encontramos a «Luisa Fernanda Martínez Ochoa»"]);
   });
 
   it("rejects a cédula that already exists in the company", async () => {
@@ -168,5 +184,75 @@ describe("POST /api/people/import", () => {
       managerId: "emp-boss",
     });
     expect(mockPrisma.companyUser.create).toHaveBeenCalled();
+  });
+
+  describe("with the wizard's invitation box checked", () => {
+    beforeEach(() => {
+      mockPrisma.invitation.findUnique.mockResolvedValue(null);
+      mockPrisma.invitation.upsert.mockImplementation(({ create }) => Promise.resolve({ id: "inv-1", ...create }));
+      mockPrisma.company.findUnique.mockResolvedValue({ name: "Acme Corp", locale: "es" });
+    });
+
+    it("invites the new employee as a member and emails the link", async () => {
+      const response = await POST(request({ ...ROW, invite: true }));
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body.invited).toBe(true);
+      expect(mockPrisma.invitation.upsert).toHaveBeenCalledWith({
+        where: { email_companyId: { email: ROW.email, companyId: "company-1" } },
+        create: expect.objectContaining({
+          email: ROW.email,
+          companyId: "company-1",
+          role: "MEMBER",
+          hubId: "hub-bog",
+          departmentId: "dept-th",
+          token: "invite-token-1",
+          acceptedAt: null,
+        }),
+        update: expect.objectContaining({ role: "MEMBER", token: "invite-token-1", acceptedAt: null }),
+      });
+      expect(sendInvitationEmail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: ROW.email,
+          companyName: "Acme Corp",
+          locale: "es",
+          inviteUrl: expect.stringMatching(/\/invite\/invite-token-1$/),
+        }),
+      );
+      // Access comes from accepting the invitation, not from the import
+      expect(mockPrisma.companyUser.create).not.toHaveBeenCalled();
+    });
+
+    it("carries the file's role in the invitation instead of granting access directly", async () => {
+      await POST(request({ ...ROW, role: "MANAGER", invite: true }));
+      expect(mockPrisma.invitation.upsert.mock.calls[0][0].create.role).toBe("MANAGER");
+      expect(mockPrisma.user.create).not.toHaveBeenCalled();
+      expect(mockPrisma.companyUser.create).not.toHaveBeenCalled();
+    });
+
+    it("keeps the employee when the email fails, drops the unreachable invitation, and says so", async () => {
+      vi.mocked(sendInvitationEmail).mockRejectedValueOnce(new EmailDeliveryError("Resend is down", [ROW.email]));
+
+      const response = await POST(request({ ...ROW, invite: true }));
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(mockPrisma.employee.create).toHaveBeenCalled();
+      expect(mockPrisma.invitation.delete).toHaveBeenCalledWith({ where: { id: "inv-1" } });
+      expect(body.invited).toBe(false);
+      // Next to the leader notice: ROW's leader isn't in this mock company
+      expect(body.warnings).toContain("se importó, pero no se pudo enviar la invitación por correo");
+    });
+
+    it("refreshes an earlier invitation for the same email, and keeps it if the email fails", async () => {
+      mockPrisma.invitation.findUnique.mockResolvedValue({ id: "inv-old" });
+      mockPrisma.invitation.upsert.mockResolvedValue({ id: "inv-old", token: "invite-token-1" });
+      vi.mocked(sendInvitationEmail).mockRejectedValueOnce(new EmailDeliveryError("Resend is down", [ROW.email]));
+
+      await POST(request({ ...ROW, invite: true }));
+
+      expect(mockPrisma.invitation.delete).not.toHaveBeenCalled();
+    });
   });
 });

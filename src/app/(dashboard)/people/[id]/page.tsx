@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { redirect, notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { ArrowLeft, Mail, Building2, User, Calendar, Briefcase, MapPin, Users, IdCard, Layers } from "lucide-react";
+import { ArrowLeft, Mail, Users } from "lucide-react";
 import { PageHeader } from "@/components/design-system/page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,8 +16,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { AccessBadge, RoleBadge } from "@/components/people/person-badges";
 import { getInitials } from "@/lib/utils/formatting";
-import { formatDate } from "@/lib/utils/dates";
+import { BUSINESS_TIME_ZONE, formatDay } from "@/lib/constants/business-time";
+import { rosterAccess } from "@/lib/people/access";
+import { findPendingInvitation } from "@/lib/queries/people";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -94,16 +97,49 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const stats = await getReviewStats(employee.id);
-  const companyUserRole = employee.companyUser?.role;
+  const hasAccount = !!employee.companyUser?.isActive;
+  const [stats, invitation, company] = await Promise.all([
+    getReviewStats(employee.id),
+    hasAccount ? null : findPendingInvitation(employee.companyId, employee.email),
+    prisma.company.findUnique({ where: { id: employee.companyId }, select: { featureHubs: true } }),
+  ]);
+  // Everyone on the roster is a member unless their account (or invitation) says otherwise
+  const { role, access } = rosterAccess(employee.companyUser, invitation);
+  // Sede is also filled by the import, which creates hubs even with the hubs feature off
+  const showHub = (company?.featureHubs ?? false) || !!employee.hub;
 
   // Dashboard routes have no locale segment: follow the company's language
   const locale = session.companyUser.locale ?? "es";
   const t = await getTranslations({ locale, namespace: "dashboard.people_page.profile" });
-  // The people table's role names, so a role reads the same in both places
-  const tRoles = await getTranslations({ locale, namespace: "dashboard.people" });
+  // The people table's names for roles and access, so they read the same in both places
+  const tPeople = await getTranslations({ locale, namespace: "dashboard.people" });
   const tFields = await getTranslations({ locale, namespace: "employee_fields" });
+  const tDemographics = await getTranslations({ locale, namespace: "demographics" });
   const roleKeys = { ADMIN: "admin", MANAGER: "manager", MEMBER: "member" } as const;
+
+  // Every field the employee import loads, in the template's order
+  const details: { label: string; value: React.ReactNode }[] = [
+    { label: tFields("national_id"), value: employee.nationalId },
+    { label: t("name"), value: employee.name },
+    { label: t("title_label"), value: employee.title },
+    { label: t("email"), value: employee.email },
+    ...(showHub ? [{ label: t("hub"), value: employee.hub?.name }] : []),
+    { label: t("department"), value: employee.department?.name },
+    {
+      label: t("manager"),
+      value: employee.manager && (
+        <Link href={`/people/${employee.manager.id}`} className="hover:underline">
+          {employee.manager.name}
+        </Link>
+      ),
+    },
+    { label: tDemographics("fields.start_date"), value: employee.startDate && formatDay(employee.startDate, locale) },
+    { label: tDemographics("fields.gender"), value: employee.gender && tDemographics(`gender.${employee.gender}`) },
+    { label: tDemographics("fields.birth_date"), value: employee.birthDate && formatDay(employee.birthDate, locale) },
+    { label: tFields("job_level"), value: employee.jobLevel && tFields(`job_level_values.${employee.jobLevel}`) },
+    // The old CSV template's code: only when someone has one
+    ...(employee.employeeCode ? [{ label: t("employee_code_label"), value: employee.employeeCode }] : []),
+  ];
 
   return (
     <div className="space-y-6">
@@ -138,10 +174,9 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
               </Avatar>
               <h2 className="mt-4 text-xl font-semibold">{employee.name}</h2>
               <p className="text-muted-foreground">{employee.title || t("no_title")}</p>
-              <div className="mt-2 flex gap-2">
-                {companyUserRole && (
-                  <Badge variant="secondary">{tRoles(roleKeys[companyUserRole])}</Badge>
-                )}
+              <div className="mt-2 flex flex-wrap justify-center gap-2">
+                <RoleBadge role={role} label={tPeople(roleKeys[role])} />
+                <AccessBadge access={access} label={tPeople(`access_status.${access}`)} />
                 {!employee.isActive && <Badge variant="destructive">{t("inactive")}</Badge>}
               </div>
 
@@ -150,50 +185,13 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
               <div className="w-full space-y-3 text-left">
                 <div className="flex items-center gap-3 text-sm">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>{employee.email}</span>
+                  <span className="break-all">{employee.email}</span>
                 </div>
-                {employee.department && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Building2 className="h-4 w-4 text-muted-foreground" />
-                    <span>{employee.department.name}</span>
-                  </div>
-                )}
-                {employee.manager && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span>{t("reports_to", { name: employee.manager.name })}</span>
-                  </div>
-                )}
-                {employee.hub && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span>{employee.hub.name}</span>
-                  </div>
-                )}
-                {employee.startDate && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>{t("started_on", { date: formatDate(employee.startDate, undefined, locale) })}</span>
-                  </div>
-                )}
-                {employee.employeeCode && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    <span>{t("employee_code", { code: employee.employeeCode })}</span>
-                  </div>
-                )}
-                {employee.nationalId && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <IdCard className="h-4 w-4 text-muted-foreground" />
-                    <span>{tFields("national_id_value", { value: employee.nationalId })}</span>
-                  </div>
-                )}
-                {employee.jobLevel && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Layers className="h-4 w-4 text-muted-foreground" />
-                    <span>{tFields(`job_level_values.${employee.jobLevel}`)}</span>
-                  </div>
-                )}
+                <p className="text-sm text-muted-foreground">
+                  {access === "INVITED" && invitation
+                    ? t("access_detail.INVITED", { date: formatDay(invitation.expiresAt, locale, BUSINESS_TIME_ZONE) })
+                    : t(`access_detail.${access}`)}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -201,6 +199,24 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
 
         {/* Stats and Details */}
         <div className="space-y-6 md:col-span-2">
+          {/* Employee details */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("details_title")}</CardTitle>
+              <CardDescription>{t("details_description")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-x-6 gap-y-4 text-sm sm:grid-cols-2">
+                {details.map(({ label, value }) => (
+                  <div key={label}>
+                    <dt className="text-muted-foreground">{label}</dt>
+                    <dd className="mt-0.5 font-medium break-words">{value || <span className="font-normal text-muted-foreground">—</span>}</dd>
+                  </div>
+                ))}
+              </dl>
+            </CardContent>
+          </Card>
+
           {/* Review Stats */}
           <Card>
             <CardHeader>

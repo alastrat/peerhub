@@ -34,7 +34,7 @@ import {
   submitSurveyResponse,
 } from "@/lib/actions/climate-responses";
 import type { SurveyQuestionType } from "@prisma/client";
-import { getQuestionScale, getScaleValues, getScaleAnchor } from "@/lib/constants/climate-scales";
+import { getQuestionScale, getScaleValues, getScaleAnchor, getScaleFace } from "@/lib/constants/climate-scales";
 
 interface Question {
   id: string;
@@ -390,35 +390,51 @@ export function PortalClimateSurveyForm({
               </div>
             </CardHeader>
             <CardContent>
-              {q.type === "LIKERT" && (
-                <div
-                  className={cn(
-                    "grid grid-cols-2 gap-2",
-                    getScaleValues(getQuestionScale(q)!).length === 5 ? "sm:grid-cols-5" : "sm:grid-cols-4"
-                  )}
-                >
-                  {getScaleValues(getQuestionScale(q)!).map((value) => ({
-                    value,
-                    label: getScaleAnchor(getQuestionScale(q)!, value, locale) ?? String(value),
-                  })).map((opt) => (
-                    <button
-                      data-survey-option
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setAnswer(q.id, { ratingValue: opt.value })}
-                      className={cn(
-                        "rounded-lg border px-3 py-3 text-sm font-medium transition-colors",
-                        answer.ratingValue === opt.value
-                          ? ""
-                          : "border-border hover:bg-muted"
-                      )}
-                      style={answer.ratingValue === opt.value ? selectedStyle : undefined}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {q.type === "LIKERT" && (() => {
+                const scale = getQuestionScale(q)!;
+                const values = getScaleValues(scale);
+                const isFaces = scale.kind === "faces";
+                return (
+                  <div
+                    className={cn(
+                      "grid gap-2",
+                      isFaces ? "grid-cols-5" : "grid-cols-2",
+                      !isFaces && (values.length === 5 ? "sm:grid-cols-5" : "sm:grid-cols-4")
+                    )}
+                  >
+                    {values.map((value) => {
+                      const face = getScaleFace(scale, value);
+                      const label = face
+                        ? (locale === "en" ? scale.anchors?.[value]?.en : scale.anchors?.[value]?.es) ?? String(value)
+                        : getScaleAnchor(scale, value, locale) ?? String(value);
+                      const selected = answer.ratingValue === value;
+                      return (
+                        <button
+                          data-survey-option
+                          key={value}
+                          type="button"
+                          onClick={() => setAnswer(q.id, { ratingValue: value })}
+                          aria-label={face ? label : undefined}
+                          aria-pressed={selected}
+                          className={cn(
+                            "rounded-lg border text-sm font-medium transition-colors",
+                            face ? "flex flex-col items-center gap-1 px-1 py-3" : "px-3 py-3",
+                            selected ? "" : "border-border hover:bg-muted"
+                          )}
+                          style={selected ? selectedStyle : undefined}
+                        >
+                          {face && (
+                            <span aria-hidden className="text-3xl leading-none sm:text-4xl">
+                              {face}
+                            </span>
+                          )}
+                          <span className={cn(face && "text-xs leading-tight")}>{label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
 
               {q.type === "RATING" && (
                 <div className="grid grid-cols-5 gap-2">

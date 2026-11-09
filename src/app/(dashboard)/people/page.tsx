@@ -12,19 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PeopleContent } from "@/components/dashboard/people-content";
-
-async function getPeople(companyId: string) {
-  return prisma.employee.findMany({
-    where: { companyId, isActive: true },
-    include: {
-      department: true,
-      manager: true,
-      companyUser: true,
-      hub: true,
-    },
-    orderBy: { name: "asc" },
-  });
-}
+import { listPeople } from "@/lib/queries/people";
 
 function PeopleLoading() {
   return (
@@ -69,21 +57,15 @@ function PeopleLoading() {
 
 async function PeopleLoader({ companyId }: { companyId: string }) {
   const [people, company] = await Promise.all([
-    getPeople(companyId),
+    listPeople(companyId),
     prisma.company.findUnique({ where: { id: companyId }, select: { featureHubs: true } }),
   ]);
 
-  const rows = people.map((p) => ({
-    id: p.id,
-    name: p.name,
-    title: p.title,
-    role: p.companyUser?.role ?? null,
-    department: p.department ? { name: p.department.name } : null,
-    manager: p.manager ? { name: p.manager.name } : null,
-    hub: p.hub ? { name: p.hub.name } : null,
-  }));
+  // Sede is also filled by the import, which creates hubs even with the hubs
+  // feature off: show it whenever someone has one
+  const showHubs = (company?.featureHubs ?? false) || people.some((p) => p.hub);
 
-  return <PeopleContent people={rows} featureHubs={company?.featureHubs ?? false} />;
+  return <PeopleContent people={people} showHubs={showHubs} />;
 }
 
 export default async function PeoplePage() {

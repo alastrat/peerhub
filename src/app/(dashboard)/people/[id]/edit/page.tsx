@@ -8,6 +8,8 @@ import { PageHeader } from "@/components/design-system/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EditEmployeeForm } from "@/components/people/edit-employee-form";
+import { rosterAccess } from "@/lib/people/access";
+import { findPendingInvitation } from "@/lib/queries/people";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -68,6 +70,10 @@ export default async function EditEmployeePage({ params }: PageProps) {
     notFound();
   }
 
+  // Without an account, the role is the one their pending invitation gives
+  const invitation = employee.companyUser?.isActive ? null : await findPendingInvitation(companyId, employee.email);
+  const { role, access } = rosterAccess(employee.companyUser, invitation);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -90,10 +96,14 @@ export default async function EditEmployeePage({ params }: PageProps) {
         <CardContent>
           <EditEmployeeForm
             employee={employee}
+            role={role}
+            access={access}
             departments={departments}
             managers={managers}
             hubs={hubs}
-            featureHubs={company?.featureHubs ?? false}
+            // Sede is also filled by the import, which creates hubs even
+            // with the hubs feature off
+            featureHubs={(company?.featureHubs ?? false) || hubs.length > 0}
           />
         </CardContent>
       </Card>

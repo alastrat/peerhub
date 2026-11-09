@@ -1610,6 +1610,10 @@
       "conducted_with": "{company} runs this survey with Kultiva.",
       "already_completed": "You've already completed this survey",
       "already_completed_body": "Thanks for taking part. Your answers have been recorded.",
+      "not_started_title": "This survey isn't open yet",
+      "not_started_body": "You can answer it from {date}.",
+      "ended_title": "This survey has closed",
+      "ended_body": "Answers were taken until {date}. Thanks for your interest.",
       "default_cta": "Start survey",
       "default_thank_you_body": "Thank you for completing our survey. Your feedback helps us keep improving our workplace.",
       "default_thank_you_cta": "Go to Home",
@@ -1966,14 +1970,28 @@
       }
     },
     "people": {
-      "searchPlaceholder": "Search people...",
+      "searchPlaceholder": "Search by name, email or ID number...",
       "allRoles": "All Roles",
+      "allAccess": "All access",
       "allDepartments": "All Departments",
       "admin": "Admin",
       "manager": "Manager",
       "member": "Member",
       "name": "Name",
       "role": "Role",
+      "access": "Access",
+      "access_status": {
+        "ACTIVE": "Active",
+        "INVITED": "Invited",
+        "DEACTIVATED": "Account deactivated",
+        "NONE": "No access"
+      },
+      "access_hint": {
+        "ACTIVE": "Has a platform account",
+        "INVITED": "Has an invitation waiting to be accepted",
+        "DEACTIVATED": "Their account is deactivated: they keep their role, which comes back if it's reactivated",
+        "NONE": "Has no account or pending invitation"
+      },
       "title": "Title",
       "department": "Department",
       "hub": "Hub",
@@ -2011,7 +2029,13 @@
       "addEmployee": "Add Employee",
       "invitationSent": "Invitation sent successfully",
       "employeeAdded": "Employee added successfully",
-      "somethingWrong": "Something went wrong"
+      "somethingWrong": "Something went wrong",
+      "nationalIdRequired": "ID number (cédula) is required",
+      "nameTooShort": "Name must be at least 2 characters",
+      "emailInvalid": "Enter a valid email address",
+      "inviteLabel": "Email an invitation",
+      "inviteHint": "They'll get a link to create their account on the platform. Leave it unchecked to add them without sending any email.",
+      "employeeAddedInvited": "Employee added and invitation sent"
     },
     "editEmployeeForm": {
       "emailAddress": "Email address",
@@ -2023,6 +2047,9 @@
       "role": "Role",
       "selectRole": "Select a role",
       "roleDescription": "Admins can manage all settings, Managers can view team reports",
+      "roleInvited": "The role from their pending invitation: they get it when they accept.",
+      "roleDeactivated": "Their account is deactivated: they keep this role, which comes back if you reactivate it.",
+      "roleNoAccess": "They have no platform access yet, so they are a Member. Another role comes with an invitation.",
       "department": "Department",
       "selectDepartment": "Select a department",
       "noDepartment": "No department",
@@ -2306,7 +2333,7 @@
       "details_title": "Employee details",
       "new": {
         "description": "Add a new team member to your organization",
-        "details_description": "Enter the employee's information. They will receive an invitation email to join."
+        "details_description": "The same details as the import template. They only get an email if you check the invitation."
       },
       "edit": {
         "title": "Edit {name}",
@@ -2321,9 +2348,21 @@
         "no_title": "No title",
         "edit": "Edit employee",
         "inactive": "Inactive",
-        "reports_to": "Reports to {name}",
-        "started_on": "Started {date}",
-        "employee_code": "ID: {code}",
+        "access_detail": {
+          "ACTIVE": "Has a platform account.",
+          "INVITED": "Has a pending invitation that expires on {date}.",
+          "DEACTIVATED": "Their platform account is deactivated. They keep their role, which comes back if you reactivate it.",
+          "NONE": "Has no platform account or pending invitation."
+        },
+        "details_title": "Employee details",
+        "details_description": "What was loaded by the import or when they were added.",
+        "name": "Full name",
+        "email": "Email",
+        "title_label": "Title",
+        "department": "Department",
+        "hub": "Hub",
+        "manager": "Manager",
+        "employee_code_label": "Employee code",
         "review_stats_title": "Review statistics",
         "review_stats_description": "Summary of feedback participation",
         "reviews_received": "Reviews received",
@@ -2574,6 +2613,13 @@
           "anonymous": "Anonymous",
           "anonymity_threshold_label": "Anonymity threshold",
           "anonymity_threshold_hint": "Segment results are hidden when fewer than N responses are collected, so individuals can't be identified. Industry standard: 5.",
+          "goal_label": "Goal (% of favorable answers)",
+          "goal_hint": "Target share of favorable answers. It's shown as the goal in the results, and dimensions below it count as gaps for action plans.",
+          "goal_invalid": "Enter a whole percentage from 1 to 100.",
+          "start_label": "Start date and time",
+          "end_label": "End date and time",
+          "window_hint": "Optional. Before the start the survey takes no answers; at the end it stops taking them and closes.",
+          "window_invalid": "The end must be after the start.",
           "start_from_template": "Start from a template (optional)",
           "start_blank": "Start blank",
           "template_hint": "Pre-fills the name, description, type, and questions. You can still edit everything after.",
@@ -2739,7 +2785,11 @@
           "mode_preview": "Preview",
           "mode_edit": "Edit",
           "reload_preview": "Reload",
-          "preview_unavailable": "Save a draft to see the live preview here."
+          "preview_unavailable": "Name the survey and write at least one question to see the preview.",
+          "preparing_preview": "Saving the draft to show the preview…",
+          "save_and_reload": "Save and refresh",
+          "unsaved_changes_hint": "You have unsaved changes: the preview shows the last saved version.",
+          "preview_failed": "The draft for the preview couldn't be saved. Check the message above and try again with \"Preview\"."
         },
         "wallpaper": {
           "style_label": "Wallpaper style",
@@ -3012,6 +3062,7 @@
     "scale_label": "Scale",
     "scale_FREQ_4": "Frequency (Never–Always, 1–4)",
     "scale_AGREE_5": "Agreement (1–5)",
+    "scale_FACES_5": "Faces (😠–😄, 1–5)",
     "participation": {
       "leaders_title": "Progress by leader",
       "leaders_desc": "How many of the people invited answered, by their direct manager.",
@@ -3231,11 +3282,16 @@
     "no_activity": "No activity yet.",
     "needs_instrument": "Action plans are available for surveys that use Kultiva's validated instrument.",
     "release_title": "Results for leaders",
-    "release_desc": "Once you release results, every leader with at least the minimum number of responses sees their team's results, can record plans and gets an email with their personal link. Results are released automatically when the survey closes.",
+    "release_desc": "Once you release results, every leader with at least the minimum number of responses sees their team's results and can record plans. The email with their personal link goes out when the survey closes (right away if it's already closed). Results are released automatically when the survey closes.",
     "released_on": "Released on {date}. Plan deadline: {due}.",
+    "released_on_due_at_close": "Released on {date}. The plan deadline is set when leaders get their email, at the survey's close (15 days later), unless you set it before.",
     "release": "Release results to leaders",
     "released_toast": "Results released: {emailed} of {leaders} leaders got their email",
-    "results_not_emailed": "Leaders haven't received the email with their results yet.",
+    "released_toast_on_close": "Results released. Leaders will get their email when the survey closes.",
+    "results_email_on_close": "Leaders will get the email with their results when the survey closes.",
+    "results_emailed_on": "Leaders got the email with their results on {date}.",
+    "results_not_emailed": "Leaders haven't received the email with their results yet: it wasn't sent or sending failed. You can send it now.",
+    "results_no_leader_qualified": "No results email went out: no leader reached the minimum number of responses to see their team's.",
     "send_results_emails": "Send results email",
     "results_emails_sent": "{count, plural, =0 {No leader had results to send} one {# leader got their email} other {# leaders got their email}}",
     "retract": "Hide results",
@@ -3314,7 +3370,7 @@
       "title": "Results and action plans",
       "desc": "How results are read and what leaders are expected to do.",
       "goal": "Goal",
-      "goal_hint": "A dimension or group has a gap when its level is below the goal.",
+      "goal_hint": "% of favorable answers. A dimension or group below it has a gap.",
       "plan_min": "Plans per leader",
       "plan_min_hint": "Minimum plans each leader with gaps must submit (0 = optional).",
       "due": "Plan deadline",
@@ -3396,6 +3452,8 @@
       "release_needs_instrument": "Only surveys that use the validated instrument have leader results",
       "already_released": "Results were already released",
       "results_already_emailed": "The results email was already sent",
+      "results_emails_failed": "The results email couldn't be sent to any leader. Try again later.",
+      "results_email_on_close": "Leaders get the results email when the survey closes",
       "admin_only_hide": "Only an administrator can hide results",
       "plans_already_submitted": "Leaders already submitted plans for these results",
       "admin_only_evaluate": "Only an administrator can evaluate impact",
@@ -3467,13 +3525,12 @@
       "start_date": "Start date",
       "not_set": "Not set",
       "section_title": "Demographics",
-      "privacy_hint": "Used only to count climate survey participation (how many people in each group answered); never shown per person or crossed with answers."
+      "privacy_hint": "In People, only admins and the person themselves see them. Climate surveys only use them to count participation (how many people in each group answered); they're never crossed with answers."
     }
   },
   "employee_fields": {
     "national_id": "ID number (cédula)",
     "national_id_placeholder": "e.g. 1020304050",
-    "national_id_value": "ID number: {value}",
     "job_level": "Job level",
     "not_set": "Not set",
     "job_level_values": {
@@ -3652,7 +3709,9 @@
       "valid": "Valid",
       "error": "Error",
       "default_role": "Employee",
-      "import": "{count, plural, one {Import # Employee} other {Import # Employees}}"
+      "import": "{count, plural, one {Import # Employee} other {Import # Employees}}",
+      "invite_label": "Email an invitation to the imported employees",
+      "invite_hint": "They'll get a link to create their account on the platform. Leave it unchecked to import them without sending any email."
     },
     "importing": {
       "title": "Importing...",
@@ -3669,7 +3728,8 @@
       "errors": "Errors:",
       "view_people": "View Employees",
       "import_more": "Import More",
-      "warnings": "Notices:"
+      "warnings": "Notices:",
+      "invited": "{count, plural, =0 {No invitations were sent} one {# invitation emailed} other {# invitations emailed}}"
     },
     "errors": {
       "file_too_short": "The file must have a header row and at least one data row",
@@ -3707,7 +3767,8 @@
       "failed": "Failed to import employee",
       "already_exists_national_id": "An employee with ID number {value} already exists in this company",
       "unknown_job_level": "Unknown job level \"{value}\"",
-      "manager_not_found": "imported without a leader because we couldn't find \"{manager}\""
+      "manager_not_found": "imported without a leader because we couldn't find \"{manager}\"",
+      "invite_failed": "imported, but the invitation email couldn't be sent"
     }
   },
   "action_errors": {
@@ -3722,6 +3783,13 @@
     "failed_delete_company": "Couldn't delete the company",
     "employee_not_found": "Employee not found",
     "national_id_taken": "Another employee in this company already has this ID number",
+    "invitation_not_pending": "Not saved: this person's invitation expired or no longer exists, so their role can't be changed. Send them a new invitation with the role you want.",
+    "employee_email_taken": "An employee in this company already has this email",
+    "invalid_employee": "Check the employee's details",
+    "invalid_birth_date": "Date of birth must be between 1900 and today",
+    "selection_not_found": "One of the selected options no longer exists. Reload the page and try again.",
+    "invite_failed": "The employee was added, but the invitation email couldn't be sent",
+    "failed_add_employee": "Failed to add the employee",
     "survey_not_found": "Survey not found",
     "select_hub": "Select at least one hub",
     "select_department": "Select at least one department",
@@ -3741,6 +3809,9 @@
     "failed_delete_survey": "Failed to delete survey",
     "failed_duplicate_survey": "Failed to duplicate survey",
     "invalid_goal_band": "Invalid goal band",
+    "invalid_goal_pct": "The goal must be a whole percentage from 1 to 100",
+    "invalid_access_dates": "Check the start and end dates",
+    "access_end_before_start": "The end date must be after the start date",
     "invalid_plan_minimum": "Invalid plan minimum",
     "invalid_plan_due_date": "Invalid plan due date",
     "invalid_plan_reminder_date": "The reminder date must be a valid date on or before the plan due date",
@@ -3771,6 +3842,9 @@
     "answer_not_in_survey": "Answer to a question that is not part of this survey",
     "answer_out_of_scale": "Answer is outside the question's scale",
     "already_submitted": "Survey already submitted",
+    "survey_not_active": "This survey isn't taking answers",
+    "survey_not_started": "The survey hasn't opened yet",
+    "survey_ended": "The survey has closed",
     "missing_required": "Please answer all required questions ({count} remaining)",
     "failed_save_draft": "Failed to save draft",
     "failed_submit_survey": "Failed to submit survey",
@@ -3809,6 +3883,7 @@
     "title": "Climate templates",
     "description": "Reusable survey templates for organizational climate assessments",
     "create": "Create template",
+    "use_template": "Create survey",
     "empty_title": "No templates yet",
     "empty_desc": "Create reusable survey templates to quickly launch climate assessments.",
     "built_in": "Built-in",

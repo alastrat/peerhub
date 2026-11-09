@@ -1,7 +1,9 @@
 // What happens when a climate survey finishes, by hand, on its end date or
 // once everyone has answered: results go to the leaders (Modelo 1) and the
 // company admins get the closing report (Modelo 3). Each email goes out once
-// per survey and one per person (client's "Modelos de correo").
+// per survey and one per person (client's "Modelos de correo"). Leaders are
+// only emailed once the survey has closed, even if an admin released their
+// results earlier.
 
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/db/prisma";
@@ -32,8 +34,10 @@ export interface EmailRunResult {
 }
 
 export interface LeaderEmailRun extends EmailRunResult {
-  /** False when the results email had already gone out (or another run is sending it). */
+  /** False when the survey isn't closed yet or the results email already went out (or another run is sending it). */
   claimed: boolean;
+  /** Sends that failed to deliver. When none went out at all, the run is undone so it can be retried. */
+  failed: number;
   leaders: number;
   leadersWithGaps: number;
 }
@@ -104,15 +108,17 @@ function skipReason(error: unknown) {
 /**
  * Results email to every leader whose team reached the anonymity threshold,
  * with the action-plan block when the survey asks for plans and the leader
- * has gaps. Once per survey: does nothing if it already went out.
+ * has gaps. Only for a closed survey with released results, and once per
+ * survey: does nothing while it's still active or if it already went out.
  */
 export async function sendLeaderResultsEmails(surveyId: string, companyId: string, now = new Date()): Promise<LeaderEmailRun> {
-  const result: LeaderEmailRun = { sent: 0, skipped: [], claimed: false, leaders: 0, leadersWithGaps: 0 };
+  const result: LeaderEmailRun = { sent: 0, skipped: [], claimed: false, failed: 0, leaders: 0, leadersWithGaps: 0 };
   const meta = await prisma.climateSurvey.findFirst({
     where: { id: surveyId, companyId, instrumentVersion: { not: null } },
     select: {
       id: true,
       name: true,
+      status: true,
       resultsReleasedAt: true,
       resultsEmailedAt: true,
       planMinPerLeader: true,
@@ -122,22 +128,30 @@ export async function sendLeaderResultsEmails(surveyId: string, companyId: strin
       company: { select: { name: true, locale: true } },
     },
   });
-  if (!meta?.resultsReleasedAt || meta.resultsEmailedAt) return result;
+  // Results released while the survey is still open wait for it to close
+  if (!meta?.resultsReleasedAt || meta.resultsEmailedAt || meta.status !== "CLOSED") return result;
   const survey = await loadSurveyForScoring(surveyId, companyId);
   if (!survey) return result;
 
   // Claimed before sending, even if some are skipped: a parallel or second
   // run (a double click, a close racing a release) must not email anyone twice
   const { count } = await prisma.climateSurvey.updateMany({
-    where: { id: surveyId, resultsEmailedAt: null },
+    where: { id: surveyId, status: "CLOSED", resultsEmailedAt: null },
     data: { resultsEmailedAt: now },
   });
   if (count === 0) return result;
   result.claimed = true;
+  // Leaders get their plan deadline with this email: the default counts from
+  // now, unless an admin already set one
+  let planDueDate = meta.planDueDate;
+  if (!planDueDate) {
+    planDueDate = defaultPlanDueDate(now);
+    await prisma.climateSurvey.updateMany({ where: { id: surveyId, planDueDate: null }, data: { planDueDate } });
+  }
   const locale = meta.company.locale;
   const [signature, followUp] = await Promise.all([getEmailSignature(), followUpPeople(companyId, meta)]);
   const responsible = joinNames(followUp.names, locale) || null;
-  const dueDate = meta.planDueDate ? longDay(meta.planDueDate, locale) : "";
+  const dueDate = longDay(planDueDate, locale);
 
   const leaderIds = leaderIdsOf(survey);
   result.leaders = leaderIds.length;
@@ -168,30 +182,44 @@ export async function sendLeaderResultsEmails(surveyId: string, companyId: strin
     } catch (error) {
       console.error(`[survey-finish] Leader results email to ${leader.id} not sent:`, error);
       result.skipped.push({ name: leader.name, reason: skipReason(error) });
+      result.failed++;
     }
+  }
+
+  // Nobody got it because every send failed: undo the claim, so the admin
+  // can retry ("Enviar correo de resultados") and nobody is told it went out
+  if (result.sent === 0 && result.failed > 0) {
+    await prisma.climateSurvey.updateMany({ where: { id: surveyId, resultsEmailedAt: now }, data: { resultsEmailedAt: null } });
+    result.claimed = false;
   }
 
   return result;
 }
 
+/** Default action-plan deadline, counted from when leaders get their results: a calendar day stored like a date input (UTC midnight). */
+export function defaultPlanDueDate(from: Date): Date {
+  return businessDayAsDate(new Date(from.getTime() + DEFAULT_PLAN_WINDOW_DAYS * DAY));
+}
+
 /**
- * Releases results to leaders (if not already) with the default plan deadline,
- * then sends the leaders their results email.
+ * Releases results to leaders (if not already), then sends the leaders their
+ * results email, which sets the default plan deadline. Runs once the survey
+ * has closed, which is also when results released earlier get their email.
  */
 export async function releaseResultsAndNotify(surveyId: string, companyId: string, now = new Date()) {
   const meta = await prisma.climateSurvey.findFirst({
     where: { id: surveyId, companyId },
-    select: { resultsReleasedAt: true, planDueDate: true, instrumentVersion: true },
+    select: { resultsReleasedAt: true, instrumentVersion: true },
   });
-  if (!meta?.instrumentVersion) return { released: false, emails: { sent: 0, skipped: [], claimed: false, leaders: 0, leadersWithGaps: 0 } as LeaderEmailRun };
+  if (!meta?.instrumentVersion) {
+    return { released: false, emails: { sent: 0, skipped: [], claimed: false, failed: 0, leaders: 0, leadersWithGaps: 0 } as LeaderEmailRun };
+  }
   let released = false;
   if (!meta.resultsReleasedAt) {
-    // Default deadline: a calendar day, stored like a date input (UTC midnight)
-    const planDueDate = meta.planDueDate ?? businessDayAsDate(new Date(now.getTime() + DEFAULT_PLAN_WINDOW_DAYS * DAY));
     // Conditional: a double click or a parallel close can't release (and email) twice
     const { count } = await prisma.climateSurvey.updateMany({
       where: { id: surveyId, resultsReleasedAt: null },
-      data: { resultsReleasedAt: now, planDueDate },
+      data: { resultsReleasedAt: now },
     });
     released = count > 0;
   }

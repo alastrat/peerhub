@@ -115,7 +115,7 @@ export interface LeaderGaps {
 
 export function leaderGaps(survey: ScoringSurvey, leaderEmployeeId: string, planMinPerLeader: number): LeaderGaps {
   const { score, dimensions } = scoreScope(survey, "LEADER", leaderEmployeeId);
-  const gaps = score.suppressed ? [] : (findGaps(dimensions, survey.goalBand) as DimensionResult[]);
+  const gaps = score.suppressed ? [] : (findGaps(dimensions, survey.goalPct) as DimensionResult[]);
   return {
     leaderEmployeeId,
     respondents: score.respondents,
@@ -169,7 +169,8 @@ export interface LeaderTeamView {
   survey: {
     id: string;
     name: string;
-    goalBand: ClimateBand;
+    /** Survey goal: % of favorable answers */
+    goalPct: number;
     planMinPerLeader: number;
     planDueDate: Date | null;
     anonymityThreshold: number;
@@ -256,7 +257,7 @@ export async function getLeaderTeamView(
     survey: {
       id: survey.id,
       name: survey.name,
-      goalBand: survey.goalBand,
+      goalPct: survey.goalPct,
       planMinPerLeader: meta.planMinPerLeader,
       planDueDate: meta.planDueDate,
       anonymityThreshold: survey.anonymityThreshold,
@@ -318,7 +319,7 @@ export interface SurveyLeaderRow {
 export async function getSurveyLeaders(surveyId: string, companyId: string, opts: { onlyLeaderId?: string } = {}) {
   const meta = await prisma.climateSurvey.findFirst({
     where: { id: surveyId, companyId, instrumentVersion: { not: null } },
-    select: { id: true, name: true, goalBand: true, planMinPerLeader: true, resultsReleasedAt: true, status: true },
+    select: { id: true, name: true, goalPct: true, planMinPerLeader: true, resultsReleasedAt: true, status: true },
   });
   if (!meta) return null;
   const survey = await loadSurveyForScoring(surveyId, companyId);
@@ -359,7 +360,7 @@ export async function getSurveyLeaders(surveyId: string, companyId: string, opts
     })
     .sort((a, b) => b.gapCount - a.gapCount || a.name.localeCompare(b.name));
 
-  return { survey: { ...meta, goalBand: survey.goalBand, anonymityThreshold: survey.anonymityThreshold }, leaders };
+  return { survey: { ...meta, anonymityThreshold: survey.anonymityThreshold }, leaders };
 }
 
 export type SurveyLeaders = NonNullable<Awaited<ReturnType<typeof getSurveyLeaders>>>;
@@ -422,7 +423,7 @@ export async function getPlanDetail(planId: string, companyId: string) {
   const plan = await prisma.actionPlan.findFirst({
     where: { id: planId, companyId },
     include: {
-      survey: { select: { id: true, name: true, goalBand: true, followUpUserIds: true } },
+      survey: { select: { id: true, name: true, goalPct: true, followUpUserIds: true } },
       dimension: { select: { id: true, name: true, code: true } },
       owner: { select: { id: true, name: true, email: true } },
       tasks: {
@@ -562,7 +563,7 @@ export async function getSurveyPlansOverview(surveyId: string, companyId: string
       instrumentVersion: true,
       resultsReleasedAt: true,
       resultsEmailedAt: true,
-      goalBand: true,
+      goalPct: true,
       planMinPerLeader: true,
       planDueDate: true,
       followUpUserIds: true,

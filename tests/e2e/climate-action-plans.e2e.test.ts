@@ -69,7 +69,6 @@ import { getSurveyResults } from "@/lib/queries/climate-reports";
 import { getLeaderTeamView, getPlanDetail, getSurveyPlansOverview, getMyTasks, listLeaderSurveys } from "@/lib/queries/action-plans";
 import { sendPlanDeadlineReminders, sendTaskReminders } from "@/lib/queries/action-plan-reminders";
 import { emailUsersViaDashboard, planEmails } from "@/lib/email/climate-plan-emails";
-import { businessDayAsDate } from "@/lib/constants/business-time";
 import { INSTRUMENT_DIMENSIONS, INSTRUMENT_VERSION, instrumentItemConfig } from "@/lib/constants/climate-instrument";
 
 // ---------------------------------------------------------------------------
@@ -275,9 +274,9 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
 
   it("validates plan settings", async () => {
     asAdmin();
-    expect((await updateSurveySettings(ctx.surveyA, { goalBand: "GOOD" as never })).error).toBe("Nivel meta inválido");
+    expect((await updateSurveySettings(ctx.surveyA, { goalPct: 120 })).error).toBe("La meta debe ser un porcentaje entero entre 1 y 100");
     expect((await updateSurveySettings(ctx.surveyA, { followUpUserIds: [ctx.otherAdminUserId] })).error).toBe("Uno de los usuarios de seguimiento no pertenece a la empresa");
-    const ok = await updateSurveySettings(ctx.surveyA, { goalBand: "FAVORABLE", planMinPerLeader: 1, followUpUserIds: [ctx.adminUserId] });
+    const ok = await updateSurveySettings(ctx.surveyA, { goalPct: 75, planMinPerLeader: 1, followUpUserIds: [ctx.adminUserId] });
     expect(ok.success).toBe(true);
   });
 
@@ -371,25 +370,22 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
     expect((await releaseSurveyResults(ctx.surveyA)).error).toBe("Solo un administrador puede publicar los resultados");
   });
 
-  it("releases results and emails leaders with gaps", async () => {
+  it("releases results while the survey is open, leaving the leaders' email for the close", async () => {
     asAdmin();
     state.emails = [];
-    // A double click / retry: only one release (and one email per leader)
+    // A double click / retry: only one release
     const [first, second] = await Promise.all([releaseSurveyResults(ctx.surveyA), releaseSurveyResults(ctx.surveyA)]);
     expect([first.success, second.success].filter(Boolean)).toHaveLength(1);
     const res = first.success ? first : second;
     expect((first.success ? second : first).error).toBe("Los resultados ya se publicaron");
-    // Lina (CVI, SPS) and Marco (LID) get their results; Nora's team is suppressed
-    expect(res.data).toEqual({ leaders: 3, leadersWithGaps: 2, emailed: 2 });
-    expect(emailsTo(ctx.lina.email)[0].subject).toContain("Ya puedes ver los resultados de tu equipo");
-    expect(emailsTo(ctx.marco.email)).toHaveLength(1);
-    expect(emailsTo(ctx.nora.email)).toHaveLength(0);
+    // Still active: leaders see their results but get no email yet
+    expect(res.data).toEqual({ leaders: 0, leadersWithGaps: 0, emailed: 0, emailOnClose: true });
+    expect(state.emails).toHaveLength(0);
 
     const survey = await prisma.climateSurvey.findUniqueOrThrow({ where: { id: ctx.surveyA } });
-    // Default deadline: the business day 15 days after release, stored at UTC midnight
-    expect(survey.planDueDate!.toISOString()).toBe(
-      businessDayAsDate(new Date(survey.resultsReleasedAt!.getTime() + 15 * DAY)).toISOString(),
-    );
+    // No default plan deadline yet: it's set when the leaders get their email, at the close
+    expect(survey.resultsReleasedAt).not.toBeNull();
+    expect(survey.planDueDate).toBeNull();
     expect((await releaseSurveyResults(ctx.surveyA)).error).toBe("Los resultados ya se publicaron");
   });
 
@@ -666,11 +662,16 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
 
     await prisma.climateSurvey.update({ where: { id: ctx.surveyA }, data: { planDueDate: new Date(Date.now() + 2 * DAY), planReminderSentAt: null } });
     state.emails = [];
+    // Never before the leaders' results email (Modelo 1), which goes out at the close
+    expect((await sendPlanDeadlineReminders()).emails).toBe(0);
+    await prisma.climateSurvey.update({ where: { id: ctx.surveyA }, data: { resultsEmailedAt: new Date() } });
     const nudge = await sendPlanDeadlineReminders();
     expect(emailsTo(ctx.marco.email).some((e) => e.subject.startsWith("Recordatorio: tu plan de acción"))).toBe(true);
     expect(emailsTo(ctx.lina.email)).toHaveLength(0); // Lina met her minimum
     expect(nudge.emails).toBeGreaterThanOrEqual(1);
     expect((await sendPlanDeadlineReminders()).emails).toBe(0);
+    // Undone, so the close below sends the results email
+    await prisma.climateSurvey.update({ where: { id: ctx.surveyA }, data: { resultsEmailedAt: null } });
   });
 
   // =========================================================================
@@ -679,7 +680,14 @@ describe.skipIf(!E2E.enabled)("Climate scoring & action plans — end to end", (
 
   it("evaluates plan impact when a follow-up survey closes", async () => {
     asAdmin();
+    state.emails = [];
     expect((await closeSurvey(ctx.surveyA)).success).toBe(true);
+    // Results were released earlier: the leaders get their email at the close.
+    // Lina (CVI, SPS) and Marco (LID) get their results; Nora's team is suppressed
+    expect(emailsTo(ctx.lina.email).filter((e) => e.subject.includes("Ya puedes ver los resultados de tu equipo"))).toHaveLength(1);
+    expect(emailsTo(ctx.marco.email).filter((e) => e.subject.includes("Ya puedes ver los resultados de tu equipo"))).toHaveLength(1);
+    expect(emailsTo(ctx.nora.email)).toHaveLength(0);
+    expect((await prisma.climateSurvey.findUniqueOrThrow({ where: { id: ctx.surveyA } })).resultsEmailedAt).not.toBeNull();
 
     const res = await createClimateSurvey({ name: `Pulso ${RUN}`, type: "CLIMATE", anonymityThreshold: 5, questions: instrumentQuestions(DIMS) });
     ctx.surveyB = res.data!.id;
