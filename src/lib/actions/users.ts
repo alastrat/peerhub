@@ -12,6 +12,7 @@ import {
   type UpdateEmployeeInput,
 } from "@/lib/validations/user";
 import { findEmployeeConflict, inviteEmployee } from "@/lib/people/new-employee";
+import { pendingInvitationsWhere } from "@/lib/people/access";
 import { isValidBirthDate } from "@/lib/constants/demographics";
 import { normalizeNationalId } from "@/lib/utils/employee-import";
 import { actionError } from "@/lib/auth/action-locale";
@@ -447,7 +448,7 @@ export async function updateEmployee(employeeId: string, input: UpdateEmployeeIn
 
     const employee = await prisma.employee.findFirst({
       where: { id: employeeId, companyId },
-      select: { id: true, companyUser: { select: { id: true } } },
+      select: { id: true, email: true, companyUser: { select: { id: true } } },
     });
     if (!employee) return { success: false, error: "Employee not found" };
     if (data.managerId && data.managerId === employeeId) {
@@ -479,6 +480,12 @@ export async function updateEmployee(employeeId: string, input: UpdateEmployeeIn
             ...(data.role !== undefined && { role: data.role }),
             ...(data.isActive !== undefined && { isActive: data.isActive }),
           },
+        });
+      } else if (!employee.companyUser && data.role !== undefined) {
+        // No account yet: the role is the one their pending invitation will give
+        await tx.invitation.updateMany({
+          where: { ...pendingInvitationsWhere(companyId), email: { equals: employee.email, mode: "insensitive" } },
+          data: { role: data.role },
         });
       }
     });

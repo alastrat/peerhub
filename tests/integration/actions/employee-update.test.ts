@@ -95,6 +95,22 @@ describe("updateEmployee", () => {
       data: { role: "MANAGER", isActive: false },
     });
     expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.invitation.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("without an account, changes the role their pending invitation gives", async () => {
+    mockPrisma.employee.findFirst.mockResolvedValue({ id: "emp-1", email: "ana@acme.com", companyUser: null });
+    await updateEmployee("emp-1", { role: "ADMIN" });
+    expect(mockPrisma.invitation.updateMany).toHaveBeenCalledWith({
+      where: {
+        companyId: "company-1",
+        acceptedAt: null,
+        expiresAt: { gt: expect.any(Date) },
+        email: { equals: "ana@acme.com", mode: "insensitive" },
+      },
+      data: { role: "ADMIN" },
+    });
+    expect(mockPrisma.companyUser.update).not.toHaveBeenCalled();
   });
 
   it("rejects invalid input, self-management and other companies' employees", async () => {

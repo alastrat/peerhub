@@ -41,7 +41,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import type { Department, Employee, CompanyUser, Hub } from "@prisma/client";
+import type { Department, Employee, CompanyRole, CompanyUser, Hub } from "@prisma/client";
+import type { AccessStatus } from "@/lib/people/access";
 
 const ROLE_OPTIONS = [
   { value: "ADMIN", key: "admin" },
@@ -57,6 +58,9 @@ type EmployeeWithRelations = Employee & {
 
 interface EditEmployeeFormProps {
   employee: EmployeeWithRelations;
+  /** Their role as Personas shows it: their account's, their pending invitation's, or Miembro. */
+  role: CompanyRole;
+  access: AccessStatus;
   departments: Department[];
   managers: Employee[];
   hubs?: Hub[];
@@ -65,6 +69,8 @@ interface EditEmployeeFormProps {
 
 export function EditEmployeeForm({
   employee,
+  role,
+  access,
   departments,
   managers,
   hubs = [],
@@ -82,7 +88,7 @@ export function EditEmployeeForm({
     defaultValues: {
       name: employee.name || "",
       title: employee.title || "",
-      role: employee.companyUser?.role || "MEMBER",
+      role,
       departmentId: employee.departmentId || undefined,
       managerId: employee.managerId || undefined,
       hubId: employee.hubId || undefined,
@@ -184,6 +190,8 @@ export function EditEmployeeForm({
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
+                  // Without an account or invitation there's nowhere to keep another role
+                  disabled={access === "NONE"}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -199,7 +207,7 @@ export function EditEmployeeForm({
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  {t("roleDescription")}
+                  {access === "NONE" ? t("roleNoAccess") : access === "INVITED" ? t("roleInvited") : t("roleDescription")}
                 </FormDescription>
                 <FormMessage />
               </FormItem>

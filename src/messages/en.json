@@ -1966,14 +1966,26 @@
       }
     },
     "people": {
-      "searchPlaceholder": "Search people...",
+      "searchPlaceholder": "Search by name, email or ID number...",
       "allRoles": "All Roles",
+      "allAccess": "All access",
       "allDepartments": "All Departments",
       "admin": "Admin",
       "manager": "Manager",
       "member": "Member",
       "name": "Name",
       "role": "Role",
+      "access": "Access",
+      "access_status": {
+        "ACTIVE": "Active",
+        "INVITED": "Invited",
+        "NONE": "No access"
+      },
+      "access_hint": {
+        "ACTIVE": "Has a platform account",
+        "INVITED": "Has an invitation waiting to be accepted",
+        "NONE": "Has no account or pending invitation"
+      },
       "title": "Title",
       "department": "Department",
       "hub": "Hub",
@@ -2029,6 +2041,8 @@
       "role": "Role",
       "selectRole": "Select a role",
       "roleDescription": "Admins can manage all settings, Managers can view team reports",
+      "roleInvited": "The role from their pending invitation: they get it when they accept.",
+      "roleNoAccess": "They have no platform access yet, so they are a Member. Another role comes with an invitation.",
       "department": "Department",
       "selectDepartment": "Select a department",
       "noDepartment": "No department",
@@ -2327,9 +2341,20 @@
         "no_title": "No title",
         "edit": "Edit employee",
         "inactive": "Inactive",
-        "reports_to": "Reports to {name}",
-        "started_on": "Started {date}",
-        "employee_code": "ID: {code}",
+        "access_detail": {
+          "ACTIVE": "Has a platform account.",
+          "INVITED": "Has a pending invitation that expires on {date}.",
+          "NONE": "Has no platform account or pending invitation."
+        },
+        "details_title": "Employee details",
+        "details_description": "What was loaded by the import or when they were added.",
+        "name": "Full name",
+        "email": "Email",
+        "title_label": "Title",
+        "department": "Department",
+        "hub": "Hub",
+        "manager": "Manager",
+        "employee_code_label": "Employee code",
         "review_stats_title": "Review statistics",
         "review_stats_description": "Summary of feedback participation",
         "reviews_received": "Reviews received",
@@ -3229,6 +3254,9 @@
     "released_on": "Released on {date}. Plan deadline: {due}.",
     "release": "Release results to leaders",
     "released_toast": "Results released: {emailed} of {leaders} leaders got their email",
+    "released_toast_on_close": "Results released. Leaders will get their email when the survey closes.",
+    "results_email_on_close": "Leaders will get the email with their results when the survey closes.",
+    "results_emailed_on": "Leaders got the email with their results on {date}.",
     "results_not_emailed": "Leaders haven't received the email with their results yet.",
     "send_results_emails": "Send results email",
     "results_emails_sent": "{count, plural, =0 {No leader had results to send} one {# leader got their email} other {# leaders got their email}}",
@@ -3254,9 +3282,6 @@
     "missing_status": "Plans missing",
     "impact_title": "Impact",
     "impact_desc": "Outcome of submitted plans against the next survey of the same instrument.",
-    "released_toast_on_close": "Results released. Leaders will get their email when the survey closes.",
-    "results_email_on_close": "Leaders will get the email with their results when the survey closes.",
-    "results_emailed_on": "Leaders got the email with their results on {date}.",
     "plans_title": "Plans",
     "plans_desc": "Leader and organization plans for this survey.",
     "all_statuses": "All statuses",
@@ -3393,6 +3418,7 @@
       "release_needs_instrument": "Only surveys that use the validated instrument have leader results",
       "already_released": "Results were already released",
       "results_already_emailed": "The results email was already sent",
+      "results_email_on_close": "Leaders get the results email when the survey closes",
       "admin_only_hide": "Only an administrator can hide results",
       "plans_already_submitted": "Leaders already submitted plans for these results",
       "admin_only_evaluate": "Only an administrator can evaluate impact",
@@ -3418,7 +3444,6 @@
       "failed_send_results_emails": "Failed to send the results email",
       "failed_hide_results": "Failed to hide results",
       "failed_evaluate_impact": "Failed to evaluate impact",
-      "results_email_on_close": "Leaders get the results email when the survey closes",
       "fields": {
         "task_title": "Task title",
         "task_due_date": "Task due date",
@@ -3465,13 +3490,12 @@
       "start_date": "Start date",
       "not_set": "Not set",
       "section_title": "Demographics",
-      "privacy_hint": "Used only for aggregated climate results (groups with at least the minimum number of responses); never shown per person."
+      "privacy_hint": "In People, only admins and the person themselves see them. Climate results only use them in aggregate (groups with at least the minimum number of responses), never per person."
     }
   },
   "employee_fields": {
     "national_id": "ID number (cédula)",
     "national_id_placeholder": "e.g. 1020304050",
-    "national_id_value": "ID number: {value}",
     "job_level": "Job level",
     "not_set": "Not set",
     "job_level_values": {

@@ -6,14 +6,15 @@ import { Plus, Upload, Users } from "lucide-react";
 import { PageHeader } from "@/components/design-system/page-header";
 import { EmptyState } from "@/components/design-system/empty-state";
 import { Button } from "@/components/ui/button";
-import { PeopleTable, type PersonRow } from "@/components/people/people-table";
+import { PeopleTable } from "@/components/people/people-table";
+import type { PersonRow } from "@/lib/queries/people";
 
 interface PeopleContentProps {
   people: PersonRow[];
-  featureHubs: boolean;
+  showHubs: boolean;
 }
 
-export function PeopleContent({ people, featureHubs }: PeopleContentProps) {
+export function PeopleContent({ people, showHubs }: PeopleContentProps) {
   const t = useTranslations("dashboard.people_page");
 
   return (
@@ -47,7 +48,7 @@ export function PeopleContent({ people, featureHubs }: PeopleContentProps) {
           }
         />
       ) : (
-        <PeopleTable data={people} featureHubs={featureHubs} />
+        <PeopleTable data={people} showHubs={showHubs} />
       )}
     </div>
   );

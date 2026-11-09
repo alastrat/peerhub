@@ -257,7 +257,8 @@ model Employee {
   departmentId String?
   startDate    DateTime?
   isActive     Boolean   @default(true)
-  // Demographics for climate segments (optional; never shown per person)
+  // Demographics for climate segments (optional; climate results never show
+  // them per person, only Personas does, to admins)
   gender       Gender?
   birthDate    DateTime?
   createdAt    DateTime  @default(now())
