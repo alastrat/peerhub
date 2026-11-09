@@ -285,9 +285,8 @@ export function SurveyWizard({
   );
   const [questionIndex, setQuestionIndex] = useState(0);
 
-  // Step-3 mode: "iframe" shows a browser mockup of the saved survey;
-  // "edit" shows the editor panels. Default to iframe whenever a persisted
-  // survey id exists (edit mode or post-draft create mode).
+  // Step-3 mode: "iframe" shows a browser mockup of the saved survey (a new
+  // survey is saved as a draft to show it); "edit" shows the editor panels.
   const [previewViewMode, setPreviewViewMode] = useState<"iframe" | "edit">("iframe");
   const [iframeRefreshKey, setIframeRefreshKey] = useState(0);
   // 0 = all on one page; >0 = N questions per page
@@ -434,8 +433,10 @@ export function SurveyWizard({
   const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
   useEffect(() => {
     if (savedSnapshotRef.current === null) {
-      savedSnapshotRef.current = currentSnapshot;
-      setSavedSnapshot(currentSnapshot);
+      // Started from a template: nothing is saved yet, though the form is filled
+      const baseline = startTemplate ? "" : currentSnapshot;
+      savedSnapshotRef.current = baseline;
+      setSavedSnapshot(baseline);
     }
   }, [currentSnapshot]);
   const isDirty = savedSnapshot !== null && savedSnapshot !== currentSnapshot;
@@ -499,7 +500,9 @@ export function SurveyWizard({
 
   const goToStep = (next: number) => {
     setStep(next);
-    if (next === 3 && previewViewMode === "iframe" && (!effectiveSurveyId || isDirty)) openPreview();
+    // Creating: reaching the preview saves the draft it shows. Editing saves
+    // only when asked (Guardar, or Actualizar in the preview).
+    if (next === 3 && mode === "create" && previewViewMode === "iframe" && (!effectiveSurveyId || isDirty)) openPreview();
   };
 
   const handleSubmit = () => {
@@ -536,6 +539,7 @@ export function SurveyWizard({
         variant="outline"
         size="sm"
         onClick={() => (step === 0 ? router.push("/surveys/climate") : goToStep(step - 1))}
+        disabled={isPending}
       >
         <ArrowLeft className="mr-2 h-4 w-4" />
         {step === 0 ? t("actions.cancel") : t("actions.previous")}
@@ -551,7 +555,7 @@ export function SurveyWizard({
         {isPending ? t("actions.saving") : t("actions.save_draft")}
       </Button>
       {step < STEPS.length - 1 ? (
-        <Button size="sm" onClick={() => goToStep(step + 1)} disabled={!canProceed()}>
+        <Button size="sm" onClick={() => goToStep(step + 1)} disabled={isPending || !canProceed()}>
           {t("actions.next")}
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
@@ -885,14 +889,14 @@ export function SurveyWizard({
               {showIframe && (
                 <Button type="button" variant="outline" size="sm" onClick={openPreview} disabled={isPending}>
                   <RefreshCw className={cn("mr-2 h-4 w-4", isPending && "animate-spin")} />
-                  {t("preview.reload_preview")}
+                  {isDirty ? t("preview.save_and_reload") : t("preview.reload_preview")}
                 </Button>
               )}
               <Button
                 type="button"
                 variant={showIframe ? "default" : "outline"}
                 size="sm"
-                onClick={() => (previewViewMode === "iframe" ? setPreviewViewMode("edit") : openPreview())}
+                onClick={() => (showIframe ? setPreviewViewMode("edit") : openPreview())}
                 disabled={isPending || (previewViewMode === "edit" && !canSaveDraft)}
               >
                 {showIframe ? (
@@ -911,6 +915,9 @@ export function SurveyWizard({
           );
           return (
             <div className="space-y-4">
+              {showIframe && isDirty && (
+                <p className="text-xs text-muted-foreground">{t("preview.unsaved_changes_hint")}</p>
+              )}
               {showIframe ? (
                 /* Browser-mockup preview of the saved survey */
                 <div className="overflow-hidden rounded-xl border bg-background shadow-md">
@@ -935,7 +942,11 @@ export function SurveyWizard({
               ) : previewViewMode === "iframe" ? (
                 /* Saving the draft the preview shows, or there's nothing to show yet */
                 <div className="rounded-xl border bg-muted/30 p-8 text-center text-sm text-muted-foreground">
-                  {isPending ? t("preview.preparing_preview") : t("preview.preview_unavailable")}
+                  {isPending
+                    ? t("preview.preparing_preview")
+                    : canSaveDraft
+                      ? t("preview.preview_failed")
+                      : t("preview.preview_unavailable")}
                 </div>
               ) : null}
 

@@ -6,9 +6,18 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowLeft, Edit, Send } from "lucide-react";
 import { PageHeader } from "@/components/design-system/page-header";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getClimateSurveyTypeLabel, getSurveyQuestionTypeLabel } from "@/lib/constants/climate-survey";
+import {
+  getClimateSurveyTypeLabel,
+  getSurveyQuestionTypeLabel,
+} from "@/lib/constants/climate-survey";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -64,12 +73,14 @@ export default async function ClimateTemplateDetailPage({ params }: PageProps) {
               </Link>
             </Button>
           )}
-          <Button asChild>
-            <Link href={`/surveys/climate/new?template=${id}`}>
-              <Send className="mr-2 h-4 w-4" />
-              {t("use_template")}
-            </Link>
-          </Button>
+          {!template.isArchived && (
+            <Button asChild>
+              <Link href={`/surveys/climate/new?template=${id}`}>
+                <Send className="mr-2 h-4 w-4" />
+                {t("use_template")}
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -80,19 +91,25 @@ export default async function ClimateTemplateDetailPage({ params }: PageProps) {
             <Badge variant="secondary">
               {getClimateSurveyTypeLabel(template.type, locale)}
             </Badge>
-            <p className="mt-1 text-sm text-muted-foreground">{t("survey_type")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t("survey_type")}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{template.questions.length}</div>
+            <div className="text-2xl font-bold">
+              {template.questions.length}
+            </div>
             <p className="text-sm text-muted-foreground">{t("questions")}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{template._count.surveys}</div>
-            <p className="text-sm text-muted-foreground">{t("surveys_created")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("surveys_created")}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -101,12 +118,17 @@ export default async function ClimateTemplateDetailPage({ params }: PageProps) {
       <Card>
         <CardHeader>
           <CardTitle>{t("questions")}</CardTitle>
-          <CardDescription>{t("questions_desc", { count: template.questions.length })}</CardDescription>
+          <CardDescription>
+            {t("questions_desc", { count: template.questions.length })}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {template.questions.map((q, i) => (
-              <div key={q.id} className="flex items-start gap-4 p-3 rounded-lg bg-muted/50">
+              <div
+                key={q.id}
+                className="flex items-start gap-4 p-3 rounded-lg bg-muted/50"
+              >
                 <span className="text-sm font-medium text-muted-foreground w-6">
                   {i + 1}.
                 </span>

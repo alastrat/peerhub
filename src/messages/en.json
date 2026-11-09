@@ -2750,7 +2750,10 @@
           "mode_edit": "Edit",
           "reload_preview": "Reload",
           "preview_unavailable": "Name the survey and write at least one question to see the preview.",
-          "preparing_preview": "Saving the draft to show the preview…"
+          "preparing_preview": "Saving the draft to show the preview…",
+          "save_and_reload": "Save and refresh",
+          "unsaved_changes_hint": "You have unsaved changes: the preview shows the last saved version.",
+          "preview_failed": "The draft for the preview couldn't be saved. Check the message above and try again with \"Preview\"."
         },
         "wallpaper": {
           "style_label": "Wallpaper style",
