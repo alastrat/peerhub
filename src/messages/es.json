@@ -2803,7 +2803,11 @@
           "mode_preview": "Vista previa",
           "mode_edit": "Editar",
           "reload_preview": "Recargar",
-          "preview_unavailable": "Guarda un borrador para ver la vista previa en vivo aquí."
+          "preview_unavailable": "Ponle un nombre a la encuesta y escribe al menos una pregunta para ver la vista previa.",
+          "preparing_preview": "Guardando el borrador para mostrar la vista previa…",
+          "save_and_reload": "Guardar y actualizar",
+          "unsaved_changes_hint": "Tienes cambios sin guardar: la vista previa muestra la última versión guardada.",
+          "preview_failed": "No se pudo guardar el borrador para la vista previa. Revisa el mensaje de arriba y vuelve a intentarlo con «Vista previa»."
         },
         "wallpaper": {
           "style_label": "Estilo de fondo",
@@ -3879,6 +3883,7 @@
     "title": "Plantillas de clima",
     "description": "Plantillas reutilizables para lanzar encuestas de clima organizacional",
     "create": "Crear plantilla",
+    "use_template": "Crear encuesta",
     "empty_title": "Aún no hay plantillas",
     "empty_desc": "Crea plantillas reutilizables para lanzar encuestas de clima más rápido.",
     "built_in": "Predeterminada",
