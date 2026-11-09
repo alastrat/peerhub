@@ -84,7 +84,7 @@ export async function requestPortalAccess(
 export async function verifyPortalToken(
   token: string
 ): Promise<
-  ActionResult<{ employeeId: string; companyId: string; email: string }>
+  ActionResult<{ employeeId: string; companyId: string; email: string | null }>
 > {
   try {
     const accessToken = await prisma.accessToken.findFirst({

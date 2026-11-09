@@ -6,7 +6,9 @@ import { pendingInvitationsWhere, rosterAccess, type AccessStatus } from "@/lib/
 export interface PersonRow {
   id: string;
   name: string;
-  email: string;
+  /** Null for people without a corporate email */
+  email: string | null;
+  phone: string | null;
   nationalId: string | null;
   title: string | null;
   department: string | null;
@@ -29,6 +31,7 @@ export async function listPeople(companyId: string, now: Date = new Date()): Pro
         id: true,
         name: true,
         email: true,
+        phone: true,
         nationalId: true,
         title: true,
         jobLevel: true,
@@ -51,6 +54,7 @@ export async function listPeople(companyId: string, now: Date = new Date()): Pro
     id: e.id,
     name: e.name,
     email: e.email,
+    phone: e.phone,
     nationalId: e.nationalId,
     title: e.title,
     department: e.department?.name ?? null,
@@ -60,12 +64,13 @@ export async function listPeople(companyId: string, now: Date = new Date()): Pro
     startDate: e.startDate,
     gender: e.gender,
     birthDate: e.birthDate,
-    ...rosterAccess(e.companyUser, invitationByEmail.get(e.email.toLowerCase())),
+    ...rosterAccess(e.companyUser, e.email ? invitationByEmail.get(e.email.toLowerCase()) : null, !!e.email),
   }));
 }
 
 /** The invitation waiting for this email in the company, if any. */
-export async function findPendingInvitation(companyId: string, email: string, now: Date = new Date()) {
+export async function findPendingInvitation(companyId: string, email: string | null, now: Date = new Date()) {
+  if (!email) return null;
   return prisma.invitation.findFirst({
     where: { ...pendingInvitationsWhere(companyId, now), email: { equals: email, mode: "insensitive" } },
     select: { role: true, expiresAt: true },

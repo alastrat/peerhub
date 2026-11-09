@@ -229,9 +229,10 @@ describe("user validations", () => {
       expect(result.success).toBe(true);
     });
 
-    it("requires email and name", () => {
+    it("requires a name; the email is optional but must be valid", () => {
       expect(csvImportRowSchema.safeParse({ email: "a@b.com" }).success).toBe(false);
-      expect(csvImportRowSchema.safeParse({ name: "John" }).success).toBe(false);
+      expect(csvImportRowSchema.safeParse({ name: "John" }).success).toBe(true);
+      expect(csvImportRowSchema.safeParse({ name: "John", email: "nope" }).success).toBe(false);
     });
 
     it("rejects invalid role in CSV", () => {

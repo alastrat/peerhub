@@ -38,7 +38,7 @@ export interface NamedOption {
 export interface EmployeeOption {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   title: string | null;
   /** Optional. Surfaced as a column + filter on the CUSTOM scope. */
   department?: NamedOption | null;
@@ -319,7 +319,7 @@ function CustomEmployeePicker({
       rows = rows.filter(
         (e) =>
           e.name.toLowerCase().includes(term) ||
-          e.email.toLowerCase().includes(term),
+          (e.email ?? "").toLowerCase().includes(term),
       );
     }
     if (departmentId !== ALL) {
@@ -485,7 +485,7 @@ function CustomEmployeePicker({
                     />
                   </TableCell>
                   <TableCell className="font-medium">{e.name || e.email}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{e.email}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{e.email ?? "—"}</TableCell>
                   {departments.length > 0 && (
                     <TableCell className="text-sm text-muted-foreground">
                       {e.department?.name ?? "—"}

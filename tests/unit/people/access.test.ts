@@ -27,6 +27,12 @@ describe("rosterAccess", () => {
   });
 });
 
+describe("rosterAccess without an email", () => {
+  it("shows people without an email as such: members, with no account or invitation", () => {
+    expect(rosterAccess(null, null, false)).toEqual({ role: "MEMBER", access: "NO_EMAIL" });
+  });
+});
+
 describe("pendingInvitationsWhere", () => {
   it("only matches invitations not accepted and not expired", () => {
     const now = new Date("2026-11-08T12:00:00Z");

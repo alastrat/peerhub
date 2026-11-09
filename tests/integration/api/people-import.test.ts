@@ -112,6 +112,38 @@ describe("POST /api/people/import", () => {
     expect(sendInvitationEmail).not.toHaveBeenCalled();
   });
 
+  it("imports someone without an email, with their mobile number", async () => {
+    const { email: _email, ...withoutEmail } = ROW;
+    void _email;
+    const response = await POST(request({ ...withoutEmail, phone: "+57 300 123 4567" }));
+
+    expect(response.status).toBe(200);
+    expect(mockPrisma.employee.create.mock.calls[0][0].data).toMatchObject({ email: null, phone: "+573001234567" });
+    // Many people may have no email: there's nothing to compare
+    expect(mockPrisma.employee.findFirst).not.toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ email: expect.anything() }) }));
+  });
+
+  it("skips the invitation and ignores the role of someone without an email", async () => {
+    const { email: _email, ...withoutEmail } = ROW;
+    void _email;
+    const invited = await (await POST(request({ ...withoutEmail, invite: true, role: "MANAGER" }))).json();
+    expect(invited.invited).toBe(false);
+    expect(invited.warnings).toContain("se importó sin invitación porque no tiene correo");
+
+    const withRole = await (await POST(request({ ...withoutEmail, role: "MANAGER" }))).json();
+    expect(withRole.warnings ?? []).not.toContain("se importó sin invitación porque no tiene correo");
+    expect(mockPrisma.invitation.upsert).not.toHaveBeenCalled();
+    expect(sendInvitationEmail).not.toHaveBeenCalled();
+    expect(mockPrisma.user.create).not.toHaveBeenCalled();
+    expect(mockPrisma.companyUser.create).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid mobile number", async () => {
+    const response = await POST(request({ ...ROW, phone: "abc" }));
+    expect(response.status).toBe(400);
+    expect(mockPrisma.employee.create).not.toHaveBeenCalled();
+  });
+
   it("reuses an existing hub whatever its case", async () => {
     mockPrisma.hub.findFirst.mockResolvedValue({ id: "hub-existing" });
     await POST(request({ ...ROW, hub: "BOGOTÁ" }));
@@ -158,7 +190,7 @@ describe("POST /api/people/import", () => {
     const response = await POST(request({ ...ROW, email: "Daniela.Ospina@acme.com.co" }));
     expect(response.status).toBe(400);
     expect(mockPrisma.employee.findFirst).toHaveBeenCalledWith({
-      where: { companyId: "company-1", email: { equals: "Daniela.Ospina@acme.com.co", mode: "insensitive" } },
+      where: { companyId: "company-1", email: { equals: "daniela.ospina@acme.com.co", mode: "insensitive" } },
       select: { id: true },
     });
   });

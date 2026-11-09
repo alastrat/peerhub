@@ -25,7 +25,8 @@ export default async function PortalClimateSurveyPage({ params }: PageProps) {
   }
 
   const distribution = await prisma.surveyDistribution.findFirst({
-    where: { id: distributionId },
+    // Only the signed-in person's company's surveys
+    where: { id: distributionId, survey: { companyId: session.companyId } },
     include: {
       survey: {
         include: {

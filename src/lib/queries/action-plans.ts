@@ -493,6 +493,8 @@ export interface LeaderCompliance {
   name: string;
   respondents: number;
   suppressed: boolean;
+  /** False when they have no corporate email: they get no results email. */
+  hasEmail: boolean;
   gapNames: string[];
   required: number;
   submitted: number;
@@ -582,10 +584,10 @@ export async function getSurveyPlansOverview(surveyId: string, companyId: string
   if (!survey) return null;
 
   const leaderIds = leaderIdsOf(survey);
-  const leaderNames = new Map(
+  const leaderRows = new Map(
     (
-      await prisma.employee.findMany({ where: { companyId, id: { in: leaderIds } }, select: { id: true, name: true } })
-    ).map((e) => [e.id, e.name]),
+      await prisma.employee.findMany({ where: { companyId, id: { in: leaderIds } }, select: { id: true, name: true, email: true } })
+    ).map((e) => [e.id, e]),
   );
 
   const leaders: LeaderCompliance[] = leaderIds
@@ -596,7 +598,8 @@ export async function getSurveyPlansOverview(surveyId: string, companyId: string
       const submitted = mine.filter((p) => SUBMITTED_PLAN_STATUSES.includes(p.status) && gapIds.has(p.dimensionId)).length;
       return {
         leaderEmployeeId: id,
-        name: leaderNames.get(id) ?? "—",
+        name: leaderRows.get(id)?.name ?? "—",
+        hasEmail: !!leaderRows.get(id)?.email,
         respondents: g.respondents,
         suppressed: g.suppressed,
         gapNames: g.gaps.map((x) => x.dimensionName),

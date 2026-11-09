@@ -153,9 +153,35 @@ describe("validateEmployeeRows", () => {
     });
   });
 
-  it("requires cédula, name and email", () => {
+  it("requires cédula and name", () => {
     const [result] = validateKultiva([kultivaRow({ "Cédula": "", "Nombres y Apellidos": "", "Correo corporativo": "" })]);
-    expect(result.errors.map((e) => e.code)).toEqual(["national_id_required", "email_required", "name_too_short"]);
+    expect(result.errors.map((e) => e.code)).toEqual(["national_id_required", "name_too_short"]);
+  });
+
+  it("loads a row without an email, with a warning, and reads the mobile number", () => {
+    const t = table([...KULTIVA_HEADERS, "Celular"], [[...kultivaRow({ "Correo corporativo": "" }), "300 123-4567"]]);
+    const mapping = autoMapColumns(t.headers);
+    expect(mapping.phone).toBe(KULTIVA_HEADERS.length);
+    const [result] = validateEmployeeRows(t, mapping, TODAY);
+    expect(result.errors).toEqual([]);
+    expect(result.warnings.map((w) => w.code)).toEqual(["no_email"]);
+    expect(result.data.phone).toBe("3001234567");
+    expect(result.data.email).toBeUndefined();
+  });
+
+  it("recognizes common mobile headers and rejects an invalid number", () => {
+    for (const header of ["Celular", "Teléfono celular", "WhatsApp", "Móvil", "Phone"]) {
+      expect(autoMapColumns(["Cédula", header]).phone).toBe(1);
+    }
+    const t = table([...KULTIVA_HEADERS, "Celular"], [[...kultivaRow(), "llamar"]]);
+    const [result] = validateEmployeeRows(t, autoMapColumns(t.headers), TODAY);
+    expect(result.errors).toEqual([{ code: "phone_invalid", value: "llamar" }]);
+  });
+
+  it("warns that a role is ignored without an email", () => {
+    const t = table([...KULTIVA_HEADERS, "Rol"], [[...kultivaRow({ "Correo corporativo": "" }), "Manager"]]);
+    const [result] = validateEmployeeRows(t, autoMapColumns(t.headers), TODAY);
+    expect(result.warnings.map((w) => w.code)).toEqual(["no_email", "role_without_email"]);
   });
 
   it("rejects every row that shares a cédula or an email", () => {

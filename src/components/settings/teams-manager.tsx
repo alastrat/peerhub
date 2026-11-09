@@ -70,7 +70,7 @@ interface TeamMemberRow {
   employee: {
     id: string;
     name: string;
-    email: string;
+    email: string | null;
     title: string | null;
     department: { name: string } | null;
   };
@@ -88,7 +88,7 @@ interface TeamRow {
 interface EmployeeOption {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   title: string | null;
   department: { name: string } | null;
 }

@@ -9,14 +9,17 @@ import type { CompanyRole, Employee } from "@prisma/client";
 /** The unique field a new employee would repeat in the company, if any. */
 export async function findEmployeeConflict(
   companyId: string,
-  email: string,
+  email: string | null,
   nationalId: string | null,
 ): Promise<"email" | "national_id" | null> {
-  const sameEmail = await prisma.employee.findFirst({
-    where: { companyId, email: { equals: email, mode: "insensitive" } },
-    select: { id: true },
-  });
-  if (sameEmail) return "email";
+  // Many people may have no email; only a repeated address conflicts
+  if (email) {
+    const sameEmail = await prisma.employee.findFirst({
+      where: { companyId, email: { equals: email, mode: "insensitive" } },
+      select: { id: true },
+    });
+    if (sameEmail) return "email";
+  }
   if (nationalId) {
     const sameNationalId = await prisma.employee.findUnique({
       where: { companyId_nationalId: { companyId, nationalId } },
@@ -31,10 +34,11 @@ export async function findEmployeeConflict(
  * Invite an employee to the platform (a fresh link, even if an older
  * invitation exists). Accepting it links their account to this Employee by
  * email. A brand-new invitation whose email can't be delivered is removed,
- * since nobody could reach its link; the error is rethrown.
+ * since nobody could reach its link; the error is rethrown. People without
+ * an email can't be invited: callers check `email` first.
  */
 export async function inviteEmployee(
-  employee: Employee,
+  employee: Employee & { email: string },
   role: CompanyRole,
   inviterName: string | null | undefined,
 ): Promise<void> {

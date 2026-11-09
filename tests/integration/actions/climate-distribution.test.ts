@@ -69,6 +69,41 @@ describe("climate distribution actions", () => {
   // =========================================================================
 
   describe("distributeSurvey", () => {
+    it("includes people without an email but only emails the rest, and counts them", async () => {
+      const { sendBulkEmails } = await import("@/lib/email/resend");
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(baseSurvey);
+      mockPrisma.employee.findMany.mockResolvedValue([
+        { id: "e1", name: "Alice", email: "alice@acme.com" },
+        { id: "e2", name: "Bob", email: null },
+        { id: "e3", name: "Caro", email: null },
+      ]);
+      mockPrisma.surveyDistribution.create.mockResolvedValue({ id: "d1" });
+      mockPrisma.company.findUnique.mockResolvedValue({ locale: "es" });
+
+      const result = await distributeSurvey({ surveyId: "s1", targetType: "ALL", dueDate: baseDueDate });
+
+      expect(result).toMatchObject({
+        success: true,
+        data: { id: "d1", withoutEmail: 2 },
+        warning: "2 personas no tienen correo y no recibieron la invitación: comparte su enlace desde Participantes.",
+      });
+      // Everyone gets a response stub (they answer from their link)...
+      expect(mockPrisma.surveyDistribution.create.mock.calls[0][0].data.responses.create).toHaveLength(3);
+      // ...but only Alice gets an email
+      expect(vi.mocked(sendBulkEmails).mock.calls[0][0]).toEqual([expect.objectContaining({ to: "alice@acme.com" })]);
+    });
+
+    it("sends no email at all when nobody has one", async () => {
+      const { sendBulkEmails } = await import("@/lib/email/resend");
+      mockPrisma.climateSurvey.findFirst.mockResolvedValue(baseSurvey);
+      mockPrisma.employee.findMany.mockResolvedValue([{ id: "e2", name: "Bob", email: null }]);
+      mockPrisma.surveyDistribution.create.mockResolvedValue({ id: "d1" });
+
+      const result = await distributeSurvey({ surveyId: "s1", targetType: "ALL", dueDate: baseDueDate });
+      expect(result.success).toBe(true);
+      expect(sendBulkEmails).not.toHaveBeenCalled();
+    });
+
     it("should distribute to ALL active employees", async () => {
       mockPrisma.climateSurvey.findFirst.mockResolvedValue(baseSurvey);
       mockPrisma.employee.findMany.mockResolvedValue([
@@ -85,7 +120,7 @@ describe("climate distribution actions", () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.data).toEqual({ id: "d1" });
+      expect(result.data).toEqual({ id: "d1", withoutEmail: 0 });
       expect(mockPrisma.employee.findMany).toHaveBeenCalledWith({
         where: { companyId: "company-1", isActive: true },
         select: { id: true, name: true, email: true },

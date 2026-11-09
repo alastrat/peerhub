@@ -1594,6 +1594,23 @@
     }
   },
   "portal": {
+    "survey_link": {
+      "page_title": "Your survey",
+      "greeting": "Hi, {name}",
+      "valid_body": "{company} invites you to answer the survey \"{survey}\". This link is personal and works once: when you start, you go straight to your survey.",
+      "start": "Start survey",
+      "used_here_title": "You already opened this link",
+      "used_here_body": "You can continue your survey on this device.",
+      "continue": "Continue survey",
+      "used_title": "This link was already used",
+      "used_body": "Each link works once. If you need to get in again, ask whoever sent it for a new one.",
+      "expired_title": "This link expired",
+      "expired_body": "Ask whoever sent it for a new one.",
+      "closed_title": "This survey no longer takes answers",
+      "closed_body": "The survey \"{survey}\" is closed or not available. Thank you for your interest.",
+      "invalid_title": "This link isn't valid",
+      "invalid_body": "It may be incomplete or replaced by a newer one. Ask whoever sent it for a new one."
+    },
     "climate_survey": {
       "preview_mode_no_save": "Preview mode — changes are not saved",
       "preview_banner_label": "Preview",
@@ -1658,7 +1675,8 @@
       "email_placeholder": "you@company.com",
       "sending": "Sending...",
       "submit": "Send Magic Link",
-      "hint": "You'll receive an email with a secure link to sign in. No password required."
+      "hint": "You'll receive an email with a secure link to sign in. No password required.",
+      "no_email_hint": "No work email? Ask your company for your personal survey link."
     },
     "home": {
       "welcome": "Welcome, {name}",
@@ -1980,13 +1998,15 @@
         "ACTIVE": "Active",
         "INVITED": "Invited",
         "DEACTIVATED": "Account deactivated",
-        "NONE": "No access"
+        "NONE": "No access",
+        "NO_EMAIL": "No email"
       },
       "access_hint": {
         "ACTIVE": "Has a platform account",
         "INVITED": "Has an invitation waiting to be accepted",
         "DEACTIVATED": "Their account is deactivated: they keep their role, which comes back if it's reactivated",
-        "NONE": "Has no account or pending invitation"
+        "NONE": "Has no account or pending invitation",
+        "NO_EMAIL": "Has no email: gets no invitations or emails and answers surveys from their personal link"
       },
       "title": "Title",
       "department": "Department",
@@ -2003,7 +2023,7 @@
       "emailAddress": "Email address",
       "emailPlaceholder": "john@company.com",
       "inviteEmailDesc": "An invitation will be sent to this email",
-      "createEmailDesc": "The employee's work email address",
+      "createEmailDesc": "Optional. Without an email they get no invitations or emails: they answer surveys from their personal link, which you can send them by WhatsApp.",
       "fullName": "Full name",
       "namePlaceholder": "John Doe",
       "jobTitle": "Job title",
@@ -2031,6 +2051,7 @@
       "emailInvalid": "Enter a valid email address",
       "inviteLabel": "Email an invitation",
       "inviteHint": "They'll get a link to create their account on the platform. Leave it unchecked to add them without sending any email.",
+      "inviteNeedsEmail": "Add an email to invite them. Without one they answer surveys from their personal link.",
       "employeeAddedInvited": "Employee added and invitation sent"
     },
     "editEmployeeForm": {
@@ -2045,6 +2066,8 @@
       "roleDescription": "Admins can manage all settings, Managers can view team reports",
       "roleInvited": "The role from their pending invitation: they get it when they accept.",
       "roleDeactivated": "Their account is deactivated: they keep this role, which comes back if you reactivate it.",
+      "roleNoEmail": "Without an email they can't have a platform account, so they're a Member. Add an email to invite them with another role.",
+      "emailAddHint": "They have no email, so they get no invitations or emails. If you add one you can invite them; it can't be changed afterwards.",
       "roleNoAccess": "They have no platform access yet, so they are a Member. Another role comes with an invitation.",
       "department": "Department",
       "selectDepartment": "Select a department",
@@ -2348,7 +2371,8 @@
           "ACTIVE": "Has a platform account.",
           "INVITED": "Has a pending invitation that expires on {date}.",
           "DEACTIVATED": "Their platform account is deactivated. They keep their role, which comes back if you reactivate it.",
-          "NONE": "Has no platform account or pending invitation."
+          "NONE": "Has no platform account or pending invitation.",
+          "NO_EMAIL": "Has no work email: gets no invitations or platform emails. They answer surveys from their personal link, which you can copy or send by WhatsApp from each survey's Participants tab."
         },
         "details_title": "Employee details",
         "details_description": "What was loaded by the import or when they were added.",
@@ -2522,6 +2546,36 @@
           "more_responses": "+{count, plural, one {# more response} other {# more responses}}"
         },
         "participants_tab": {
+          "links": {
+            "title": "Personal links",
+            "description": "People without an email don't get the invitation: share their personal link. Each link opens the survey directly, works once, and expires when the survey ends or after 30 days. Creating a new one cancels their unused one.",
+            "without_email_hint": "{count, plural, one {# person has no email and got no email invitation: share their link.} other {# people have no email and got no email invitation: share their link.}}",
+            "filter_without_email": "No email ({count})",
+            "filter_all": "Everyone ({count})",
+            "search_placeholder": "Search by name or ID number...",
+            "col_person": "Person",
+            "col_phone": "Mobile",
+            "col_actions": "Link",
+            "no_email": "No email",
+            "copy": "Copy link",
+            "whatsapp": "Send by WhatsApp",
+            "copied": "Link copied. It works once and expires on {date}.",
+            "copy_failed": "Couldn't copy it automatically: copy the link from the row.",
+            "whatsapp_blocked": "The browser blocked the WhatsApp window: copy the link from the row.",
+            "no_phone": "No mobile",
+            "download_csv": "Download links (CSV)",
+            "download_hint": "Creates new links for everyone without an email: their earlier unused links stop working.",
+            "csv_downloaded": "{count, plural, =0 {Nobody is missing an email} one {Downloaded # link} other {Downloaded # links}}",
+            "csv_filename": "links-{survey}.csv",
+            "csv_name": "Name",
+            "csv_national_id": "ID number",
+            "csv_phone": "Mobile",
+            "csv_link": "Link",
+            "csv_expires": "Expires",
+            "empty": "Nobody matches.",
+            "generated_link": "Link created (works once):",
+            "whatsapp_message": "Hi {name}, {company} invites you to answer the survey \"{survey}\". Open it with your personal link, which works once: {link}"
+          },
           "title": "Participants",
           "summary": "{total} total · {completed} completed · {pending} in progress",
           "empty_title": "No participants yet",
@@ -3263,7 +3317,8 @@
     "results_email_on_close": "Leaders will get the email with their results when the survey closes.",
     "results_emailed_on": "Leaders got the email with their results on {date}.",
     "results_not_emailed": "Leaders haven't received the email with their results yet: it wasn't sent or sending failed. You can send it now.",
-    "results_no_leader_qualified": "No results email went out: no leader reached the minimum number of responses to see their team's.",
+    "results_no_leader_qualified": "No results email went out: no leader with an email reached the minimum number of responses to see their team's.",
+    "leader_no_email": "No email: doesn't get the results email",
     "send_results_emails": "Send results email",
     "results_emails_sent": "{count, plural, =0 {No leader had results to send} one {# leader got their email} other {# leaders got their email}}",
     "retract": "Hide results",
@@ -3503,6 +3558,10 @@
   "employee_fields": {
     "national_id": "ID number (cédula)",
     "national_id_placeholder": "e.g. 1020304050",
+    "phone": "Mobile number",
+    "phone_placeholder": "e.g. 300 123 4567",
+    "phone_description": "Optional. To send them their survey link by WhatsApp.",
+    "phone_invalid": "Invalid mobile number: use digits only, e.g. 3001234567 or +57 300 123 4567",
     "job_level": "Job level",
     "not_set": "Not set",
     "job_level_values": {
@@ -3632,6 +3691,7 @@
     "continue": "Continue",
     "columns": {
       "email": "Email Address",
+      "phone": "Mobile number",
       "name": "Full Name",
       "title": "Job Title",
       "department": "Department",
@@ -3705,7 +3765,7 @@
     },
     "errors": {
       "file_too_short": "The file must have a header row and at least one data row",
-      "email_required": "Email is required",
+      "phone_invalid": "Invalid mobile number \"{value}\" (use digits only, e.g. 3001234567 or +57 300 123 4567)",
       "email_invalid": "Invalid email format",
       "name_too_short": "Name must be at least 2 characters",
       "role_invalid": "Role must be Admin, Manager, or Member",
@@ -3725,7 +3785,9 @@
       "own_manager": "The leader's ID number is this person's own"
     },
     "warnings": {
-      "manager_not_in_file": "Leader \"{value}\" isn't in the file: we'll look for them among existing employees"
+      "manager_not_in_file": "Leader \"{value}\" isn't in the file: we'll look for them among existing employees",
+      "no_email": "No email: they won't get invitations or emails, and will answer surveys from their personal link",
+      "role_without_email": "The role is ignored: without an email they can't have a platform account"
     },
     "api": {
       "unauthorized": "Unauthorized",
@@ -3740,7 +3802,8 @@
       "already_exists_national_id": "An employee with ID number {value} already exists in this company",
       "unknown_job_level": "Unknown job level \"{value}\"",
       "manager_not_found": "imported without a leader because we couldn't find \"{manager}\"",
-      "invite_failed": "imported, but the invitation email couldn't be sent"
+      "invite_failed": "imported, but the invitation email couldn't be sent",
+      "invite_needs_email": "imported without an invitation because they have no email"
     }
   },
   "action_errors": {
@@ -3761,6 +3824,7 @@
     "invalid_birth_date": "Date of birth must be between 1900 and today",
     "selection_not_found": "One of the selected options no longer exists. Reload the page and try again.",
     "invite_failed": "The employee was added, but the invitation email couldn't be sent",
+    "invite_needs_email": "The employee was added without an invitation because they have no email. They'll answer surveys from their personal link.",
     "failed_add_employee": "Failed to add the employee",
     "survey_not_found": "Survey not found",
     "select_hub": "Select at least one hub",
@@ -3769,6 +3833,11 @@
     "select_employee": "Select at least one employee",
     "no_employees": "No employees found for the selected target",
     "emails_failed": "Survey sent to {count} employees. {failed} email notification(s) failed to deliver.",
+    "survey_link_failed": "The link couldn't be created",
+    "survey_link_not_active": "Links can only be created while the survey is active",
+    "survey_link_ended": "The survey's end date has passed. Extend it in Settings to create links.",
+    "survey_link_not_participant": "This person isn't invited to the survey",
+    "participants_without_email": "{count, plural, one {# person has no email and got no invitation} other {# people have no email and got no invitation}}: share their link from Participants.",
     "failed_distribute": "Failed to distribute survey",
     "close_only_active": "Only active surveys can be closed",
     "failed_close": "Failed to close survey",

@@ -29,7 +29,7 @@ export async function distributeSurvey(input: {
   targetType: "ALL" | "HUB" | "DEPARTMENT" | "TEAM" | "CUSTOM";
   targetIds?: string[];
   dueDate: Date;
-}): Promise<ActionResult<SurveyDistribution>> {
+}): Promise<ActionResult<SurveyDistribution & { withoutEmail: number }>> {
   try {
     const { companyId } = await requireCompanyAdmin();
 
@@ -41,7 +41,7 @@ export async function distributeSurvey(input: {
     }
 
     // Resolve target employees (fetch name + email for notifications)
-    let targetEmployees: { id: string; name: string; email: string }[] = [];
+    let targetEmployees: { id: string; name: string; email: string | null }[] = [];
 
     if (input.targetType === "ALL") {
       targetEmployees = await prisma.employee.findMany({
@@ -135,7 +135,11 @@ export async function distributeSurvey(input: {
     const surveyPath = `/portal/climate-survey/${distribution.id}`;
     const surveyUrl = `${APP_URL}/portal?redirect=${encodeURIComponent(surveyPath)}`;
 
-    const emails = targetEmployees.map((emp) => {
+    // People without a corporate email get no invitation: the admin shares
+    // their personal link from the Participantes tab instead
+    const withEmail = targetEmployees.filter((emp): emp is typeof emp & { email: string } => !!emp.email);
+    const withoutEmail = targetEmployees.length - withEmail.length;
+    const emails = withEmail.map((emp) => {
       const { subject, html, text } = buildSurveyInvitationEmail({
         employeeName: emp.name,
         surveyName: survey.name,
@@ -147,21 +151,25 @@ export async function distributeSurvey(input: {
       return { to: emp.email, subject, html, text };
     });
 
-    const emailResult = await sendBulkEmails(emails);
+    const emailResult = emails.length > 0 ? await sendBulkEmails(emails) : { failureCount: 0 };
 
     revalidatePath("/surveys/climate");
     revalidatePath(`/surveys/climate/${input.surveyId}`);
 
-    if (emailResult.failureCount > 0) {
+    const warnings: string[] = [];
+    if (emailResult.failureCount > 0 || withoutEmail > 0) {
       const t = await getActionErrors();
-      return {
-        success: true,
-        data: distribution,
-        warning: t("emails_failed", { count: targetEmployees.length, failed: emailResult.failureCount }),
-      };
+      if (emailResult.failureCount > 0) {
+        warnings.push(t("emails_failed", { count: withEmail.length, failed: emailResult.failureCount }));
+      }
+      if (withoutEmail > 0) warnings.push(t("participants_without_email", { count: withoutEmail }));
     }
 
-    return { success: true, data: distribution };
+    return {
+      success: true,
+      data: { ...distribution, withoutEmail },
+      ...(warnings.length > 0 && { warning: warnings.join(" ") }),
+    };
   } catch (error) {
     console.error("Failed to distribute survey:", error);
     return unexpectedActionError(error, "failed_distribute");

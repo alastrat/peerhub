@@ -30,7 +30,8 @@ export default async function ExternalReviewSuccessPage({ params }: PageProps) {
     <SubmissionSuccess
       revieweeName={
         reviewToken.assignment?.reviewee.name ||
-        reviewToken.assignment?.reviewee.email
+        reviewToken.assignment?.reviewee.email ||
+        ""
       }
       companyName={reviewToken.company.name}
     />

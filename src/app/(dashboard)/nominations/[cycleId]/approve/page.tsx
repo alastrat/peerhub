@@ -245,7 +245,7 @@ async function ApprovalContent({ cycleId }: { cycleId: string }) {
                         />
                         <AvatarFallback>
                           {getInitials(
-                            data.reviewee.name || data.reviewee.email
+                            data.reviewee.name || data.reviewee.email || ""
                           )}
                         </AvatarFallback>
                       </Avatar>

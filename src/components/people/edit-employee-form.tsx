@@ -98,6 +98,8 @@ export function EditEmployeeForm({
       startDate: employee.startDate ? employee.startDate.toISOString().slice(0, 10) : "",
       nationalId: employee.nationalId ?? "",
       jobLevel: employee.jobLevel ?? "none",
+      phone: employee.phone ?? "",
+      email: "",
     } as UpdateEmployeeInput,
   });
 
@@ -147,13 +149,33 @@ export function EditEmployeeForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">{t("emailAddress")}</label>
-            <Input value={employee.email || ""} disabled />
-            <p className="text-sm text-muted-foreground">
-              {t("emailCannotChange")}
-            </p>
-          </div>
+          {employee.email ? (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t("emailAddress")}</label>
+              <Input value={employee.email} disabled />
+              <p className="text-sm text-muted-foreground">
+                {t("emailCannotChange")}
+              </p>
+            </div>
+          ) : (
+            // Someone without an email can get one, once
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("emailAddress")}</FormLabel>
+                  <FormControl>
+                    <Input type="email" {...field} value={(field.value as string | undefined) ?? ""} />
+                  </FormControl>
+                  <FormDescription>{t("emailAddHint")}</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          <JobFields control={form.control} fields={["phone"]} />
 
           <FormField
             control={form.control}
@@ -197,7 +219,7 @@ export function EditEmployeeForm({
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                   // Without an account or invitation there's nowhere to keep another role
-                  disabled={access === "NONE"}
+                  disabled={access === "NONE" || access === "NO_EMAIL"}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -213,7 +235,9 @@ export function EditEmployeeForm({
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  {access === "NONE"
+                  {access === "NO_EMAIL"
+                    ? t("roleNoEmail")
+                    : access === "NONE"
                     ? t("roleNoAccess")
                     : access === "INVITED"
                       ? t("roleInvited")

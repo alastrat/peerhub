@@ -35,6 +35,8 @@ export async function notifyEmployee(
     console.error(`notifyEmployee: Employee ${employeeId} not found`);
     return;
   }
+  // Without a corporate email there's no channel: they answer from a survey link
+  if (!employee.email) return;
 
   if (employee.companyUser) {
     // Employee has platform access — send normal email with dashboard link

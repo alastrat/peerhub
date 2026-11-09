@@ -11,18 +11,18 @@ interface Nomination {
   nominator: {
     id: string;
     name: string;
-    email: string;
+    email: string | null;
   };
   nominee: {
     id: string;
     name: string;
-    email: string;
+    email: string | null;
     title: string | null;
   };
   reviewee: {
     id: string;
     name: string;
-    email: string;
+    email: string | null;
   };
 }
 

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { redirect, notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { ArrowLeft, Mail, Users } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Users } from "lucide-react";
 import { PageHeader } from "@/components/design-system/page-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -104,7 +104,7 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
     prisma.company.findUnique({ where: { id: employee.companyId }, select: { featureHubs: true } }),
   ]);
   // Everyone on the roster is a member unless their account (or invitation) says otherwise
-  const { role, access } = rosterAccess(employee.companyUser, invitation);
+  const { role, access } = rosterAccess(employee.companyUser, invitation, !!employee.email);
   // Sede is also filled by the import, which creates hubs even with the hubs feature off
   const showHub = (company?.featureHubs ?? false) || !!employee.hub;
 
@@ -123,6 +123,7 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
     { label: t("name"), value: employee.name },
     { label: t("title_label"), value: employee.title },
     { label: t("email"), value: employee.email },
+    { label: tFields("phone"), value: employee.phone },
     ...(showHub ? [{ label: t("hub"), value: employee.hub?.name }] : []),
     { label: t("department"), value: employee.department?.name },
     {
@@ -183,10 +184,18 @@ export default async function EmployeeDetailPage({ params }: PageProps) {
               <Separator className="my-6" />
 
               <div className="w-full space-y-3 text-left">
-                <div className="flex items-center gap-3 text-sm">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span className="break-all">{employee.email}</span>
-                </div>
+                {employee.email && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span className="break-all">{employee.email}</span>
+                  </div>
+                )}
+                {employee.phone && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span>{employee.phone}</span>
+                  </div>
+                )}
                 <p className="text-sm text-muted-foreground">
                   {access === "INVITED" && invitation
                     ? t("access_detail.INVITED", { date: formatDay(invitation.expiresAt, locale, BUSINESS_TIME_ZONE) })

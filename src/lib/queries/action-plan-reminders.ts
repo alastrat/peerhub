@@ -113,7 +113,9 @@ export async function sendPlanDeadlineReminders(now = new Date()) {
         where: { id: leaderId, companyId: s.companyId, isActive: true },
         select: { id: true, name: true, email: true, companyId: true },
       });
-      if (!leader) continue;
+      // No corporate email: nothing to remind them by
+      if (!leader?.email) continue;
+      const leaderEmail = leader.email;
       await safely("plan reminder email", async () => {
         const email = planReminderEmail(
           {
@@ -126,7 +128,7 @@ export async function sendPlanDeadlineReminders(now = new Date()) {
           },
           locale,
         );
-        await sendSurveyEmail(leader.email, email);
+        await sendSurveyEmail(leaderEmail, email);
         emails++;
       });
     }
