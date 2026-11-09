@@ -8,6 +8,7 @@ import type { ReportSurvey } from "@/lib/queries/climate-report";
 import { CLIMATE_SCALES } from "@/lib/constants/climate-scales";
 import { BandBadge, ScoreBar, SuppressedNote, formatMean } from "../climate-score-ui";
 import { ClimateHeatmap } from "../climate-heatmap";
+import { DemographicParticipation, LeaderProgress } from "../climate-participation";
 import { ReportCover } from "./report-cover";
 import {
   BandLegend,
@@ -52,10 +53,7 @@ export function ClimateReport({ survey, results, generatedOn, backHref }: Climat
   const t = useTranslations("climate_report.sections");
   const ti = useTranslations("dashboard.climate.detail.insights_tab");
   const ts = useTranslations("climate_scoring");
-  const td = useTranslations("demographics");
   const { cover } = survey;
-  const demographicLabel = (type: "gender" | "generation" | "tenure") => (s: { segmentName: string }) =>
-    td(`${type}.${s.segmentName}`);
 
   const k = results?.anonymityThreshold ?? 0;
   const dimensionColumns = results?.dimensionScores.map((d) => ({ id: d.dimensionId, name: d.dimensionName })) ?? [];
@@ -81,24 +79,6 @@ export function ClimateReport({ survey, results, generatedOn, backHref }: Climat
         { key: "team", title: ts("heatmap_team"), segments: results.teamBreakdown },
         ...(survey.featureHubs ? [{ key: "hub", title: ts("heatmap_hub"), segments: results.hubBreakdown }] : []),
         { key: "leader", title: ts("heatmap_leader"), segments: results.leaderBreakdown },
-        {
-          key: "gender",
-          title: ts("heatmap_gender"),
-          segments: results.genderBreakdown,
-          label: demographicLabel("gender"),
-        },
-        {
-          key: "generation",
-          title: ts("heatmap_generation"),
-          segments: results.generationBreakdown,
-          label: demographicLabel("generation"),
-        },
-        {
-          key: "tenure",
-          title: ts("heatmap_tenure"),
-          segments: results.tenureBreakdown,
-          label: demographicLabel("tenure"),
-        },
       ].filter((h) => h.segments.length > 0)
     : [];
 
@@ -122,6 +102,16 @@ export function ClimateReport({ survey, results, generatedOn, backHref }: Climat
                 { label: t("dimensions"), value: cover.dimensions.length },
               ]}
             />
+
+            {/* Participation: counts only, so it shows even when results are hidden */}
+            {results.participation.leaders.length > 0 && (
+              <ReportSection title={t("participation_title")}>
+                <div className="space-y-4">
+                  <LeaderProgress leaders={results.participation.leaders} />
+                  <DemographicParticipation participation={results.participation} />
+                </div>
+              </ReportSection>
+            )}
 
             {results.suppressed ? (
               <ReportSection title={ts("suppressed_title")}>
@@ -202,11 +192,7 @@ export function ClimateReport({ survey, results, generatedOn, backHref }: Climat
                                   <Badge variant="outline" className="text-xs">
                                     {ts(`segment_types.${s.type}`)}
                                   </Badge>
-                                  <span className="font-medium">
-                                    {s.type === "gender" || s.type === "generation" || s.type === "tenure"
-                                      ? td(`${s.type}.${s.segmentName}`)
-                                      : s.segmentName}
-                                  </span>
+                                  <span className="font-medium">{s.segmentName}</span>
                                   <span className="tabular-nums text-muted-foreground">{formatMean(s.mean)}</span>
                                   <BandBadge band={s.band} />
                                 </div>
@@ -229,7 +215,6 @@ export function ClimateReport({ survey, results, generatedOn, backHref }: Climat
                             segments={h.segments}
                             dimensions={dimensionColumns}
                             minGroupSize={k}
-                            segmentLabel={h.label}
                           />
                         </div>
                       ))}

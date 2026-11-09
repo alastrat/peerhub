@@ -39,6 +39,7 @@ import { ReportCoverCard } from "@/components/climate/report/report-cover-card";
 import { ReportLinkButton } from "@/components/climate/report/report-link-button";
 import { getTranslator, toSupportedLocale } from "@/i18n/translator";
 import { defaultScaleText } from "@/lib/utils/climate-report";
+import { leaderOf } from "@/lib/utils/climate-segments";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -65,6 +66,7 @@ async function getSurvey(companyId: string, surveyId: string) {
                   name: true,
                   email: true,
                   title: true,
+                  managerId: true,
                   department: { select: { name: true } },
                   hub: { select: { name: true } },
                 },
@@ -212,15 +214,44 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
       ? requestedTab
       : "insights";
 
+  type Response = (typeof survey.distributions)[number]["responses"][number];
+
+  // Each person's leader (Avances tab): the one when they answered, else their current manager
+  const leaderIdOf = (r: Response) => leaderOf(r.segmentSnapshot, r.employee?.managerId);
+  const leaderIds = survey.isAnonymous
+    ? []
+    : [...new Set(survey.distributions.flatMap((d) => d.responses.map(leaderIdOf)).filter((id) => id != null))];
+  const leaderNames = new Map(
+    leaderIds.length
+      ? (
+          await prisma.employee.findMany({
+            where: { companyId, id: { in: leaderIds } },
+            select: { id: true, name: true },
+          })
+        ).map((e) => [e.id, e.name])
+      : [],
+  );
+
+  // Who each response belongs to. Anonymous surveys send none of it to the
+  // browser: the tabs show "Anónimo" / "Participante N", and the page data
+  // mustn't be able to tie a response to a person either.
+  const identityOf = (r: Response) =>
+    survey.isAnonymous
+      ? { employeeName: "", employeeEmail: "", employeeTitle: null, departmentName: null, hubName: null, leaderName: null }
+      : {
+          employeeName: r.employee?.name ?? "Anonymous",
+          employeeEmail: r.employee?.email ?? "—",
+          employeeTitle: r.employee?.title ?? null,
+          departmentName: r.employee?.department?.name ?? null,
+          hubName: r.employee?.hub?.name ?? null,
+          leaderName: leaderNames.get(leaderIdOf(r) ?? "") ?? null,
+        };
+
   // Flatten all responses for the Answers tab
   const allResponses = survey.distributions.flatMap((d) =>
     d.responses.map((r) => ({
       id: r.id,
-      employeeName: r.employee?.name ?? "Anonymous",
-      employeeEmail: r.employee?.email ?? "—",
-      employeeTitle: r.employee?.title ?? null,
-      departmentName: r.employee?.department?.name ?? null,
-      hubName: r.employee?.hub?.name ?? null,
+      ...identityOf(r),
       isComplete: r.isComplete,
       submittedAt: r.submittedAt,
       createdAt: r.createdAt,
@@ -380,7 +411,8 @@ export default async function SurveyDetailPage({ params, searchParams }: PagePro
           </TabsTrigger>
           <TabsTrigger value="participants" className="gap-1.5">
             <Users className="h-4 w-4" />
-            {t("tabs.participants")}
+            {/* The invite picker while a draft; afterwards, who has answered */}
+            {isDraft ? t("tabs.participants") : t("tabs.progress")}
           </TabsTrigger>
           <TabsTrigger value="questions" className="gap-1.5">
             <FileText className="h-4 w-4" />

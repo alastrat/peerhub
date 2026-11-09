@@ -47,7 +47,9 @@ export interface ParticipantRow {
   employeeName: string;
   employeeEmail: string;
   employeeTitle: string | null;
-  departmentName: string | null;
+  /** Direct manager when they answered, else their current one. Null on anonymous surveys. */
+  leaderName: string | null;
+  /** Null on anonymous surveys. */
   hubName: string | null;
   isComplete: boolean;
   submittedAt: Date | null;
@@ -172,7 +174,7 @@ function compare(a: unknown, b: unknown, dir: SortDir) {
 
 type ResponderSortKey =
   | "name"
-  | "department"
+  | "leader"
   | "hub"
   | "progress"
   | "status"
@@ -205,8 +207,8 @@ function ResponderTable({
         switch (sort.key) {
           case "name":
             return isAnonymous ? null : r.employeeName;
-          case "department":
-            return r.departmentName;
+          case "leader":
+            return r.leaderName;
           case "hub":
             return r.hubName;
           case "progress":
@@ -271,18 +273,23 @@ function ResponderTable({
                 sort={sort}
                 onSort={setSort}
               />
-              <SortableHead
-                field="department"
-                label={t("col_department")}
-                sort={sort}
-                onSort={setSort}
-              />
-              <SortableHead
-                field="hub"
-                label={t("col_hub")}
-                sort={sort}
-                onSort={setSort}
-              />
+              {/* Anonymous: a row's leader or sede would tie a small group to the answers in Respuestas */}
+              {!isAnonymous && (
+                <>
+                  <SortableHead
+                    field="leader"
+                    label={t("col_leader")}
+                    sort={sort}
+                    onSort={setSort}
+                  />
+                  <SortableHead
+                    field="hub"
+                    label={t("col_hub")}
+                    sort={sort}
+                    onSort={setSort}
+                  />
+                </>
+              )}
               <SortableHead
                 field="progress"
                 label={t("col_progress")}
@@ -326,12 +333,16 @@ function ResponderTable({
                     </div>
                   )}
                 </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {r.departmentName ?? "—"}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {r.hubName ?? "—"}
-                </TableCell>
+                {!isAnonymous && (
+                  <>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {r.leaderName ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {r.hubName ?? "—"}
+                    </TableCell>
+                  </>
+                )}
                 <TableCell className="text-sm">
                   {r.answeredCount}/{r.totalQuestions}
                 </TableCell>
@@ -354,7 +365,7 @@ function ResponderTable({
             {visible.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={isAnonymous ? 4 : 6}
                   className="py-8 text-center text-sm text-muted-foreground"
                 >
                   {t("no_matches")}

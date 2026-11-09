@@ -12,12 +12,10 @@ interface ClimateHeatmapProps {
   segments: SegmentResult[];
   dimensions: { id: string; name: string }[];
   minGroupSize: number;
-  /** Display name for a segment (demographic groups are stored as keys). */
-  segmentLabel?: (segment: SegmentResult) => string;
 }
 
 /** Groups × dimensions. Groups under the minimum size show as one locked row. */
-export function ClimateHeatmap({ title, segments, dimensions, minGroupSize, segmentLabel }: ClimateHeatmapProps) {
+export function ClimateHeatmap({ title, segments, dimensions, minGroupSize }: ClimateHeatmapProps) {
   const t = useTranslations("climate_scoring");
   if (segments.length === 0 || dimensions.length === 0) return null;
 
@@ -46,7 +44,7 @@ export function ClimateHeatmap({ title, segments, dimensions, minGroupSize, segm
               return (
                 <tr key={s.segmentId} className="border-t">
                   <td className="px-3 py-2 font-medium">
-                    {segmentLabel ? segmentLabel(s) : s.segmentName}
+                    {s.segmentName}
                     <span className="ml-1 text-xs font-normal text-muted-foreground">({s.respondents})</span>
                   </td>
                   {s.suppressed ? (

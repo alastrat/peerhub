@@ -21,6 +21,7 @@ import {
 import { loadSurveyForScoring } from "@/lib/queries/climate-reports";
 import { evaluateAndNotifyPlanOutcomes, leaderGaps, leaderIdsOf } from "@/lib/queries/action-plans";
 import { getLeaderLink } from "./leader-links";
+import { surveyEndsAt, type EndDateSurvey } from "./survey-end";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 const DAY = 24 * 60 * 60 * 1000;
@@ -384,22 +385,6 @@ export async function finishIfEveryoneAnswered(surveyId: string, companyId: stri
 
 /** Surveys whose end date passed longer ago than this stay as they are (no surprise emails on deploy). */
 export const AUTO_CLOSE_WINDOW_DAYS = 7;
-
-interface EndDateSurvey {
-  accessEndDate: Date | null;
-  closedAt: Date | null;
-  distributions: { dueDate: Date }[];
-}
-
-/**
- * A survey's end: its access end date (a moment, set with a time), else its
- * latest distribution due date (a calendar day, stored at UTC midnight).
- */
-export function surveyEndsAt(survey: EndDateSurvey): Date | null {
-  if (survey.accessEndDate) return survey.accessEndDate;
-  if (survey.distributions.length === 0) return null;
-  return new Date(Math.max(...survey.distributions.map((d) => d.dueDate.getTime())));
-}
 
 /** Whether the daily job should close this survey now. */
 export function isPastEndDate(survey: EndDateSurvey, now: Date): boolean {

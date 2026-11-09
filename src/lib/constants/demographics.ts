@@ -1,6 +1,6 @@
-// Demographic groups used to segment climate results (spec §3.5). Climate
-// results only ever show them aggregated and suppressed, never a person's
-// values; those only appear in Personas, to admins (and to the person on
+// Demographic groups (spec §3.5). Climate reports only count participation
+// per group (answered or not); results are never broken down by them. A
+// person's values only appear in Personas, to admins (and to the person on
 // their own page).
 
 export const GENDERS = ["FEMALE", "MALE", "NON_BINARY", "PREFER_NOT_TO_SAY"] as const;

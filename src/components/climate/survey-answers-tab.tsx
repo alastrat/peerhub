@@ -32,6 +32,7 @@ interface AnswerData {
 
 interface ResponseRow {
   id: string;
+  /** Identity fields are empty on anonymous surveys: the page doesn't send them. */
   employeeName: string;
   employeeEmail: string;
   employeeTitle?: string | null;

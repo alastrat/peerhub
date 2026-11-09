@@ -93,6 +93,39 @@ export function resolveSegments(
   };
 }
 
+/**
+ * Where an invited person counts for participation. Leader, gender,
+ * generation and tenure each come from their snapshot when it holds one, else
+ * from their current data: people who haven't answered, and people who
+ * answered before their manager or demographics were loaded, so they aren't
+ * stuck under "no leader" / "not set". Tenure from current data is measured
+ * at `at`. The rest is as in resolveSegments.
+ */
+export function participationSegments(
+  snapshot: unknown,
+  employee: SnapshotEmployee | null,
+  at: Date,
+): SegmentSnapshot {
+  const frozen = parseSegmentSnapshot(snapshot);
+  const current = resolveSegments(null, employee, at);
+  if (!frozen) return current;
+  return {
+    ...frozen,
+    leaderEmployeeId: frozen.leaderEmployeeId ?? current.leaderEmployeeId,
+    gender: frozen.gender ?? current.gender,
+    generation: frozen.generation ?? current.generation,
+    tenure: frozen.tenure ?? current.tenure,
+  };
+}
+
+/**
+ * A person's leader, as in participationSegments: the one frozen when they
+ * answered, else their current manager.
+ */
+export function leaderOf(snapshot: unknown, managerId: string | null | undefined): string | null {
+  return parseSegmentSnapshot(snapshot)?.leaderEmployeeId ?? managerId ?? null;
+}
+
 /** Does a response with these segments belong to the given scope? */
 export function inScope(segments: SegmentSnapshot, scope: SegmentScope, scopeRefId: string | null): boolean {
   switch (scope) {
