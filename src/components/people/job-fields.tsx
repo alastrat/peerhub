@@ -19,53 +19,66 @@ import {
 } from "@/components/ui/select";
 import { JOB_LEVELS } from "@/lib/constants/job-levels";
 
-/** Cédula and job level ("Nivel jerárquico"), as in Kultiva's import format. Renders two grid cells. */
-export function JobFields<T extends FieldValues>({ control }: { control: Control<T> }) {
+/**
+ * Cédula and job level ("Nivel jerárquico"), as in Kultiva's import format.
+ * One grid cell per field; `fields` picks which, so a form can place them apart.
+ */
+export function JobFields<T extends FieldValues>({
+  control,
+  fields = ["nationalId", "jobLevel"],
+}: {
+  control: Control<T>;
+  fields?: ("nationalId" | "jobLevel")[];
+}) {
   const t = useTranslations("employee_fields");
   return (
     <>
-      <FormField
-        control={control}
-        name={"nationalId" as Path<T>}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>{t("national_id")}</FormLabel>
-            <FormControl>
-              <Input
-                placeholder={t("national_id_placeholder")}
-                value={(field.value as string) ?? ""}
-                onChange={field.onChange}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField
-        control={control}
-        name={"jobLevel" as Path<T>}
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>{t("job_level")}</FormLabel>
-            <Select onValueChange={field.onChange} value={(field.value as string) || "none"}>
+      {fields.includes("nationalId") && (
+        <FormField
+          control={control}
+          name={"nationalId" as Path<T>}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("national_id")}</FormLabel>
               <FormControl>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <Input
+                  placeholder={t("national_id_placeholder")}
+                  value={(field.value as string) ?? ""}
+                  onChange={field.onChange}
+                />
               </FormControl>
-              <SelectContent>
-                <SelectItem value="none">{t("not_set")}</SelectItem>
-                {JOB_LEVELS.map((level) => (
-                  <SelectItem key={level} value={level}>
-                    {t(`job_level_values.${level}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
+      {fields.includes("jobLevel") && (
+        <FormField
+          control={control}
+          name={"jobLevel" as Path<T>}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("job_level")}</FormLabel>
+              <Select onValueChange={field.onChange} value={(field.value as string) || "none"}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="none">{t("not_set")}</SelectItem>
+                  {JOB_LEVELS.map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {t(`job_level_values.${level}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
     </>
   );
 }

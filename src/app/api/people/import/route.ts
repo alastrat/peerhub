@@ -5,7 +5,9 @@ import { csvImportRowSchema, type CSVImportRow } from "@/lib/validations/user";
 import { isValidBirthDate, parseGender } from "@/lib/constants/demographics";
 import { parseJobLevel } from "@/lib/constants/job-levels";
 import { normalizeNationalId } from "@/lib/utils/employee-import";
+import { findEmployeeConflict, inviteEmployee } from "@/lib/people/new-employee";
 import { getTranslator } from "@/i18n/translator";
+import type { CompanyRole } from "@prisma/client";
 
 // Kultiva's format points at the leader by cédula, falling back to the name;
 // the old CSV template by email
@@ -62,27 +64,13 @@ export async function POST(request: NextRequest) {
     const data = parsed.data;
     const nationalId = data.nationalId ? normalizeNationalId(data.nationalId) : null;
 
-    // Check if employee with this email already exists in the company
-    const existingEmployee = await prisma.employee.findFirst({
-      where: { companyId, email: { equals: data.email, mode: "insensitive" } },
-      select: { id: true },
-    });
-
-    if (existingEmployee) {
-      return NextResponse.json(
-        { message: t("already_exists") },
-        { status: 400 }
-      );
+    // Same email or cédula as someone already in the company
+    const conflict = await findEmployeeConflict(companyId, data.email, nationalId);
+    if (conflict === "email") {
+      return NextResponse.json({ message: t("already_exists") }, { status: 400 });
     }
-
-    if (nationalId) {
-      const sameNationalId = await prisma.employee.findUnique({
-        where: { companyId_nationalId: { companyId, nationalId } },
-        select: { id: true },
-      });
-      if (sameNationalId) {
-        return NextResponse.json({ message: t("already_exists_national_id", { value: nationalId }) }, { status: 400 });
-      }
+    if (conflict === "national_id") {
+      return NextResponse.json({ message: t("already_exists_national_id", { value: nationalId! }) }, { status: 400 });
     }
 
     const jobLevel = data.jobLevel ? parseJobLevel(data.jobLevel) : null;
@@ -168,9 +156,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Optionally create User + CompanyUser for platform access
-    if (data.role) {
-      const role = data.role.toUpperCase() as "ADMIN" | "MANAGER" | "MEMBER";
+    const role = (data.role?.toUpperCase() ?? "MEMBER") as CompanyRole;
+    const warnings: string[] = [];
+    if (managerRef && !managerId) warnings.push(t("manager_not_found", { manager: data.managerName || managerRef }));
+
+    // With the wizard's "send invitations" box, platform access comes from the
+    // invitation (with the file's role, if any). Without it, only a role
+    // column grants access, directly and without any email.
+    let invited = false;
+    if (data.invite) {
+      try {
+        await inviteEmployee(employee, role, session.user?.name);
+        invited = true;
+      } catch (error) {
+        console.error("Import invitation failed:", error);
+        warnings.push(t("invite_failed"));
+      }
+    } else if (data.role) {
       let user = await prisma.user.findUnique({
         where: { email: data.email },
       });
@@ -197,7 +199,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: t("imported"),
       data: employee,
-      ...(managerRef && !managerId && { warning: t("manager_not_found", { manager: data.managerName || managerRef }) }),
+      invited,
+      ...(warnings.length > 0 && { warnings }),
     });
   } catch (error) {
     console.error("Import error:", error);

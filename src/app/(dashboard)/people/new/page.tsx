@@ -40,8 +40,9 @@ export default async function AddEmployeePage() {
             departments={departments}
             managers={managers}
             hubs={hubs}
-            featureHubs={company?.featureHubs ?? false}
-            mode="invite"
+            // Sede is also filled by the import, which creates hubs even
+            // with the hubs feature off
+            showHubs={(company?.featureHubs ?? false) || hubs.length > 0}
           />
         </CardContent>
       </Card>

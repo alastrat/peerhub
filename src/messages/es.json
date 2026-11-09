@@ -2049,15 +2049,21 @@
       "manager": "Jefe directo",
       "selectManager": "Seleccionar un jefe directo",
       "noManager": "Sin jefe directo",
-      "hub": "Hub",
-      "selectHub": "Seleccionar un hub",
-      "noHub": "Sin hub",
+      "hub": "Sede",
+      "selectHub": "Seleccionar una sede",
+      "noHub": "Sin sede",
       "cancel": "Cancelar",
       "sendInvitation": "Enviar invitación",
       "addEmployee": "Agregar empleado",
       "invitationSent": "Invitación enviada exitosamente",
       "employeeAdded": "Empleado agregado exitosamente",
-      "somethingWrong": "Algo salió mal"
+      "somethingWrong": "Algo salió mal",
+      "nationalIdRequired": "La cédula es obligatoria",
+      "nameTooShort": "El nombre debe tener al menos 2 caracteres",
+      "emailInvalid": "Escribe un correo válido",
+      "inviteLabel": "Enviar invitación por correo",
+      "inviteHint": "Recibirá un enlace para crear su cuenta en la plataforma. Si no la marcas, se agrega sin enviarle ningún correo.",
+      "employeeAddedInvited": "Empleado agregado e invitación enviada"
     },
     "editEmployeeForm": {
       "emailAddress": "Correo electrónico",
@@ -2075,9 +2081,9 @@
       "manager": "Jefe directo",
       "selectManager": "Seleccionar un jefe directo",
       "noManager": "Sin jefe directo",
-      "hub": "Hub",
-      "selectHub": "Seleccionar un hub",
-      "noHub": "Sin hub",
+      "hub": "Sede",
+      "selectHub": "Seleccionar una sede",
+      "noHub": "Sin sede",
       "activeStatus": "Estado activo",
       "activeDescription": "Los empleados inactivos no pueden acceder al sistema ni participar en evaluaciones",
       "deactivateEmployee": "Desactivar empleado",
@@ -2352,7 +2358,7 @@
       "details_title": "Datos del empleado",
       "new": {
         "description": "Agrega un nuevo miembro a tu organización",
-        "details_description": "Ingresa los datos del empleado. Recibirá un correo de invitación para unirse."
+        "details_description": "Los mismos datos de la plantilla de importación. Solo recibirá un correo si marcas la invitación."
       },
       "edit": {
         "title": "Editar a {name}",
@@ -3688,7 +3694,9 @@
       "valid": "Válida",
       "error": "Error",
       "default_role": "Colaborador",
-      "import": "{count, plural, one {Importar # colaborador} other {Importar # colaboradores}}"
+      "import": "{count, plural, one {Importar # colaborador} other {Importar # colaboradores}}",
+      "invite_label": "Enviar invitación por correo a los colaboradores importados",
+      "invite_hint": "Recibirán un enlace para crear su cuenta en la plataforma. Si no la marcas, se cargan sin enviarles ningún correo."
     },
     "importing": {
       "title": "Importando...",
@@ -3705,7 +3713,8 @@
       "errors": "Errores:",
       "view_people": "Ver colaboradores",
       "import_more": "Importar más",
-      "warnings": "Avisos:"
+      "warnings": "Avisos:",
+      "invited": "{count, plural, =0 {No se envió ninguna invitación} one {# invitación enviada por correo} other {# invitaciones enviadas por correo}}"
     },
     "errors": {
       "file_too_short": "El archivo debe tener una fila de encabezados y al menos una fila de datos",
@@ -3743,7 +3752,8 @@
       "failed": "No se pudo importar el colaborador",
       "already_exists_national_id": "Ya existe un colaborador con la cédula {value} en la empresa",
       "unknown_job_level": "Nivel jerárquico desconocido \"{value}\"",
-      "manager_not_found": "se importó sin líder porque no encontramos a «{manager}»"
+      "manager_not_found": "se importó sin líder porque no encontramos a «{manager}»",
+      "invite_failed": "se importó, pero no se pudo enviar la invitación por correo"
     }
   },
   "action_errors": {
@@ -3758,6 +3768,12 @@
     "failed_delete_company": "No se pudo eliminar la empresa",
     "employee_not_found": "No encontramos tu perfil de colaborador",
     "national_id_taken": "Ya hay otro colaborador de la empresa con esta cédula",
+    "employee_email_taken": "Ya hay un colaborador de la empresa con este correo",
+    "invalid_employee": "Revisa los datos del colaborador",
+    "invalid_birth_date": "La fecha de nacimiento debe estar entre 1900 y hoy",
+    "selection_not_found": "Una de las opciones elegidas ya no existe. Recarga la página e inténtalo de nuevo.",
+    "invite_failed": "El colaborador se agregó, pero no se pudo enviar la invitación por correo",
+    "failed_add_employee": "No se pudo agregar al colaborador",
     "survey_not_found": "No encontramos la encuesta",
     "select_hub": "Selecciona al menos una sede",
     "select_department": "Selecciona al menos un departamento",
